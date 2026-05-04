@@ -398,7 +398,7 @@
 .commentRow {
   display: flex;
   gap: var(--sp-3);
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 /* 아바타 컬럼: 아바타 + 세로 연결선 */
@@ -434,6 +434,7 @@
   font-weight: 700;
   flex-shrink: 0;
   text-transform: uppercase;
+  overflow: hidden;
 }
 
 .commentAvatar.deleted {
@@ -441,20 +442,21 @@
   color: var(--clr-text-muted);
 }
 
-/* 대댓글 아바타 (조금 작게) */
+/* 대댓글 아바타 */
 .replyAvatar {
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   border-radius: var(--r-full);
   background: var(--clr-accent-muted);
   color: var(--clr-accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   flex-shrink: 0;
   text-transform: uppercase;
+  overflow: hidden;
 }
 
 .replyAvatar.deleted {
@@ -515,6 +517,7 @@
   align-items: center;
   gap: var(--sp-1);
   margin-top: var(--sp-1);
+  margin-left: -8px;
 }
 
 .commentActionBtn {
@@ -820,4 +823,49 @@
 .commentLiked:hover:not(:disabled) {
   background: var(--clr-error-soft);
   color: var(--clr-error);
+}
+
+/* ── 댓글 이미지 첨부 ── */
+
+.commentImagePreview {
+  position: relative;
+  display: inline-block;
+  margin-top: var(--sp-2);
+  margin-left: calc(34px + var(--sp-3));
+}
+
+.commentImagePreviewImg {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: var(--r-md);
+  object-fit: cover;
+  display: block;
+}
+
+.commentImageRemoveBtn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: var(--r-full);
+  background: var(--clr-text-muted);
+  color: #fff;
+  font-size: 0.625rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.commentImg {
+  max-width: 260px;
+  max-height: 260px;
+  border-radius: var(--r-md);
+  object-fit: cover;
+  display: block;
+  margin-top: var(--sp-2);
+  cursor: pointer;
 }
