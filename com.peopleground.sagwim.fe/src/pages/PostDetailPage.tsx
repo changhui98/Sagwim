@@ -7,7 +7,8 @@ import {
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Navbar } from '../components/Navbar'
-import { getPost, toggleContentLike } from '../api/postApi'
+import { deletePost, getPost, toggleContentLike, updatePost } from '../api/postApi'
+import { MenuMeatballsIcon } from '../components/NavIcons'
 import { createComment, createReply, deleteComment, getComments } from '../api/commentApi'
 import { ApiError } from '../api/ApiError'
 import type { ContentResponse } from '../types/post'
@@ -137,6 +138,12 @@ export function PostDetailPage() {
     }
   }, [contentId, token, updateLiked, updateLikeCount])
 
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [editMode, setEditMode] = useState(false)
+  const [editBody, setEditBody] = useState('')
+  const [editSubmitting, setEditSubmitting] = useState(false)
+
   // ── 댓글 ──
 
   const [comments, setComments] = useState<CommentResponse[]>([])
@@ -165,6 +172,17 @@ export function PostDetailPage() {
     setCommentsLoading(true)
     loadComments().finally(() => setCommentsLoading(false))
   }, [loadComments])
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
 
   const handleLoadMore = async () => {
     if (!hasNext || nextCursorId === null) return
@@ -254,6 +272,43 @@ export function PostDetailPage() {
     }
   }
 
+  const handleEditStart = () => {
+    setEditBody(post?.body ?? '')
+    setEditMode(true)
+    setMenuOpen(false)
+  }
+
+  const handleEditCancel = () => {
+    setEditMode(false)
+    setEditBody('')
+  }
+
+  const handleEditSubmit = async () => {
+    const trimmed = editBody.trim()
+    if (!trimmed || editSubmitting || !post) return
+    setEditSubmitting(true)
+    try {
+      const updated = await updatePost(token, contentId, trimmed, post.tags)
+      setPost(updated)
+      setEditMode(false)
+      setEditBody('')
+    } catch (err) {
+      if (!(err instanceof ApiError)) console.error('게시글 수정 실패', err)
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
+
+  const handleDeletePost = async () => {
+    if (!window.confirm('게시글을 삭제하시겠습니까?')) return
+    try {
+      await deletePost(token, contentId)
+      navigate(-1)
+    } catch (err) {
+      if (!(err instanceof ApiError)) console.error('게시글 삭제 실패', err)
+    }
+  }
+
   if (postLoading) {
     return (
       <>
@@ -333,9 +388,73 @@ export function PostDetailPage() {
               {formatRelativeTime(post.createdAt)}
             </time>
           </div>
+          {isMine && (
+            <div className={styles.postMenu} ref={menuRef}>
+              <button
+                type="button"
+                className={styles.postMenuBtn}
+                onClick={() => setMenuOpen((v) => !v)}
+                aria-label="게시글 메뉴"
+                aria-expanded={menuOpen}
+                aria-haspopup="menu"
+              >
+                <MenuMeatballsIcon width={20} height={20} />
+              </button>
+              {menuOpen && (
+                <div className={styles.postMenuPopover} role="menu">
+                  <button
+                    type="button"
+                    className={styles.postMenuItem}
+                    role="menuitem"
+                    onClick={handleEditStart}
+                  >
+                    수정
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.postMenuItem} ${styles.postMenuItemDanger}`}
+                    role="menuitem"
+                    onClick={() => { setMenuOpen(false); void handleDeletePost() }}
+                  >
+                    삭제
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        <p className={styles.body}>{post.body}</p>
+        {editMode ? (
+          <div className={styles.editArea}>
+            <textarea
+              className={styles.editTextarea}
+              value={editBody}
+              onChange={(e) => setEditBody(e.target.value)}
+              rows={6}
+              autoFocus
+              aria-label="게시글 수정"
+            />
+            <div className={styles.editActions}>
+              <button
+                type="button"
+                className={styles.editCancelBtn}
+                onClick={handleEditCancel}
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                className={styles.editSubmitBtn}
+                disabled={!editBody.trim() || editSubmitting}
+                onClick={() => void handleEditSubmit()}
+              >
+                {editSubmitting ? '저장 중...' : '저장'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p className={styles.body}>{post.body}</p>
+        )}
 
         {tags.length > 0 && (
           <div className={styles.tagChipList} aria-label="태그">
