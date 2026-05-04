@@ -55,22 +55,27 @@ public class Comment extends AuditingEntity {
     @Column(nullable = false)
     private int likeCount = 0;
 
-    public static Comment of(Content content, User author, String body) {
+    @Column(nullable = true)
+    private String imageUrl;
+
+    public static Comment of(Content content, User author, String body, String imageUrl) {
         Comment comment = new Comment();
         comment.content = content;
         comment.author = author;
         comment.body = body;
         comment.likeCount = 0;
+        comment.imageUrl = imageUrl;
         return comment;
     }
 
-    public static Comment ofReply(Content content, Comment parent, User author, String body) {
+    public static Comment ofReply(Content content, Comment parent, User author, String body, String imageUrl) {
         Comment comment = new Comment();
         comment.content = content;
         comment.parent = parent;
         comment.author = author;
         comment.body = body;
         comment.likeCount = 0;
+        comment.imageUrl = imageUrl;
         return comment;
     }
 
