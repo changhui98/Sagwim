@@ -81,6 +81,15 @@ export const getUserPosts = (
   }).then((response) => parseResponse<PageResponse<ContentResponse>>(response))
 }
 
+export const getPost = (
+  token: string,
+  contentId: number,
+): Promise<ContentResponse> => {
+  return fetch(`${API_BASE_URL}/contents/${contentId}`, {
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<ContentResponse>(response))
+}
+
 /**
  * 특정 모임에 속한 게시글 목록을 조회한다.
  * GET /api/v1/contents/groups/{groupId}

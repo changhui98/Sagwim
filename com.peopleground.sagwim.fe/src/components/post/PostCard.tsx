@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import type { ContentResponse } from '../../types/post'
 import { ApiError } from '../../api/ApiError'
 import { toggleContentLike } from '../../api/postApi'
@@ -53,6 +53,7 @@ function formatCount(n: number): string {
 
 export function PostCard({ post, fullWidth = false }: PostCardProps) {
   const { token, meUsername, meProfileImageUrl } = useAuth()
+  const navigate = useNavigate()
 
   // 좋아요 상태의 단일 소스는 로컬 state. 초기값만 prop 에서 가져오고, 이후
   // 부모가 같은 post 객체로 재렌더 해도 낙관적 업데이트가 덮어써지지 않는다.
@@ -228,6 +229,7 @@ export function PostCard({ post, fullWidth = false }: PostCardProps) {
           type="button"
           className={styles.actionBtn}
           aria-label="댓글 보기"
+          onClick={() => navigate(`/app/posts/${post.id}`, { state: { post } })}
         >
           <CommentIcon className={styles.icon} />
           <span className={styles.count}>{formatCount(commentCount)}</span>
