@@ -6,6 +6,7 @@ import java.util.List;
 
 public record CommentResponse(
     Long id,
+    String authorUsername,
     String authorNickname,
     String body,
     int likeCount,
@@ -24,6 +25,7 @@ public record CommentResponse(
         boolean isDeleted = comment.isDeleted();
         return new CommentResponse(
             comment.getId(),
+            isDeleted ? null : comment.getAuthor().getUsername(),
             isDeleted ? null : comment.getAuthor().getNickname(),
             isDeleted ? DELETED_BODY : comment.getBody(),
             isDeleted ? 0 : comment.getLikeCount(),
@@ -41,6 +43,7 @@ public record CommentResponse(
         boolean isDeleted = comment.isDeleted();
         return new CommentResponse(
             comment.getId(),
+            isDeleted ? null : comment.getAuthor().getUsername(),
             isDeleted ? null : comment.getAuthor().getNickname(),
             isDeleted ? DELETED_BODY : comment.getBody(),
             isDeleted ? 0 : comment.getLikeCount(),

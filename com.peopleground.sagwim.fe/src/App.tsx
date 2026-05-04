@@ -20,6 +20,7 @@ import { GroupDetailPage } from './pages/GroupDetailPage'
 import { GroupCreatePage } from './pages/GroupCreatePage'
 import { NewGroupsPage } from './pages/NewGroupsPage'
 import { PopularGroupsPage } from './pages/PopularGroupsPage'
+import { PostDetailPage } from './pages/PostDetailPage'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -37,6 +38,7 @@ function App() {
         <Route path="/app" element={<GroupListPage />} />
         <Route path="/app/posts" element={<PostListPage />} />
         <Route path="/app/posts/new" element={<PostCreatePage />} />
+        <Route path="/app/posts/:postId" element={<PostDetailPage />} />
         <Route element={<AdminRoute />}>
           <Route path="/app/users" element={<UserGridPage />} />
         </Route>

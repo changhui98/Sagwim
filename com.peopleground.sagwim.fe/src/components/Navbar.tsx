@@ -20,18 +20,18 @@ import {
   BrandLogo,
   ChevronLeftIcon,
   HomeIcon,
+  IdeaIcon,
   LogoutIcon,
   GridEvenMoreIcon,
   MoonIcon,
   PlusSquareIcon,
+  SavedIcon,
   SearchIcon,
   SettingsIcon,
   ShieldIcon,
   SunIcon,
   UserCircleIcon,
 } from './NavIcons'
-import bulbIcon from '../assets/bulb-svgrepo-com.svg'
-import clipboardHeartIcon from '../assets/clipboard-heart-svgrepo-com.svg'
 
 const ADMIN_ROLE = 'ADMIN'
 
@@ -113,7 +113,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
     {
       to: '/app/posts',
       label: '게시글',
-      icon: <img src={clipboardHeartIcon} alt="" aria-hidden="true" width={24} height={24} />,
+      icon: <SavedIcon />,
       match: (p) => p.startsWith('/app/posts'),
     },
     {
@@ -136,7 +136,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
     },
     {
       label: '알림',
-      icon: <img src={bulbIcon} alt="" aria-hidden="true" width={24} height={24} />,
+      icon: <IdeaIcon />,
       onClick: () => togglePanel('notifications'),
       match: () => activePanel === 'notifications',
     },

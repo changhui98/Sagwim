@@ -9,6 +9,7 @@ import { EmptyState } from '../components/common/EmptyState'
 import type { GroupResponse } from '../types/group'
 import { GROUP_CATEGORY_LABELS, GROUP_MEETING_TYPE_LABELS } from '../types/group'
 import userAlt1Icon from '../assets/user-alt-1-svgrepo-com.svg'
+import sproutIcon from '../assets/sagwim-section-sprout.svg'
 import styles from './NewGroupsPage.module.css'
 
 const PAGE_SIZE = 20
@@ -222,7 +223,10 @@ export function NewGroupsPage() {
             ←
           </button>
           <div>
-            <h1 className={styles.pageTitle}>🌱 갓 피어난 모임</h1>
+            <h1 className={styles.pageTitle} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <img src={sproutIcon} alt="" width={22} height={22} />
+              갓 피어난 모임
+            </h1>
             <p className={styles.pageSubtitle}>최근 7일 내 생성된 모임 전체 목록</p>
           </div>
         </div>

@@ -7,7 +7,7 @@
   top: 0;
   left: 0;
   height: 100svh;
-  width: 72px;
+  width: 88px;
   z-index: 50;
   background: var(--clr-bg);
   border-right: none;
@@ -45,10 +45,10 @@
 .brand {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 72px;
+  justify-content: flex-start;
+  width: 100%;
   height: 56px;
-  padding: 0;
+  padding: 0 0 0 18px;
   flex-shrink: 0;
   color: var(--clr-text);
   text-decoration: none;
@@ -60,8 +60,8 @@
 }
 
 .brandLogo {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   display: block;
   color: var(--clr-accent);
 }
@@ -83,7 +83,7 @@
   justify-content: flex-start;
   gap: var(--sp-4);
   width: 100%;
-  padding: 12px 24px;
+  padding: 12px 10px 12px 18px;
   border-radius: var(--r-lg);
   color: var(--clr-text);
   text-decoration: none;
@@ -94,7 +94,6 @@
   font-weight: 400;
   line-height: 1;
   text-align: left;
-  overflow: hidden;
   transition: background var(--t-fast), color var(--t-fast);
 }
 
@@ -113,8 +112,8 @@
 .navIcon {
   flex-shrink: 0;
   display: inline-flex;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   color: var(--clr-text);
 }
 
@@ -123,8 +122,8 @@
 }
 
 .navAvatar {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--r-full);
   overflow: hidden;
   border: 1px solid var(--clr-border);
@@ -151,6 +150,12 @@
   display: inline;
 }
 
+.sidebar:hover .navItem,
+.sidebar:focus-within .navItem,
+.sidebarOpen .navItem {
+  padding-right: 16px;
+}
+
 /* ── Footer (Profile + More) ───────────────────────────────── */
 .footer {
   position: relative;
@@ -161,7 +166,7 @@
 }
 
 .moreButton {
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .moreButtonOpen {

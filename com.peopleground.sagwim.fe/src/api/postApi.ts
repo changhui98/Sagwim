@@ -81,6 +81,40 @@ export const getUserPosts = (
   }).then((response) => parseResponse<PageResponse<ContentResponse>>(response))
 }
 
+export const getPost = (
+  token: string,
+  contentId: number,
+): Promise<ContentResponse> => {
+  return fetch(`${API_BASE_URL}/contents/${contentId}`, {
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<ContentResponse>(response))
+}
+
+export const updatePost = (
+  token: string,
+  contentId: number,
+  body: string,
+  tags?: string[],
+): Promise<ContentResponse> => {
+  return fetch(`${API_BASE_URL}/contents/${contentId}`, {
+    method: 'PATCH',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify({ body, tags }),
+  }).then((response) => parseResponse<ContentResponse>(response))
+}
+
+export const deletePost = (
+  token: string,
+  contentId: number,
+): Promise<void> => {
+  return fetch(`${API_BASE_URL}/contents/${contentId}`, {
+    method: 'DELETE',
+    headers: createAuthHeaders(token),
+  }).then((response) => {
+    if (!response.ok) throw new Error('삭제 실패')
+  })
+}
+
 /**
  * 특정 모임에 속한 게시글 목록을 조회한다.
  * GET /api/v1/contents/groups/{groupId}
