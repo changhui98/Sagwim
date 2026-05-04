@@ -1,0 +1,1 @@
+ALTER TABLE p_comment ADD COLUMN IF NOT EXISTS image_url VARCHAR(255);
