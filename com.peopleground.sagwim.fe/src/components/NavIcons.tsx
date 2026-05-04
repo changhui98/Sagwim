@@ -47,7 +47,6 @@ export function BrandLogo(props: IconProps) {
 export function HomeIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" aria-hidden focusable={false} {...props}>
-      <rect x="4" y="4" width="248" height="248" rx="56" stroke="currentColor" strokeWidth="4" />
       <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
         <path d="M68 130 L128 72 L188 130 L188 188 L68 188 Z" />
         <path d="M110 188 L110 152 L146 152 L146 188" />
@@ -59,7 +58,6 @@ export function HomeIcon(props: IconProps) {
 export function SearchIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" aria-hidden focusable={false} {...props}>
-      <rect x="4" y="4" width="248" height="248" rx="56" stroke="currentColor" strokeWidth="4" />
       <g stroke="currentColor" strokeWidth="14" strokeLinecap="round">
         <circle cx="114" cy="114" r="38" />
         <line x1="142" y1="142" x2="186" y2="186" />
@@ -71,7 +69,6 @@ export function SearchIcon(props: IconProps) {
 export function SavedIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" aria-hidden focusable={false} {...props}>
-      <rect x="4" y="4" width="248" height="248" rx="56" stroke="currentColor" strokeWidth="4" />
       <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
         <rect x="70" y="80" width="116" height="120" rx="14" />
         <rect x="104" y="64" width="48" height="26" rx="6" />
@@ -84,7 +81,6 @@ export function SavedIcon(props: IconProps) {
 export function IdeaIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" aria-hidden focusable={false} {...props}>
-      <rect x="4" y="4" width="248" height="248" rx="56" stroke="currentColor" strokeWidth="4" />
       <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
         <path d="M100 144 C78 122 86 78 128 78 C170 78 178 122 156 144 L156 162 L100 162 Z" />
         <line x1="106" y1="176" x2="150" y2="176" />
@@ -94,21 +90,9 @@ export function IdeaIcon(props: IconProps) {
   )
 }
 
-export function PeopleIcon(props: IconProps) {
-  return (
-    <svg {...BASE} {...props}>
-      <circle cx="9" cy="9" r="3.2" />
-      <path d="M3 19c0-3 2.7-5 6-5s6 2 6 5" />
-      <circle cx="17" cy="8" r="2.6" />
-      <path d="M15.5 13.2c2.5.3 4.5 1.9 4.5 4.3" />
-    </svg>
-  )
-}
-
 export function PlusSquareIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" aria-hidden focusable={false} {...props}>
-      <rect x="4" y="4" width="248" height="248" rx="56" stroke="currentColor" strokeWidth="4" />
       <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
         <rect x="68" y="68" width="120" height="120" rx="18" />
         <line x1="128" y1="98" x2="128" y2="158" />
@@ -131,19 +115,10 @@ export function UserCircleIcon(props: IconProps) {
 export function ShieldIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" aria-hidden focusable={false} {...props}>
-      <rect x="4" y="4" width="248" height="248" rx="56" stroke="currentColor" strokeWidth="4" />
       <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
         <path d="M128 70 L80 86 L80 132 Q80 174 128 192 Q176 174 176 132 L176 86 Z" />
         <path d="M102 130 L122 150 L156 114" />
       </g>
-    </svg>
-  )
-}
-
-export function MenuIcon(props: IconProps) {
-  return (
-    <svg {...BASE} {...props}>
-      <path d="M4 7h16M4 12h16M4 17h16" />
     </svg>
   )
 }
@@ -163,7 +138,6 @@ export function MenuMeatballsIcon(props: IconProps) {
 export function GridEvenMoreIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none" aria-hidden focusable={false} {...props}>
-      <rect x="4" y="4" width="248" height="248" rx="56" stroke="currentColor" strokeWidth="4" />
       <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
         <rect x="76" y="76" width="46" height="46" rx="8" />
         <rect x="134" y="76" width="46" height="46" rx="8" />
@@ -230,17 +204,6 @@ export function AlertIcon(props: IconProps) {
       <circle cx="12" cy="12" r="9" />
       <path d="M12 8v5" />
       <circle cx="12" cy="16.5" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  )
-}
-
-export function SwitchIcon(props: IconProps) {
-  return (
-    <svg {...BASE} {...props}>
-      <path d="M17 4 21 8l-4 4" />
-      <path d="M3 8h18" />
-      <path d="M7 20 3 16l4-4" />
-      <path d="M21 16H3" />
     </svg>
   )
 }
