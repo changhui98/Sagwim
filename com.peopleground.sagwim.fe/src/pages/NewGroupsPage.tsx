@@ -223,8 +223,8 @@ export function NewGroupsPage() {
             ←
           </button>
           <div>
-            <h1 className={styles.pageTitle}>
-              <img src={sproutIcon} alt="" width={22} height={22} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+            <h1 className={styles.pageTitle} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <img src={sproutIcon} alt="" width={22} height={22} />
               갓 피어난 모임
             </h1>
             <p className={styles.pageSubtitle}>최근 7일 내 생성된 모임 전체 목록</p>

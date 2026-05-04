@@ -122,7 +122,7 @@ export function GroupListPage() {
   const renderContent = () => (
     <>
       <GroupSection
-        title={<><img src={sproutIcon} alt="" width={22} height={22} style={{ verticalAlign: 'middle', marginRight: 6 }} />갓 피어난 모임</>}
+        title={<><img src={sproutIcon} alt="" width={22} height={22} />갓 피어난 모임</>}
         subtitle="당신이 첫 멤버가 될 수도 있어요"
         groups={groups.slice(0, PREVIEW_COUNT)}
         loading={loading}
@@ -138,7 +138,7 @@ export function GroupListPage() {
       />
       <hr className={styles.divider} />
       <GroupSection
-        title={<><img src={flameIcon} alt="" width={22} height={22} style={{ verticalAlign: 'middle', marginRight: 6 }} />요즘 북적이는 모임</>}
+        title={<><img src={flameIcon} alt="" width={22} height={22} />요즘 북적이는 모임</>}
         subtitle="모두가 모이는 데는 이유가 있죠"
         groups={popularGroups}
         loading={popularLoading}
@@ -154,7 +154,7 @@ export function GroupListPage() {
       />
       <hr className={styles.divider} />
       <GroupSection
-        title={<><img src={pinIcon} alt="" width={22} height={22} style={{ verticalAlign: 'middle', marginRight: 6 }} />걸어서 닿는 모임</>}
+        title={<><img src={pinIcon} alt="" width={22} height={22} />걸어서 닿는 모임</>}
         subtitle="가까운 동네에서 시작되는 사귐"
         groups={[]}
         loading={false}
