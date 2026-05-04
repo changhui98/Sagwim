@@ -57,3 +57,13 @@ export const deleteComment = (
     }
   })
 }
+
+export const toggleCommentLike = (
+  token: string,
+  commentId: number,
+): Promise<{ liked: boolean; likeCount: number }> => {
+  return fetch(`${API_BASE_URL}/comments/${commentId}/likes`, {
+    method: 'POST',
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<{ liked: boolean; likeCount: number }>(response))
+}

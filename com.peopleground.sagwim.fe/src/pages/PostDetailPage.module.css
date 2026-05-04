@@ -806,3 +806,14 @@
   outline: none;
   box-shadow: var(--shadow-focus);
 }
+
+/* ── 댓글 좋아요 ── */
+
+.commentLiked {
+  color: var(--clr-error);
+}
+
+.commentLiked:hover:not(:disabled) {
+  background: var(--clr-error-soft);
+  color: var(--clr-error);
+}
