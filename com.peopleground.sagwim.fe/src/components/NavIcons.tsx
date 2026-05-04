@@ -70,9 +70,10 @@ export function SavedIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
       <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
-        <rect x="70" y="80" width="116" height="120" rx="14" />
-        <rect x="104" y="64" width="48" height="26" rx="6" />
-        <path d="M128 168 C112 154 92 142 100 122 C106 110 122 110 128 122 C134 110 150 110 156 122 C164 142 144 154 128 168 Z" />
+        <rect x="64" y="56" width="128" height="144" rx="14" />
+        <line x1="88" y1="96" x2="168" y2="96" />
+        <line x1="88" y1="128" x2="168" y2="128" />
+        <line x1="88" y1="160" x2="140" y2="160" />
       </g>
     </svg>
   )
