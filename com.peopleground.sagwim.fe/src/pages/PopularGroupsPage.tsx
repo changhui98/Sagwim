@@ -223,8 +223,8 @@ export function PopularGroupsPage() {
             ←
           </button>
           <div>
-            <h1 className={styles.pageTitle}>
-              <img src={flameIcon} alt="" width={22} height={22} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+            <h1 className={styles.pageTitle} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <img src={flameIcon} alt="" width={22} height={22} />
               요즘 북적이는 모임
             </h1>
             <p className={styles.pageSubtitle}>좋아요 순으로 정렬된 인기 모임 전체 목록</p>
