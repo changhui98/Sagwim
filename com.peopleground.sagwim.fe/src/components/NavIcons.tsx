@@ -47,7 +47,7 @@ export function BrandLogo(props: IconProps) {
 export function HomeIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
+      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
         <path d="M68 130 L128 72 L188 130 L188 188 L68 188 Z" />
         <path d="M110 188 L110 152 L146 152 L146 188" />
       </g>
@@ -58,7 +58,7 @@ export function HomeIcon(props: IconProps) {
 export function SearchIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="14" strokeLinecap="round">
+      <g stroke="currentColor" strokeWidth="10" strokeLinecap="round">
         <circle cx="114" cy="114" r="38" />
         <line x1="142" y1="142" x2="186" y2="186" />
       </g>
@@ -69,7 +69,7 @@ export function SearchIcon(props: IconProps) {
 export function SavedIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
+      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
         <rect x="70" y="80" width="116" height="120" rx="14" />
         <rect x="104" y="64" width="48" height="26" rx="6" />
         <path d="M128 168 C112 154 92 142 100 122 C106 110 122 110 128 122 C134 110 150 110 156 122 C164 142 144 154 128 168 Z" />
@@ -81,7 +81,7 @@ export function SavedIcon(props: IconProps) {
 export function IdeaIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
+      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
         <path d="M100 144 C78 122 86 78 128 78 C170 78 178 122 156 144 L156 162 L100 162 Z" />
         <line x1="106" y1="176" x2="150" y2="176" />
         <line x1="114" y1="190" x2="142" y2="190" />
@@ -93,7 +93,7 @@ export function IdeaIcon(props: IconProps) {
 export function PlusSquareIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
+      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
         <rect x="68" y="68" width="120" height="120" rx="18" />
         <line x1="128" y1="98" x2="128" y2="158" />
         <line x1="98" y1="128" x2="158" y2="128" />
@@ -115,7 +115,7 @@ export function UserCircleIcon(props: IconProps) {
 export function ShieldIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
+      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
         <path d="M128 70 L80 86 L80 132 Q80 174 128 192 Q176 174 176 132 L176 86 Z" />
         <path d="M102 130 L122 150 L156 114" />
       </g>
@@ -138,7 +138,7 @@ export function MenuMeatballsIcon(props: IconProps) {
 export function GridEvenMoreIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="14" strokeLinejoin="round" strokeLinecap="round">
+      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
         <rect x="76" y="76" width="46" height="46" rx="8" />
         <rect x="134" y="76" width="46" height="46" rx="8" />
         <rect x="76" y="134" width="46" height="46" rx="8" />
