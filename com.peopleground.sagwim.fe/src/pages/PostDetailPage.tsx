@@ -10,6 +10,7 @@ import { Navbar } from '../components/Navbar'
 import { deletePost, getPost, toggleContentLike, updatePost } from '../api/postApi'
 import { MenuMeatballsIcon } from '../components/NavIcons'
 import { createComment, createReply, deleteComment, getComments, toggleCommentLike } from '../api/commentApi'
+import { uploadCommentImage } from '../api/imageApi'
 import { ApiError } from '../api/ApiError'
 import type { ContentResponse } from '../types/post'
 import type { CommentResponse } from '../types/comment'
@@ -176,6 +177,20 @@ export function PostDetailPage() {
           }
           return next
         })
+        // likedMap 초기화 (서버에서 내려온 likedByMe 값을 기준으로 세팅, 토글 이후 값은 유지)
+        setCommentLikedMap((prev) => {
+          const next = { ...prev }
+          const allComments = cursorId !== undefined
+            ? [...comments, ...data.comments]
+            : data.comments
+          for (const c of allComments) {
+            if (!(c.id in next)) next[c.id] = c.likedByMe ?? false
+            for (const r of c.replies) {
+              if (!(r.id in next)) next[r.id] = r.likedByMe ?? false
+            }
+          }
+          return next
+        })
         setNextCursorId(data.nextCursorId)
         setHasNext(data.hasNext)
       } catch (err) {
@@ -213,6 +228,22 @@ export function PostDetailPage() {
   const [commentBody, setCommentBody] = useState('')
   const [commentSubmitting, setCommentSubmitting] = useState(false)
   const commentInputRef = useRef<HTMLInputElement>(null)
+  const commentImageInputRef = useRef<HTMLInputElement>(null)
+  const [commentImageFile, setCommentImageFile] = useState<File | null>(null)
+  const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null)
+
+  const handleCommentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCommentImageFile(file)
+    setCommentImagePreview(URL.createObjectURL(file))
+  }
+
+  const handleCommentImageRemove = () => {
+    setCommentImageFile(null)
+    setCommentImagePreview(null)
+    if (commentImageInputRef.current) commentImageInputRef.current.value = ''
+  }
 
   const handleCommentSubmit = async () => {
     const trimmed = commentBody.trim()
@@ -220,9 +251,17 @@ export function PostDetailPage() {
 
     setCommentSubmitting(true)
     try {
-      const created = await createComment(token, contentId, trimmed)
+      let imageUrl: string | undefined
+      if (commentImageFile) {
+        const uploaded = await uploadCommentImage(token, commentImageFile, `temp-${Date.now()}`)
+        imageUrl = uploaded.fileUrl
+      }
+      const created = await createComment(token, contentId, trimmed, imageUrl)
       setComments((prev) => [created, ...prev])
       setCommentBody('')
+      setCommentImageFile(null)
+      setCommentImagePreview(null)
+      if (commentImageInputRef.current) commentImageInputRef.current.value = ''
       commentInputRef.current?.focus()
     } catch (err) {
       if (!(err instanceof ApiError)) {
@@ -279,7 +318,14 @@ export function PostDetailPage() {
               body: '삭제된 댓글입니다.',
             }
           }
-          return c
+          return {
+            ...c,
+            replies: c.replies.map((r) =>
+              r.id === commentId
+                ? { ...r, deleted: true, authorUsername: null, authorNickname: null, body: '삭제된 댓글입니다.' }
+                : r
+            ),
+          }
         }),
       )
     } catch (err) {
@@ -405,13 +451,20 @@ export function PostDetailPage() {
   const meDisplayName = meNickname?.trim() || meUsername || ''
   const commentCount = comments.length + comments.reduce((acc, c) => acc + c.replies.length, 0)
 
-  // 상위 3개(좋아요 많은 순, 삭제 안 된 것) + 나머지(원래 순서)
+  // 상위 3개(좋아요 많은 순, 동점 시 최신순) + 나머지(최신순)
   const topComments = [...comments]
-    .filter((c) => !c.deleted && c.likeCount > 0)
-    .sort((a, b) => (commentLikeCountMap[b.id] ?? b.likeCount) - (commentLikeCountMap[a.id] ?? a.likeCount))
+    .filter((c) => !c.deleted && (commentLikeCountMap[c.id] ?? c.likeCount) > 0)
+    .sort((a, b) => {
+      const likeA = commentLikeCountMap[a.id] ?? a.likeCount
+      const likeB = commentLikeCountMap[b.id] ?? b.likeCount
+      if (likeB !== likeA) return likeB - likeA
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
     .slice(0, 3)
   const topIds = new Set(topComments.map((c) => c.id))
-  const restComments = comments.filter((c) => !topIds.has(c.id))
+  const restComments = comments
+    .filter((c) => !topIds.has(c.id))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   const displayComments = [...topComments, ...restComments]
 
   return (
@@ -578,12 +631,33 @@ export function PostDetailPage() {
                 type="button"
                 className={styles.iconBtn}
                 aria-label="사진 첨부"
+                onClick={() => commentImageInputRef.current?.click()}
               >
                 <img src={pictureIcon} alt="" className={styles.iconBtnImg} />
               </button>
             )}
           </div>
+          <input
+            ref={commentImageInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleCommentImageSelect}
+          />
         </div>
+        {commentImagePreview && (
+          <div className={styles.commentImagePreview}>
+            <img src={commentImagePreview} alt="첨부 이미지" className={styles.commentImagePreviewImg} />
+            <button
+              type="button"
+              className={styles.commentImageRemoveBtn}
+              onClick={handleCommentImageRemove}
+              aria-label="이미지 제거"
+            >
+              &#x2715;
+            </button>
+          </div>
+        )}
 
         {/* 댓글 목록 */}
         {commentsLoading ? (
@@ -615,6 +689,8 @@ export function PostDetailPage() {
                 meUsername={meUsername}
                 liked={commentLikedMap[comment.id] ?? false}
                 likeCount={commentLikeCountMap[comment.id] ?? comment.likeCount}
+                commentLikedMap={commentLikedMap}
+                commentLikeCountMap={commentLikeCountMap}
                 replyingToId={replyingToId}
                 replyBody={replyBody}
                 replySubmitting={replySubmitting}
@@ -655,6 +731,8 @@ interface CommentItemProps {
   meUsername: string | null
   liked: boolean
   likeCount: number
+  commentLikedMap: Record<number, boolean>
+  commentLikeCountMap: Record<number, number>
   replyingToId: number | null
   replyBody: string
   replySubmitting: boolean
@@ -670,6 +748,8 @@ function CommentItem({
   meUsername,
   liked,
   likeCount,
+  commentLikedMap,
+  commentLikeCountMap,
   replyingToId,
   replyBody,
   replySubmitting,
@@ -700,7 +780,11 @@ function CommentItem({
       <div className={styles.commentRow}>
         <div className={styles.avatarCol}>
           <div className={`${styles.commentAvatar} ${comment.deleted ? styles.deleted : ''}`}>
-            {comment.deleted ? '?' : getInitial(comment.authorNickname)}
+            {!comment.deleted && comment.authorProfileImageUrl ? (
+              <img src={comment.authorProfileImageUrl} alt="" className={styles.avatarImg} />
+            ) : (
+              comment.deleted ? '?' : getInitial(comment.authorNickname)
+            )}
           </div>
           {(hasReplies || isReplying) && <div className={styles.avatarLine} />}
         </div>
@@ -716,6 +800,9 @@ function CommentItem({
           <p className={`${styles.commentText} ${comment.deleted ? styles.deleted : ''}`}>
             {comment.body}
           </p>
+          {!comment.deleted && comment.imageUrl && (
+            <img src={comment.imageUrl} alt="첨부 이미지" className={styles.commentImg} />
+          )}
           {!comment.deleted && (
             <div className={styles.commentActions}>
               <button
@@ -756,6 +843,7 @@ function CommentItem({
         <div className={styles.commentRow}>
           <div className={styles.avatarCol}>
             <div className={styles.replyAvatar}>{getInitial(meUsername)}</div>
+            {hasReplies && <div className={styles.avatarLine} />}
           </div>
           <div className={styles.replyInputArea}>
             <input
@@ -790,28 +878,66 @@ function CommentItem({
       )}
 
       {/* 대댓글 목록 (플랫하게, 부모와 같은 레벨) */}
-      {comment.replies.map((reply) => (
-        <div className={styles.commentRow} key={reply.id}>
-          <div className={styles.avatarCol}>
-            <div className={`${styles.replyAvatar} ${reply.deleted ? styles.deleted : ''}`}>
-              {reply.deleted ? '?' : getInitial(reply.authorNickname)}
+      {comment.replies.map((reply, idx) => {
+        const isLastReply = idx === comment.replies.length - 1
+        const showReplyLine = !isLastReply || isReplying
+        return (
+          <div className={styles.commentRow} key={reply.id}>
+            <div className={styles.avatarCol}>
+              <div className={`${styles.replyAvatar} ${reply.deleted ? styles.deleted : ''}`}>
+                {!reply.deleted && reply.authorProfileImageUrl ? (
+                  <img src={reply.authorProfileImageUrl} alt="" className={styles.avatarImg} />
+                ) : (
+                  reply.deleted ? '?' : getInitial(reply.authorNickname)
+                )}
+              </div>
+              {showReplyLine && <div className={styles.avatarLine} />}
+            </div>
+            <div className={styles.commentContent}>
+              <div className={styles.commentMeta}>
+                <span className={`${styles.commentAuthor} ${reply.deleted ? styles.deleted : ''}`}>
+                  {reply.deleted ? '알 수 없음' : (reply.authorNickname ?? '알 수 없음')}
+                </span>
+                <time className={styles.commentDate} dateTime={reply.createdAt}>
+                  {formatRelativeTime(reply.createdAt)}
+                </time>
+              </div>
+              <p className={`${styles.commentText} ${reply.deleted ? styles.deleted : ''}`}>
+                {reply.body}
+              </p>
+              {!reply.deleted && reply.imageUrl && (
+                <img src={reply.imageUrl} alt="첨부 이미지" className={styles.commentImg} />
+              )}
+              {!reply.deleted && (
+                <div className={styles.commentActions}>
+                  <button
+                    type="button"
+                    className={`${styles.commentActionBtn} ${(commentLikedMap[reply.id] ?? false) ? styles.commentLiked : ''}`}
+                    onClick={() => onLike(reply.id)}
+                    aria-label={(commentLikedMap[reply.id] ?? false) ? '좋아요 취소' : '좋아요'}
+                    aria-pressed={commentLikedMap[reply.id] ?? false}
+                  >
+                    <CommentHeartIcon filled={commentLikedMap[reply.id] ?? false} />
+                    {(commentLikeCountMap[reply.id] ?? reply.likeCount) > 0 && (
+                      <span>{commentLikeCountMap[reply.id] ?? reply.likeCount}</span>
+                    )}
+                  </button>
+                  {meUsername && reply.authorUsername === meUsername && (
+                    <button
+                      type="button"
+                      className={`${styles.commentActionBtn} ${styles.danger}`}
+                      onClick={() => void onDelete(reply.id)}
+                      aria-label="댓글 삭제"
+                    >
+                      삭제
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-          <div className={styles.commentContent}>
-            <div className={styles.commentMeta}>
-              <span className={`${styles.commentAuthor} ${reply.deleted ? styles.deleted : ''}`}>
-                {reply.deleted ? '알 수 없음' : (reply.authorNickname ?? '알 수 없음')}
-              </span>
-              <time className={styles.commentDate} dateTime={reply.createdAt}>
-                {formatRelativeTime(reply.createdAt)}
-              </time>
-            </div>
-            <p className={`${styles.commentText} ${reply.deleted ? styles.deleted : ''}`}>
-              {reply.body}
-            </p>
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
