@@ -71,7 +71,7 @@ function GroupCard({ group, liked, likeCount, onNavigate, onLikeToggle }: GroupC
 }
 
 interface GroupSectionProps {
-  title: string
+  title: ReactNode
   subtitle: string
   groups: GroupResponse[]
   loading: boolean
