@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import { Navbar } from '../components/Navbar'
 import { deletePost, getPost, toggleContentLike, updatePost } from '../api/postApi'
 import { MenuMeatballsIcon } from '../components/NavIcons'
-import { createComment, createReply, deleteComment, getComments } from '../api/commentApi'
+import { createComment, createReply, deleteComment, getComments, toggleCommentLike } from '../api/commentApi'
 import { ApiError } from '../api/ApiError'
 import type { ContentResponse } from '../types/post'
 import type { CommentResponse } from '../types/comment'
@@ -147,6 +147,9 @@ export function PostDetailPage() {
   // ── 댓글 ──
 
   const [comments, setComments] = useState<CommentResponse[]>([])
+  const [commentLikedMap, setCommentLikedMap] = useState<Record<number, boolean>>({})
+  const [commentLikeCountMap, setCommentLikeCountMap] = useState<Record<number, number>>({})
+  const commentLikeInFlightRef = useRef<Set<number>>(new Set())
   const [commentsLoading, setCommentsLoading] = useState(true)
   const [commentsError, setCommentsError] = useState<string | null>(null)
   const [nextCursorId, setNextCursorId] = useState<number | null>(null)
@@ -159,6 +162,20 @@ export function PostDetailPage() {
       try {
         const data = await getComments(token, contentId, cursorId)
         setComments((prev) => (cursorId !== undefined ? [...prev, ...data.comments] : data.comments))
+        // likeCountMap 초기화 (최초 로드 시만 overwrite, 커서 이후 로드는 merge)
+        setCommentLikeCountMap((prev) => {
+          const next = { ...prev }
+          const allComments = cursorId !== undefined
+            ? [...comments, ...data.comments]
+            : data.comments
+          for (const c of allComments) {
+            if (!(c.id in next)) next[c.id] = c.likeCount
+            for (const r of c.replies) {
+              if (!(r.id in next)) next[r.id] = r.likeCount
+            }
+          }
+          return next
+        })
         setNextCursorId(data.nextCursorId)
         setHasNext(data.hasNext)
       } catch (err) {
@@ -272,6 +289,30 @@ export function PostDetailPage() {
     }
   }
 
+  const handleCommentLike = async (commentId: number) => {
+    if (commentLikeInFlightRef.current.has(commentId)) return
+    commentLikeInFlightRef.current.add(commentId)
+
+    const prevLiked = commentLikedMap[commentId] ?? false
+    const prevCount = commentLikeCountMap[commentId] ?? 0
+    const nextLiked = !prevLiked
+    const nextCount = Math.max(0, prevCount + (nextLiked ? 1 : -1))
+
+    setCommentLikedMap((prev) => ({ ...prev, [commentId]: nextLiked }))
+    setCommentLikeCountMap((prev) => ({ ...prev, [commentId]: nextCount }))
+
+    try {
+      const res = await toggleCommentLike(token, commentId)
+      setCommentLikedMap((prev) => ({ ...prev, [commentId]: res.liked }))
+      setCommentLikeCountMap((prev) => ({ ...prev, [commentId]: res.likeCount }))
+    } catch {
+      setCommentLikedMap((prev) => ({ ...prev, [commentId]: prevLiked }))
+      setCommentLikeCountMap((prev) => ({ ...prev, [commentId]: prevCount }))
+    } finally {
+      commentLikeInFlightRef.current.delete(commentId)
+    }
+  }
+
   const handleEditStart = () => {
     setEditBody(post?.body ?? '')
     setEditMode(true)
@@ -363,6 +404,15 @@ export function PostDetailPage() {
   const tags = post.tags?.filter((t) => t.trim().length > 0) ?? []
   const meDisplayName = meNickname?.trim() || meUsername || ''
   const commentCount = comments.length + comments.reduce((acc, c) => acc + c.replies.length, 0)
+
+  // 상위 3개(좋아요 많은 순, 삭제 안 된 것) + 나머지(원래 순서)
+  const topComments = [...comments]
+    .filter((c) => !c.deleted && c.likeCount > 0)
+    .sort((a, b) => (commentLikeCountMap[b.id] ?? b.likeCount) - (commentLikeCountMap[a.id] ?? a.likeCount))
+    .slice(0, 3)
+  const topIds = new Set(topComments.map((c) => c.id))
+  const restComments = comments.filter((c) => !topIds.has(c.id))
+  const displayComments = [...topComments, ...restComments]
 
   return (
     <>
@@ -492,17 +542,6 @@ export function PostDetailPage() {
       <div className={styles.divider} />
 
       <section className={styles.commentSection} aria-label="댓글">
-        <div className={styles.commentHeader}>
-          <select
-            className={styles.sortSelect}
-            aria-label="정렬 기준"
-            defaultValue="popular"
-          >
-            <option value="popular">인기순</option>
-            <option value="recent">최신순</option>
-          </select>
-        </div>
-
         {/* 댓글 입력 */}
         <div className={styles.inputRow}>
           <div className={styles.avatar} aria-hidden="true">
@@ -568,12 +607,14 @@ export function PostDetailPage() {
           <p className={styles.emptyComment}>아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>
         ) : (
           <div className={styles.commentList} role="list">
-            {comments.map((comment) => (
+            {displayComments.map((comment) => (
               <CommentItem
                 key={comment.id}
                 comment={comment}
                 contentId={contentId}
                 meUsername={meUsername}
+                liked={commentLikedMap[comment.id] ?? false}
+                likeCount={commentLikeCountMap[comment.id] ?? comment.likeCount}
                 replyingToId={replyingToId}
                 replyBody={replyBody}
                 replySubmitting={replySubmitting}
@@ -583,6 +624,7 @@ export function PostDetailPage() {
                 onReplyBodyChange={setReplyBody}
                 onReplySubmit={handleReplySubmit}
                 onDelete={handleDeleteComment}
+                onLike={handleCommentLike}
               />
             ))}
           </div>
@@ -611,6 +653,8 @@ interface CommentItemProps {
   comment: CommentResponse
   contentId: number
   meUsername: string | null
+  liked: boolean
+  likeCount: number
   replyingToId: number | null
   replyBody: string
   replySubmitting: boolean
@@ -618,11 +662,14 @@ interface CommentItemProps {
   onReplyBodyChange: (val: string) => void
   onReplySubmit: (commentId: number) => Promise<void>
   onDelete: (commentId: number) => Promise<void>
+  onLike: (commentId: number) => void
 }
 
 function CommentItem({
   comment,
   meUsername,
+  liked,
+  likeCount,
   replyingToId,
   replyBody,
   replySubmitting,
@@ -630,6 +677,7 @@ function CommentItem({
   onReplyBodyChange,
   onReplySubmit,
   onDelete,
+  onLike,
 }: CommentItemProps) {
   const isReplying = replyingToId === comment.id
   const replyInputRef = useRef<HTMLInputElement>(null)
@@ -682,6 +730,17 @@ function CommentItem({
                 삭제
               </button>
             )}
+            <button
+              type="button"
+              className={`${styles.commentActionBtn} ${liked ? styles.commentLiked : ''}`}
+              onClick={() => onLike(comment.id)}
+              aria-label={liked ? '좋아요 취소' : '좋아요'}
+              aria-pressed={liked}
+              style={{ marginLeft: 'auto' }}
+            >
+              <CommentHeartIcon filled={liked} />
+              {likeCount > 0 && <span>{likeCount}</span>}
+            </button>
           </div>
         )}
 
@@ -797,6 +856,25 @@ function CommentIcon(props: React.SVGProps<SVGSVGElement>) {
       {...props}
     >
       <path d="M21 12a8 8 0 0 1-11.6 7.2L4 20l.9-4.2A8 8 0 1 1 21 12z" />
+    </svg>
+  )
+}
+
+function CommentHeartIcon({ filled = false }: { filled?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={14}
+      height={14}
+      fill={filled ? 'currentColor' : 'none'}
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      focusable={false}
+    >
+      <path d="M12 20.5s-7.5-4.6-7.5-10a4.5 4.5 0 0 1 8-2.9 4.5 4.5 0 0 1 8 2.9c0 5.4-7.5 10-7.5 10h-1z" />
     </svg>
   )
 }
