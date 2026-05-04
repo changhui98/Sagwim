@@ -589,7 +589,7 @@ export function PostDetailPage() {
         {commentsLoading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
             {[1, 2, 3].map((n) => (
-              <div key={n} className={styles.commentItem}>
+              <div key={n} className={styles.commentRow}>
                 <div
                   className={styles.commentAvatar}
                   style={{ background: 'var(--clr-surface-3)' }}
@@ -692,124 +692,126 @@ function CommentItem({
     ? '알 수 없음'
     : (comment.authorNickname ?? '알 수 없음')
 
-  return (
-    <div className={styles.commentItem} role="listitem">
-      <div className={`${styles.commentAvatar} ${comment.deleted ? styles.deleted : ''}`}>
-        {comment.deleted ? '?' : getInitial(comment.authorNickname)}
-      </div>
-      <div className={styles.commentBody}>
-        <div className={styles.commentMeta}>
-          <span className={`${styles.commentAuthor} ${comment.deleted ? styles.deleted : ''}`}>
-            {authorLabel}
-          </span>
-          <time className={styles.commentDate} dateTime={comment.createdAt}>
-            {formatRelativeTime(comment.createdAt)}
-          </time>
-        </div>
-        <p className={`${styles.commentText} ${comment.deleted ? styles.deleted : ''}`}>
-          {comment.body}
-        </p>
+  const hasReplies = comment.replies.length > 0
 
-        {!comment.deleted && (
-          <div className={styles.commentActions}>
-            <button
-              type="button"
-              className={styles.commentActionBtn}
-              onClick={() => onReplyToggle(comment.id)}
-              aria-label="답글 달기"
-            >
-              답글
-            </button>
-            {meUsername && comment.authorUsername === meUsername && (
+  return (
+    <div className={styles.commentThread} role="listitem">
+      {/* 부모 댓글 행 */}
+      <div className={styles.commentRow}>
+        <div className={styles.avatarCol}>
+          <div className={`${styles.commentAvatar} ${comment.deleted ? styles.deleted : ''}`}>
+            {comment.deleted ? '?' : getInitial(comment.authorNickname)}
+          </div>
+          {(hasReplies || isReplying) && <div className={styles.avatarLine} />}
+        </div>
+        <div className={styles.commentContent}>
+          <div className={styles.commentMeta}>
+            <span className={`${styles.commentAuthor} ${comment.deleted ? styles.deleted : ''}`}>
+              {authorLabel}
+            </span>
+            <time className={styles.commentDate} dateTime={comment.createdAt}>
+              {formatRelativeTime(comment.createdAt)}
+            </time>
+          </div>
+          <p className={`${styles.commentText} ${comment.deleted ? styles.deleted : ''}`}>
+            {comment.body}
+          </p>
+          {!comment.deleted && (
+            <div className={styles.commentActions}>
               <button
                 type="button"
-                className={`${styles.commentActionBtn} ${styles.danger}`}
-                onClick={() => void onDelete(comment.id)}
-                aria-label="댓글 삭제"
+                className={`${styles.commentActionBtn} ${liked ? styles.commentLiked : ''}`}
+                onClick={() => onLike(comment.id)}
+                aria-label={liked ? '좋아요 취소' : '좋아요'}
+                aria-pressed={liked}
               >
-                삭제
+                <CommentHeartIcon filled={liked} />
+                {likeCount > 0 && <span>{likeCount}</span>}
               </button>
-            )}
+              <button
+                type="button"
+                className={styles.commentActionBtn}
+                onClick={() => onReplyToggle(comment.id)}
+                aria-label="답글 달기"
+              >
+                답글
+              </button>
+              {meUsername && comment.authorUsername === meUsername && (
+                <button
+                  type="button"
+                  className={`${styles.commentActionBtn} ${styles.danger}`}
+                  onClick={() => void onDelete(comment.id)}
+                  aria-label="댓글 삭제"
+                >
+                  삭제
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 대댓글 입력창 */}
+      {isReplying && (
+        <div className={styles.commentRow}>
+          <div className={styles.avatarCol}>
+            <div className={styles.replyAvatar}>{getInitial(meUsername)}</div>
+          </div>
+          <div className={styles.replyInputArea}>
+            <input
+              ref={replyInputRef}
+              type="text"
+              className={styles.replyInput}
+              placeholder="답글 입력..."
+              value={replyBody}
+              onChange={(e) => onReplyBodyChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                  e.preventDefault()
+                  void onReplySubmit(comment.id)
+                }
+                if (e.key === 'Escape') {
+                  onReplyToggle(comment.id)
+                }
+              }}
+              aria-label="답글 입력"
+            />
             <button
               type="button"
-              className={`${styles.commentActionBtn} ${liked ? styles.commentLiked : ''}`}
-              onClick={() => onLike(comment.id)}
-              aria-label={liked ? '좋아요 취소' : '좋아요'}
-              aria-pressed={liked}
-              style={{ marginLeft: 'auto' }}
+              className={styles.submitBtn}
+              disabled={!replyBody.trim() || replySubmitting}
+              onClick={() => void onReplySubmit(comment.id)}
+              aria-label="답글 전송"
             >
-              <CommentHeartIcon filled={liked} />
-              {likeCount > 0 && <span>{likeCount}</span>}
+              전송
             </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* 대댓글 입력창 */}
-        {isReplying && (
-          <div className={styles.replyInputRow}>
-            <div className={styles.replyAvatar}>{getInitial(meUsername)}</div>
-            <div className={styles.replyInputArea}>
-              <input
-                ref={replyInputRef}
-                type="text"
-                className={styles.replyInput}
-                placeholder="답글 입력..."
-                value={replyBody}
-                onChange={(e) => onReplyBodyChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-                    e.preventDefault()
-                    void onReplySubmit(comment.id)
-                  }
-                  if (e.key === 'Escape') {
-                    onReplyToggle(comment.id)
-                  }
-                }}
-                aria-label="답글 입력"
-              />
-              <button
-                type="button"
-                className={styles.submitBtn}
-                disabled={!replyBody.trim() || replySubmitting}
-                onClick={() => void onReplySubmit(comment.id)}
-                aria-label="답글 전송"
-              >
-                전송
-              </button>
+      {/* 대댓글 목록 (플랫하게, 부모와 같은 레벨) */}
+      {comment.replies.map((reply) => (
+        <div className={styles.commentRow} key={reply.id}>
+          <div className={styles.avatarCol}>
+            <div className={`${styles.replyAvatar} ${reply.deleted ? styles.deleted : ''}`}>
+              {reply.deleted ? '?' : getInitial(reply.authorNickname)}
             </div>
           </div>
-        )}
-
-        {/* 대댓글 목록 */}
-        {comment.replies.length > 0 && (
-          <div className={styles.replies}>
-            {comment.replies.map((reply) => (
-              <div key={reply.id} className={styles.replyItem}>
-                <div className={styles.replyAvatar}>
-                  {reply.deleted ? '?' : getInitial(reply.authorNickname)}
-                </div>
-                <div className={styles.commentBody}>
-                  <div className={styles.commentMeta}>
-                    <span
-                      className={`${styles.commentAuthor} ${reply.deleted ? styles.deleted : ''}`}
-                    >
-                      {reply.deleted ? '알 수 없음' : (reply.authorNickname ?? '알 수 없음')}
-                    </span>
-                    <time className={styles.commentDate} dateTime={reply.createdAt}>
-                      {formatRelativeTime(reply.createdAt)}
-                    </time>
-                  </div>
-                  <p
-                    className={`${styles.commentText} ${reply.deleted ? styles.deleted : ''}`}
-                  >
-                    {reply.body}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className={styles.commentContent}>
+            <div className={styles.commentMeta}>
+              <span className={`${styles.commentAuthor} ${reply.deleted ? styles.deleted : ''}`}>
+                {reply.deleted ? '알 수 없음' : (reply.authorNickname ?? '알 수 없음')}
+              </span>
+              <time className={styles.commentDate} dateTime={reply.createdAt}>
+                {formatRelativeTime(reply.createdAt)}
+              </time>
+            </div>
+            <p className={`${styles.commentText} ${reply.deleted ? styles.deleted : ''}`}>
+              {reply.body}
+            </p>
           </div>
-        )}
-      </div>
+        </div>
+      ))}
     </div>
   )
 }
