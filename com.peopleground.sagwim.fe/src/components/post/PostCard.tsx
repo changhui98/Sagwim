@@ -55,6 +55,10 @@ export function PostCard({ post, fullWidth = false }: PostCardProps) {
   const { token, meUsername, meProfileImageUrl } = useAuth()
   const navigate = useNavigate()
 
+  const handleCardClick = useCallback(() => {
+    navigate(`/app/posts/${post.id}`, { state: { post } })
+  }, [navigate, post])
+
   // 좋아요 상태의 단일 소스는 로컬 state. 초기값만 prop 에서 가져오고, 이후
   // 부모가 같은 post 객체로 재렌더 해도 낙관적 업데이트가 덮어써지지 않는다.
   // 페이지를 벗어났다가 돌아오면 PostListPage 가 unmount → remount 되며
@@ -132,9 +136,16 @@ export function PostCard({ post, fullWidth = false }: PostCardProps) {
   const avatarUrl = isMine ? meProfileImageUrl : null
 
   return (
-    <article className={`${styles.card} ${fullWidth ? styles.cardFullWidth : ''}`}>
+    <article
+      className={`${styles.card} ${fullWidth ? styles.cardFullWidth : ''}`}
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      aria-label={`${displayName}의 게시글 상세보기`}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCardClick() } }}
+    >
       <div className={styles.header}>
-        <Link to={profilePath} className={styles.authorAvatarLink} aria-label={`${displayName} 프로필 보기`}>
+        <Link to={profilePath} className={styles.authorAvatarLink} aria-label={`${displayName} 프로필 보기`} onClick={(e) => e.stopPropagation()}>
           {avatarUrl ? (
             <div className={styles.avatar} aria-hidden="true">
               <img src={avatarUrl} alt="" className={styles.avatarImg} />
@@ -146,7 +157,7 @@ export function PostCard({ post, fullWidth = false }: PostCardProps) {
           )}
         </Link>
         <div className={styles.headerInfo}>
-          <Link to={profilePath} className={`${styles.authorName} ${styles.authorNameLink}`}>
+          <Link to={profilePath} className={`${styles.authorName} ${styles.authorNameLink}`} onClick={(e) => e.stopPropagation()}>
             {displayName}
           </Link>
           <span className={styles.sep} aria-hidden="true">·</span>
@@ -169,11 +180,10 @@ export function PostCard({ post, fullWidth = false }: PostCardProps) {
                 type="button"
                 className={`${styles.slideBtn} ${styles.slideBtnPrev}`}
                 aria-label="이전 이미지"
-                onClick={() =>
-                  setCurrentImageIndex((prev) =>
-                    prev === 0 ? imageUrls.length - 1 : prev - 1,
-                  )
-                }
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCurrentImageIndex((prev) => (prev === 0 ? imageUrls.length - 1 : prev - 1))
+                }}
               >
                 ‹
               </button>
@@ -181,11 +191,10 @@ export function PostCard({ post, fullWidth = false }: PostCardProps) {
                 type="button"
                 className={`${styles.slideBtn} ${styles.slideBtnNext}`}
                 aria-label="다음 이미지"
-                onClick={() =>
-                  setCurrentImageIndex((prev) =>
-                    prev === imageUrls.length - 1 ? 0 : prev + 1,
-                  )
-                }
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setCurrentImageIndex((prev) => (prev === imageUrls.length - 1 ? 0 : prev + 1))
+                }}
               >
                 ›
               </button>
@@ -216,7 +225,7 @@ export function PostCard({ post, fullWidth = false }: PostCardProps) {
         <button
           type="button"
           className={`${styles.actionBtn} ${liked ? styles.liked : ''}`}
-          onClick={handleLikeClick}
+          onClick={(e) => { e.stopPropagation(); void handleLikeClick() }}
           disabled={pending}
           aria-label={liked ? '좋아요 취소' : '좋아요'}
           aria-pressed={liked}
@@ -229,7 +238,7 @@ export function PostCard({ post, fullWidth = false }: PostCardProps) {
           type="button"
           className={styles.actionBtn}
           aria-label="댓글 보기"
-          onClick={() => navigate(`/app/posts/${post.id}`, { state: { post } })}
+          onClick={(e) => { e.stopPropagation(); navigate(`/app/posts/${post.id}`, { state: { post } }) }}
         >
           <CommentIcon className={styles.icon} />
           <span className={styles.count}>{formatCount(commentCount)}</span>
