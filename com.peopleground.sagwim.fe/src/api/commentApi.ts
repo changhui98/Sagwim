@@ -22,11 +22,12 @@ export const createComment = (
   token: string,
   contentId: number,
   body: string,
+  imageUrl?: string,
 ): Promise<CommentResponse> => {
   return fetch(`${API_BASE_URL}/contents/${contentId}/comments`, {
     method: 'POST',
     headers: createAuthHeaders(token),
-    body: JSON.stringify({ body }),
+    body: JSON.stringify({ body, imageUrl }),
   }).then((response) => parseResponse<CommentResponse>(response))
 }
 
@@ -35,11 +36,12 @@ export const createReply = (
   contentId: number,
   commentId: number,
   body: string,
+  imageUrl?: string,
 ): Promise<CommentResponse> => {
   return fetch(`${API_BASE_URL}/contents/${contentId}/comments/${commentId}/replies`, {
     method: 'POST',
     headers: createAuthHeaders(token),
-    body: JSON.stringify({ body }),
+    body: JSON.stringify({ body, imageUrl }),
   }).then((response) => parseResponse<CommentResponse>(response))
 }
 
