@@ -12,12 +12,17 @@ import com.peopleground.sagwim.content.domain.entity.Content;
 import com.peopleground.sagwim.content.domain.repository.ContentRepository;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.exception.AppException;
+import com.peopleground.sagwim.like.domain.repository.CommentLikeRepository;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.entity.UserRole;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +34,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final ContentRepository contentRepository;
     private final UserRepository userRepository;
+    private final CommentLikeRepository commentLikeRepository;
 
     /**
      * 게시글의 댓글 목록을 커서 기반 페이지네이션으로 조회한다.
@@ -46,7 +52,7 @@ public class CommentService {
      * </ul>
      */
     @Transactional(readOnly = true)
-    public CommentListResponse getComments(Long contentId, Long cursorId, int size) {
+    public CommentListResponse getComments(Long contentId, Long cursorId, int size, UUID currentUserId) {
         getActiveContent(contentId);
 
         List<Comment> fetched = commentRepository.findTopCommentsByContentId(contentId, cursorId, size + 1);
@@ -57,14 +63,25 @@ public class CommentService {
         List<Long> parentIds = topComments.stream().map(Comment::getId).toList();
         Map<Long, List<Comment>> repliesByParent = commentRepository.findRepliesGroupedByParentIds(parentIds);
 
+        // 모든 댓글 ID(최상위 + 대댓글) 수집 후 단 1번 배치 조회
+        List<Long> replyIds = repliesByParent.values().stream()
+            .flatMap(List::stream)
+            .map(Comment::getId)
+            .toList();
+        List<Long> allCommentIds = Stream.concat(parentIds.stream(), replyIds.stream()).toList();
+
+        Set<Long> likedIds = (currentUserId != null && !allCommentIds.isEmpty())
+            ? commentLikeRepository.findLikedCommentIdsByUserIdAndCommentIds(currentUserId, allCommentIds)
+            : Collections.emptySet();
+
         List<CommentResponse> commentResponses = topComments.stream()
             .map(comment -> {
                 List<CommentResponse> replies = repliesByParent
                     .getOrDefault(comment.getId(), List.of())
                     .stream()
-                    .map(CommentResponse::from)
+                    .map(reply -> CommentResponse.from(reply, likedIds.contains(reply.getId())))
                     .toList();
-                return CommentResponse.from(comment, replies);
+                return CommentResponse.from(comment, replies, likedIds.contains(comment.getId()));
             })
             .toList();
 
@@ -79,7 +96,7 @@ public class CommentService {
         Content content = getActiveContent(contentId);
         User author = getUser(customUser);
 
-        Comment comment = commentRepository.save(Comment.of(content, author, req.body()));
+        Comment comment = commentRepository.save(Comment.of(content, author, req.body(), req.imageUrl()));
         contentRepository.incrementCommentCount(contentId);
 
         return CommentResponse.from(comment);
@@ -105,7 +122,7 @@ public class CommentService {
             throw new AppException(CommentErrorCode.COMMENT_REPLY_NOT_ALLOWED);
         }
 
-        Comment reply = commentRepository.save(Comment.ofReply(content, parentComment, author, req.body()));
+        Comment reply = commentRepository.save(Comment.ofReply(content, parentComment, author, req.body(), req.imageUrl()));
         contentRepository.incrementCommentCount(contentId);
 
         return CommentResponse.from(reply);

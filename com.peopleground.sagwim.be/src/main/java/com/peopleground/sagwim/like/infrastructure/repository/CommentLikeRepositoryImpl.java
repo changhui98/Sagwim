@@ -2,7 +2,9 @@ package com.peopleground.sagwim.like.infrastructure.repository;
 
 import com.peopleground.sagwim.like.domain.entity.CommentLike;
 import com.peopleground.sagwim.like.domain.repository.CommentLikeRepository;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -36,5 +38,10 @@ public class CommentLikeRepositoryImpl implements CommentLikeRepository {
     @Override
     public int insertIfNotExists(Long commentId, UUID userId) {
         return commentLikeJpaRepository.insertIfNotExists(commentId, userId);
+    }
+
+    @Override
+    public Set<Long> findLikedCommentIdsByUserIdAndCommentIds(UUID userId, List<Long> commentIds) {
+        return commentLikeJpaRepository.findCommentIdsByUserIdAndCommentIds(userId, commentIds);
     }
 }
