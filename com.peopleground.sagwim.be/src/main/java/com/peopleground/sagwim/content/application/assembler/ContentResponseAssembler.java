@@ -42,6 +42,39 @@ public class ContentResponseAssembler {
     private final ImageUrlResolver imageUrlResolver;
 
     /**
+     * {@link Content} 단건을 {@link ContentResponse} 로 변환한다.
+     *
+     * <p>닉네임, 좋아요 여부, 태그, 이미지 URL 을 개별 조회한다.
+     * 조회 빈도가 낮은 단건 요청이므로 배치 최적화는 적용하지 않는다.</p>
+     */
+    public ContentResponse toResponse(Content content, CustomUser user) {
+
+        String nickname = userRepository.findNicknamesByUsernames(Set.of(content.getCreatedBy()))
+            .get(content.getCreatedBy());
+
+        boolean likedByMe = false;
+        if (user != null) {
+            Set<Long> likedIds = contentLikeRepository.findLikedContentIds(
+                user.getId(), List.of(content.getId()));
+            likedByMe = likedIds.contains(content.getId());
+        }
+
+        List<String> tags = contentTagRepository.findAllFetchTagByContentIdIn(List.of(content.getId()))
+            .stream()
+            .map(ct -> ct.getTag().getName())
+            .toList();
+
+        List<String> imageUrls = imageRepository
+            .findUrlsByTargetIds(ImageTargetType.CONTENT, List.of(String.valueOf(content.getId())))
+            .getOrDefault(String.valueOf(content.getId()), List.of())
+            .stream()
+            .map(imageUrlResolver::resolve)
+            .toList();
+
+        return ContentResponse.from(content, nickname, likedByMe, tags, imageUrls);
+    }
+
+    /**
      * {@link Page}&lt;{@link Content}&gt; 를 {@link ContentResponse} 페이지로 변환한다.
      *
      * <ul>

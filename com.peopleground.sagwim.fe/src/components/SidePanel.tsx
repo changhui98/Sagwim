@@ -84,8 +84,8 @@ function SearchContent({ onClose }: { onClose: () => void }) {
     onClose()
   }
 
-  const handlePostClick = () => {
-    navigate('/app')
+  const handlePostClick = (postId: number) => {
+    navigate(`/app/posts/${postId}`)
     onClose()
   }
 
@@ -185,7 +185,7 @@ function SearchContent({ onClose }: { onClose: () => void }) {
                 <button
                   type="button"
                   className={styles.resultItem}
-                  onClick={handlePostClick}
+                  onClick={() => handlePostClick(post.id)}
                 >
                   <div className={styles.resultMeta}>
                     <span className={styles.resultPrimary}>
