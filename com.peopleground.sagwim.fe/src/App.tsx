@@ -14,6 +14,7 @@ import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminUserListPage } from './pages/admin/AdminUserListPage'
 import { AdminGroupsPage } from './pages/admin/AdminGroupsPage'
 import { AdminPostListPage } from './pages/admin/AdminPostListPage'
+import { AdminImageListPage } from './pages/admin/AdminImageListPage'
 import { PostCreatePage } from './pages/PostCreatePage'
 import { GroupListPage } from './pages/GroupListPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
@@ -54,6 +55,7 @@ function App() {
           <Route path="users" element={<AdminUserListPage />} />
           <Route path="groups" element={<AdminGroupsPage />} />
           <Route path="posts" element={<AdminPostListPage />} />
+          <Route path="images" element={<AdminImageListPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

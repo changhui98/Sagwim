@@ -1,12 +1,15 @@
 package com.peopleground.sagwim.comment.infrastructure.repository;
 
 import com.peopleground.sagwim.comment.domain.entity.Comment;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface CommentJpaRepository extends JpaRepository<Comment, Long> {
+
+    Optional<Comment> findByImageUrl(String imageUrl);
 
     /**
      * likeCount 원자적 증가. Entity 필드 ++ 대신 DB 레벨 UPDATE 로 Lost Update 방지.

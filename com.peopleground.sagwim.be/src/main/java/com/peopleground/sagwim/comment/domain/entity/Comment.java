@@ -83,6 +83,10 @@ public class Comment extends AuditingEntity {
         this.body = body;
     }
 
+    public void clearImageUrl() {
+        this.imageUrl = null;
+    }
+
     public boolean isReply() {
         return this.parent != null;
     }

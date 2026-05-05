@@ -6,6 +6,7 @@ import crownIcon from '../../assets/crown-svgrepo-com.svg'
 import usersIcon from '../../assets/users-svgrepo-com.svg'
 import groupIcon from '../../assets/heart-alt-svgrepo-com.svg'
 import clipboardIcon from '../../assets/clipboard-list-alt-svgrepo-com.svg'
+import pictureIcon from '../../assets/picture-svgrepo-com.svg'
 
 interface MenuItem {
   path: string
@@ -18,6 +19,7 @@ const MENU_ITEMS: readonly MenuItem[] = [
   { path: '/app/admin/users', label: '사용자 관리', icon: usersIcon },
   { path: '/app/admin/groups', label: '모임 관리', icon: groupIcon },
   { path: '/app/admin/posts', label: '게시글 관리', icon: clipboardIcon },
+  { path: '/app/admin/images', label: '이미지 관리', icon: pictureIcon },
 ] as const
 
 interface AdminSidebarProps {
