@@ -82,6 +82,19 @@ public class ContentController {
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
+    /**
+     * 게시글 단건 조회.
+     * GET /api/v1/contents/{contentId}
+     */
+    @GetMapping("/{contentId}")
+    public ResponseEntity<ContentResponse> getContent(
+        @PathVariable Long contentId,
+        @AuthenticationPrincipal CustomUser user
+    ) {
+        ContentResponse res = contentService.getContent(contentId, user);
+        return ResponseEntity.ok(res);
+    }
+
     @PostMapping
     public ResponseEntity<ContentCreateResponse> contentCreate(
         @RequestBody ContentCreateRequest req,
