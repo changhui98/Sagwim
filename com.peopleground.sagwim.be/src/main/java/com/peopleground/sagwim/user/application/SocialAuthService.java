@@ -2,6 +2,7 @@ package com.peopleground.sagwim.user.application;
 
 import com.peopleground.sagwim.global.exception.ApiErrorCode;
 import com.peopleground.sagwim.global.exception.AppException;
+import com.peopleground.sagwim.global.log.RegistrationLogger;
 import com.peopleground.sagwim.global.security.jwt.JwtTokenProvider;
 import com.peopleground.sagwim.user.application.port.OAuthClient;
 import com.peopleground.sagwim.user.application.port.OAuthUserProfile;
@@ -25,17 +26,20 @@ public class SocialAuthService {
     private final OAuthClient kakaoOAuthClient;
     private final OAuthClient googleOAuthClient;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RegistrationLogger registrationLogger;
 
     public SocialAuthService(
         UserRepository userRepository,
         @Qualifier("kakaoOAuthClient") OAuthClient kakaoOAuthClient,
         @Qualifier("googleOAuthClient") OAuthClient googleOAuthClient,
-        JwtTokenProvider jwtTokenProvider
+        JwtTokenProvider jwtTokenProvider,
+        RegistrationLogger registrationLogger
     ) {
         this.userRepository = userRepository;
         this.kakaoOAuthClient = kakaoOAuthClient;
         this.googleOAuthClient = googleOAuthClient;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.registrationLogger = registrationLogger;
     }
 
     @Transactional
@@ -105,6 +109,7 @@ public class SocialAuthService {
             profile.profileImageUrl()
         );
         User saved = userRepository.save(newUser);
+        registrationLogger.log(saved.getUsername(), email, provider.name());
         String jwtToken = jwtTokenProvider.createToken(saved.getId(), saved.getUsername(), saved.getRole());
         return new SocialSignInResponse(jwtToken, true, saved.getNickname());
     }

@@ -1,6 +1,7 @@
 package com.peopleground.sagwim.user.application;
 
 import com.peopleground.sagwim.global.exception.AppException;
+import com.peopleground.sagwim.global.log.RegistrationLogger;
 import com.peopleground.sagwim.global.redis.TokenBlacklistService;
 import com.peopleground.sagwim.global.security.jwt.JwtTokenProvider;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
@@ -22,6 +23,7 @@ public class AuthService {
     private final EmailVerificationService emailVerificationService;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenBlacklistService tokenBlacklistService;
+    private final RegistrationLogger registrationLogger;
 
     @Transactional
     public UserCreateResponse signUp(UserCreateRequest request) {
@@ -42,6 +44,7 @@ public class AuthService {
         User saveUser = userRepository.save(user);
 
         emailVerificationService.deletePreVerification(saveUser.getUserEmail());
+        registrationLogger.log(saveUser.getUsername(), saveUser.getUserEmail(), "LOCAL");
 
         return UserCreateResponse.from(saveUser);
     }

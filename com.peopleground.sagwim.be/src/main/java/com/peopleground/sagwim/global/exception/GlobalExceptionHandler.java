@@ -1,5 +1,6 @@
 package com.peopleground.sagwim.global.exception;
 
+import com.peopleground.sagwim.global.log.ErrorLogWriter;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -35,6 +36,7 @@ public class GlobalExceptionHandler {
             request.getMethod(), request.getRequestURI(),
             errorCode.getCode(), errorCode.getStatus(), errorCode.getMessage());
 
+        ErrorLogWriter.write(request, errorCode.getStatus());
         return ResponseEntity
             .status(errorCode.getStatus())
             .body(ErrorResponse.from(errorCode));
@@ -53,6 +55,7 @@ public class GlobalExceptionHandler {
         log.info("[Validation] {} {} -> {}",
             request.getMethod(), request.getRequestURI(), message);
 
+        ErrorLogWriter.write(request, HttpStatus.BAD_REQUEST.value());
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(new ErrorResponse("VALIDATION_ERROR", message, null));
@@ -92,6 +95,7 @@ public class GlobalExceptionHandler {
         log.error("[DataAccess] {} {} -> {}",
             request.getMethod(), request.getRequestURI(), e.getMessage(), e);
 
+        ErrorLogWriter.write(request, HttpStatus.INTERNAL_SERVER_ERROR.value());
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse.from(ApiErrorCode.INTERNAL_SERVER_ERROR));
@@ -103,6 +107,7 @@ public class GlobalExceptionHandler {
         log.error("[Unhandled] {} {} -> {}",
             request.getMethod(), request.getRequestURI(), e.getMessage(), e);
 
+        ErrorLogWriter.write(request, HttpStatus.INTERNAL_SERVER_ERROR.value());
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse.from(ApiErrorCode.INTERNAL_SERVER_ERROR));
