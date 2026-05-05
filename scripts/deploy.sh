@@ -164,6 +164,17 @@ deploy_backend() {
     # 들어오기 때문에, 아래처럼 리터럴 값을 직접 명시하는 것이 안전하다.
     local cors_origins="https://sagwim.com,https://www.sagwim.com,http://sagwim.com,http://www.sagwim.com,http://sagwim.duckdns.org"
 
+    # OAuth 환경변수는 .env 누락 시 빈 문자열로 폴백 (컨테이너 부팅은 통과,
+    # 실제 호출 시점에 OAUTH_PROVIDER_NOT_CONFIGURED 503 으로 명확히 에러 표시).
+    # --env-file 만으로는 .env 에 키 자체가 없으면 컨테이너 환경에 변수가 안 생기므로
+    # -e 플래그로 명시 주입하여 application.yaml 의 placeholder 가 항상 해결되게 한다.
+    if [[ -z "${KAKAO_CLIENT_ID:-}" ]]; then
+        log_warn "KAKAO_CLIENT_ID 가 .env 에 없습니다. 카카오 로그인이 동작하지 않습니다."
+    fi
+    if [[ -z "${GOOGLE_CLIENT_ID:-}" ]]; then
+        log_warn "GOOGLE_CLIENT_ID 가 .env 에 없습니다. 구글 로그인이 동작하지 않습니다."
+    fi
+
     docker run -d \
         --name "$green" \
         --network sagwim_sagwim-net \
@@ -175,6 +186,10 @@ deploy_backend() {
         -e IMAGE_UPLOAD_DIR=/app/uploads/images \
         -e IMAGE_URL_PREFIX="${IMAGE_URL_PREFIX:-/images}" \
         -e CORS_ALLOWED_ORIGINS="$cors_origins" \
+        -e KAKAO_CLIENT_ID="${KAKAO_CLIENT_ID:-}" \
+        -e KAKAO_CLIENT_SECRET="${KAKAO_CLIENT_SECRET:-}" \
+        -e GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID:-}" \
+        -e GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET:-}" \
         -v sagwim_uploads_data:/app/uploads \
         --health-cmd="wget -qO- http://localhost:8080/actuator/health || exit 1" \
         --health-interval=30s \
