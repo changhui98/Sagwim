@@ -85,10 +85,12 @@ app:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,https://sagwim.com,http://sagwim.com,http://sagwim.duckdns.org}
 
 ## 소셜 로그인 OAuth2
+## 환경변수 누락 시 빈 문자열로 폴백하여 컨테이너 부팅 실패를 방지하고,
+## OAuth 호출 시점에 OAUTH_PROVIDER_NOT_CONFIGURED(503) 로 명확히 에러를 반환한다.
 oauth2:
   kakao:
-    client-id: ${KAKAO_CLIENT_ID}
-    client-secret: ${KAKAO_CLIENT_SECRET}
+    client-id: ${KAKAO_CLIENT_ID:}
+    client-secret: ${KAKAO_CLIENT_SECRET:}
   google:
-    client-id: ${GOOGLE_CLIENT_ID}
-    client-secret: ${GOOGLE_CLIENT_SECRET}
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
