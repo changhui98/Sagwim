@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getMyPosts, getUserPosts } from '../../api/postApi'
 import { getContentImages } from '../../api/imageApi'
 import { ApiError } from '../../api/ApiError'
@@ -54,6 +55,11 @@ const readInitialViewMode = (): ViewMode => {
 export const MyPostsSection = forwardRef<MyPostsSectionHandle, MyPostsSectionProps>(
   function MyPostsSection({ username, isOwner = true, onUnauthorized }, ref) {
     const { token } = useAuth()
+    const navigate = useNavigate()
+
+    const handlePostClick = useCallback((postId: number) => {
+      navigate(`/app/posts/${postId}`)
+    }, [navigate])
 
     const [viewMode, setViewMode] = useState<ViewMode>(readInitialViewMode)
     const [posts, setPosts] = useState<ContentResponse[]>([])
@@ -240,6 +246,7 @@ export const MyPostsSection = forwardRef<MyPostsSectionHandle, MyPostsSectionPro
                 post={post}
                 firstImageUrl={postImageMeta[post.id]?.firstUrl ?? null}
                 imageCount={postImageMeta[post.id]?.count ?? 0}
+                onClick={handlePostClick}
               />
             ))}
           </div>
@@ -253,6 +260,7 @@ export const MyPostsSection = forwardRef<MyPostsSectionHandle, MyPostsSectionPro
               post={post}
               firstImageUrl={postImageMeta[post.id]?.firstUrl ?? null}
               imageCount={postImageMeta[post.id]?.count ?? 0}
+              onClick={handlePostClick}
             />
           ))}
         </div>
