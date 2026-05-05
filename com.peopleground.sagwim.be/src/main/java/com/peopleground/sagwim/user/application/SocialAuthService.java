@@ -2,6 +2,7 @@ package com.peopleground.sagwim.user.application;
 
 import com.peopleground.sagwim.global.exception.ApiErrorCode;
 import com.peopleground.sagwim.global.exception.AppException;
+import com.peopleground.sagwim.global.log.RegistrationLogger;
 import com.peopleground.sagwim.global.security.jwt.JwtTokenProvider;
 import com.peopleground.sagwim.user.application.port.OAuthClient;
 import com.peopleground.sagwim.user.application.port.OAuthUserProfile;
@@ -17,6 +18,8 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 public class SocialAuthService {
@@ -25,17 +28,20 @@ public class SocialAuthService {
     private final OAuthClient kakaoOAuthClient;
     private final OAuthClient googleOAuthClient;
     private final JwtTokenProvider jwtTokenProvider;
+    private final RegistrationLogger registrationLogger;
 
     public SocialAuthService(
         UserRepository userRepository,
         @Qualifier("kakaoOAuthClient") OAuthClient kakaoOAuthClient,
         @Qualifier("googleOAuthClient") OAuthClient googleOAuthClient,
-        JwtTokenProvider jwtTokenProvider
+        JwtTokenProvider jwtTokenProvider,
+        RegistrationLogger registrationLogger
     ) {
         this.userRepository = userRepository;
         this.kakaoOAuthClient = kakaoOAuthClient;
         this.googleOAuthClient = googleOAuthClient;
         this.jwtTokenProvider = jwtTokenProvider;
+        this.registrationLogger = registrationLogger;
     }
 
     @Transactional
@@ -106,6 +112,15 @@ public class SocialAuthService {
         );
         User saved = userRepository.save(newUser);
         String jwtToken = jwtTokenProvider.createToken(saved.getId(), saved.getUsername(), saved.getRole());
+        final String username = saved.getUsername();
+        final String finalEmail = email;
+        final String providerName = provider.name();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                registrationLogger.log(username, finalEmail, providerName);
+            }
+        });
         return new SocialSignInResponse(jwtToken, true, saved.getNickname());
     }
 

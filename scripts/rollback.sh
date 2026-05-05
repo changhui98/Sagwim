@@ -61,6 +61,7 @@ if [[ "$TARGET" == "be" ]]; then
         -e REDIS_HOST=sagwim-redis \
         -e IMAGE_UPLOAD_DIR=/app/uploads/images \
         -v sagwim_uploads_data:/app/uploads \
+        -v "${HOME}/sagwim/logs:/app/logs" \
         --restart unless-stopped \
         "$IMAGE"
 

@@ -191,6 +191,7 @@ deploy_backend() {
         -e GOOGLE_CLIENT_ID="${GOOGLE_CLIENT_ID:-}" \
         -e GOOGLE_CLIENT_SECRET="${GOOGLE_CLIENT_SECRET:-}" \
         -v sagwim_uploads_data:/app/uploads \
+        -v "${HOME}/sagwim/logs:/app/logs" \
         --health-cmd="wget -qO- http://localhost:8080/actuator/health || exit 1" \
         --health-interval=30s \
         --health-timeout=10s \

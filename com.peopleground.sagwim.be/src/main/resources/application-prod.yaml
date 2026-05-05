@@ -18,6 +18,11 @@ decorator:
     p6spy:
       enable-logging: off
 
+## 운영 로그 파일 디렉토리 (Docker 볼륨 마운트 경로)
+app:
+  log:
+    dir: /app/logs
+
 ## 운영 로그 레벨
 logging:
   level:

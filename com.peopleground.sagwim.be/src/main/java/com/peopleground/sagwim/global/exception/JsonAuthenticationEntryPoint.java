@@ -1,5 +1,6 @@
 package com.peopleground.sagwim.global.exception;
 
+import com.peopleground.sagwim.global.log.ErrorLogWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,6 +25,8 @@ public class JsonAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+
+        ErrorLogWriter.write(request, HttpServletResponse.SC_UNAUTHORIZED);
 
         ErrorResponse errorResponse = ErrorResponse.from(ApiErrorCode.UNAUTHORIZED);
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));

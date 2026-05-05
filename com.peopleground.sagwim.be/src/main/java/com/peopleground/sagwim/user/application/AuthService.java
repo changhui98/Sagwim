@@ -1,6 +1,7 @@
 package com.peopleground.sagwim.user.application;
 
 import com.peopleground.sagwim.global.exception.AppException;
+import com.peopleground.sagwim.global.log.RegistrationLogger;
 import com.peopleground.sagwim.global.redis.TokenBlacklistService;
 import com.peopleground.sagwim.global.security.jwt.JwtTokenProvider;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
@@ -12,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class AuthService {
     private final EmailVerificationService emailVerificationService;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenBlacklistService tokenBlacklistService;
+    private final RegistrationLogger registrationLogger;
 
     @Transactional
     public UserCreateResponse signUp(UserCreateRequest request) {
@@ -42,6 +46,14 @@ public class AuthService {
         User saveUser = userRepository.save(user);
 
         emailVerificationService.deletePreVerification(saveUser.getUserEmail());
+        final String savedUsername = saveUser.getUsername();
+        final String savedEmail = saveUser.getUserEmail();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                registrationLogger.log(savedUsername, savedEmail, "LOCAL");
+            }
+        });
 
         return UserCreateResponse.from(saveUser);
     }
