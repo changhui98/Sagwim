@@ -3,6 +3,7 @@ package com.peopleground.sagwim.image.infrastructure.storage;
 import com.peopleground.sagwim.image.application.port.ImageStorage;
 import com.peopleground.sagwim.image.domain.ImageErrorCode;
 import com.peopleground.sagwim.global.exception.AppException;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,6 +23,12 @@ public class LocalImageStorage implements ImageStorage {
         @Value("${app.image.upload-dir}") String uploadDir
     ) {
         this.uploadDir = uploadDir.endsWith("/") ? uploadDir : uploadDir + "/";
+    }
+
+    @PostConstruct
+    public void init() {
+        Path absolute = Paths.get(uploadDir).toAbsolutePath().normalize();
+        log.info("[LocalImageStorage] 이미지 저장 경로: {}", absolute);
     }
 
     @Override
