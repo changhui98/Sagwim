@@ -89,7 +89,6 @@ export function ProfilePage() {
         const uploaded = await uploadUserProfileImage(token, file, myProfile.id)
         const updated = await updateMyProfile(token, {
           nickname: myProfile.nickname,
-          userEmail: myProfile.userEmail,
           address: myProfile.address,
           currentPassword: '',
           newPassword: '',
