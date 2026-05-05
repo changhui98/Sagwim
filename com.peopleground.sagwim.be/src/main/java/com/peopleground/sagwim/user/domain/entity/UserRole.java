@@ -2,6 +2,7 @@ package com.peopleground.sagwim.user.domain.entity;
 
 public enum UserRole {
     USER("ROLE_USER"),
+    MANAGER("ROLE_MANAGER"),
     ADMIN("ROLE_ADMIN");
 
     private final String authority;
@@ -12,6 +13,10 @@ public enum UserRole {
 
     public boolean isAdmin() {
         return this == ADMIN;
+    }
+
+    public boolean isManagerOrAbove() {
+        return this == MANAGER || this == ADMIN;
     }
 
     public String getAuthority() {

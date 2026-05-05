@@ -1,6 +1,7 @@
-import type { PageResponse, UserDetailResponse, UserResponse } from '../types/user'
+import type { ChangeUserRoleRequest, PageResponse, UserDetailResponse, UserResponse } from '../types/user'
 import type { AdminContentResponse } from '../types/post'
 import type { MonthlyStatsResponse } from '../types/adminStats'
+import type { AdminImageResponse } from '../types/image'
 import { ApiError } from './ApiError'
 import { API_BASE_URL } from './config'
 
@@ -62,6 +63,26 @@ export const getAdminUserDetail = (
   return fetch(`${API_BASE_URL}/admin/users/${username}`, {
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<UserDetailResponse>(response))
+}
+
+export const changeUserRole = (
+  token: string,
+  username: string,
+  request: ChangeUserRoleRequest,
+): Promise<void> => {
+  return fetch(`${API_BASE_URL}/admin/users/${username}/role`, {
+    method: 'PATCH',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify(request),
+  }).then(async (response) => {
+    if (!response.ok) {
+      const text = await response.text()
+      throw new ApiError(
+        response.status,
+        text || `Request failed: ${response.status} ${response.statusText}`,
+      )
+    }
+  })
 }
 
 export const getAdminContents = (
@@ -153,4 +174,26 @@ export const getMonthlyGroupCreations = (
       headers: createAuthHeaders(token),
     },
   ).then((response) => parseResponse<MonthlyStatsResponse>(response))
+}
+
+export const getAdminImages = (
+  token: string,
+  page = 0,
+  size = 10,
+): Promise<PageResponse<AdminImageResponse>> => {
+  return fetch(`${API_BASE_URL}/admin/images?page=${page}&size=${size}`, {
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<PageResponse<AdminImageResponse>>(response))
+}
+
+export const deleteAdminImage = (token: string, imageId: number): Promise<void> => {
+  return fetch(`${API_BASE_URL}/admin/images/${imageId}`, {
+    method: 'DELETE',
+    headers: createAuthHeaders(token),
+  }).then(async (response) => {
+    if (!response.ok) {
+      const text = await response.text()
+      throw new ApiError(response.status, text || `Request failed: ${response.status}`)
+    }
+  })
 }

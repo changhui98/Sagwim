@@ -29,7 +29,7 @@ public class AdminController {
     private final AdminService adminService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<PageResponse<AdminContentResponse>> getAllContents(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
@@ -40,13 +40,13 @@ public class AdminController {
     }
 
     @GetMapping("/{contentId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<AdminContentResponse> getContent(@PathVariable Long contentId) {
         return ResponseEntity.status(HttpStatus.OK).body(adminService.getContent(contentId));
     }
 
     @PatchMapping("/{contentId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<AdminContentResponse> updateContent(
         @PathVariable Long contentId,
         @RequestBody @Valid AdminContentUpdateRequest req
@@ -55,7 +55,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/{contentId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> deleteContent(
         @PathVariable Long contentId,
         @AuthenticationPrincipal CustomUser adminUser
@@ -65,7 +65,7 @@ public class AdminController {
     }
 
     @PatchMapping("/{contentId}/restore")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<AdminContentResponse> restoreContent(@PathVariable Long contentId) {
         return ResponseEntity.status(HttpStatus.OK).body(adminService.restoreContent(contentId));
     }

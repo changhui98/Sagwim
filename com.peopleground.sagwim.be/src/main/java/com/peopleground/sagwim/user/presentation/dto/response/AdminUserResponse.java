@@ -2,6 +2,7 @@ package com.peopleground.sagwim.user.presentation.dto.response;
 
 import com.peopleground.sagwim.user.domain.entity.OAuthProvider;
 import com.peopleground.sagwim.user.domain.entity.User;
+import com.peopleground.sagwim.user.domain.entity.UserRole;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ public record AdminUserResponse(
     String address,
     String profileImageUrl,
     OAuthProvider provider,
+    UserRole role,
     boolean isDeleted,
     LocalDateTime createdDate,
     LocalDateTime modifiedDate
@@ -31,6 +33,7 @@ public record AdminUserResponse(
             user.getAddress(),
             resolvedProfileImageUrl,
             user.getProvider(),
+            user.getRole(),
             user.isDeleted(),
             user.getCreatedDate(),
             user.getLastModifiedDate()

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { deleteAdminUser, getAdminUsers } from '../../api/adminApi'
+import { changeUserRole, deleteAdminUser, getAdminUsers } from '../../api/adminApi'
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
@@ -9,15 +9,65 @@ import { ConfirmDialog } from '../../components/common/ConfirmDialog'
 import { SuccessDialog } from '../../components/common/SuccessDialog'
 import { getInitials } from '../../utils/stringUtils'
 import { formatDateTime } from '../../utils/dateUtils'
-import type { UserResponse } from '../../types/user'
+import type { UserResponse, UserRole } from '../../types/user'
 import styles from './AdminUserListPage.module.css'
 
 const PAGE_SIZE = 10
 const MAX_VISIBLE_PAGES = 5
 
+function RoleBadge({ role }: { role?: UserRole }) {
+  if (role === 'ADMIN') return <span className={styles.badgeRoleAdmin}>ADMIN</span>
+  if (role === 'MANAGER') return <span className={styles.badgeRoleManager}>MANAGER</span>
+  return <span className={styles.badgeRoleUser}>USER</span>
+}
+
+const ROLE_OPTIONS: UserRole[] = ['USER', 'MANAGER']
+
+function RoleToggle({
+  currentRole,
+  isChanging,
+  onRoleChange,
+}: {
+  currentRole: UserRole
+  isChanging: boolean
+  onRoleChange: (role: UserRole) => void
+}) {
+  return (
+    <div className={styles.roleToggleGroup}>
+      {ROLE_OPTIONS.map((role) => {
+        const isActive = currentRole === role
+        const activeClass =
+          role === 'MANAGER'
+            ? styles.roleToggleBtnActiveManager
+            : styles.roleToggleBtnActiveUser
+        return (
+          <button
+            key={role}
+            type="button"
+            disabled={isChanging}
+            className={[
+              styles.roleToggleBtn,
+              isActive ? activeClass : '',
+              isActive ? styles.roleToggleBtnActive : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            onClick={() => {
+              if (isActive) return
+              onRoleChange(role)
+            }}
+          >
+            {role}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 export function AdminUserListPage() {
   const navigate = useNavigate()
-  const { token, logout, meUsername, meProfileImageUrl } = useAuth()
+  const { token, logout, meUsername, meRole, meProfileImageUrl } = useAuth()
 
   const [users, setUsers] = useState<UserResponse[]>([])
   const [page, setPage] = useState(0)
@@ -29,6 +79,8 @@ export function AdminUserListPage() {
   const [deleteTarget, setDeleteTarget] = useState<UserResponse | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteSuccess, setDeleteSuccess] = useState(false)
+
+  const [roleChangingUsername, setRoleChangingUsername] = useState<string | null>(null)
 
   const handleUnauthorized = useCallback(
     (err: unknown) => {
@@ -91,6 +143,23 @@ export function AdminUserListPage() {
     }
   }
 
+  const handleRoleChange = async (user: UserResponse, newRole: UserRole) => {
+    if (roleChangingUsername) return
+    try {
+      setRoleChangingUsername(user.username)
+      await changeUserRole(token, user.username, { role: newRole })
+      setUsers((prev) =>
+        prev.map((u) => (u.username === user.username ? { ...u, role: newRole } : u)),
+      )
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '역할 변경 실패'
+      setError(message)
+      handleUnauthorized(err)
+    } finally {
+      setRoleChangingUsername(null)
+    }
+  }
+
   const getPageNumbers = (): number[] => {
     if (totalPages <= MAX_VISIBLE_PAGES) {
       return Array.from({ length: totalPages }, (_, i) => i)
@@ -124,6 +193,7 @@ export function AdminUserListPage() {
                     <th>아이디</th>
                     <th>이메일</th>
                     <th>가입 경로</th>
+                    <th>역할</th>
                     <th>가입일</th>
                     <th>수정일</th>
                     <th>상태</th>
@@ -133,13 +203,16 @@ export function AdminUserListPage() {
                 <tbody>
                   {users.length === 0 ? (
                     <tr className={styles.emptyRow}>
-                      <td colSpan={8}>등록된 사용자가 없습니다.</td>
+                      <td colSpan={9}>등록된 사용자가 없습니다.</td>
                     </tr>
                   ) : (
                     users.map((user) => {
                       const avatarSrc =
                         user.profileImageUrl?.trim() ||
                         (user.username === meUsername ? meProfileImageUrl?.trim() ?? '' : '')
+                      const isMyself = user.username === meUsername
+                      const isRoleChanging = roleChangingUsername === user.username
+                      const canChangeRole = meRole === 'ADMIN' && !isMyself && !user.isDeleted
                       return (
                       <tr key={user.id}>
                         <td>
@@ -173,6 +246,17 @@ export function AdminUserListPage() {
                             <span className={styles.badgeGoogle}>GOOGLE</span>
                           ) : (
                             <span className={styles.badgeLocal}>일반</span>
+                          )}
+                        </td>
+                        <td>
+                          {canChangeRole ? (
+                            <RoleToggle
+                              currentRole={user.role ?? 'USER'}
+                              isChanging={isRoleChanging}
+                              onRoleChange={(newRole) => handleRoleChange(user, newRole)}
+                            />
+                          ) : (
+                            <RoleBadge role={user.role} />
                           )}
                         </td>
                         <td className={styles.tableDate}>

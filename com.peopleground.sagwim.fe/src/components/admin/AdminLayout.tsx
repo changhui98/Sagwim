@@ -8,7 +8,12 @@ import { AdminSidebar } from './AdminSidebar'
 import type { UserDetailResponse } from '../../types/user'
 import styles from './AdminLayout.module.css'
 
-const ADMIN_ROLE = 'ADMIN'
+const ALLOWED_ROLES = ['ADMIN', 'MANAGER'] as const
+type AllowedRole = (typeof ALLOWED_ROLES)[number]
+
+function isAllowedRole(role: string): role is AllowedRole {
+  return (ALLOWED_ROLES as readonly string[]).includes(role)
+}
 
 export function AdminLayout() {
   const navigate = useNavigate()
@@ -33,7 +38,7 @@ export function AdminLayout() {
       try {
         setLoading(true)
         const response = await getMyProfile(token)
-        if (response.role !== ADMIN_ROLE) {
+        if (!isAllowedRole(response.role)) {
           setUnauthorized(true)
           return
         }

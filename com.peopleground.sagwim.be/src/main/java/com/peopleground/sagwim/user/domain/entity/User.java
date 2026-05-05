@@ -133,6 +133,10 @@ public class User extends BaseEntity {
         this.emailVerified = true;
     }
 
+    public void changeRole(UserRole newRole) {
+        this.role = newRole;
+    }
+
     public User updateUser
         (
             String nickname,
