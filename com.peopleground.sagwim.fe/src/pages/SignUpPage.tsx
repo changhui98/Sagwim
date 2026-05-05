@@ -1,16 +1,23 @@
 import { type FormEvent, useState, useRef, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { signUp, sendEmailVerification, verifyEmailCode, checkUsername } from '../api/authApi'
-import { socialSignIn } from '../api/socialAuthApi'
+import { socialSignIn, linkSocialAccount } from '../api/socialAuthApi'
+import { ApiError } from '../api/ApiError'
 import { PasswordInput } from '../components/PasswordInput'
 import { PasswordChecklist } from '../components/PasswordChecklist'
 import { SocialLoginButtons } from '../components/auth/SocialLoginButtons'
+import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { isPasswordValid, isConfirmPasswordValid } from '../utils/passwordRules'
 import { useAuth } from '../context/AuthContext'
 import styles from './SignUpPage.module.css'
 import { AlertDialog } from '../components/common/AlertDialog'
 
 const REDIRECT_URI = `${window.location.origin}/sign-up`
+
+const PROVIDER_LABEL: Record<string, string> = {
+  GOOGLE: '구글',
+  KAKAO: '카카오',
+}
 
 type SignUpField = 'username' | 'password' | 'nickname' | 'userEmail'
 
@@ -45,6 +52,11 @@ export function SignUpPage() {
   const [socialLoading, setSocialLoading] = useState(false)
   const [socialError, setSocialError] = useState('')
 
+  // 계정 연동 확인 다이얼로그 상태
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false)
+  const [linkLoading, setLinkLoading] = useState(false)
+  const pendingLinkRef = useRef<{ provider: string; code: string } | null>(null)
+
   // OAuth redirect callback 처리 (?code=...&state=KAKAO|GOOGLE)
   useEffect(() => {
     const params = new URLSearchParams(location.search)
@@ -64,7 +76,13 @@ export function SignUpPage() {
         login(jwtToken)
         navigate('/app', { replace: true })
       } catch (err) {
-        setSocialError(err instanceof Error ? err.message : '소셜 로그인에 실패했습니다.')
+        if (err instanceof ApiError && err.status === 409) {
+          // 동일 이메일로 가입된 계정 존재 → 연동 확인 다이얼로그 표시
+          pendingLinkRef.current = { provider, code }
+          setLinkDialogOpen(true)
+        } else {
+          setSocialError(err instanceof Error ? err.message : '소셜 로그인에 실패했습니다.')
+        }
       } finally {
         setSocialLoading(false)
       }
@@ -73,6 +91,31 @@ export function SignUpPage() {
     processSocialLogin()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search])
+
+  const handleLinkConfirm = async () => {
+    const pending = pendingLinkRef.current
+    if (!pending) return
+
+    try {
+      setLinkLoading(true)
+      setSocialError('')
+      const { token: jwtToken } = await linkSocialAccount(pending.provider, pending.code, REDIRECT_URI)
+      login(jwtToken)
+      setLinkDialogOpen(false)
+      navigate('/app', { replace: true })
+    } catch (err) {
+      setLinkDialogOpen(false)
+      setSocialError(err instanceof Error ? err.message : '계정 연동에 실패했습니다.')
+    } finally {
+      setLinkLoading(false)
+      pendingLinkRef.current = null
+    }
+  }
+
+  const handleLinkCancel = () => {
+    setLinkDialogOpen(false)
+    pendingLinkRef.current = null
+  }
 
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<SignUpField, string>>>({})
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -450,6 +493,17 @@ export function SignUpPage() {
       variant={usernameAlertVariant}
       message={usernameAlertMessage}
       onClose={() => setUsernameAlertOpen(false)}
+    />
+
+    <ConfirmDialog
+      isOpen={linkDialogOpen}
+      title="이미 가입된 계정이 있어요"
+      message={`이미 해당 이메일로 가입된 계정이 있습니다.\n${PROVIDER_LABEL[pendingLinkRef.current?.provider ?? ''] ?? '소셜'} 계정을 기존 계정에 연동하시겠습니까?`}
+      confirmLabel="연동하기"
+      cancelLabel="취소"
+      isLoading={linkLoading}
+      onConfirm={handleLinkConfirm}
+      onCancel={handleLinkCancel}
     />
     </>
   )
