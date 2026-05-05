@@ -114,8 +114,8 @@ services:
       - ./com.peopleground.sagwim.be:/app
       # Gradle 의존성 캐시 (컨테이너 재시작해도 재다운로드 안 함)
       - gradle_cache:/root/.gradle
-      # 이미지 업로드 디렉토리
-      - uploads_dev_data:/app/uploads
+      # 이미지 업로드 디렉토리 (호스트 폴더에 직접 마운트)
+      - ./com.peopleground.sagwim.be/uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -166,7 +166,6 @@ services:
 volumes:
   postgres_dev_data:
   redis_dev_data:
-  uploads_dev_data:
   gradle_cache:
   fe_node_modules:
 
