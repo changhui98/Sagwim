@@ -60,6 +60,20 @@ export const deleteComment = (
   })
 }
 
+// TODO: 백엔드 댓글 수정 API 연동 필요 (PATCH /contents/{contentId}/comments/{commentId})
+export const updateComment = (
+  token: string,
+  contentId: number,
+  commentId: number,
+  body: string,
+): Promise<CommentResponse> => {
+  return fetch(`${API_BASE_URL}/contents/${contentId}/comments/${commentId}`, {
+    method: 'PATCH',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify({ body }),
+  }).then((response) => parseResponse<CommentResponse>(response))
+}
+
 export const toggleCommentLike = (
   token: string,
   commentId: number,
