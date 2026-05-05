@@ -114,6 +114,16 @@ public class User extends BaseEntity {
         this.emailVerified = true;
     }
 
+    /**
+     * 기존 계정에 소셜 provider 정보를 연동한다.
+     * LOCAL 계정이 소셜 로그인을 처음 연동할 때 호출된다.
+     */
+    public void linkSocialProvider(OAuthProvider provider, String providerId) {
+        this.provider = provider;
+        this.providerId = providerId;
+        this.emailVerified = true;
+    }
+
     public User updateUser
         (
             String nickname,
