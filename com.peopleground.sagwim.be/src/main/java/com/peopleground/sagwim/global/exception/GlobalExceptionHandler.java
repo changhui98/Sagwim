@@ -95,7 +95,7 @@ public class GlobalExceptionHandler {
         log.error("[DataAccess] {} {} -> {}",
             request.getMethod(), request.getRequestURI(), e.getMessage(), e);
 
-        ErrorLogWriter.write(request, HttpStatus.INTERNAL_SERVER_ERROR.value());
+        ErrorLogWriter.write(request, HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse.from(ApiErrorCode.INTERNAL_SERVER_ERROR));
@@ -107,7 +107,7 @@ public class GlobalExceptionHandler {
         log.error("[Unhandled] {} {} -> {}",
             request.getMethod(), request.getRequestURI(), e.getMessage(), e);
 
-        ErrorLogWriter.write(request, HttpStatus.INTERNAL_SERVER_ERROR.value());
+        ErrorLogWriter.write(request, HttpStatus.INTERNAL_SERVER_ERROR.value(), e);
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse.from(ApiErrorCode.INTERNAL_SERVER_ERROR));

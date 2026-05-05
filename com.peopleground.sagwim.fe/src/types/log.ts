@@ -5,6 +5,7 @@ export interface ErrorLogEntry {
   status: number
   ip: string
   userId: string
+  stacktrace?: string
 }
 
 export interface RegistrationLogEntry {

@@ -260,3 +260,31 @@
   min-width: 80px;
   text-align: center;
 }
+
+.stacktraceRow td {
+  padding: 0;
+  background: var(--clr-surface-2);
+}
+
+.stacktracePre {
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: #ef4444;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+  border-top: 1px solid var(--clr-border);
+}
+
+.expandIcon {
+  font-size: 0.6rem;
+  margin-left: 4px;
+  color: var(--clr-text-muted);
+}
+
+.rowClickable {
+  cursor: pointer;
+}

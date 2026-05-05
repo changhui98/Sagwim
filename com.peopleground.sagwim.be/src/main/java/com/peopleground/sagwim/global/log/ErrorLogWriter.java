@@ -1,6 +1,8 @@
 package com.peopleground.sagwim.global.log;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +32,41 @@ public final class ErrorLogWriter {
             escape(userId)
         );
         errorLogger.info(json);
+    }
+
+    public static void write(HttpServletRequest request, int status, Throwable t) {
+        String ip = extractIp(request);
+        String userId = extractUserId();
+        String path = request.getRequestURI();
+        String query = request.getQueryString();
+        String fullPath = query != null ? path + "?" + query : path;
+
+        String json = String.format(
+            "{\"timestamp\":\"%s\",\"method\":\"%s\",\"path\":\"%s\",\"status\":%d,\"ip\":\"%s\",\"userId\":\"%s\",\"stacktrace\":\"%s\"}",
+            Instant.now(),
+            escape(request.getMethod()),
+            escape(fullPath),
+            status,
+            escape(ip),
+            escape(userId),
+            formatStackTrace(t)
+        );
+        errorLogger.info(json);
+    }
+
+    private static String formatStackTrace(Throwable t) {
+        if (t == null) return "";
+        StringWriter sw = new StringWriter();
+        t.printStackTrace(new PrintWriter(sw));
+        String[] lines = sw.toString().split("\n");
+        int limit = Math.min(lines.length, 20);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < limit; i++) {
+            if (i > 0) sb.append("\\n");
+            sb.append(escape(lines[i].stripTrailing()));
+        }
+        if (lines.length > 20) sb.append("\\n... (").append(lines.length - 20).append(" more lines)");
+        return sb.toString();
     }
 
     private static String extractIp(HttpServletRequest request) {

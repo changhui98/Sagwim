@@ -154,10 +154,18 @@ export function AdminLogPage() {
 }
 
 function ErrorLogTable({ logs }: { logs: LogPageResponse<ErrorLogEntry> | null }) {
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
+
   if (!logs) return null
   if (logs.content.length === 0) {
     return <p className={styles.empty}>에러 로그가 없습니다.</p>
   }
+
+  const handleRowClick = (i: number, entry: ErrorLogEntry) => {
+    if (!entry.stacktrace) return
+    setExpandedIndex(expandedIndex === i ? null : i)
+  }
+
   return (
     <div className={styles.tableWrap}>
       <div className={styles.totalCount}>총 {logs.totalElements.toLocaleString()}건</div>
@@ -174,20 +182,38 @@ function ErrorLogTable({ logs }: { logs: LogPageResponse<ErrorLogEntry> | null }
         </thead>
         <tbody>
           {logs.content.map((entry, i) => (
-            <tr key={i}>
-              <td className={styles.cellTime}>{formatDateTime(entry.timestamp)}</td>
-              <td>
-                <span className={styles.methodBadge}>{entry.method}</span>
-              </td>
-              <td className={styles.cellPath} title={entry.path}>
-                {entry.path}
-              </td>
-              <td>
-                <span className={statusBadgeClass(entry.status)}>{entry.status}</span>
-              </td>
-              <td className={styles.cellMono}>{entry.ip}</td>
-              <td className={styles.cellMono}>{entry.userId}</td>
-            </tr>
+            <>
+              <tr
+                key={i}
+                className={entry.stacktrace ? styles.rowClickable : undefined}
+                onClick={() => handleRowClick(i, entry)}
+              >
+                <td className={styles.cellTime}>{formatDateTime(entry.timestamp)}</td>
+                <td>
+                  <span className={styles.methodBadge}>{entry.method}</span>
+                </td>
+                <td className={styles.cellPath} title={entry.path}>
+                  {entry.path}
+                </td>
+                <td>
+                  <span className={statusBadgeClass(entry.status)}>{entry.status}</span>
+                  {entry.stacktrace && (
+                    <span className={styles.expandIcon}>
+                      {expandedIndex === i ? '▼' : '▶'}
+                    </span>
+                  )}
+                </td>
+                <td className={styles.cellMono}>{entry.ip}</td>
+                <td className={styles.cellMono}>{entry.userId}</td>
+              </tr>
+              {entry.stacktrace && expandedIndex === i && (
+                <tr key={`${i}-stacktrace`} className={styles.stacktraceRow}>
+                  <td colSpan={6}>
+                    <pre className={styles.stacktracePre}>{entry.stacktrace}</pre>
+                  </td>
+                </tr>
+              )}
+            </>
           ))}
         </tbody>
       </table>
