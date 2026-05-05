@@ -247,6 +247,89 @@
   white-space: nowrap;
 }
 
+/* ── 알림 ──────────────────────────────────────────────────── */
+.notificationToolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.markAllButton {
+  font-size: 0.8125rem;
+  color: var(--clr-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.markAllButton:hover:not(:disabled) {
+  background: var(--clr-accent-muted);
+}
+
+.markAllButton:disabled {
+  color: var(--clr-text-muted);
+  cursor: not-allowed;
+}
+
+.notificationItem {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-2);
+  background: transparent;
+  border: none;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--t-fast);
+  position: relative;
+}
+
+.notificationItem:hover {
+  background: var(--clr-accent-muted);
+}
+
+.notificationItemUnread {
+  background: var(--clr-accent-muted);
+}
+
+.notificationMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.notificationMessage {
+  font-size: 0.9375rem;
+  color: var(--clr-text);
+  margin: 0;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.notificationMessage strong {
+  font-weight: 600;
+}
+
+.notificationTime {
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+}
+
+.unreadDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent);
+}
+
 /* ============================================================
    Mobile (≤640px) — 하단 바 레이아웃에서는 패널 숨김
    ============================================================ */

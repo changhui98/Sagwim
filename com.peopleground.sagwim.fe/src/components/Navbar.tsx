@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -13,6 +14,7 @@ import { useAuth } from '../context/AuthContext'
 import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
 import { GroupCreateModal } from './group/GroupCreateModal'
 import { SidePanel, type SidePanelType } from './SidePanel'
+import { getUnreadCount } from '../api/notificationApi'
 import {
   ActivityIcon,
   AlertIcon,
@@ -49,7 +51,7 @@ interface NavItem {
 }
 
 export function Navbar({ role, onLogout }: NavbarProps) {
-  const { meRole, meProfileImageUrl } = useAuth()
+  const { meRole, meProfileImageUrl, token, isAuthenticated } = useAuth()
   const effectiveRole = role ?? meRole ?? null
   const isAdmin = effectiveRole === ADMIN_ROLE
   const location = useLocation()
@@ -62,6 +64,49 @@ export function Navbar({ role, onLogout }: NavbarProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const [createFlow, setCreateFlow] = useState<'idle' | 'selecting' | 'group'>('idle')
   const [activePanel, setActivePanel] = useState<SidePanelType | null>(null)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  /**
+   * 미읽음 알림 수 갱신.
+   * - 인증된 상태에서만 호출 (로그아웃 후 401 호출 회피).
+   * - 실패 시 사용자에게 노출하지 않고 조용히 무시 (배지 0 유지).
+   * - 60초 폴링: 새 탭/세션의 알림을 너무 자주 호출하지 않으면서도 실시간성을 유지하는 절충값.
+   */
+  const refreshUnreadCount = useCallback(async () => {
+    if (!isAuthenticated || !token) return
+    try {
+      const res = await getUnreadCount(token)
+      setUnreadCount(res.count)
+    } catch {
+      // 네트워크/인증 오류 시 배지를 변경하지 않는다 — UX 깜빡임 방지.
+    }
+  }, [isAuthenticated, token])
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+    // 첫 호출도 setInterval 과 동일하게 다음 tick 으로 미뤄, effect 본문에서 직접 동기적으로
+    // setState 가 발생하는 것으로 정적 분석되는 패턴(react-hooks/set-state-in-effect)을 회피한다.
+    const initialId = window.setTimeout(() => {
+      if (!cancelled) void refreshUnreadCount()
+    }, 0)
+    const intervalId = window.setInterval(() => {
+      if (!cancelled) void refreshUnreadCount()
+    }, 60_000)
+    return () => {
+      cancelled = true
+      window.clearTimeout(initialId)
+      window.clearInterval(intervalId)
+    }
+  }, [isAuthenticated, refreshUnreadCount])
+
+  // 비로그인 상태에서는 배지를 노출하지 않는다.
+  // 별도 setState 로 리셋하지 않고 derived value 로 처리하면 effect 내부 setState 가 사라져
+  // cascading re-render 를 회피할 수 있다 (react-hooks/set-state-in-effect 규칙 준수).
+  const visibleUnreadCount = useMemo(
+    () => (isAuthenticated ? unreadCount : 0),
+    [isAuthenticated, unreadCount],
+  )
 
   const togglePanel = useCallback((panel: SidePanelType) => {
     setActivePanel((prev) => (prev === panel ? null : panel))
@@ -136,8 +181,24 @@ export function Navbar({ role, onLogout }: NavbarProps) {
     },
     {
       label: '알림',
-      icon: <IdeaIcon />,
-      onClick: () => togglePanel('notifications'),
+      icon: (
+        <span className={styles.navIconWrap}>
+          <IdeaIcon />
+          {visibleUnreadCount > 0 && (
+            <span
+              className={styles.unreadBadge}
+              aria-label={`읽지 않은 알림 ${visibleUnreadCount}건`}
+            >
+              {visibleUnreadCount > 99 ? '99+' : visibleUnreadCount}
+            </span>
+          )}
+        </span>
+      ),
+      onClick: () => {
+        togglePanel('notifications')
+        // 알림 패널이 열리는 시점에 최신 카운트를 한 번 더 확인 (60초 폴링 사이의 갭 보완)
+        void refreshUnreadCount()
+      },
       match: () => activePanel === 'notifications',
     },
   ]
@@ -351,7 +412,11 @@ export function Navbar({ role, onLogout }: NavbarProps) {
         onCreated={(groupId) => { setCreateFlow('idle'); navigate(`/app/groups/${groupId}`) }}
       />
     </aside>
-    <SidePanel type={activePanel} onClose={closePanel} />
+    <SidePanel
+      type={activePanel}
+      onClose={closePanel}
+      onNotificationsChange={() => { void refreshUnreadCount() }}
+    />
     </>
   )
 }

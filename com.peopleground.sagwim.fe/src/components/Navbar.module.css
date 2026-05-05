@@ -130,6 +130,30 @@
   background: var(--clr-surface-2);
 }
 
+.navIconWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.unreadBadge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--r-full);
+  background: var(--clr-error, #ef4444);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 2px var(--clr-bg);
+  pointer-events: none;
+}
+
 .navAvatarImg {
   width: 100%;
   height: 100%;
