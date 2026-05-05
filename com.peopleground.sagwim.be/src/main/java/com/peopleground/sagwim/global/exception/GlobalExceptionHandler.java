@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
             request.getMethod(), request.getRequestURI(),
             errorCode.getCode(), errorCode.getStatus(), errorCode.getMessage());
 
-        ErrorLogWriter.write(request, errorCode.getStatus());
+        ErrorLogWriter.write(request, errorCode.getStatus().value());
         return ResponseEntity
             .status(errorCode.getStatus())
             .body(ErrorResponse.from(errorCode));
