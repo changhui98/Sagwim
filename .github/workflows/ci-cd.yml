@@ -166,6 +166,9 @@ jobs:
           tags: |
             sagwim-frontend:${{ steps.tag.outputs.tag }}
             sagwim-frontend:latest
+          build-args: |
+            VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+            VITE_KAKAO_CLIENT_ID=${{ secrets.VITE_KAKAO_CLIENT_ID }}
           outputs: type=docker,dest=${{ github.workspace }}/sagwim-frontend.tar
           cache-from: type=gha
           cache-to: type=gha,mode=max
