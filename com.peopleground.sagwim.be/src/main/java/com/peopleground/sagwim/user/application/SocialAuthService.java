@@ -68,8 +68,7 @@ public class SocialAuthService {
             profile.providerId(),
             profile.nickname(),
             email,
-            profile.profileImageUrl(),
-            ""
+            profile.profileImageUrl()
         );
         User saved = userRepository.save(newUser);
         String jwtToken = jwtTokenProvider.createToken(saved.getId(), saved.getUsername(), saved.getRole());
