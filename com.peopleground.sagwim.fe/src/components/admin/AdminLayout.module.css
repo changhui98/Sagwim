@@ -12,10 +12,8 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  background: color-mix(in srgb, var(--clr-surface) 85%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--clr-border);
+  background: transparent;
+  border-bottom: 1px solid var(--clr-border-strong);
   padding: 0 var(--sp-6);
   height: 60px;
   display: flex;

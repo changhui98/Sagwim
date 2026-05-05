@@ -5,8 +5,8 @@
   flex-shrink: 0;
   height: 100%;
   overflow-y: auto;
-  background: var(--clr-surface);
-  border-right: 1px solid var(--clr-border);
+  background: transparent;
+  border-right: 1px solid var(--clr-border-strong);
   display: flex;
   flex-direction: column;
 }
@@ -94,7 +94,7 @@
 }
 
 .menuItem:hover {
-  background: var(--clr-surface-2);
+  background: var(--clr-border);
   color: var(--clr-text);
 }
 
