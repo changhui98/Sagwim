@@ -59,4 +59,9 @@ public class CommentRepositoryImpl implements CommentRepository {
     public Integer findLikeCountById(Long id) {
         return commentJpaRepository.findLikeCountById(id);
     }
+
+    @Override
+    public Optional<Comment> findByImageUrl(String imageUrl) {
+        return commentJpaRepository.findByImageUrl(imageUrl);
+    }
 }
