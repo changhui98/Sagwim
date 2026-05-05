@@ -4,8 +4,11 @@ import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.group.domain.GroupErrorCode;
 import com.peopleground.sagwim.group.domain.entity.Group;
+import com.peopleground.sagwim.group.domain.entity.GroupMember;
 import com.peopleground.sagwim.group.domain.repository.GroupMemberRepository;
 import com.peopleground.sagwim.group.domain.repository.GroupRepository;
+import com.peopleground.sagwim.notification.application.service.NotificationService;
+import com.peopleground.sagwim.notification.domain.entity.NotificationType;
 import com.peopleground.sagwim.schedule.domain.ScheduleErrorCode;
 import com.peopleground.sagwim.schedule.domain.entity.Schedule;
 import com.peopleground.sagwim.schedule.domain.repository.ScheduleRepository;
@@ -27,6 +30,7 @@ public class ScheduleService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ScheduleResponse createSchedule(Long groupId, ScheduleCreateRequest request, CustomUser customUser) {
@@ -53,6 +57,25 @@ public class ScheduleService {
         );
 
         Schedule saved = scheduleRepository.save(schedule);
+
+        // 모임 일정 등록 알림: 일정 등록자를 제외한 전체 모임원에게 발행한다.
+        // 모임 인원이 그리 크지 않다는 가정 하에 단순 루프로 N건의 INSERT 를 처리한다.
+        // 향후 인원이 매우 커지면 batch insert / 비동기 처리로 전환을 검토한다.
+        List<GroupMember> members = groupMemberRepository.findByGroupId(groupId);
+        for (GroupMember member : members) {
+            User recipient = member.getUser();
+            if (recipient.getId().equals(createdByUser.getId())) {
+                continue;
+            }
+            notificationService.notify(
+                recipient,
+                NotificationType.MEETING_SCHEDULE_ADDED,
+                createdByUser,
+                group.getId(),
+                group.getName()
+            );
+        }
+
         return ScheduleResponse.from(saved);
     }
 
