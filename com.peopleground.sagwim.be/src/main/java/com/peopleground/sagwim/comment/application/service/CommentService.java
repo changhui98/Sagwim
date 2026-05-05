@@ -53,7 +53,7 @@ public class CommentService {
      */
     @Transactional(readOnly = true)
     public CommentListResponse getComments(Long contentId, Long cursorId, int size, UUID currentUserId) {
-        getActiveContent(contentId);
+        Content content = getActiveContent(contentId);
 
         List<Comment> fetched = commentRepository.findTopCommentsByContentId(contentId, cursorId, size + 1);
 
@@ -70,18 +70,41 @@ public class CommentService {
             .toList();
         List<Long> allCommentIds = Stream.concat(parentIds.stream(), replyIds.stream()).toList();
 
+        // 현재 로그인 사용자의 좋아요 목록
         Set<Long> likedIds = (currentUserId != null && !allCommentIds.isEmpty())
             ? commentLikeRepository.findLikedCommentIdsByUserIdAndCommentIds(currentUserId, allCommentIds)
             : Collections.emptySet();
+
+        // 게시글 작성자의 좋아요 목록 (게시글 작성자 == 현재 사용자이면 재사용, 아니면 별도 배치 조회)
+        UUID postAuthorId = content.getUser().getId();
+        Set<Long> likedByPostAuthorIds;
+        if (allCommentIds.isEmpty()) {
+            likedByPostAuthorIds = Collections.emptySet();
+        } else if (postAuthorId.equals(currentUserId)) {
+            likedByPostAuthorIds = likedIds;
+        } else {
+            likedByPostAuthorIds = commentLikeRepository.findLikedCommentIdsByUserIdAndCommentIds(
+                postAuthorId, allCommentIds
+            );
+        }
 
         List<CommentResponse> commentResponses = topComments.stream()
             .map(comment -> {
                 List<CommentResponse> replies = repliesByParent
                     .getOrDefault(comment.getId(), List.of())
                     .stream()
-                    .map(reply -> CommentResponse.from(reply, likedIds.contains(reply.getId())))
+                    .map(reply -> CommentResponse.from(
+                        reply,
+                        likedIds.contains(reply.getId()),
+                        likedByPostAuthorIds.contains(reply.getId())
+                    ))
                     .toList();
-                return CommentResponse.from(comment, replies, likedIds.contains(comment.getId()));
+                return CommentResponse.from(
+                    comment,
+                    replies,
+                    likedIds.contains(comment.getId()),
+                    likedByPostAuthorIds.contains(comment.getId())
+                );
             })
             .toList();
 

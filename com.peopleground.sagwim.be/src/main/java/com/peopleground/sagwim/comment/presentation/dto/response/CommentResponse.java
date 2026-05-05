@@ -12,6 +12,7 @@ public record CommentResponse(
     String body,
     int likeCount,
     boolean likedByMe,
+    boolean likedByPostAuthor,
     boolean deleted,
     String imageUrl,
     LocalDateTime createdAt,
@@ -24,7 +25,12 @@ public record CommentResponse(
     /**
      * 최상위 댓글 변환 (대댓글 포함)
      */
-    public static CommentResponse from(Comment comment, List<CommentResponse> replies, boolean likedByMe) {
+    public static CommentResponse from(
+        Comment comment,
+        List<CommentResponse> replies,
+        boolean likedByMe,
+        boolean likedByPostAuthor
+    ) {
         boolean isDeleted = comment.isDeleted();
         return new CommentResponse(
             comment.getId(),
@@ -34,6 +40,7 @@ public record CommentResponse(
             isDeleted ? DELETED_BODY : comment.getBody(),
             isDeleted ? 0 : comment.getLikeCount(),
             isDeleted ? false : likedByMe,
+            isDeleted ? false : likedByPostAuthor,
             isDeleted,
             isDeleted ? null : comment.getImageUrl(),
             comment.getCreatedDate(),
@@ -45,7 +52,7 @@ public record CommentResponse(
     /**
      * 대댓글 변환 (replies 없음)
      */
-    public static CommentResponse from(Comment comment, boolean likedByMe) {
+    public static CommentResponse from(Comment comment, boolean likedByMe, boolean likedByPostAuthor) {
         boolean isDeleted = comment.isDeleted();
         return new CommentResponse(
             comment.getId(),
@@ -55,6 +62,7 @@ public record CommentResponse(
             isDeleted ? DELETED_BODY : comment.getBody(),
             isDeleted ? 0 : comment.getLikeCount(),
             isDeleted ? false : likedByMe,
+            isDeleted ? false : likedByPostAuthor,
             isDeleted,
             isDeleted ? null : comment.getImageUrl(),
             comment.getCreatedDate(),
@@ -64,9 +72,9 @@ public record CommentResponse(
     }
 
     /**
-     * 비로그인 또는 likedByMe 정보 없이 변환 (댓글 작성/수정 응답 등 단건 반환 시 사용)
+     * 비로그인 또는 likedByMe·likedByPostAuthor 정보 없이 변환 (댓글 작성/수정 응답 등 단건 반환 시 사용)
      */
     public static CommentResponse from(Comment comment) {
-        return from(comment, false);
+        return from(comment, false, false);
     }
 }
