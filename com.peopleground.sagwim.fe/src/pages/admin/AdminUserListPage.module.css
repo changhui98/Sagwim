@@ -17,7 +17,7 @@
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--clr-text-secondary);
-  background: var(--clr-surface);
+  background: transparent;
   border: 1px solid var(--clr-border-strong);
   padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-md);
@@ -35,10 +35,9 @@
 }
 
 .tableCard {
-  background: var(--clr-surface);
-  border: 1px solid var(--clr-border);
+  background: transparent;
+  border: 1px solid var(--clr-border-strong);
   border-radius: var(--r-xl);
-  box-shadow: var(--shadow-card);
   overflow: hidden;
   position: relative;
 }
@@ -57,10 +56,10 @@
   text-align: left;
   padding: var(--sp-3) var(--sp-4);
   font-weight: 600;
-  color: #4a1f2a;
+  color: var(--clr-text-secondary);
   border-bottom: 1px solid var(--clr-border);
   font-size: 0.8125rem;
-  background: #ffb6c1;
+  background: var(--clr-accent-muted);
 }
 
 .table td {
@@ -169,6 +168,96 @@
   cursor: not-allowed;
 }
 
+/* ── 역할 뱃지 ── */
+.badgeRoleAdmin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.badgeRoleManager {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  background: #ffedd5;
+  color: #9a3412;
+  border: 1px solid #fdba74;
+}
+
+.badgeRoleUser {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  background: var(--clr-surface-2, #f3f4f6);
+  color: var(--clr-text-secondary, #6b7280);
+  border: 1px solid var(--clr-border, #e5e7eb);
+}
+
+/* ── 역할 pill 토글 ── */
+.roleToggleGroup {
+  display: inline-flex;
+  border: 1px solid var(--clr-border-strong);
+  border-radius: var(--r-full);
+  overflow: hidden;
+  background: var(--clr-surface-2);
+}
+
+.roleToggleGroup:has(button:disabled) {
+  opacity: 0.55;
+}
+
+.roleToggleBtn {
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--clr-text-muted);
+  transition: background var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+}
+
+.roleToggleBtn:hover:not(:disabled) {
+  background: var(--clr-surface-3);
+  color: var(--clr-text-secondary);
+}
+
+.roleToggleBtnActive {
+  cursor: default;
+}
+
+.roleToggleBtnActiveUser.roleToggleBtnActive {
+  background: var(--clr-surface-3);
+  color: var(--clr-text);
+}
+
+.roleToggleBtnActiveManager.roleToggleBtnActive {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+[data-theme="dark"] .roleToggleBtnActiveManager.roleToggleBtnActive {
+  background: rgba(154, 52, 18, 0.3);
+  color: #fdba74;
+}
+
 .emptyRow td {
   text-align: center;
   color: var(--clr-text-muted);
@@ -192,9 +281,9 @@
   min-width: 36px;
   height: 36px;
   padding: 0 var(--sp-2);
-  border: 1px solid var(--clr-border);
+  border: 1px solid var(--clr-border-strong);
   border-radius: var(--r-md);
-  background: var(--clr-surface);
+  background: transparent;
   color: var(--clr-text-secondary);
   font-size: 0.875rem;
   font-weight: 600;

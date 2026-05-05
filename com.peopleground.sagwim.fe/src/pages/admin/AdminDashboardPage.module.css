@@ -38,11 +38,10 @@
 }
 
 .sectionCard {
-  background: var(--clr-surface);
-  border: 1px solid var(--clr-border);
+  background: transparent;
+  border: 1px solid var(--clr-border-strong);
   border-radius: var(--r-xl);
   padding: var(--sp-6);
-  box-shadow: var(--shadow-card);
 }
 
 .sectionTitle {
