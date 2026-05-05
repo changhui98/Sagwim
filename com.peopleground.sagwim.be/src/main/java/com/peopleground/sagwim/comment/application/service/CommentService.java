@@ -13,6 +13,8 @@ import com.peopleground.sagwim.content.domain.repository.ContentRepository;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.like.domain.repository.CommentLikeRepository;
+import com.peopleground.sagwim.notification.application.service.NotificationService;
+import com.peopleground.sagwim.notification.domain.entity.NotificationType;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.entity.UserRole;
@@ -35,6 +37,7 @@ public class CommentService {
     private final ContentRepository contentRepository;
     private final UserRepository userRepository;
     private final CommentLikeRepository commentLikeRepository;
+    private final NotificationService notificationService;
 
     /**
      * 게시글의 댓글 목록을 커서 기반 페이지네이션으로 조회한다.
@@ -122,6 +125,18 @@ public class CommentService {
         Comment comment = commentRepository.save(Comment.of(content, author, req.body(), req.imageUrl()));
         contentRepository.incrementCommentCount(contentId);
 
+        // 게시글 작성자에게 알림. 본인이 본인 게시글에 댓글을 달았다면 알림 발행 대상이 아니다.
+        User postAuthor = content.getUser();
+        if (!postAuthor.getId().equals(author.getId())) {
+            notificationService.notify(
+                postAuthor,
+                NotificationType.COMMENT_ADDED,
+                author,
+                content.getId(),
+                summarizeContentBody(content.getBody())
+            );
+        }
+
         return CommentResponse.from(comment);
     }
 
@@ -148,7 +163,33 @@ public class CommentService {
         Comment reply = commentRepository.save(Comment.ofReply(content, parentComment, author, req.body(), req.imageUrl()));
         contentRepository.incrementCommentCount(contentId);
 
+        // 대댓글도 게시글 작성자에게 알림. 본인이 본인 게시글에 대댓글을 달았다면 알림 발행 대상이 아니다.
+        User postAuthor = content.getUser();
+        if (!postAuthor.getId().equals(author.getId())) {
+            notificationService.notify(
+                postAuthor,
+                NotificationType.COMMENT_ADDED,
+                author,
+                content.getId(),
+                summarizeContentBody(content.getBody())
+            );
+        }
+
         return CommentResponse.from(reply);
+    }
+
+    /**
+     * 알림 targetTitle 용 게시글 본문 요약. 게시글에 별도 제목 컬럼이 없어 본문 앞부분을 잘라 사용한다.
+     */
+    private String summarizeContentBody(String body) {
+        if (body == null) {
+            return null;
+        }
+        String trimmed = body.strip();
+        if (trimmed.length() <= 30) {
+            return trimmed;
+        }
+        return trimmed.substring(0, 30) + "…";
     }
 
     /**

@@ -20,6 +20,8 @@ import com.peopleground.sagwim.like.domain.repository.GroupLikeRepository;
 import com.peopleground.sagwim.like.presentation.dto.response.GroupLikerResponse;
 import com.peopleground.sagwim.like.presentation.dto.response.LikeStatusResponse;
 import com.peopleground.sagwim.like.presentation.dto.response.LikeToggleResponse;
+import com.peopleground.sagwim.notification.application.service.NotificationService;
+import com.peopleground.sagwim.notification.domain.entity.NotificationType;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
@@ -42,6 +44,7 @@ public class LikeService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final ImageUrlResolver imageUrlResolver;
+    private final NotificationService notificationService;
 
     /**
      * 게시글 좋아요 토글.
@@ -73,8 +76,35 @@ public class LikeService {
         int inserted = contentLikeRepository.insertIfNotExists(content.getId(), user.getId());
         if (inserted == 1) {
             contentRepository.incrementLikeCount(contentId);
+            // 자기 자신의 게시글에 좋아요는 알림 발행 대상이 아니다.
+            // 새로 좋아요가 등록된 경우(inserted == 1)에만 알림을 발행해 중복 알림을 방지한다.
+            User postAuthor = content.getUser();
+            if (!postAuthor.getId().equals(user.getId())) {
+                notificationService.notify(
+                    postAuthor,
+                    NotificationType.CONTENT_LIKED,
+                    user,
+                    content.getId(),
+                    summarizeContentBody(content.getBody())
+                );
+            }
         }
         return LikeToggleResponse.liked(currentContentLikeCount(contentId));
+    }
+
+    /**
+     * 알림의 targetTitle 로 사용할 게시글 본문 요약. 게시글에는 별도 제목이 없어
+     * 본문 앞부분을 잘라 미리보기로 보여준다.
+     */
+    private String summarizeContentBody(String body) {
+        if (body == null) {
+            return null;
+        }
+        String trimmed = body.strip();
+        if (trimmed.length() <= 30) {
+            return trimmed;
+        }
+        return trimmed.substring(0, 30) + "…";
     }
 
     /**
