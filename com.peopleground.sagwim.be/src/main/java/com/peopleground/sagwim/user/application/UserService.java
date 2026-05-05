@@ -103,12 +103,12 @@ public class UserService {
 
         String nickname = (req.nickname() != null && !req.nickname().isBlank())
             ? req.nickname() : user.getNickname();
-        String userEmail = (req.userEmail() != null && !req.userEmail().isBlank())
-            ? req.userEmail() : user.getUserEmail();
         String profileImageUrl = req.profileImageUrl() != null
             ? req.profileImageUrl() : user.getProfileImageUrl();
 
-        User updateUser = user.updateUser(nickname, userEmail, address, location, encodedNewPassword);
+        // 이메일은 별도 인증 플로우(/users/me/email/verify-*)로만 변경 가능하다.
+        // 인증되지 않은 자기 이메일 변경을 차단하기 위해 기존 이메일을 그대로 유지한다.
+        User updateUser = user.updateUser(nickname, user.getUserEmail(), address, location, encodedNewPassword);
         updateUser.updateProfileImageUrl(profileImageUrl);
 
         User saveUser = userRepository.updateProfile(updateUser);

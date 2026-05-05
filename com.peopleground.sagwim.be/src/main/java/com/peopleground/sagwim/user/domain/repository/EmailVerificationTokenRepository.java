@@ -8,6 +8,8 @@ public interface EmailVerificationTokenRepository {
 
     Optional<EmailVerificationToken> findByUserEmail(String email);
 
+    Optional<EmailVerificationToken> findByUser(User user);
+
     void deleteByUser(User user);
 
     EmailVerificationToken save(EmailVerificationToken token);

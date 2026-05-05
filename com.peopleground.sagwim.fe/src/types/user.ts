@@ -37,9 +37,17 @@ export interface PageResponse<T> {
 
 export interface UserUpdateRequest {
   nickname: string
-  userEmail: string
   address: string
   currentPassword: string
   newPassword: string
   profileImageUrl?: string | null
+}
+
+export interface EmailChangeRequest {
+  newEmail: string
+}
+
+export interface EmailChangeConfirmRequest {
+  newEmail: string
+  code: string
 }

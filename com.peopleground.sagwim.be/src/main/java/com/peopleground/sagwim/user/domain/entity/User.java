@@ -115,6 +115,15 @@ public class User extends BaseEntity {
     }
 
     /**
+     * 인증 코드 검증을 마친 새 이메일로 변경한다.
+     * 변경 즉시 emailVerified = true 로 보장한다 (코드 발송 단계에서 소유 증명 완료).
+     */
+    public void changeVerifiedEmail(String newEmail) {
+        this.userEmail = newEmail;
+        this.emailVerified = true;
+    }
+
+    /**
      * 기존 계정에 소셜 provider 정보를 연동한다.
      * LOCAL 계정이 소셜 로그인을 처음 연동할 때 호출된다.
      */
