@@ -117,7 +117,6 @@ export function LoginPage() {
       setAddressSaving(true)
       await updateMyProfile(token, {
         nickname: data.nickname,
-        userEmail: '',
         address: data.address,
         currentPassword: '',
         newPassword: '',
