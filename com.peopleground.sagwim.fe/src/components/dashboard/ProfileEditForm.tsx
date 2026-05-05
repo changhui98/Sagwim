@@ -7,7 +7,6 @@ import styles from '../../pages/DashboardPage.module.css'
 
 interface ProfileFormData {
   nickname: string
-  userEmail: string
   address: string
   currentPassword: string
   newPassword: string
@@ -61,18 +60,6 @@ export function ProfileEditForm({
               placeholder="새 닉네임"
               value={form.nickname}
               onChange={(e) => onFormChange((prev) => ({ ...prev, nickname: e.target.value }))}
-            />
-          </div>
-
-          <div className="input-group">
-            <label className="input-label" htmlFor="edit-email">이메일</label>
-            <input
-              id="edit-email"
-              className="input"
-              type="email"
-              placeholder="name@example.com"
-              value={form.userEmail}
-              onChange={(e) => onFormChange((prev) => ({ ...prev, userEmail: e.target.value }))}
             />
           </div>
 

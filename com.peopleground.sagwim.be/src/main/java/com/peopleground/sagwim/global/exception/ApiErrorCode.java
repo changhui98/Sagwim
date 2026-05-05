@@ -14,6 +14,9 @@ public enum ApiErrorCode implements ErrorCode {
     ADDRESS_CONVERT_FAILED(HttpStatus.BAD_REQUEST, "A004", "주소 변환에 실패했습니다."),
     ADDRESS_NOT_FOUNT(HttpStatus.BAD_REQUEST, "A005", "유효한 주소를 찾을 수 없습니다."),
     EXTERNAL_API_ERROR(HttpStatus.BAD_GATEWAY, "A006", "외부 주소 변환 서비스 호출에 실패했습니다."),
+    OAUTH_TOKEN_EXCHANGE_FAILED(HttpStatus.BAD_GATEWAY, "A007", "소셜 로그인 토큰 교환에 실패했습니다."),
+    OAUTH_PROFILE_FETCH_FAILED(HttpStatus.BAD_GATEWAY, "A008", "소셜 로그인 프로필 조회에 실패했습니다."),
+    OAUTH_PROVIDER_NOT_CONFIGURED(HttpStatus.SERVICE_UNAVAILABLE, "A009", "소셜 로그인 환경설정이 누락되었습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "A999", "서버 내부 오류가 발생했습니다.")
     ;
 

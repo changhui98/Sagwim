@@ -20,6 +20,12 @@ public class EmailVerificationTokenRepositoryImpl implements EmailVerificationTo
     }
 
     @Override
+    public Optional<EmailVerificationToken> findByUser(User user) {
+
+        return emailVerificationTokenJpaRepository.findByUser(user);
+    }
+
+    @Override
     public void deleteByUser(User user) {
 
         emailVerificationTokenJpaRepository.deleteByUser(user);

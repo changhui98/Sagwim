@@ -19,6 +19,8 @@ import com.peopleground.sagwim.image.application.ImageUrlResolver;
 import com.peopleground.sagwim.image.application.service.ImageService;
 import com.peopleground.sagwim.image.domain.entity.ImageTargetType;
 import com.peopleground.sagwim.image.presentation.dto.response.ImageResponse;
+import com.peopleground.sagwim.notification.application.service.NotificationService;
+import com.peopleground.sagwim.notification.domain.entity.NotificationType;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
@@ -40,6 +42,7 @@ public class GroupService {
     private final UserRepository userRepository;
     private final ImageService imageService;
     private final ImageUrlResolver imageUrlResolver;
+    private final NotificationService notificationService;
 
     @Transactional
     public GroupResponse createGroup(GroupCreateRequest request, CustomUser customUser) {
@@ -159,6 +162,19 @@ public class GroupService {
         groupMemberRepository.save(member);
 
         groupRepository.incrementMemberCount(groupId);
+
+        // 모임장에게 신규 가입 알림. 모임장이 자기 모임에 다시 가입하는 케이스는 정상 흐름상 발생하지 않지만
+        // 방어적으로 본인 제외 처리한다.
+        User leader = group.getLeader();
+        if (!leader.getId().equals(user.getId())) {
+            notificationService.notify(
+                leader,
+                NotificationType.MEETING_MEMBER_JOINED,
+                user,
+                group.getId(),
+                group.getName()
+            );
+        }
     }
 
     @Transactional

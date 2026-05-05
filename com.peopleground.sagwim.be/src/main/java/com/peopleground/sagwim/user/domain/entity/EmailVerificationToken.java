@@ -30,6 +30,13 @@ public class EmailVerificationToken {
     @Column(nullable = false)
     private String code;
 
+    /**
+     * 이메일 변경 플로우에서 사용자가 변경하려는 새 이메일.
+     * 기존 회원가입 후 이메일 인증 플로우에서는 null.
+     */
+    @Column(name = "new_email")
+    private String newEmail;
+
     @Column(nullable = false)
     private LocalDateTime expiresAt;
 
@@ -40,6 +47,16 @@ public class EmailVerificationToken {
         EmailVerificationToken token = new EmailVerificationToken();
         token.user = user;
         token.code = code;
+        token.createdAt = LocalDateTime.now();
+        token.expiresAt = LocalDateTime.now().plusMinutes(5);
+        return token;
+    }
+
+    public static EmailVerificationToken ofChangeEmail(User user, String newEmail, String code) {
+        EmailVerificationToken token = new EmailVerificationToken();
+        token.user = user;
+        token.code = code;
+        token.newEmail = newEmail;
         token.createdAt = LocalDateTime.now();
         token.expiresAt = LocalDateTime.now().plusMinutes(5);
         return token;

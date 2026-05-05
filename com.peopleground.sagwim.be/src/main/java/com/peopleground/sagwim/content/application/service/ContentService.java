@@ -101,6 +101,16 @@ public class ContentService {
         return PageResponse.from(contentResponseAssembler.toResponsePage(contents, customUser));
     }
 
+    /**
+     * 게시글 단건 조회. 삭제된 게시글은 조회하지 않는다.
+     */
+    @Transactional(readOnly = true)
+    public ContentResponse getContent(Long contentId, CustomUser user) {
+        Content content = contentRepository.findById(contentId)
+            .orElseThrow(() -> new AppException(ContentErrorCode.CONTENT_NOT_FOUND));
+        return contentResponseAssembler.toResponse(content, user);
+    }
+
     @CacheEvict(value = "contentList", allEntries = true)
     @Transactional
     public ContentUpdateResponse updateContent(Long contentId, ContentUpdateRequest req, CustomUser customUser) {

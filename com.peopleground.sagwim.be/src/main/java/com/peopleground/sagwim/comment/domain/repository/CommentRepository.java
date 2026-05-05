@@ -29,6 +29,8 @@ public interface CommentRepository {
 
     int countByContentId(Long contentId);
 
+    Optional<Comment> findByImageUrl(String imageUrl);
+
     /**
      * likeCount 원자적 1 증가.
      */

@@ -5,6 +5,7 @@ import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.image.application.ImageUrlResolver;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
+import com.peopleground.sagwim.user.domain.entity.UserRole;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
 import com.peopleground.sagwim.user.presentation.dto.response.AdminUserDetailResponse;
 import com.peopleground.sagwim.user.presentation.dto.response.AdminUserResponse;
@@ -42,6 +43,21 @@ public class AdminService {
 
         User user = getUser(username);
         user.delete();
+    }
+
+    @Transactional
+    public void changeUserRole(String requesterUsername, String targetUsername, UserRole newRole) {
+
+        if (newRole == UserRole.ADMIN) {
+            throw new AppException(UserErrorCode.CANNOT_ASSIGN_ADMIN_ROLE);
+        }
+
+        if (requesterUsername.equals(targetUsername)) {
+            throw new AppException(UserErrorCode.CANNOT_CHANGE_OWN_ROLE);
+        }
+
+        User target = getUser(targetUsername);
+        target.changeRole(newRole);
     }
 
     private User getUser(String username) {

@@ -1,4 +1,6 @@
 import type {
+  EmailChangeConfirmRequest,
+  EmailChangeRequest,
   PageResponse,
   UserDetailResponse,
   UserResponse,
@@ -41,4 +43,29 @@ export const updateMyProfile = (token: string, body: UserUpdateRequest) => {
     headers: createAuthHeaders(token),
     body: JSON.stringify(body),
   }).then((response) => parseResponse<UserDetailResponse>(response))
+}
+
+export const requestEmailChangeVerification = async (
+  token: string,
+  body: EmailChangeRequest,
+): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/users/me/email/verify-request`, {
+    method: 'POST',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify(body),
+  })
+  // 본문은 사용하지 않지만 에러 처리는 parseResponse에 위임한다.
+  await parseResponse<{ message: string }>(response)
+}
+
+export const confirmEmailChange = async (
+  token: string,
+  body: EmailChangeConfirmRequest,
+): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/users/me/email/verify-confirm`, {
+    method: 'POST',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify(body),
+  })
+  await parseResponse<{ message: string }>(response)
 }

@@ -11,5 +11,7 @@ public interface EmailVerificationTokenJpaRepository
 
     Optional<EmailVerificationToken> findByUserUserEmail(String email);
 
+    Optional<EmailVerificationToken> findByUser(User user);
+
     void deleteByUser(User user);
 }

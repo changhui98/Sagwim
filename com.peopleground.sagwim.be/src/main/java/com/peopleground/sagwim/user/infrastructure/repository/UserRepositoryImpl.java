@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,12 @@ public class UserRepositoryImpl implements UserRepository {
 
     private final UserJpaRepository userJpaRepository;
     private final UserQueryRepository userQueryRepository;
+
+    @Override
+    public Optional<User> findById(UUID id) {
+
+        return userJpaRepository.findById(id);
+    }
 
     @Override
     public Optional<User> findByUsername(String username) {

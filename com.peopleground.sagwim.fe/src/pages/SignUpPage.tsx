@@ -1,13 +1,13 @@
 import { type FormEvent, useState, useRef, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { signUp, sendEmailVerification, verifyEmailCode, checkUsername } from '../api/authApi'
-import { socialSignIn } from '../api/socialAuthApi'
-import { updateMyProfile } from '../api/userApi'
+import { socialSignIn, linkSocialAccount } from '../api/socialAuthApi'
+import { ApiError } from '../api/ApiError'
+import type { EmailConflictData } from '../types/auth'
 import { PasswordInput } from '../components/PasswordInput'
 import { PasswordChecklist } from '../components/PasswordChecklist'
-import { KakaoAddressSearch } from '../components/common/KakaoAddressSearch'
 import { SocialLoginButtons } from '../components/auth/SocialLoginButtons'
-import { SocialAddressModal } from '../components/auth/SocialAddressModal'
+import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { isPasswordValid, isConfirmPasswordValid } from '../utils/passwordRules'
 import { useAuth } from '../context/AuthContext'
 import styles from './SignUpPage.module.css'
@@ -15,7 +15,12 @@ import { AlertDialog } from '../components/common/AlertDialog'
 
 const REDIRECT_URI = `${window.location.origin}/sign-up`
 
-type SignUpField = 'username' | 'password' | 'nickname' | 'userEmail' | 'address'
+const PROVIDER_LABEL: Record<string, string> = {
+  GOOGLE: '구글',
+  KAKAO: '카카오',
+}
+
+type SignUpField = 'username' | 'password' | 'nickname' | 'userEmail'
 
 const mapMessageToField = (message: string): SignUpField | null => {
   const normalized = message.toLowerCase()
@@ -23,7 +28,6 @@ const mapMessageToField = (message: string): SignUpField | null => {
   if (normalized.includes('password') || message.includes('비밀번호')) return 'password'
   if (normalized.includes('nickname') || message.includes('닉네임')) return 'nickname'
   if (normalized.includes('email') || message.includes('이메일')) return 'userEmail'
-  if (normalized.includes('address') || message.includes('주소')) return 'address'
   return null
 }
 
@@ -41,16 +45,18 @@ const isDuplicateEmailMessage = (message: string): boolean => {
 export function SignUpPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, token } = useAuth()
+  const { login } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   // 소셜 로그인 상태
   const [socialLoading, setSocialLoading] = useState(false)
   const [socialError, setSocialError] = useState('')
-  const [addressModalOpen, setAddressModalOpen] = useState(false)
-  const [addressSaving, setAddressSaving] = useState(false)
-  const [socialNickname, setSocialNickname] = useState('')
+
+  // 계정 연동 확인 다이얼로그 상태
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false)
+  const [linkLoading, setLinkLoading] = useState(false)
+  const pendingLinkRef = useRef<{ provider: string; accessToken: string } | null>(null)
 
   // OAuth redirect callback 처리 (?code=...&state=KAKAO|GOOGLE)
   useEffect(() => {
@@ -67,17 +73,22 @@ export function SignUpPage() {
       try {
         setSocialLoading(true)
         setSocialError('')
-        const { token: jwtToken, data } = await socialSignIn(provider, code, REDIRECT_URI)
+        const { token: jwtToken } = await socialSignIn(provider, code, REDIRECT_URI)
         login(jwtToken)
-
-        if (data.isNewUser) {
-          setSocialNickname(data.nickname ?? '')
-          setAddressModalOpen(true)
-        } else {
-          navigate('/app', { replace: true })
-        }
+        navigate('/app', { replace: true })
       } catch (err) {
-        setSocialError(err instanceof Error ? err.message : '소셜 로그인에 실패했습니다.')
+        if (err instanceof ApiError && err.status === 409) {
+          // 동일 이메일로 가입된 계정 존재 → 연동 확인 다이얼로그 표시
+          // 409 바디의 accessToken을 보관하여 link 단계에서 code 재사용(invalid_grant)을 방지한다.
+          const conflict = err.conflictData as EmailConflictData | undefined
+          pendingLinkRef.current = {
+            provider: conflict?.provider ?? provider,
+            accessToken: conflict?.accessToken ?? '',
+          }
+          setLinkDialogOpen(true)
+        } else {
+          setSocialError(err instanceof Error ? err.message : '소셜 로그인에 실패했습니다.')
+        }
       } finally {
         setSocialLoading(false)
       }
@@ -87,25 +98,31 @@ export function SignUpPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search])
 
-  const handleAddressSubmit = async (data: { nickname: string; address: string }) => {
+  const handleLinkConfirm = async () => {
+    const pending = pendingLinkRef.current
+    if (!pending) return
+
     try {
-      setAddressSaving(true)
-      await updateMyProfile(token, {
-        nickname: data.nickname,
-        userEmail: '',
-        address: data.address,
-        currentPassword: '',
-        newPassword: '',
-      })
-      setAddressModalOpen(false)
+      setLinkLoading(true)
+      setSocialError('')
+      const { token: jwtToken } = await linkSocialAccount(pending.provider, pending.accessToken)
+      login(jwtToken)
+      setLinkDialogOpen(false)
       navigate('/app', { replace: true })
-    } catch {
-      setAddressModalOpen(false)
-      navigate('/app', { replace: true })
+    } catch (err) {
+      setLinkDialogOpen(false)
+      setSocialError(err instanceof Error ? err.message : '계정 연동에 실패했습니다.')
     } finally {
-      setAddressSaving(false)
+      setLinkLoading(false)
+      pendingLinkRef.current = null
     }
   }
+
+  const handleLinkCancel = () => {
+    setLinkDialogOpen(false)
+    pendingLinkRef.current = null
+  }
+
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<SignUpField, string>>>({})
   const [confirmPassword, setConfirmPassword] = useState('')
   const [form, setForm] = useState({
@@ -113,7 +130,6 @@ export function SignUpPage() {
     password: '',
     nickname: '',
     userEmail: '',
-    address: '',
   })
 
   // 아이디 중복확인 상태
@@ -455,25 +471,6 @@ export function SignUpPage() {
             </p>
           )}
 
-          {/* Address */}
-          <div className="input-group">
-            <label className="input-label" htmlFor="su-address">
-              주소
-            </label>
-            <KakaoAddressSearch
-              id="su-address"
-              address={form.address}
-              onChange={(value) => {
-                setForm((prev) => ({ ...prev, address: value }))
-                setFieldErrors((prev) => ({ ...prev, address: undefined }))
-              }}
-              disabled={loading}
-            />
-            {fieldErrors.address && (
-              <p className="field-error" role="alert">{fieldErrors.address}</p>
-            )}
-          </div>
-
           {error && <p className="alert alert-error" role="alert">{error}</p>}
           {socialError && <p className="alert alert-error" role="alert">{socialError}</p>}
 
@@ -504,15 +501,15 @@ export function SignUpPage() {
       onClose={() => setUsernameAlertOpen(false)}
     />
 
-    <SocialAddressModal
-      isOpen={addressModalOpen}
-      onClose={() => {
-        setAddressModalOpen(false)
-        navigate('/app', { replace: true })
-      }}
-      onSubmit={handleAddressSubmit}
-      loading={addressSaving}
-      defaultNickname={socialNickname}
+    <ConfirmDialog
+      isOpen={linkDialogOpen}
+      title="이미 가입된 계정이 있어요"
+      message={`이미 해당 이메일로 가입된 계정이 있습니다.\n${PROVIDER_LABEL[pendingLinkRef.current?.provider ?? ''] ?? '소셜'} 계정을 기존 계정에 연동하시겠습니까?`}
+      confirmLabel="연동하기"
+      cancelLabel="취소"
+      isLoading={linkLoading}
+      onConfirm={handleLinkConfirm}
+      onCancel={handleLinkCancel}
     />
     </>
   )

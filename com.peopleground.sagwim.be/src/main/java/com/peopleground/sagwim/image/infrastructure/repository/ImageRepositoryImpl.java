@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -57,5 +59,10 @@ public class ImageRepositoryImpl implements ImageRepository {
     @Override
     public void deleteById(Long id) {
         imageJpaRepository.deleteById(id);
+    }
+
+    @Override
+    public Page<Image> findAllForAdmin(Pageable pageable) {
+        return imageJpaRepository.findAllByOrderByCreatedDateDesc(pageable);
     }
 }

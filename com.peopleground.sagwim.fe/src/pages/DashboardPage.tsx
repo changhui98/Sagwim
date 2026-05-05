@@ -31,7 +31,6 @@ export function DashboardPage() {
 
   const [form, setForm] = useState({
     nickname: '',
-    userEmail: '',
     address: '',
     currentPassword: '',
     newPassword: '',
@@ -65,7 +64,6 @@ export function DashboardPage() {
       setForm((prev) => ({
         ...prev,
         nickname: response.nickname ?? '',
-        userEmail: response.userEmail ?? '',
         address: response.address ?? '',
       }))
     } catch (err) {

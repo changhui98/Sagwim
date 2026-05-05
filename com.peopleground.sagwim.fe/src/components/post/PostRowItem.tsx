@@ -9,6 +9,7 @@ interface PostRowItemProps {
   post: ContentResponse
   firstImageUrl: string | null
   imageCount: number
+  onClick?: (postId: number) => void
 }
 
 function formatRelativeTime(dateStr: string): string {
@@ -32,14 +33,15 @@ function formatRelativeTime(dateStr: string): string {
  * - 제목 1줄, 본문 1줄 (말줄임), 우측에 작성일을 표시한다.
  * - MyPostsSection 에서 list 뷰 모드일 때 사용된다.
  */
-export function PostRowItem({ post, firstImageUrl, imageCount }: PostRowItemProps) {
+export function PostRowItem({ post, firstImageUrl, imageCount, onClick }: PostRowItemProps) {
   const { token, meUsername, meProfileImageUrl } = useAuth()
   const [liked, setLiked] = useState(() => post.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(() => post.likeCount ?? 0)
   const [pending, setPending] = useState(false)
   const inFlightRef = useRef(false)
 
-  const handleLikeClick = useCallback(async () => {
+  const handleLikeClick = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation()
     if (inFlightRef.current) return
     inFlightRef.current = true
 
@@ -75,7 +77,11 @@ export function PostRowItem({ post, firstImageUrl, imageCount }: PostRowItemProp
   const avatarUrl = isMine ? meProfileImageUrl : null
 
   return (
-    <article className={styles.row}>
+    <article
+      className={styles.row}
+      onClick={() => onClick?.(post.id)}
+      style={onClick ? { cursor: 'pointer' } : undefined}
+    >
       <div className={styles.head}>
         <div className={styles.authorWrap}>
           {avatarUrl ? (
@@ -128,7 +134,12 @@ export function PostRowItem({ post, firstImageUrl, imageCount }: PostRowItemProp
           <HeartIcon filled={liked} className={styles.icon} />
           <span>{likeCount}</span>
         </button>
-        <button type="button" className={styles.actionBtn} aria-label="댓글">
+        <button
+          type="button"
+          className={styles.actionBtn}
+          aria-label="댓글"
+          onClick={(e) => e.stopPropagation()}
+        >
           <CommentIcon className={styles.icon} />
           <span>{commentCount}</span>
         </button>

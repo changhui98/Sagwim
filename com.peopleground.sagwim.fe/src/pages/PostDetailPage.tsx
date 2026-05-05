@@ -711,6 +711,8 @@ export function PostDetailPage() {
                 contentId={contentId}
                 meUsername={meUsername}
                 isCurrentUserPostAuthor={!!meUsername && post.createdBy === meUsername}
+                postAuthorNickname={displayName}
+                postAuthorProfileImageUrl={isMine ? meProfileImageUrl : null}
                 liked={commentLikedMap[comment.id] ?? false}
                 likeCount={commentLikeCountMap[comment.id] ?? comment.likeCount}
                 commentLikedMap={commentLikedMap}
@@ -755,6 +757,8 @@ interface CommentItemProps {
   contentId: number
   meUsername: string | null
   isCurrentUserPostAuthor: boolean
+  postAuthorNickname: string
+  postAuthorProfileImageUrl: string | null
   liked: boolean
   likeCount: number
   commentLikedMap: Record<number, boolean>
@@ -774,6 +778,8 @@ function CommentItem({
   comment,
   meUsername,
   isCurrentUserPostAuthor,
+  postAuthorNickname,
+  postAuthorProfileImageUrl,
   liked,
   likeCount,
   commentLikedMap,
@@ -852,6 +858,7 @@ function CommentItem({
 
   // 게시글 작성자 좋아요 아바타: likedByPostAuthor가 true일 때만 표시
   // 현재 로그인 사용자가 게시글 작성자인 경우 commentLikedMap(실시간)을 우선 참조
+  // 아바타에는 댓글 작성자가 아닌 게시글 작성자(post author)의 프로필을 표시
   const renderPostAuthorLikeAvatar = (target: typeof comment) => {
     const showPostAuthorLike = isCurrentUserPostAuthor
       ? (commentLikedMap[target.id] ?? false)
@@ -860,10 +867,10 @@ function CommentItem({
     return (
       <div className={styles.postAuthorLikeWrapper} aria-label="게시글 작성자가 좋아요 누름">
         <div className={styles.postAuthorLikeAvatar}>
-          {target.authorProfileImageUrl ? (
-            <img src={target.authorProfileImageUrl} alt="" className={styles.avatarImg} />
+          {postAuthorProfileImageUrl ? (
+            <img src={postAuthorProfileImageUrl} alt="" className={styles.avatarImg} />
           ) : (
-            getInitial(target.authorNickname)
+            getInitial(postAuthorNickname)
           )}
         </div>
         <span className={styles.postAuthorLikeHeart} aria-hidden>❤</span>

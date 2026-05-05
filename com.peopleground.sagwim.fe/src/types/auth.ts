@@ -8,11 +8,17 @@ export interface SignUpRequest {
   password: string
   nickname: string
   userEmail: string
-  address: string
 }
 
 export interface SocialSignInResponse {
   jwtToken: string
   isNewUser: boolean
   nickname: string
+}
+
+export interface EmailConflictData {
+  code: string
+  message: string
+  accessToken: string
+  provider: string
 }

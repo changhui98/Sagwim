@@ -25,11 +25,29 @@ public record KakaoUserProfile(
         @JsonProperty("profile_image_url") String profileImageUrl
     ) {}
 
+    /**
+     * nickname 반환 우선순위:
+     *   1) kakao_account.profile.nickname (동의한 경우)
+     *   2) kakao_account.name (이름 동의한 경우) — 현재 API 응답에 없으면 null
+     *   3) email 앞부분 (@ 앞)
+     *   4) "kakao_" + id 앞 6자리
+     */
     public String nickname() {
         if (kakaoAccount != null && kakaoAccount.profile() != null) {
-            return kakaoAccount.profile().nickname();
+            String nick = kakaoAccount.profile().nickname();
+            if (nick != null && !nick.isBlank()) {
+                return nick;
+            }
         }
-        return "카카오사용자";
+        String email = email();
+        if (email != null && email.contains("@")) {
+            return email.substring(0, email.indexOf('@'));
+        }
+        if (id != null) {
+            String idStr = String.valueOf(id);
+            return "kakao_" + idStr.substring(0, Math.min(6, idStr.length()));
+        }
+        return "kakao_user";
     }
 
     public String email() {
