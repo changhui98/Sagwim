@@ -9,7 +9,8 @@ import { useAuth } from '../context/AuthContext'
 import { Navbar } from '../components/Navbar'
 import { deletePost, getPost, toggleContentLike, updatePost } from '../api/postApi'
 import { MenuMeatballsIcon } from '../components/NavIcons'
-import { createComment, createReply, deleteComment, getComments, toggleCommentLike } from '../api/commentApi'
+import { createComment, createReply, deleteComment, getComments, toggleCommentLike, updateComment } from '../api/commentApi'
+import { uploadCommentImage } from '../api/imageApi'
 import { ApiError } from '../api/ApiError'
 import type { ContentResponse } from '../types/post'
 import type { CommentResponse } from '../types/comment'
@@ -176,6 +177,20 @@ export function PostDetailPage() {
           }
           return next
         })
+        // likedMap 초기화 (서버에서 내려온 likedByMe 값을 기준으로 세팅, 토글 이후 값은 유지)
+        setCommentLikedMap((prev) => {
+          const next = { ...prev }
+          const allComments = cursorId !== undefined
+            ? [...comments, ...data.comments]
+            : data.comments
+          for (const c of allComments) {
+            if (!(c.id in next)) next[c.id] = c.likedByMe ?? false
+            for (const r of c.replies) {
+              if (!(r.id in next)) next[r.id] = r.likedByMe ?? false
+            }
+          }
+          return next
+        })
         setNextCursorId(data.nextCursorId)
         setHasNext(data.hasNext)
       } catch (err) {
@@ -213,6 +228,22 @@ export function PostDetailPage() {
   const [commentBody, setCommentBody] = useState('')
   const [commentSubmitting, setCommentSubmitting] = useState(false)
   const commentInputRef = useRef<HTMLInputElement>(null)
+  const commentImageInputRef = useRef<HTMLInputElement>(null)
+  const [commentImageFile, setCommentImageFile] = useState<File | null>(null)
+  const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null)
+
+  const handleCommentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCommentImageFile(file)
+    setCommentImagePreview(URL.createObjectURL(file))
+  }
+
+  const handleCommentImageRemove = () => {
+    setCommentImageFile(null)
+    setCommentImagePreview(null)
+    if (commentImageInputRef.current) commentImageInputRef.current.value = ''
+  }
 
   const handleCommentSubmit = async () => {
     const trimmed = commentBody.trim()
@@ -220,9 +251,17 @@ export function PostDetailPage() {
 
     setCommentSubmitting(true)
     try {
-      const created = await createComment(token, contentId, trimmed)
+      let imageUrl: string | undefined
+      if (commentImageFile) {
+        const uploaded = await uploadCommentImage(token, commentImageFile, `temp-${Date.now()}`)
+        imageUrl = uploaded.fileUrl
+      }
+      const created = await createComment(token, contentId, trimmed, imageUrl)
       setComments((prev) => [created, ...prev])
       setCommentBody('')
+      setCommentImageFile(null)
+      setCommentImagePreview(null)
+      if (commentImageInputRef.current) commentImageInputRef.current.value = ''
       commentInputRef.current?.focus()
     } catch (err) {
       if (!(err instanceof ApiError)) {
@@ -263,6 +302,29 @@ export function PostDetailPage() {
     }
   }
 
+  // ── 댓글 수정 ──
+
+  const handleUpdateComment = async (commentId: number, newBody: string) => {
+    try {
+      const updated = await updateComment(token, contentId, commentId, newBody)
+      setComments((prev) =>
+        prev.map((c) => {
+          if (c.id === commentId) return { ...c, body: updated.body }
+          return {
+            ...c,
+            replies: c.replies.map((r) =>
+              r.id === commentId ? { ...r, body: updated.body } : r,
+            ),
+          }
+        }),
+      )
+    } catch (err) {
+      if (!(err instanceof ApiError)) {
+        console.error('댓글 수정 실패', err)
+      }
+    }
+  }
+
   // ── 댓글 삭제 ──
 
   const handleDeleteComment = async (commentId: number) => {
@@ -279,7 +341,14 @@ export function PostDetailPage() {
               body: '삭제된 댓글입니다.',
             }
           }
-          return c
+          return {
+            ...c,
+            replies: c.replies.map((r) =>
+              r.id === commentId
+                ? { ...r, deleted: true, authorUsername: null, authorNickname: null, body: '삭제된 댓글입니다.' }
+                : r
+            ),
+          }
         }),
       )
     } catch (err) {
@@ -405,13 +474,20 @@ export function PostDetailPage() {
   const meDisplayName = meNickname?.trim() || meUsername || ''
   const commentCount = comments.length + comments.reduce((acc, c) => acc + c.replies.length, 0)
 
-  // 상위 3개(좋아요 많은 순, 삭제 안 된 것) + 나머지(원래 순서)
+  // 상위 3개(좋아요 많은 순, 동점 시 최신순) + 나머지(최신순)
   const topComments = [...comments]
-    .filter((c) => !c.deleted && c.likeCount > 0)
-    .sort((a, b) => (commentLikeCountMap[b.id] ?? b.likeCount) - (commentLikeCountMap[a.id] ?? a.likeCount))
+    .filter((c) => !c.deleted && (commentLikeCountMap[c.id] ?? c.likeCount) > 0)
+    .sort((a, b) => {
+      const likeA = commentLikeCountMap[a.id] ?? a.likeCount
+      const likeB = commentLikeCountMap[b.id] ?? b.likeCount
+      if (likeB !== likeA) return likeB - likeA
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
     .slice(0, 3)
   const topIds = new Set(topComments.map((c) => c.id))
-  const restComments = comments.filter((c) => !topIds.has(c.id))
+  const restComments = comments
+    .filter((c) => !topIds.has(c.id))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   const displayComments = [...topComments, ...restComments]
 
   return (
@@ -578,12 +654,33 @@ export function PostDetailPage() {
                 type="button"
                 className={styles.iconBtn}
                 aria-label="사진 첨부"
+                onClick={() => commentImageInputRef.current?.click()}
               >
                 <img src={pictureIcon} alt="" className={styles.iconBtnImg} />
               </button>
             )}
           </div>
+          <input
+            ref={commentImageInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={handleCommentImageSelect}
+          />
         </div>
+        {commentImagePreview && (
+          <div className={styles.commentImagePreview}>
+            <img src={commentImagePreview} alt="첨부 이미지" className={styles.commentImagePreviewImg} />
+            <button
+              type="button"
+              className={styles.commentImageRemoveBtn}
+              onClick={handleCommentImageRemove}
+              aria-label="이미지 제거"
+            >
+              &#x2715;
+            </button>
+          </div>
+        )}
 
         {/* 댓글 목록 */}
         {commentsLoading ? (
@@ -613,8 +710,11 @@ export function PostDetailPage() {
                 comment={comment}
                 contentId={contentId}
                 meUsername={meUsername}
+                isCurrentUserPostAuthor={!!meUsername && post.createdBy === meUsername}
                 liked={commentLikedMap[comment.id] ?? false}
                 likeCount={commentLikeCountMap[comment.id] ?? comment.likeCount}
+                commentLikedMap={commentLikedMap}
+                commentLikeCountMap={commentLikeCountMap}
                 replyingToId={replyingToId}
                 replyBody={replyBody}
                 replySubmitting={replySubmitting}
@@ -625,6 +725,7 @@ export function PostDetailPage() {
                 onReplySubmit={handleReplySubmit}
                 onDelete={handleDeleteComment}
                 onLike={handleCommentLike}
+                onUpdate={handleUpdateComment}
               />
             ))}
           </div>
@@ -653,8 +754,11 @@ interface CommentItemProps {
   comment: CommentResponse
   contentId: number
   meUsername: string | null
+  isCurrentUserPostAuthor: boolean
   liked: boolean
   likeCount: number
+  commentLikedMap: Record<number, boolean>
+  commentLikeCountMap: Record<number, number>
   replyingToId: number | null
   replyBody: string
   replySubmitting: boolean
@@ -663,13 +767,17 @@ interface CommentItemProps {
   onReplySubmit: (commentId: number) => Promise<void>
   onDelete: (commentId: number) => Promise<void>
   onLike: (commentId: number) => void
+  onUpdate: (commentId: number, newBody: string) => Promise<void>
 }
 
 function CommentItem({
   comment,
   meUsername,
+  isCurrentUserPostAuthor,
   liked,
   likeCount,
+  commentLikedMap,
+  commentLikeCountMap,
   replyingToId,
   replyBody,
   replySubmitting,
@@ -678,9 +786,19 @@ function CommentItem({
   onReplySubmit,
   onDelete,
   onLike,
+  onUpdate,
 }: CommentItemProps) {
   const isReplying = replyingToId === comment.id
   const replyInputRef = useRef<HTMLInputElement>(null)
+
+  // 댓글 미트볼 메뉴 상태
+  const [commentMenuOpen, setCommentMenuOpen] = useState(false)
+  const commentMenuRef = useRef<HTMLDivElement>(null)
+
+  // 댓글 인라인 수정 상태
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
+  const [editBody, setEditBody] = useState('')
+  const [editSubmitting, setEditSubmitting] = useState(false)
 
   useEffect(() => {
     if (isReplying) {
@@ -688,11 +806,70 @@ function CommentItem({
     }
   }, [isReplying])
 
+  // 댓글 메뉴 외부 클릭 닫기
+  useEffect(() => {
+    if (!commentMenuOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (commentMenuRef.current && !commentMenuRef.current.contains(e.target as Node)) {
+        setCommentMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [commentMenuOpen])
+
+  const isMyComment = !!meUsername && comment.authorUsername === meUsername
+
   const authorLabel = comment.deleted
     ? '알 수 없음'
     : (comment.authorNickname ?? '알 수 없음')
 
   const hasReplies = comment.replies.length > 0
+
+  const handleEditStart = (targetId: number, currentBody: string) => {
+    setEditingCommentId(targetId)
+    setEditBody(currentBody)
+    setCommentMenuOpen(false)
+  }
+
+  const handleEditCancel = () => {
+    setEditingCommentId(null)
+    setEditBody('')
+  }
+
+  const handleEditSubmit = async (targetId: number) => {
+    const trimmed = editBody.trim()
+    if (!trimmed || editSubmitting) return
+    setEditSubmitting(true)
+    try {
+      await onUpdate(targetId, trimmed)
+      setEditingCommentId(null)
+      setEditBody('')
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
+
+  // 게시글 작성자 좋아요 아바타: likedByPostAuthor가 true일 때만 표시
+  // 현재 로그인 사용자가 게시글 작성자인 경우 commentLikedMap(실시간)을 우선 참조
+  const renderPostAuthorLikeAvatar = (target: typeof comment) => {
+    const showPostAuthorLike = isCurrentUserPostAuthor
+      ? (commentLikedMap[target.id] ?? false)
+      : (target.likedByPostAuthor ?? false)
+    if (!showPostAuthorLike) return null
+    return (
+      <div className={styles.postAuthorLikeWrapper} aria-label="게시글 작성자가 좋아요 누름">
+        <div className={styles.postAuthorLikeAvatar}>
+          {target.authorProfileImageUrl ? (
+            <img src={target.authorProfileImageUrl} alt="" className={styles.avatarImg} />
+          ) : (
+            getInitial(target.authorNickname)
+          )}
+        </div>
+        <span className={styles.postAuthorLikeHeart} aria-hidden>❤</span>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.commentThread} role="listitem">
@@ -700,7 +877,11 @@ function CommentItem({
       <div className={styles.commentRow}>
         <div className={styles.avatarCol}>
           <div className={`${styles.commentAvatar} ${comment.deleted ? styles.deleted : ''}`}>
-            {comment.deleted ? '?' : getInitial(comment.authorNickname)}
+            {!comment.deleted && comment.authorProfileImageUrl ? (
+              <img src={comment.authorProfileImageUrl} alt="" className={styles.avatarImg} />
+            ) : (
+              comment.deleted ? '?' : getInitial(comment.authorNickname)
+            )}
           </div>
           {(hasReplies || isReplying) && <div className={styles.avatarLine} />}
         </div>
@@ -713,10 +894,51 @@ function CommentItem({
               {formatRelativeTime(comment.createdAt)}
             </time>
           </div>
-          <p className={`${styles.commentText} ${comment.deleted ? styles.deleted : ''}`}>
-            {comment.body}
-          </p>
-          {!comment.deleted && (
+
+          {/* 수정 모드 */}
+          {editingCommentId === comment.id ? (
+            <div className={styles.commentEditArea}>
+              <textarea
+                className={styles.commentEditTextarea}
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                rows={3}
+                autoFocus
+                aria-label="댓글 수정"
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') handleEditCancel()
+                }}
+              />
+              <div className={styles.commentEditActions}>
+                <button
+                  type="button"
+                  className={styles.editCancelBtn}
+                  onClick={handleEditCancel}
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  className={styles.editSubmitBtn}
+                  disabled={!editBody.trim() || editSubmitting}
+                  onClick={() => void handleEditSubmit(comment.id)}
+                >
+                  {editSubmitting ? '저장 중...' : '저장'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className={`${styles.commentText} ${comment.deleted ? styles.deleted : ''}`}>
+                {comment.body}
+              </p>
+              {!comment.deleted && comment.imageUrl && (
+                <img src={comment.imageUrl} alt="첨부 이미지" className={styles.commentImg} />
+              )}
+            </>
+          )}
+
+          {!comment.deleted && editingCommentId !== comment.id && (
             <div className={styles.commentActions}>
               <button
                 type="button"
@@ -736,19 +958,50 @@ function CommentItem({
               >
                 답글
               </button>
-              {meUsername && comment.authorUsername === meUsername && (
-                <button
-                  type="button"
-                  className={`${styles.commentActionBtn} ${styles.danger}`}
-                  onClick={() => void onDelete(comment.id)}
-                  aria-label="댓글 삭제"
-                >
-                  삭제
-                </button>
-              )}
             </div>
           )}
         </div>
+
+        {/* 오른쪽 영역: 게시글 작성자 좋아요 아바타 + 미트볼 메뉴 */}
+        {!comment.deleted && (
+          <div className={styles.commentTrailing}>
+            {renderPostAuthorLikeAvatar(comment)}
+            {isMyComment && (
+              <div className={styles.commentMenu} ref={commentMenuRef}>
+                <button
+                  type="button"
+                  className={styles.commentMenuBtn}
+                  onClick={() => setCommentMenuOpen((v) => !v)}
+                  aria-label="댓글 메뉴"
+                  aria-expanded={commentMenuOpen}
+                  aria-haspopup="menu"
+                >
+                  <MenuMeatballsIcon width={16} height={16} />
+                </button>
+                {commentMenuOpen && (
+                  <div className={styles.commentMenuPopover} role="menu">
+                    <button
+                      type="button"
+                      className={styles.postMenuItem}
+                      role="menuitem"
+                      onClick={() => handleEditStart(comment.id, comment.body)}
+                    >
+                      수정
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.postMenuItem} ${styles.postMenuItemDanger}`}
+                      role="menuitem"
+                      onClick={() => { setCommentMenuOpen(false); void onDelete(comment.id) }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 대댓글 입력창 */}
@@ -756,6 +1009,7 @@ function CommentItem({
         <div className={styles.commentRow}>
           <div className={styles.avatarCol}>
             <div className={styles.replyAvatar}>{getInitial(meUsername)}</div>
+            {hasReplies && <div className={styles.avatarLine} />}
           </div>
           <div className={styles.replyInputArea}>
             <input
@@ -790,28 +1044,169 @@ function CommentItem({
       )}
 
       {/* 대댓글 목록 (플랫하게, 부모와 같은 레벨) */}
-      {comment.replies.map((reply) => (
-        <div className={styles.commentRow} key={reply.id}>
-          <div className={styles.avatarCol}>
-            <div className={`${styles.replyAvatar} ${reply.deleted ? styles.deleted : ''}`}>
-              {reply.deleted ? '?' : getInitial(reply.authorNickname)}
+      {comment.replies.map((reply, idx) => {
+        const isLastReply = idx === comment.replies.length - 1
+        const showReplyLine = !isLastReply || isReplying
+        const isMyReply = !!meUsername && reply.authorUsername === meUsername
+        return (
+          <div className={styles.commentRow} key={reply.id}>
+            <div className={styles.avatarCol}>
+              <div className={`${styles.replyAvatar} ${reply.deleted ? styles.deleted : ''}`}>
+                {!reply.deleted && reply.authorProfileImageUrl ? (
+                  <img src={reply.authorProfileImageUrl} alt="" className={styles.avatarImg} />
+                ) : (
+                  reply.deleted ? '?' : getInitial(reply.authorNickname)
+                )}
+              </div>
+              {showReplyLine && <div className={styles.avatarLine} />}
             </div>
-          </div>
-          <div className={styles.commentContent}>
-            <div className={styles.commentMeta}>
-              <span className={`${styles.commentAuthor} ${reply.deleted ? styles.deleted : ''}`}>
-                {reply.deleted ? '알 수 없음' : (reply.authorNickname ?? '알 수 없음')}
-              </span>
-              <time className={styles.commentDate} dateTime={reply.createdAt}>
-                {formatRelativeTime(reply.createdAt)}
-              </time>
+            <div className={styles.commentContent}>
+              <div className={styles.commentMeta}>
+                <span className={`${styles.commentAuthor} ${reply.deleted ? styles.deleted : ''}`}>
+                  {reply.deleted ? '알 수 없음' : (reply.authorNickname ?? '알 수 없음')}
+                </span>
+                <time className={styles.commentDate} dateTime={reply.createdAt}>
+                  {formatRelativeTime(reply.createdAt)}
+                </time>
+              </div>
+
+              {/* 대댓글 수정 모드 */}
+              {editingCommentId === reply.id ? (
+                <div className={styles.commentEditArea}>
+                  <textarea
+                    className={styles.commentEditTextarea}
+                    value={editBody}
+                    onChange={(e) => setEditBody(e.target.value)}
+                    rows={3}
+                    autoFocus
+                    aria-label="댓글 수정"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') handleEditCancel()
+                    }}
+                  />
+                  <div className={styles.commentEditActions}>
+                    <button
+                      type="button"
+                      className={styles.editCancelBtn}
+                      onClick={handleEditCancel}
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.editSubmitBtn}
+                      disabled={!editBody.trim() || editSubmitting}
+                      onClick={() => void handleEditSubmit(reply.id)}
+                    >
+                      {editSubmitting ? '저장 중...' : '저장'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className={`${styles.commentText} ${reply.deleted ? styles.deleted : ''}`}>
+                    {reply.body}
+                  </p>
+                  {!reply.deleted && reply.imageUrl && (
+                    <img src={reply.imageUrl} alt="첨부 이미지" className={styles.commentImg} />
+                  )}
+                </>
+              )}
+
+              {!reply.deleted && editingCommentId !== reply.id && (
+                <div className={styles.commentActions}>
+                  <button
+                    type="button"
+                    className={`${styles.commentActionBtn} ${(commentLikedMap[reply.id] ?? false) ? styles.commentLiked : ''}`}
+                    onClick={() => onLike(reply.id)}
+                    aria-label={(commentLikedMap[reply.id] ?? false) ? '좋아요 취소' : '좋아요'}
+                    aria-pressed={commentLikedMap[reply.id] ?? false}
+                  >
+                    <CommentHeartIcon filled={commentLikedMap[reply.id] ?? false} />
+                    {(commentLikeCountMap[reply.id] ?? reply.likeCount) > 0 && (
+                      <span>{commentLikeCountMap[reply.id] ?? reply.likeCount}</span>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
-            <p className={`${styles.commentText} ${reply.deleted ? styles.deleted : ''}`}>
-              {reply.body}
-            </p>
+
+            {/* 대댓글 오른쪽: 게시글 작성자 좋아요 아바타 + 미트볼 메뉴 */}
+            {!reply.deleted && (
+              <div className={styles.commentTrailing}>
+                {renderPostAuthorLikeAvatar(reply)}
+                {isMyReply && (
+                  <ReplyMenuButton
+                    replyId={reply.id}
+                    replyBody={reply.body}
+                    onEditStart={handleEditStart}
+                    onDelete={onDelete}
+                  />
+                )}
+              </div>
+            )}
           </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// 대댓글용 독립 미트볼 메뉴 — 각 대댓글이 자신의 팝업 열림 상태를 관리
+interface ReplyMenuButtonProps {
+  replyId: number
+  replyBody: string
+  onEditStart: (id: number, body: string) => void
+  onDelete: (id: number) => Promise<void>
+}
+
+function ReplyMenuButton({ replyId, replyBody, onEditStart, onDelete }: ReplyMenuButtonProps) {
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [open])
+
+  return (
+    <div className={styles.commentMenu} ref={menuRef}>
+      <button
+        type="button"
+        className={styles.commentMenuBtn}
+        onClick={() => setOpen((v) => !v)}
+        aria-label="댓글 메뉴"
+        aria-expanded={open}
+        aria-haspopup="menu"
+      >
+        <MenuMeatballsIcon width={16} height={16} />
+      </button>
+      {open && (
+        <div className={styles.commentMenuPopover} role="menu">
+          <button
+            type="button"
+            className={styles.postMenuItem}
+            role="menuitem"
+            onClick={() => { setOpen(false); onEditStart(replyId, replyBody) }}
+          >
+            수정
+          </button>
+          <button
+            type="button"
+            className={`${styles.postMenuItem} ${styles.postMenuItemDanger}`}
+            role="menuitem"
+            onClick={() => { setOpen(false); void onDelete(replyId) }}
+          >
+            삭제
+          </button>
         </div>
-      ))}
+      )}
     </div>
   )
 }

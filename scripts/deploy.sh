@@ -284,7 +284,19 @@ build_images() {
 
     if [[ "$target" == "fe" || "$target" == "all" ]]; then
         log_info "프론트엔드 이미지 빌드 중 (sagwim-frontend:$tag)..."
+
+        # VITE_* 소셜 로그인 Client ID는 빌드 타임에 번들에 인라인 치환된다.
+        # .env 파일에서 source 된 값 또는 CI/CD 환경변수를 --build-arg로 주입.
+        if [[ -z "${VITE_KAKAO_CLIENT_ID:-}" ]]; then
+            log_warn "VITE_KAKAO_CLIENT_ID 가 설정되어 있지 않습니다. 카카오 로그인이 동작하지 않을 수 있습니다."
+        fi
+        if [[ -z "${VITE_GOOGLE_CLIENT_ID:-}" ]]; then
+            log_warn "VITE_GOOGLE_CLIENT_ID 가 설정되어 있지 않습니다. 구글 로그인이 동작하지 않을 수 있습니다."
+        fi
+
         docker build \
+            --build-arg VITE_KAKAO_CLIENT_ID="${VITE_KAKAO_CLIENT_ID:-}" \
+            --build-arg VITE_GOOGLE_CLIENT_ID="${VITE_GOOGLE_CLIENT_ID:-}" \
             -t "sagwim-frontend:$tag" \
             -t "sagwim-frontend:latest" \
             "$PROJECT_ROOT/com.peopleground.sagwim.fe"

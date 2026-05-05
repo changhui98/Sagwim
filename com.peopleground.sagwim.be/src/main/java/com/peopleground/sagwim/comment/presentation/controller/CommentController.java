@@ -9,6 +9,7 @@ import com.peopleground.sagwim.global.configure.CustomUser;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,9 +40,11 @@ public class CommentController {
     public ResponseEntity<CommentListResponse> getComments(
         @PathVariable Long contentId,
         @RequestParam(required = false) Long cursorId,
-        @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+        @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+        @AuthenticationPrincipal CustomUser user
     ) {
-        CommentListResponse res = commentService.getComments(contentId, cursorId, size);
+        UUID currentUserId = user != null ? user.getId() : null;
+        CommentListResponse res = commentService.getComments(contentId, cursorId, size, currentUserId);
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 

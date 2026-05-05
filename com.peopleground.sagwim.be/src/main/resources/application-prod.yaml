@@ -4,7 +4,8 @@ spring:
     init:
       mode: never
   flyway:
-    # 운영: classpath:db/migration 에 V1만 존재 → V2(개발 시드)는 dev/ 서브폴더라 자동 차단됨
+    # 운영: classpath:db/migration 루트만 스캔 → dev/ 서브폴더의 V2(개발 시드)는 자동 차단됨
+    # 현재 운영 마이그레이션: V1(스키마 생성), V3(p_comment.image_url 추가)
   jpa:
     properties:
       hibernate:

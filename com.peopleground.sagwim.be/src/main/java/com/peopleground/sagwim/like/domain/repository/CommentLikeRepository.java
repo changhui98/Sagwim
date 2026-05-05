@@ -1,7 +1,9 @@
 package com.peopleground.sagwim.like.domain.repository;
 
 import com.peopleground.sagwim.like.domain.entity.CommentLike;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface CommentLikeRepository {
@@ -19,4 +21,10 @@ public interface CommentLikeRepository {
      * 예외 없이 실제 삽입된 행 수(0 또는 1)를 반환한다.
      */
     int insertIfNotExists(Long commentId, UUID userId);
+
+    /**
+     * 특정 사용자가 좋아요한 댓글 ID 목록을 배치 조회한다.
+     * 댓글 목록 조회 시 likedByMe 필드를 N+1 없이 결정하기 위해 사용한다.
+     */
+    Set<Long> findLikedCommentIdsByUserIdAndCommentIds(UUID userId, List<Long> commentIds);
 }

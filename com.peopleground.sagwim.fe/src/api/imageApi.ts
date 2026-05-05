@@ -4,7 +4,7 @@ import { parseResponse } from './apiUtils'
 
 interface ImageUploadResponse {
   id: number
-  targetType: 'USER' | 'CONTENT' | 'GROUP'
+  targetType: 'USER' | 'CONTENT' | 'GROUP' | 'COMMENT'
   targetId: string
   originalFilename: string
   fileUrl: string
@@ -16,7 +16,7 @@ interface ImageUploadResponse {
 
 export interface ImageResponse {
   id: number
-  targetType: 'USER' | 'CONTENT' | 'GROUP'
+  targetType: 'USER' | 'CONTENT' | 'GROUP' | 'COMMENT'
   targetId: string
   originalFilename: string
   fileUrl: string
@@ -125,4 +125,27 @@ export const getGroupImages = (token: string, groupId: number): Promise<ImageRes
       Authorization: token.trim(),
     },
   }).then((response) => parseResponse<ImageResponse[]>(response))
+}
+
+export const uploadCommentImage = (
+  token: string,
+  file: File,
+  tempId: string,
+): Promise<ImageUploadResponse> => {
+  if (!token.trim()) {
+    throw new ApiError(401, '로그인이 필요합니다.')
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('targetType', 'COMMENT')
+  formData.append('targetId', tempId)
+
+  return fetch(`${API_BASE_URL}/images`, {
+    method: 'POST',
+    headers: {
+      Authorization: token.trim(),
+    },
+    body: formData,
+  }).then((response) => parseResponse<ImageUploadResponse>(response))
 }
