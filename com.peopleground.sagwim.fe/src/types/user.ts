@@ -1,3 +1,5 @@
+export type UserRole = 'USER' | 'MANAGER' | 'ADMIN'
+
 export interface UserResponse {
   id: string
   username: string
@@ -6,6 +8,7 @@ export interface UserResponse {
   address: string
   profileImageUrl?: string | null
   provider?: OAuthProvider
+  role?: UserRole
   isDeleted?: boolean
   createdDate?: string | null
   modifiedDate?: string | null
@@ -50,4 +53,8 @@ export interface EmailChangeRequest {
 export interface EmailChangeConfirmRequest {
   newEmail: string
   code: string
+}
+
+export interface ChangeUserRoleRequest {
+  role: UserRole
 }

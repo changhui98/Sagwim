@@ -6,10 +6,13 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface UserRepository {
+
+    Optional<User> findById(UUID id);
 
     Optional<User> findByUsername(String username);
 
