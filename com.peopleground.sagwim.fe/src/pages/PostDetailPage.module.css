@@ -816,6 +816,133 @@
 
 /* ── 댓글 좋아요 ── */
 
+/* ── 댓글 오른쪽 트레일링 영역 (게시글 작성자 좋아요 아바타 + 미트볼 메뉴) ── */
+
+.commentTrailing {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+/* 댓글 미트볼 메뉴 */
+.commentMenu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.commentMenuBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.commentMenuBtn:hover {
+  background: var(--clr-accent-muted);
+  color: var(--clr-text);
+}
+
+.commentMenuBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.commentMenuPopover {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 100px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--sp-1);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 10;
+  animation: menuFadeIn 120ms ease-out;
+}
+
+/* ── 게시글 작성자 좋아요 아바타 ── */
+
+.postAuthorLikeWrapper {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.postAuthorLikeAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent-muted);
+  color: var(--clr-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.postAuthorLikeHeart {
+  position: absolute;
+  bottom: -3px;
+  left: -3px;
+  font-size: 0.875rem;
+  line-height: 1;
+  color: #e63e5c;
+  pointer-events: none;
+}
+
+/* ── 댓글 인라인 수정 영역 ── */
+
+.commentEditArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.commentEditTextarea {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--clr-accent);
+  border-radius: var(--r-md);
+  background: var(--clr-surface);
+  color: var(--clr-text);
+  font: inherit;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.commentEditTextarea:focus {
+  border-color: var(--clr-accent);
+  box-shadow: var(--shadow-focus);
+}
+
+.commentEditActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
 .commentLiked {
   color: var(--clr-error);
 }
