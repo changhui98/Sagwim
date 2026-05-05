@@ -7,6 +7,7 @@ import { SocialAddressModal } from '../components/auth/SocialAddressModal'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import { socialSignIn, linkSocialAccount } from '../api/socialAuthApi'
 import { ApiError } from '../api/ApiError'
+import type { EmailConflictData } from '../types/auth'
 import { updateMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import styles from './LoginPage.module.css'
@@ -36,7 +37,7 @@ export function LoginPage() {
   // 계정 연동 확인 다이얼로그 상태
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [linkLoading, setLinkLoading] = useState(false)
-  const pendingLinkRef = useRef<{ provider: string; code: string } | null>(null)
+  const pendingLinkRef = useRef<{ provider: string; accessToken: string } | null>(null)
 
   // OAuth redirect callback 처리 (?code=...&state=KAKAO|GOOGLE)
   useEffect(() => {
@@ -67,7 +68,12 @@ export function LoginPage() {
       } catch (err) {
         if (err instanceof ApiError && err.status === 409) {
           // 동일 이메일로 가입된 계정 존재 → 연동 확인 다이얼로그 표시
-          pendingLinkRef.current = { provider, code }
+          // 409 바디의 accessToken을 보관하여 link 단계에서 code 재사용(invalid_grant)을 방지한다.
+          const conflict = err.conflictData as EmailConflictData | undefined
+          pendingLinkRef.current = {
+            provider: conflict?.provider ?? provider,
+            accessToken: conflict?.accessToken ?? '',
+          }
           setLinkDialogOpen(true)
         } else {
           setSocialError(err instanceof Error ? err.message : '소셜 로그인에 실패했습니다.')
@@ -88,7 +94,7 @@ export function LoginPage() {
     try {
       setLinkLoading(true)
       setSocialError('')
-      const { token: jwtToken } = await linkSocialAccount(pending.provider, pending.code, REDIRECT_URI)
+      const { token: jwtToken } = await linkSocialAccount(pending.provider, pending.accessToken)
       login(jwtToken)
       setLinkDialogOpen(false)
       navigate(nextPath, { replace: true })
