@@ -21,7 +21,8 @@ public enum UserErrorCode implements ErrorCode {
     EMAIL_ALREADY_VERIFIED(HttpStatus.BAD_REQUEST, "U010", "이미 인증된 이메일입니다."),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "U011", "이미 사용 중인 이메일입니다."),
     EMAIL_NOT_PRE_VERIFIED(HttpStatus.BAD_REQUEST, "U012", "이메일 사전 인증이 완료되지 않았습니다."),
-    SOCIAL_USER_CANNOT_CHANGE_PASSWORD(HttpStatus.BAD_REQUEST, "U013", "소셜 로그인 계정은 비밀번호를 변경할 수 없습니다.")
+    SOCIAL_USER_CANNOT_CHANGE_PASSWORD(HttpStatus.BAD_REQUEST, "U013", "소셜 로그인 계정은 비밀번호를 변경할 수 없습니다."),
+    EMAIL_ALREADY_EXISTS_WITH_DIFFERENT_PROVIDER(HttpStatus.CONFLICT, "U014", "동일한 이메일로 가입된 계정이 존재합니다. 계정을 연동해주세요.")
     ;
 
     private final HttpStatus status;

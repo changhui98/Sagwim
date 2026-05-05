@@ -5,13 +5,14 @@ import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.global.security.jwt.JwtTokenProvider;
 import com.peopleground.sagwim.user.application.port.OAuthClient;
 import com.peopleground.sagwim.user.application.port.OAuthUserProfile;
+import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.OAuthProvider;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
+import com.peopleground.sagwim.user.presentation.dto.request.SocialLinkRequest;
 import com.peopleground.sagwim.user.presentation.dto.request.SocialSignInRequest;
 import com.peopleground.sagwim.user.presentation.dto.response.SocialSignInResponse;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,22 +48,51 @@ public class SocialAuthService {
         };
     }
 
+    /**
+     * 기존 계정에 소셜 provider를 연동하고 JWT를 발급한다.
+     * 프론트엔드에서 409 응답을 받은 후 사용자 동의 하에 호출된다.
+     */
+    @Transactional
+    public SocialSignInResponse linkSocialAccount(SocialLinkRequest request) {
+        OAuthProvider provider = resolveProvider(request.provider());
+        OAuthClient client = resolveClient(provider);
+
+        String accessToken = client.exchangeToken(request.code(), request.redirectUri());
+        OAuthUserProfile profile = client.fetchUserProfile(accessToken);
+
+        String email = profile.email() != null ? profile.email()
+            : provider.name().toLowerCase() + "_" + profile.providerId() + "@sagwim.social";
+
+        User user = userRepository.findByUserEmail(email)
+            .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+
+        user.linkSocialProvider(provider, profile.providerId());
+
+        String jwtToken = jwtTokenProvider.createToken(user.getId(), user.getUsername(), user.getRole());
+        return new SocialSignInResponse(jwtToken, false, user.getNickname());
+    }
+
     private SocialSignInResponse handleSignIn(OAuthProvider provider, OAuthClient client, String code, String redirectUri) {
         String accessToken = client.exchangeToken(code, redirectUri);
         OAuthUserProfile profile = client.fetchUserProfile(accessToken);
 
-        Optional<User> existing = userRepository.findByProviderAndProviderId(provider, profile.providerId());
-
-        if (existing.isPresent()) {
-            User user = existing.get();
+        // 1. 동일 provider + providerId로 이미 가입된 계정 확인
+        Optional<User> existingBySocial = userRepository.findByProviderAndProviderId(provider, profile.providerId());
+        if (existingBySocial.isPresent()) {
+            User user = existingBySocial.get();
             String jwtToken = jwtTokenProvider.createToken(user.getId(), user.getUsername(), user.getRole());
             return new SocialSignInResponse(jwtToken, false, user.getNickname());
         }
 
-        // 신규 가입
         String email = profile.email() != null ? profile.email()
             : provider.name().toLowerCase() + "_" + profile.providerId() + "@sagwim.social";
 
+        // 2. 동일 이메일로 다른 provider(LOCAL 포함)로 가입된 계정 확인 → 연동 필요
+        if (userRepository.existsByUserEmail(email)) {
+            throw new AppException(UserErrorCode.EMAIL_ALREADY_EXISTS_WITH_DIFFERENT_PROVIDER);
+        }
+
+        // 3. 신규 가입
         User newUser = User.ofSocial(
             provider,
             profile.providerId(),
@@ -73,6 +103,14 @@ public class SocialAuthService {
         User saved = userRepository.save(newUser);
         String jwtToken = jwtTokenProvider.createToken(saved.getId(), saved.getUsername(), saved.getRole());
         return new SocialSignInResponse(jwtToken, true, saved.getNickname());
+    }
+
+    private OAuthClient resolveClient(OAuthProvider provider) {
+        return switch (provider) {
+            case KAKAO -> kakaoOAuthClient;
+            case GOOGLE -> googleOAuthClient;
+            default -> throw new AppException(ApiErrorCode.INVALID_REQUEST);
+        };
     }
 
     private OAuthProvider resolveProvider(String provider) {
