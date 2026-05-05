@@ -288,3 +288,11 @@
 .rowClickable {
   cursor: pointer;
 }
+
+.noStacktrace {
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+  font-size: 0.8125rem;
+  color: var(--clr-text-muted);
+  border-top: 1px solid var(--clr-border);
+}

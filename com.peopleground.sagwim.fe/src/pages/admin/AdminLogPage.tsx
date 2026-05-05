@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getErrorLogs, getRegistrationLogs } from '../../api/logApi'
 import { ApiError } from '../../api/ApiError'
@@ -162,7 +162,7 @@ function ErrorLogTable({ logs }: { logs: LogPageResponse<ErrorLogEntry> | null }
   }
 
   const handleRowClick = (i: number, entry: ErrorLogEntry) => {
-    if (!entry.stacktrace) return
+    if (entry.status < 500) return
     setExpandedIndex(expandedIndex === i ? null : i)
   }
 
@@ -182,10 +182,9 @@ function ErrorLogTable({ logs }: { logs: LogPageResponse<ErrorLogEntry> | null }
         </thead>
         <tbody>
           {logs.content.map((entry, i) => (
-            <>
+            <Fragment key={i}>
               <tr
-                key={i}
-                className={entry.stacktrace ? styles.rowClickable : undefined}
+                className={entry.status >= 500 ? styles.rowClickable : undefined}
                 onClick={() => handleRowClick(i, entry)}
               >
                 <td className={styles.cellTime}>{formatDateTime(entry.timestamp)}</td>
@@ -197,7 +196,7 @@ function ErrorLogTable({ logs }: { logs: LogPageResponse<ErrorLogEntry> | null }
                 </td>
                 <td>
                   <span className={statusBadgeClass(entry.status)}>{entry.status}</span>
-                  {entry.stacktrace && (
+                  {entry.status >= 500 && (
                     <span className={styles.expandIcon}>
                       {expandedIndex === i ? '▼' : '▶'}
                     </span>
@@ -206,14 +205,18 @@ function ErrorLogTable({ logs }: { logs: LogPageResponse<ErrorLogEntry> | null }
                 <td className={styles.cellMono}>{entry.ip}</td>
                 <td className={styles.cellMono}>{entry.userId}</td>
               </tr>
-              {entry.stacktrace && expandedIndex === i && (
-                <tr key={`${i}-stacktrace`} className={styles.stacktraceRow}>
+              {entry.status >= 500 && expandedIndex === i && (
+                <tr className={styles.stacktraceRow}>
                   <td colSpan={6}>
-                    <pre className={styles.stacktracePre}>{entry.stacktrace}</pre>
+                    {entry.stacktrace ? (
+                      <pre className={styles.stacktracePre}>{entry.stacktrace}</pre>
+                    ) : (
+                      <p className={styles.noStacktrace}>(상세 정보 없음 — 이전 로그)</p>
+                    )}
                   </td>
                 </tr>
               )}
-            </>
+            </Fragment>
           ))}
         </tbody>
       </table>
