@@ -2,6 +2,7 @@ import type { ChangeUserRoleRequest, PageResponse, UserDetailResponse, UserRespo
 import type { AdminContentResponse } from '../types/post'
 import type { MonthlyStatsResponse } from '../types/adminStats'
 import type { AdminImageResponse } from '../types/image'
+import type { AdminGroupResponse } from '../types/group'
 import { ApiError } from './ApiError'
 import { API_BASE_URL } from './config'
 
@@ -196,4 +197,34 @@ export const deleteAdminImage = (token: string, imageId: number): Promise<void> 
       throw new ApiError(response.status, text || `Request failed: ${response.status}`)
     }
   })
+}
+
+export const getAdminGroups = (
+  token: string,
+  page = 0,
+  size = 10,
+): Promise<PageResponse<AdminGroupResponse>> => {
+  return fetch(`${API_BASE_URL}/admin/groups?page=${page}&size=${size}`, {
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<PageResponse<AdminGroupResponse>>(response))
+}
+
+export const approveAdminGroup = (
+  token: string,
+  groupId: number,
+): Promise<AdminGroupResponse> => {
+  return fetch(`${API_BASE_URL}/admin/groups/${groupId}/approve`, {
+    method: 'PATCH',
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<AdminGroupResponse>(response))
+}
+
+export const rejectAdminGroup = (
+  token: string,
+  groupId: number,
+): Promise<AdminGroupResponse> => {
+  return fetch(`${API_BASE_URL}/admin/groups/${groupId}/reject`, {
+    method: 'PATCH',
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<AdminGroupResponse>(response))
 }

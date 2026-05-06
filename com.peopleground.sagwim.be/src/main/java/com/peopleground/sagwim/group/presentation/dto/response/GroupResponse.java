@@ -3,6 +3,7 @@ package com.peopleground.sagwim.group.presentation.dto.response;
 import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
+import com.peopleground.sagwim.group.domain.entity.GroupStatus;
 import java.time.LocalDateTime;
 
 public record GroupResponse(
@@ -18,7 +19,8 @@ public record GroupResponse(
     String leaderUsername,
     LocalDateTime createdDate,
     String imageUrl,
-    int likeCount
+    int likeCount,
+    GroupStatus status
 ) {
 
     public static GroupResponse from(Group group) {
@@ -39,7 +41,8 @@ public record GroupResponse(
             group.getLeader().getUsername(),
             group.getCreatedDate(),
             resolvedImageUrl,
-            group.getLikeCount()
+            group.getLikeCount(),
+            group.getStatus()
         );
     }
 }

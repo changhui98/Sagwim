@@ -2,6 +2,7 @@ package com.peopleground.sagwim.group.infrastructure.repository;
 
 import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
+import com.peopleground.sagwim.group.domain.entity.GroupStatus;
 import com.peopleground.sagwim.group.domain.entity.QGroup;
 import com.peopleground.sagwim.group.domain.entity.QGroupMember;
 import com.peopleground.sagwim.user.domain.entity.QUser;
@@ -51,6 +52,7 @@ public class GroupQueryRepository {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(group.deletedDate.isNull());
+        builder.and(group.status.eq(GroupStatus.ACTIVE));
 
         if (keyword != null && !keyword.isBlank()) {
             builder.and(group.name.containsIgnoreCase(keyword));
@@ -91,6 +93,7 @@ public class GroupQueryRepository {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(group.deletedDate.isNull());
+        builder.and(group.status.eq(GroupStatus.ACTIVE));
         builder.and(group.createdDate.goe(sevenDaysAgo));
 
         List<Group> groups = queryFactory
@@ -121,7 +124,7 @@ public class GroupQueryRepository {
         List<Group> groups = queryFactory
             .selectFrom(group)
             .join(group.leader, leader).fetchJoin()
-            .where(group.deletedDate.isNull(), group.likeCount.goe(1))
+            .where(group.deletedDate.isNull(), group.status.eq(GroupStatus.ACTIVE), group.likeCount.goe(1))
             .orderBy(group.likeCount.desc(), group.createdDate.desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -130,7 +133,7 @@ public class GroupQueryRepository {
         Long total = queryFactory
             .select(group.count())
             .from(group)
-            .where(group.deletedDate.isNull(), group.likeCount.goe(1))
+            .where(group.deletedDate.isNull(), group.status.eq(GroupStatus.ACTIVE), group.likeCount.goe(1))
             .fetchOne();
 
         return new PageImpl<>(groups, pageable, total != null ? total : 0);
@@ -167,6 +170,31 @@ public class GroupQueryRepository {
                 group.deletedDate.isNull(),
                 groupMember.deletedDate.isNull()
             )
+            .fetchOne();
+
+        return new PageImpl<>(groups, pageable, total != null ? total : 0);
+    }
+
+    /**
+     * 관리자용: 소프트 삭제된 모임 제외, 상태 무관 전체 조회 (id DESC 정렬)
+     */
+    public Page<Group> findAllForAdmin(Pageable pageable) {
+        QGroup group = QGroup.group;
+        QUser leader = new QUser("leader");
+
+        List<Group> groups = queryFactory
+            .selectFrom(group)
+            .join(group.leader, leader).fetchJoin()
+            .where(group.deletedDate.isNull())
+            .orderBy(group.id.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .fetch();
+
+        Long total = queryFactory
+            .select(group.count())
+            .from(group)
+            .where(group.deletedDate.isNull())
             .fetchOne();
 
         return new PageImpl<>(groups, pageable, total != null ? total : 0);

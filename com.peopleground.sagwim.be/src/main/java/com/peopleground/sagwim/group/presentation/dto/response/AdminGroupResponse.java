@@ -5,9 +5,8 @@ import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
 import com.peopleground.sagwim.group.domain.entity.GroupStatus;
 import java.time.LocalDateTime;
-import java.util.List;
 
-public record GroupDetailResponse(
+public record AdminGroupResponse(
     Long id,
     String name,
     String description,
@@ -18,19 +17,13 @@ public record GroupDetailResponse(
     int currentMemberCount,
     String leaderNickname,
     String leaderUsername,
-    LocalDateTime createdDate,
-    String imageUrl,
-    int likeCount,
     GroupStatus status,
-    List<GroupMemberResponse> members
+    LocalDateTime createdDate,
+    LocalDateTime lastModifiedDate
 ) {
 
-    public static GroupDetailResponse of(Group group, List<GroupMemberResponse> members) {
-        return of(group, group.getImageUrl(), members);
-    }
-
-    public static GroupDetailResponse of(Group group, String resolvedImageUrl, List<GroupMemberResponse> members) {
-        return new GroupDetailResponse(
+    public static AdminGroupResponse from(Group group) {
+        return new AdminGroupResponse(
             group.getId(),
             group.getName(),
             group.getDescription(),
@@ -41,11 +34,9 @@ public record GroupDetailResponse(
             group.getCurrentMemberCount(),
             group.getLeader().getNickname(),
             group.getLeader().getUsername(),
-            group.getCreatedDate(),
-            resolvedImageUrl,
-            group.getLikeCount(),
             group.getStatus(),
-            members
+            group.getCreatedDate(),
+            group.getLastModifiedDate()
         );
     }
 }

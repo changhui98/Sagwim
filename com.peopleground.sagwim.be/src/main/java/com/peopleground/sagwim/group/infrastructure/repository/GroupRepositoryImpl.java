@@ -49,6 +49,11 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
+    public Page<Group> findAllForAdmin(Pageable pageable) {
+        return groupQueryRepository.findAllForAdmin(pageable);
+    }
+
+    @Override
     public void incrementMemberCount(Long groupId) {
         groupJpaRepository.incrementMemberCount(groupId);
     }

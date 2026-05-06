@@ -1,6 +1,7 @@
 export type GroupCategory = 'CLUB' | 'STUDY' | 'SOCIAL'
 export type GroupMemberRole = 'LEADER' | 'MEMBER'
 export type GroupMeetingType = 'ONLINE' | 'OFFLINE'
+export type GroupStatus = 'PENDING' | 'ACTIVE' | 'REJECTED'
 
 export interface GroupResponse {
   id: number
@@ -16,6 +17,29 @@ export interface GroupResponse {
   createdDate: string
   imageUrl: string | null
   likeCount: number
+  status: GroupStatus
+}
+
+export interface AdminGroupResponse {
+  id: number
+  name: string
+  description: string | null
+  category: GroupCategory
+  meetingType: GroupMeetingType
+  region: string | null
+  maxMemberCount: number
+  currentMemberCount: number
+  leaderNickname: string
+  leaderUsername: string
+  status: GroupStatus
+  createdDate: string
+  lastModifiedDate: string | null
+}
+
+export const GROUP_STATUS_LABELS: Record<GroupStatus, string> = {
+  PENDING: '승인 대기중',
+  ACTIVE: '활성',
+  REJECTED: '거절됨',
 }
 
 export interface GroupSearchParams {
@@ -32,6 +56,7 @@ export interface GroupMemberResponse {
 }
 
 export interface GroupDetailResponse extends GroupResponse {
+  status: GroupStatus
   members: GroupMemberResponse[]
 }
 
