@@ -15,7 +15,7 @@
 }
 
 .page-transition {
-  animation: pageEnter var(--t-base) var(--ease) both;
+  animation: pageEnter 300ms var(--ease) both;
   /* will-change: opacity, transform 으로 GPU 레이어 예약 */
   will-change: opacity, transform;
 }

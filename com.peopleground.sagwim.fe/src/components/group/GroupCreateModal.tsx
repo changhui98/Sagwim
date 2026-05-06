@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { createGroup } from '../../api/groupApi'
 import { uploadGroupImage } from '../../api/imageApi'
 import { useAuth } from '../../context/AuthContext'
@@ -105,7 +106,7 @@ export function GroupCreateModal({ isOpen, onClose, onCreated }: GroupCreateModa
     }
   }
 
-  return (
+  return createPortal(
     <>
     <RegionSelectorModal
       isOpen={regionModalOpen}
@@ -280,6 +281,7 @@ export function GroupCreateModal({ isOpen, onClose, onCreated }: GroupCreateModa
         </form>
       </div>
     </div>
-    </>
+    </>,
+    document.body
   )
 }
