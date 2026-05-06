@@ -20,7 +20,7 @@ import styles from './AdminGroupsPage.module.css'
 const PAGE_SIZE = 10
 const MAX_VISIBLE_PAGES = 5
 
-type ConfirmAction = 'approve' | 'reject'
+type ConfirmAction = 'approve' | 'reject' | 'delete'
 
 interface ConfirmState {
   group: AdminGroupResponse
@@ -100,14 +100,15 @@ export function AdminGroupsPage() {
       setActionLoading(true)
       if (action === 'approve') {
         await approveAdminGroup(token, group.id)
-      } else {
+      } else if (action === 'reject') {
         await rejectAdminGroup(token, group.id)
       }
+      // TODO: 모임 삭제 API 연결 예정 (action === 'delete')
       setConfirmState(null)
       setSuccessAction(action)
       loadGroups(page)
     } catch (err) {
-      const label = action === 'approve' ? '승인' : '거절'
+      const label = action === 'approve' ? '승인' : action === 'reject' ? '거절' : '삭제'
       const message = err instanceof Error ? err.message : `모임 ${label} 실패`
       setError(message)
       handleUnauthorized(err)
@@ -148,6 +149,7 @@ export function AdminGroupsPage() {
                   <tr>
                     <th>번호</th>
                     <th>모임명</th>
+                    <th>설명</th>
                     <th>카테고리</th>
                     <th>개설자</th>
                     <th>상태</th>
@@ -159,7 +161,7 @@ export function AdminGroupsPage() {
                 <tbody>
                   {groups.length === 0 ? (
                     <tr className={tableStyles.emptyRow}>
-                      <td colSpan={8}>등록된 모임이 없습니다.</td>
+                      <td colSpan={9}>등록된 모임이 없습니다.</td>
                     </tr>
                   ) : (
                     groups.map((group) => (
@@ -167,9 +169,9 @@ export function AdminGroupsPage() {
                         <td className={tableStyles.tableDate}>{group.id}</td>
                         <td>
                           <span className={tableStyles.tableUsername}>{group.name}</span>
-                          {group.description && (
-                            <p className={styles.groupDesc}>{group.description}</p>
-                          )}
+                        </td>
+                        <td className={styles.groupDescCell}>
+                          {group.description ?? '—'}
                         </td>
                         <td className={tableStyles.tableSecondary}>
                           {GROUP_CATEGORY_LABELS[group.category]}
@@ -188,22 +190,47 @@ export function AdminGroupsPage() {
                         </td>
                         <td>
                           <div className={styles.actionButtons}>
-                            <button
-                              type="button"
-                              className={tableStyles.refreshButton}
-                              onClick={() => setConfirmState({ group, action: 'approve' })}
-                              disabled={actionLoading || group.status !== 'PENDING'}
-                            >
-                              승인
-                            </button>
-                            <button
-                              type="button"
-                              className={tableStyles.deleteButton}
-                              onClick={() => setConfirmState({ group, action: 'reject' })}
-                              disabled={actionLoading || group.status !== 'PENDING'}
-                            >
-                              거절
-                            </button>
+                            {group.status === 'PENDING' && (
+                              <>
+                                <button
+                                  type="button"
+                                  className={tableStyles.refreshButton}
+                                  onClick={() => setConfirmState({ group, action: 'approve' })}
+                                  disabled={actionLoading}
+                                >
+                                  승인
+                                </button>
+                                <button
+                                  type="button"
+                                  className={tableStyles.deleteButton}
+                                  onClick={() => setConfirmState({ group, action: 'reject' })}
+                                  disabled={actionLoading}
+                                >
+                                  거절
+                                </button>
+                              </>
+                            )}
+                            {group.status === 'ACTIVE' && (
+                              // TODO: 모임 삭제 API 연결 예정
+                              <button
+                                type="button"
+                                className={tableStyles.deleteButton}
+                                onClick={() => setConfirmState({ group, action: 'delete' })}
+                                disabled={actionLoading}
+                              >
+                                삭제
+                              </button>
+                            )}
+                            {group.status === 'REJECTED' && (
+                              <button
+                                type="button"
+                                className={tableStyles.refreshButton}
+                                onClick={() => setConfirmState({ group, action: 'approve' })}
+                                disabled={actionLoading}
+                              >
+                                승인
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -254,15 +281,29 @@ export function AdminGroupsPage() {
 
       <ConfirmDialog
         isOpen={confirmState !== null}
-        title={confirmState?.action === 'approve' ? '모임 승인' : '모임 거절'}
+        title={
+          confirmState?.action === 'approve'
+            ? '모임 승인'
+            : confirmState?.action === 'reject'
+              ? '모임 거절'
+              : '모임 삭제'
+        }
         message={
           confirmState
             ? confirmState.action === 'approve'
               ? `"${confirmState.group.name}" 모임을 승인하시겠습니까?`
-              : `"${confirmState.group.name}" 모임을 거절하시겠습니까?`
+              : confirmState.action === 'reject'
+                ? `"${confirmState.group.name}" 모임을 거절하시겠습니까?`
+                : `"${confirmState.group.name}" 모임을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`
             : ''
         }
-        confirmLabel={confirmState?.action === 'approve' ? '승인' : '거절'}
+        confirmLabel={
+          confirmState?.action === 'approve'
+            ? '승인'
+            : confirmState?.action === 'reject'
+              ? '거절'
+              : '삭제'
+        }
         confirmVariant={confirmState?.action === 'approve' ? 'primary' : 'danger'}
         isLoading={actionLoading}
         onConfirm={handleConfirm}
@@ -274,12 +315,16 @@ export function AdminGroupsPage() {
         title={
           successAction === 'approve'
             ? '모임이 승인되었습니다'
-            : '모임이 거절되었습니다'
+            : successAction === 'reject'
+              ? '모임이 거절되었습니다'
+              : '모임이 삭제되었습니다'
         }
         message={
           successAction === 'approve'
             ? '모임이 활성화되어 사용자에게 노출됩니다.'
-            : '모임 개설 요청을 거절했습니다.'
+            : successAction === 'reject'
+              ? '모임 개설 요청을 거절했습니다.'
+              : '모임이 삭제되었습니다.'
         }
         onClose={() => setSuccessAction(null)}
       />
