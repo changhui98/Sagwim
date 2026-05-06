@@ -135,9 +135,14 @@ jobs:
 
       - name: 홈서버 IP 조회 (Azure DNS 우회)
         run: |
-          RESOLVED_IP=$(dig +short @8.8.8.8 ${{ secrets.HOME_SERVER_HOST }} | tail -n1)
+          HOST="${{ secrets.HOME_SERVER_HOST }}"
+          RESOLVED_IP=$(dig +short @8.8.8.8 "$HOST" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | tail -n1)
           if [ -z "$RESOLVED_IP" ]; then
-            echo "DuckDNS 호스트명 IP 조회 실패"
+            echo "8.8.8.8 조회 실패, 1.1.1.1 폴백 시도..."
+            RESOLVED_IP=$(dig +short @1.1.1.1 "$HOST" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | tail -n1)
+          fi
+          if [ -z "$RESOLVED_IP" ]; then
+            echo "DuckDNS 호스트명 IP 조회 실패: $HOST"
             exit 1
           fi
           echo "HOME_SERVER_IP=$RESOLVED_IP" >> $GITHUB_ENV
