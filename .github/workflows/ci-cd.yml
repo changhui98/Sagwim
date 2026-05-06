@@ -213,6 +213,7 @@ jobs:
             cd ~/sagwim
             chmod +x scripts/deploy.sh
             # 워크플로가 이미 빌드/로드한 이미지를 그대로 사용 (홈서버 옛 소스로 재빌드 방지)
+            mkdir -p ~/sagwim/logs
             SKIP_BUILD=1 ./scripts/deploy.sh all "$TAG"
 
             echo "=== 이미지 파일 정리 ==="
