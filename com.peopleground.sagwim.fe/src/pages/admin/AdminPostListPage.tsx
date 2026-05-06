@@ -33,6 +33,7 @@ export function AdminPostListPage() {
   const [contents, setContents] = useState<AdminContentResponse[]>([])
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
   const [loading, setLoading] = useState(true)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
@@ -64,6 +65,7 @@ export function AdminPostListPage() {
         })
         setContents(sortedContents)
         setTotalPages(response.totalPages)
+        setTotalElements(response.totalElements)
       } catch (err) {
         const message = err instanceof Error ? err.message : '게시글 목록 조회 실패'
         setError(message)
@@ -134,11 +136,13 @@ export function AdminPostListPage() {
           </div>
         ) : (
           <>
+            <div className={tableStyles.totalCount}>총 {totalElements.toLocaleString()}건</div>
             <div className={tableStyles.tableWrap} style={{ position: 'relative' }}>
               {loading && <LoadingSpinner overlay />}
               <table className={tableStyles.table}>
                 <thead>
                   <tr>
+                    <th>번호</th>
                     <th>내용</th>
                     <th>작성자</th>
                     <th>작성일</th>
@@ -150,11 +154,12 @@ export function AdminPostListPage() {
                 <tbody>
                   {contents.length === 0 ? (
                     <tr className={tableStyles.emptyRow}>
-                      <td colSpan={6}>등록된 게시글이 없습니다.</td>
+                      <td colSpan={7}>등록된 게시글이 없습니다.</td>
                     </tr>
                   ) : (
                     contents.map((content) => (
                       <tr key={content.id}>
+                        <td className={tableStyles.tableDate}>{content.id}</td>
                         <td>
                           <span className={tableStyles.tableUsername}>
                             {content.body}
