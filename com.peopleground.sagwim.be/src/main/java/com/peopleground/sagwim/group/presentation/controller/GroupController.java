@@ -7,6 +7,7 @@ import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupCreateRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupDetailResponse;
+import com.peopleground.sagwim.group.presentation.dto.response.GroupJoinRequestResponse;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupMemberResponse;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupResponse;
 import jakarta.validation.Valid;
@@ -156,5 +157,34 @@ public class GroupController {
     ) {
         PageResponse<GroupResponse> response = groupService.getMyGroups(customUser, page, size);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{groupId}/join-requests")
+    public ResponseEntity<List<GroupJoinRequestResponse>> getPendingJoinRequests(
+        @PathVariable Long groupId,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        List<GroupJoinRequestResponse> response = groupService.getPendingJoinRequests(groupId, customUser);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{groupId}/join-requests/{requestId}/approve")
+    public ResponseEntity<Void> approveJoinRequest(
+        @PathVariable Long groupId,
+        @PathVariable Long requestId,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        groupService.approveJoinRequest(groupId, requestId, customUser);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{groupId}/join-requests/{requestId}/reject")
+    public ResponseEntity<Void> rejectJoinRequest(
+        @PathVariable Long groupId,
+        @PathVariable Long requestId,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        groupService.rejectJoinRequest(groupId, requestId, customUser);
+        return ResponseEntity.ok().build();
     }
 }

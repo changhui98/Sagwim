@@ -64,6 +64,10 @@ public class Group extends AuditingEntity {
     @Column(nullable = false)
     private GroupStatus status = GroupStatus.PENDING;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private GroupJoinType joinType = GroupJoinType.OPEN;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id", nullable = false)
     private User leader;
@@ -87,17 +91,23 @@ public class Group extends AuditingEntity {
         group.currentMemberCount = 0;
         group.likeCount = 0;
         group.status = GroupStatus.PENDING;
+        group.joinType = GroupJoinType.OPEN;
         group.leader = leader;
         return group;
     }
 
-    public void update(String name, String description, GroupCategory category, GroupMeetingType meetingType, String region, int maxMemberCount) {
+    public void update(String name, String description, GroupCategory category, GroupMeetingType meetingType, String region, int maxMemberCount, GroupJoinType joinType) {
         this.name = name;
         this.description = description;
         this.category = category;
         this.meetingType = meetingType;
         this.region = meetingType == GroupMeetingType.ONLINE ? null : region;
         this.maxMemberCount = maxMemberCount;
+        this.joinType = joinType;
+    }
+
+    public void updateJoinType(GroupJoinType joinType) {
+        this.joinType = joinType;
     }
 
     public void incrementMemberCount() {

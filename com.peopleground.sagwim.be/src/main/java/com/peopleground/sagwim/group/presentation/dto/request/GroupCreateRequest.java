@@ -1,6 +1,7 @@
 package com.peopleground.sagwim.group.presentation.dto.request;
 
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
+import com.peopleground.sagwim.group.domain.entity.GroupJoinType;
 import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -29,6 +30,8 @@ public record GroupCreateRequest(
     @NotNull(message = "최대 인원은 필수입니다.")
     @Min(value = 2, message = "최대 인원은 2명 이상이어야 합니다.")
     @Max(value = 1000, message = "최대 인원은 1000명을 초과할 수 없습니다.")
-    Integer maxMemberCount
+    Integer maxMemberCount,
+
+    GroupJoinType joinType
 ) {
 }

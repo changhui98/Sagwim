@@ -6,13 +6,18 @@ import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.group.domain.GroupErrorCode;
 import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
+import com.peopleground.sagwim.group.domain.entity.GroupJoinRequest;
+import com.peopleground.sagwim.group.domain.entity.GroupJoinRequestStatus;
+import com.peopleground.sagwim.group.domain.entity.GroupJoinType;
 import com.peopleground.sagwim.group.domain.entity.GroupMember;
 import com.peopleground.sagwim.group.domain.entity.GroupMemberRole;
+import com.peopleground.sagwim.group.domain.repository.GroupJoinRequestRepository;
 import com.peopleground.sagwim.group.domain.repository.GroupMemberRepository;
 import com.peopleground.sagwim.group.domain.repository.GroupRepository;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupCreateRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupDetailResponse;
+import com.peopleground.sagwim.group.presentation.dto.response.GroupJoinRequestResponse;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupMemberResponse;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupResponse;
 import com.peopleground.sagwim.image.application.ImageUrlResolver;
@@ -39,6 +44,7 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final GroupJoinRequestRepository joinRequestRepository;
     private final UserRepository userRepository;
     private final ImageService imageService;
     private final ImageUrlResolver imageUrlResolver;
@@ -57,6 +63,10 @@ public class GroupService {
             request.maxMemberCount(),
             leader
         );
+
+        if (request.joinType() != null) {
+            group.updateJoinType(request.joinType());
+        }
 
         Group saved = groupRepository.save(group);
 
@@ -121,13 +131,15 @@ public class GroupService {
         Group group = findGroup(groupId);
         validateLeader(group, customUser.getUsername());
 
+        GroupJoinType joinType = request.joinType() != null ? request.joinType() : group.getJoinType();
         group.update(
             request.name(),
             request.description(),
             request.category(),
             request.meetingType(),
             request.region(),
-            request.maxMemberCount()
+            request.maxMemberCount(),
+            joinType
         );
 
         return GroupResponse.from(group, imageUrlResolver.resolve(group.getImageUrl()));
@@ -153,6 +165,17 @@ public class GroupService {
             throw new AppException(GroupErrorCode.GROUP_ALREADY_JOINED);
         }
 
+        if (group.getJoinType() == GroupJoinType.APPROVAL_REQUIRED) {
+            if (joinRequestRepository.existsByGroupIdAndUsernameAndStatus(
+                    groupId, customUser.getUsername(), GroupJoinRequestStatus.PENDING)) {
+                throw new AppException(GroupErrorCode.GROUP_JOIN_REQUEST_ALREADY_EXISTS);
+            }
+            User user = getUser(customUser.getUsername());
+            GroupJoinRequest joinRequest = GroupJoinRequest.of(group, user);
+            joinRequestRepository.save(joinRequest);
+            return;
+        }
+
         if (group.isFull()) {
             throw new AppException(GroupErrorCode.GROUP_FULL);
         }
@@ -175,6 +198,47 @@ public class GroupService {
                 group.getName()
             );
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<GroupJoinRequestResponse> getPendingJoinRequests(Long groupId, CustomUser customUser) {
+        Group group = findGroup(groupId);
+        validateLeader(group, customUser.getUsername());
+
+        return joinRequestRepository.findByGroupIdAndStatus(groupId, GroupJoinRequestStatus.PENDING)
+            .stream()
+            .map(GroupJoinRequestResponse::from)
+            .toList();
+    }
+
+    @Transactional
+    public void approveJoinRequest(Long groupId, Long requestId, CustomUser customUser) {
+        Group group = findGroup(groupId);
+        validateLeader(group, customUser.getUsername());
+
+        GroupJoinRequest joinRequest = joinRequestRepository.findById(requestId)
+            .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_JOIN_REQUEST_NOT_FOUND));
+
+        if (group.isFull()) {
+            throw new AppException(GroupErrorCode.GROUP_FULL);
+        }
+
+        joinRequest.approve();
+
+        GroupMember member = GroupMember.of(group, joinRequest.getUser(), GroupMemberRole.MEMBER);
+        groupMemberRepository.save(member);
+        groupRepository.incrementMemberCount(groupId);
+    }
+
+    @Transactional
+    public void rejectJoinRequest(Long groupId, Long requestId, CustomUser customUser) {
+        Group group = findGroup(groupId);
+        validateLeader(group, customUser.getUsername());
+
+        GroupJoinRequest joinRequest = joinRequestRepository.findById(requestId)
+            .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_JOIN_REQUEST_NOT_FOUND));
+
+        joinRequest.reject();
     }
 
     @Transactional
