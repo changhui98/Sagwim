@@ -54,6 +54,11 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
+    public Optional<Group> findByIdIncludingDeleted(Long id) {
+        return groupJpaRepository.findById(id);
+    }
+
+    @Override
     public void incrementMemberCount(Long groupId) {
         groupJpaRepository.incrementMemberCount(groupId);
     }

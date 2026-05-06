@@ -33,4 +33,10 @@ public class AuditingEntity extends BaseEntity {
         this.deletedBy = user.getUsername();
     }
 
+    @Override
+    public void restore() {
+        this.deletedDate = null;
+        this.deletedBy = null;
+    }
+
 }

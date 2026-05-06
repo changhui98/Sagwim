@@ -25,6 +25,9 @@ public interface GroupRepository {
     // 관리자용: 소프트 삭제 제외, 상태 무관 전체 조회
     Page<Group> findAllForAdmin(Pageable pageable);
 
+    // 복원용: 삭제된 그룹 포함 조회
+    Optional<Group> findByIdIncludingDeleted(Long id);
+
     void incrementMemberCount(Long groupId);
 
     void decrementMemberCount(Long groupId);
