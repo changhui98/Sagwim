@@ -24,6 +24,7 @@ public record GroupDetailResponse(
     int likeCount,
     GroupStatus status,
     GroupJoinType joinType,
+    String joinQuestion,
     List<GroupMemberResponse> members
 ) {
 
@@ -48,6 +49,7 @@ public record GroupDetailResponse(
             group.getLikeCount(),
             group.getStatus(),
             group.getJoinType(),
+            group.getJoinQuestion(),
             members
         );
     }

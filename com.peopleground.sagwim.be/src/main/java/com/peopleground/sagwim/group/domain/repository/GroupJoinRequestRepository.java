@@ -10,4 +10,6 @@ public interface GroupJoinRequestRepository {
     Optional<GroupJoinRequest> findById(Long id);
     List<GroupJoinRequest> findByGroupIdAndStatus(Long groupId, GroupJoinRequestStatus status);
     boolean existsByGroupIdAndUsernameAndStatus(Long groupId, String username, GroupJoinRequestStatus status);
+    Optional<GroupJoinRequest> findByGroupIdAndUsernameAndStatus(Long groupId, String username, GroupJoinRequestStatus status);
+    void delete(GroupJoinRequest request);
 }

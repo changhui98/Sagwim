@@ -15,6 +15,7 @@ import com.peopleground.sagwim.group.domain.repository.GroupJoinRequestRepositor
 import com.peopleground.sagwim.group.domain.repository.GroupMemberRepository;
 import com.peopleground.sagwim.group.domain.repository.GroupRepository;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupCreateRequest;
+import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinQuestionUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupDetailResponse;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupJoinRequestResponse;
@@ -157,8 +158,20 @@ public class GroupService {
         group.delete(user);
     }
 
+    @Transactional(readOnly = true)
+    public String getJoinQuestion(Long groupId) {
+        return findGroup(groupId).getJoinQuestion();
+    }
+
     @Transactional
-    public void joinGroup(Long groupId, CustomUser customUser) {
+    public void updateJoinQuestion(Long groupId, GroupJoinQuestionUpdateRequest request, CustomUser customUser) {
+        Group group = findGroup(groupId);
+        validateLeader(group, customUser.getUsername());
+        group.updateJoinQuestion(request.question());
+    }
+
+    @Transactional
+    public void joinGroup(Long groupId, String answer, CustomUser customUser) {
         Group group = findGroup(groupId);
 
         if (groupMemberRepository.existsByGroupIdAndUsername(groupId, customUser.getUsername())) {
@@ -170,9 +183,19 @@ public class GroupService {
                     groupId, customUser.getUsername(), GroupJoinRequestStatus.PENDING)) {
                 throw new AppException(GroupErrorCode.GROUP_JOIN_REQUEST_ALREADY_EXISTS);
             }
-            User user = getUser(customUser.getUsername());
-            GroupJoinRequest joinRequest = GroupJoinRequest.of(group, user);
-            joinRequestRepository.save(joinRequest);
+            // 거절된 신청이 있으면 재활성화(PENDING으로 변경)하여 중복 키 오류 방지
+            joinRequestRepository.findByGroupIdAndUsernameAndStatus(
+                    groupId, customUser.getUsername(), GroupJoinRequestStatus.REJECTED)
+                .ifPresentOrElse(
+                    existing -> {
+                        existing.reactivate(answer);
+                        joinRequestRepository.save(existing);
+                    },
+                    () -> {
+                        User user = getUser(customUser.getUsername());
+                        joinRequestRepository.save(GroupJoinRequest.of(group, user, answer));
+                    }
+                );
             return;
         }
 
@@ -276,6 +299,22 @@ public class GroupService {
             .stream()
             .map(GroupMemberResponse::from)
             .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasMyPendingJoinRequest(Long groupId, CustomUser customUser) {
+        findGroup(groupId);
+        return joinRequestRepository.existsByGroupIdAndUsernameAndStatus(
+            groupId, customUser.getUsername(), GroupJoinRequestStatus.PENDING);
+    }
+
+    @Transactional
+    public void cancelMyJoinRequest(Long groupId, CustomUser customUser) {
+        findGroup(groupId);
+        GroupJoinRequest request = joinRequestRepository
+            .findByGroupIdAndUsernameAndStatus(groupId, customUser.getUsername(), GroupJoinRequestStatus.PENDING)
+            .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_JOIN_REQUEST_NOT_FOUND));
+        joinRequestRepository.delete(request);
     }
 
     @Transactional(readOnly = true)

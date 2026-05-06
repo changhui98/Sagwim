@@ -5,6 +5,8 @@ import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.group.application.service.GroupService;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupCreateRequest;
+import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinQuestionUpdateRequest;
+import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupDetailResponse;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupJoinRequestResponse;
@@ -12,6 +14,7 @@ import com.peopleground.sagwim.group.presentation.dto.response.GroupMemberRespon
 import com.peopleground.sagwim.group.presentation.dto.response.GroupResponse;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -115,12 +119,32 @@ public class GroupController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{groupId}/join-question")
+    public ResponseEntity<Map<String, String>> getJoinQuestion(
+        @PathVariable Long groupId
+    ) {
+        String question = groupService.getJoinQuestion(groupId);
+        return ResponseEntity.ok(Map.of("question", question != null ? question : ""));
+    }
+
+    @PutMapping("/{groupId}/join-question")
+    public ResponseEntity<Void> updateJoinQuestion(
+        @PathVariable Long groupId,
+        @Valid @RequestBody GroupJoinQuestionUpdateRequest request,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        groupService.updateJoinQuestion(groupId, request, customUser);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/{groupId}/join")
     public ResponseEntity<Void> joinGroup(
         @PathVariable Long groupId,
+        @RequestBody(required = false) GroupJoinRequest request,
         @AuthenticationPrincipal CustomUser customUser
     ) {
-        groupService.joinGroup(groupId, customUser);
+        String answer = request != null ? request.answer() : null;
+        groupService.joinGroup(groupId, answer, customUser);
         return ResponseEntity.ok().build();
     }
 
@@ -166,6 +190,24 @@ public class GroupController {
     ) {
         List<GroupJoinRequestResponse> response = groupService.getPendingJoinRequests(groupId, customUser);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{groupId}/join-requests/me")
+    public ResponseEntity<Map<String, Boolean>> getMyJoinRequestStatus(
+        @PathVariable Long groupId,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        boolean pending = groupService.hasMyPendingJoinRequest(groupId, customUser);
+        return ResponseEntity.ok(Map.of("pending", pending));
+    }
+
+    @DeleteMapping("/{groupId}/join-requests/me")
+    public ResponseEntity<Void> cancelMyJoinRequest(
+        @PathVariable Long groupId,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        groupService.cancelMyJoinRequest(groupId, customUser);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{groupId}/join-requests/{requestId}/approve")

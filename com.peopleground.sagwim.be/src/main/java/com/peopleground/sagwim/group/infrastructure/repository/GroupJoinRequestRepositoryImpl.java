@@ -33,4 +33,14 @@ public class GroupJoinRequestRepositoryImpl implements GroupJoinRequestRepositor
     public boolean existsByGroupIdAndUsernameAndStatus(Long groupId, String username, GroupJoinRequestStatus status) {
         return jpaRepository.existsByGroupIdAndUsernameAndStatus(groupId, username, status);
     }
+
+    @Override
+    public Optional<GroupJoinRequest> findByGroupIdAndUsernameAndStatus(Long groupId, String username, GroupJoinRequestStatus status) {
+        return jpaRepository.findByGroupIdAndUserUsernameAndStatus(groupId, username, status);
+    }
+
+    @Override
+    public void delete(GroupJoinRequest request) {
+        jpaRepository.delete(request);
+    }
 }
