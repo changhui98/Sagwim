@@ -4,20 +4,12 @@
 
 /* 페이지 전환 — fade-in + subtle slide-up */
 @keyframes pageEnter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .page-transition {
-  animation: pageEnter 300ms var(--ease) both;
-  /* will-change: opacity, transform 으로 GPU 레이어 예약 */
-  will-change: opacity, transform;
+  animation: pageEnter 250ms var(--ease) both;
 }
 
 @keyframes fadeIn {
