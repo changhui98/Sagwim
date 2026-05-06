@@ -228,3 +228,15 @@ export const rejectAdminGroup = (
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<AdminGroupResponse>(response))
 }
+
+export const deleteAdminGroup = (token: string, groupId: number): Promise<void> => {
+  return fetch(`${API_BASE_URL}/admin/groups/${groupId}`, {
+    method: 'DELETE',
+    headers: createAuthHeaders(token),
+  }).then(async (response) => {
+    if (!response.ok) {
+      const text = await response.text()
+      throw new ApiError(response.status, text || `Request failed: ${response.status}`)
+    }
+  })
+}

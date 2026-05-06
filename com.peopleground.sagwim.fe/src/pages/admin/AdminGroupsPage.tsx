@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   approveAdminGroup,
+  deleteAdminGroup,
   getAdminGroups,
   rejectAdminGroup,
 } from '../../api/adminApi'
@@ -102,8 +103,9 @@ export function AdminGroupsPage() {
         await approveAdminGroup(token, group.id)
       } else if (action === 'reject') {
         await rejectAdminGroup(token, group.id)
+      } else if (action === 'delete') {
+        await deleteAdminGroup(token, group.id)
       }
-      // TODO: 모임 삭제 API 연결 예정 (action === 'delete')
       setConfirmState(null)
       setSuccessAction(action)
       loadGroups(page)
@@ -211,7 +213,6 @@ export function AdminGroupsPage() {
                               </>
                             )}
                             {group.status === 'ACTIVE' && (
-                              // TODO: 모임 삭제 API 연결 예정
                               <button
                                 type="button"
                                 className={tableStyles.deleteButton}
