@@ -2,6 +2,17 @@ export type GroupCategory = 'CLUB' | 'STUDY' | 'SOCIAL'
 export type GroupMemberRole = 'LEADER' | 'MEMBER'
 export type GroupMeetingType = 'ONLINE' | 'OFFLINE'
 export type GroupStatus = 'PENDING' | 'ACTIVE' | 'REJECTED'
+export type GroupJoinType = 'OPEN' | 'APPROVAL_REQUIRED'
+export type GroupJoinRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED'
+
+export interface GroupJoinRequestResponse {
+  requestId: number
+  username: string
+  nickname: string
+  status: GroupJoinRequestStatus
+  createdDate: string
+  answer?: string | null
+}
 
 export interface GroupResponse {
   id: number
@@ -57,6 +68,8 @@ export interface GroupMemberResponse {
 
 export interface GroupDetailResponse extends GroupResponse {
   status: GroupStatus
+  joinType: GroupJoinType
+  joinQuestion?: string | null
   members: GroupMemberResponse[]
 }
 

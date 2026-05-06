@@ -4,10 +4,15 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  background: var(--clr-surface);
-  border-radius: var(--r-lg);
-  border: 1px solid var(--clr-border);
   overflow: hidden;
+}
+
+.menuList > li {
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.menuList > li:last-child {
+  border-bottom: none;
 }
 
 .menuItem {
@@ -15,19 +20,14 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: var(--sp-4) var(--sp-5);
+  padding: 1.25rem var(--sp-5);
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--clr-border);
   cursor: pointer;
   font-size: 0.9375rem;
   color: var(--clr-text);
   text-align: left;
   transition: background var(--t-fast);
-}
-
-.menuItem:last-child {
-  border-bottom: none;
 }
 
 .menuItem:hover {
@@ -71,4 +71,111 @@
   display: flex;
   gap: var(--sp-3);
   justify-content: flex-end;
+}
+
+.errorText {
+  font-size: 0.875rem;
+  color: var(--clr-error);
+  margin: 0;
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  color: var(--clr-text-muted);
+  margin: var(--sp-4) 0;
+}
+
+/* ── 가입 신청 목록 ── */
+.requestActions {
+  display: flex;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
+.approveBtn {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--clr-accent-gradient);
+  border: none;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: filter var(--t-fast);
+}
+
+.approveBtn:hover { filter: brightness(1.08); }
+
+/* ── 가입 방식 인라인 행 ── */
+.menuItemRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1.25rem var(--sp-5);
+}
+
+.menuItemLabel {
+  font-size: 0.9375rem;
+  color: var(--clr-text);
+  font-weight: 400;
+}
+
+/* ── 가입 방식 pill 토글 ── */
+.joinTypeToggle {
+  display: inline-flex;
+  border-radius: var(--r-full);
+  overflow: hidden;
+  background: var(--clr-surface-2);
+}
+
+.joinTypeBtn {
+  padding: 5px 16px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-right: 1px solid var(--clr-border);
+  background: transparent;
+  color: var(--clr-text-muted);
+  transition: background var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+}
+
+.joinTypeBtn:last-child {
+  border-right: none;
+}
+
+.joinTypeBtn:hover:not(:disabled) {
+  background: var(--clr-surface-3);
+  color: var(--clr-text-secondary);
+}
+
+.joinTypeBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.joinTypeBtnActive {
+  background: var(--clr-accent-muted);
+  color: var(--clr-accent);
+  cursor: default;
+}
+
+/* ── 가입 질문 설정 ── */
+.charCount {
+  font-size: 0.8125rem;
+  color: var(--clr-text-muted);
+  margin: 0;
+  text-align: right;
+}
+
+/* ── 가입 신청 목록 답변 셀 ── */
+.answerCell {
+  font-size: 0.8125rem;
+  color: var(--clr-text-secondary);
+  max-width: 200px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.noAnswer {
+  color: var(--clr-text-muted);
 }
