@@ -28,6 +28,7 @@ CF_RECORD_ID="${CF_RECORD_ID:-}"
 CF_RECORD_NAME="${CF_RECORD_NAME:-sagwim.com}"
 CF_PROXIED="${CF_PROXIED:-true}"   # Cloudflare 프록시 ON 유지
 CF_TTL="${CF_TTL:-1}"              # 1 = Auto (프록시 ON일 때 자동 설정됨)
+CF_SSH_RECORD_ID="${CF_SSH_RECORD_ID:-}"  # ssh.sagwim.com A 레코드 Record ID (DNS only)
 # ────────────────────────────────────────────────────
 
 # .env 파일이 있으면 로드 (스크립트 위치 기준 상위 디렉토리)
@@ -117,4 +118,27 @@ if [[ "$UPDATE_SUCCESS" == "true" ]]; then
 else
     echo "$LOG_PREFIX [ERROR] Cloudflare A 레코드 갱신 실패: $UPDATE_RESPONSE"
     exit 1
+fi
+
+# ─── ssh.sagwim.com (DNS only) 레코드 갱신 ──────────
+if [[ -n "$CF_SSH_RECORD_ID" ]]; then
+    SSH_UPDATE_RESPONSE=$(curl -s --max-time 10 \
+        -X PATCH "https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/dns_records/${CF_SSH_RECORD_ID}" \
+        -H "Authorization: Bearer ${CF_API_TOKEN}" \
+        -H "Content-Type: application/json" \
+        --data "{
+            \"type\": \"A\",
+            \"name\": \"ssh.sagwim.com\",
+            \"content\": \"${CURRENT_IP}\",
+            \"ttl\": 60,
+            \"proxied\": false
+        }")
+
+    SSH_UPDATE_SUCCESS=$(echo "$SSH_UPDATE_RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(str(d.get('success',False)).lower())" 2>/dev/null || echo "false")
+
+    if [[ "$SSH_UPDATE_SUCCESS" == "true" ]]; then
+        echo "$LOG_PREFIX [OK] ssh.sagwim.com A 레코드 갱신 완료: $CURRENT_IP"
+    else
+        echo "$LOG_PREFIX [ERROR] ssh.sagwim.com A 레코드 갱신 실패: $SSH_UPDATE_RESPONSE"
+    fi
 fi
