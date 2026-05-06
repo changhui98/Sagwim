@@ -2,6 +2,7 @@ package com.peopleground.sagwim.group.presentation.dto.response;
 
 import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
+import com.peopleground.sagwim.group.domain.entity.GroupJoinType;
 import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
 import com.peopleground.sagwim.group.domain.entity.GroupStatus;
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public record GroupDetailResponse(
     String imageUrl,
     int likeCount,
     GroupStatus status,
+    GroupJoinType joinType,
     List<GroupMemberResponse> members
 ) {
 
@@ -45,6 +47,7 @@ public record GroupDetailResponse(
             resolvedImageUrl,
             group.getLikeCount(),
             group.getStatus(),
+            group.getJoinType(),
             members
         );
     }
