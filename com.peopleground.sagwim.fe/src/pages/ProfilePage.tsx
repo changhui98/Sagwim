@@ -174,11 +174,13 @@ export function ProfilePage() {
               </h1>
             </div>
 
-            {isOwner && (
-              <p className={styles.meta}>
-                {avatarUploading ? '프로필 이미지 업로드 중…' : '이미지를 눌러 프로필 사진 변경'}
-              </p>
-            )}
+            <p className={styles.bio}>
+              {myProfile?.bio
+                ? myProfile.bio
+                : isOwner
+                  ? '한 줄 소개를 작성해보세요.'
+                  : ''}
+            </p>
           </div>
         </section>
 

@@ -15,6 +15,7 @@ public record UserDetailResponse(
     UserRole role,
     String profileImageUrl,
     OAuthProvider provider,
+    String bio,
     LocalDateTime createdAt,
     LocalDateTime modifiedAt
 ) {
@@ -33,6 +34,7 @@ public record UserDetailResponse(
             user.getRole(),
             resolvedProfileImageUrl,
             user.getProvider(),
+            user.getBio(),
             user.getCreatedDate(),
             user.getLastModifiedDate()
         );

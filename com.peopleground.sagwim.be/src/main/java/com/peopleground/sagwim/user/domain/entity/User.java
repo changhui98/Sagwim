@@ -62,6 +62,9 @@ public class User extends BaseEntity {
     @Column(name = "provider_id")
     private String providerId;
 
+    @Column(nullable = true, length = 150)
+    private String bio;
+
     public void updateProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
@@ -143,13 +146,15 @@ public class User extends BaseEntity {
             String userEmail,
             String address,
             Point location,
-            String newPassword
+            String newPassword,
+            String bio
         ) {
         this.nickname = nickname;
         this.password = newPassword;
         this.address = address;
         this.location = location;
         this.userEmail = userEmail;
+        this.bio = bio;
         return this;
     }
 
