@@ -61,6 +61,15 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/{username}/restore")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AdminUserDetailResponse> restoreUserForAdmin(
+        @PathVariable String username,
+        @AuthenticationPrincipal CustomUser currentUser
+    ) {
+        return ResponseEntity.ok(adminService.restoreUserForAdmin(currentUser.getUsername(), username));
+    }
+
     @PatchMapping("/{username}/role")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> changeUserRole(

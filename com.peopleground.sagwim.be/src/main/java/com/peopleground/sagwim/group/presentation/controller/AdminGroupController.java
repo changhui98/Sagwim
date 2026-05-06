@@ -55,4 +55,12 @@ public class AdminGroupController {
         adminGroupService.deleteGroup(groupId, customUser, request.reason());
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{groupId}/restore")
+    public ResponseEntity<AdminGroupResponse> restoreGroup(
+        @PathVariable Long groupId,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        return ResponseEntity.ok(adminGroupService.restoreGroup(groupId, customUser));
+    }
 }

@@ -28,4 +28,9 @@ public class DeleteLogRepositoryImpl implements DeleteLogRepository {
     public Page<DeleteLog> findAllOrderByDeletedAtDesc(Pageable pageable) {
         return deleteLogJpaRepository.findAllByOrderByDeletedAtDesc(pageable);
     }
+
+    @Override
+    public Optional<DeleteLog> findTopByTargetTypeAndTargetIdAndRestoredFalse(String targetType, String targetId) {
+        return deleteLogJpaRepository.findTopByTargetTypeAndTargetIdAndRestoredFalse(targetType, targetId);
+    }
 }

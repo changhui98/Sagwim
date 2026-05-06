@@ -12,4 +12,6 @@ public interface DeleteLogRepository {
     Optional<DeleteLog> findById(Long id);
 
     Page<DeleteLog> findAllOrderByDeletedAtDesc(Pageable pageable);
+
+    Optional<DeleteLog> findTopByTargetTypeAndTargetIdAndRestoredFalse(String targetType, String targetId);
 }

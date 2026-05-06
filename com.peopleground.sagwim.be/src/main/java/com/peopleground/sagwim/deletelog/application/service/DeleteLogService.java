@@ -47,6 +47,17 @@ public class DeleteLogService {
     }
 
     /**
+     * 게시글/사용자/모임 관리 화면에서 직접 복원할 때 호출.
+     * 해당 대상에 대한 미복원 로그 중 가장 최근 항목을 찾아 restored 처리한다.
+     * 로그가 없으면 조용히 무시한다 (로그 없는 복원도 허용).
+     */
+    @Transactional
+    public void markRestoredByTarget(String targetType, String targetId, String restoredBy) {
+        deleteLogRepository.findTopByTargetTypeAndTargetIdAndRestoredFalse(targetType, targetId)
+            .ifPresent(log -> log.markRestored(restoredBy));
+    }
+
+    /**
      * 복원 처리:
      * - DeleteLog.restored = true 기록
      * - targetType에 따라 해당 엔티티의 deletedDate / deletedBy 를 null 처리
