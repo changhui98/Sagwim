@@ -35,7 +35,7 @@ import {
   UserCircleIcon,
 } from './NavIcons'
 
-const ADMIN_ROLE = 'ADMIN'
+const ADMIN_ROLES = new Set(['ADMIN', 'MANAGER'])
 
 interface NavbarProps {
   role: string | null
@@ -53,7 +53,7 @@ interface NavItem {
 export function Navbar({ role, onLogout }: NavbarProps) {
   const { meRole, meProfileImageUrl, token, isAuthenticated } = useAuth()
   const effectiveRole = role ?? meRole ?? null
-  const isAdmin = effectiveRole === ADMIN_ROLE
+  const isAdmin = effectiveRole !== null && ADMIN_ROLES.has(effectiveRole)
   const location = useLocation()
   const navigate = useNavigate()
   const { theme, toggleTheme } = useTheme()
