@@ -28,8 +28,8 @@ RUN addgroup -S sagwim && adduser -S sagwim -G sagwim
 
 WORKDIR /app
 
-# 업로드 디렉토리 생성 (볼륨 마운트 대상)
-RUN mkdir -p /app/uploads/images && chown -R sagwim:sagwim /app
+# 업로드/로그 디렉토리 생성 (볼륨 마운트 대상)
+RUN mkdir -p /app/uploads/images /app/logs && chown -R sagwim:sagwim /app
 
 # 빌드 산출물 복사
 COPY --from=builder /workspace/build/libs/*.jar app.jar
