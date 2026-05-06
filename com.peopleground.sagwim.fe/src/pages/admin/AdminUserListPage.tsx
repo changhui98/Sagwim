@@ -10,15 +10,16 @@ import { SuccessDialog } from '../../components/common/SuccessDialog'
 import { getInitials } from '../../utils/stringUtils'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { UserResponse, UserRole } from '../../types/user'
-import styles from './AdminUserListPage.module.css'
+import tableStyles from '../../components/admin/adminTable.module.css'
+import pageStyles from './AdminUserListPage.module.css'
 
 const PAGE_SIZE = 10
 const MAX_VISIBLE_PAGES = 5
 
 function RoleBadge({ role }: { role?: UserRole }) {
-  if (role === 'ADMIN') return <span className={styles.badgeRoleAdmin}>ADMIN</span>
-  if (role === 'MANAGER') return <span className={styles.badgeRoleManager}>MANAGER</span>
-  return <span className={styles.badgeRoleUser}>USER</span>
+  if (role === 'ADMIN') return <span className={pageStyles.badgeRoleAdmin}>ADMIN</span>
+  if (role === 'MANAGER') return <span className={pageStyles.badgeRoleManager}>MANAGER</span>
+  return <span className={pageStyles.badgeRoleUser}>USER</span>
 }
 
 const ROLE_OPTIONS: UserRole[] = ['USER', 'MANAGER']
@@ -33,22 +34,22 @@ function RoleToggle({
   onRoleChange: (role: UserRole) => void
 }) {
   return (
-    <div className={styles.roleToggleGroup}>
+    <div className={pageStyles.roleToggleGroup}>
       {ROLE_OPTIONS.map((role) => {
         const isActive = currentRole === role
         const activeClass =
           role === 'MANAGER'
-            ? styles.roleToggleBtnActiveManager
-            : styles.roleToggleBtnActiveUser
+            ? pageStyles.roleToggleBtnActiveManager
+            : pageStyles.roleToggleBtnActiveUser
         return (
           <button
             key={role}
             type="button"
             disabled={isChanging}
             className={[
-              styles.roleToggleBtn,
+              pageStyles.roleToggleBtn,
               isActive ? activeClass : '',
-              isActive ? styles.roleToggleBtnActive : '',
+              isActive ? pageStyles.roleToggleBtnActive : '',
             ]
               .filter(Boolean)
               .join(' ')}
@@ -137,7 +138,12 @@ export function AdminUserListPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : '사용자 삭제 실패'
       setError(message)
-      handleUnauthorized(err)
+      // 403은 삭제 권한 없음(세션 유효)이므로 로그아웃 처리하지 않고,
+      // 401(토큰 만료)에 대해서만 로그아웃 처리한다.
+      if (err instanceof ApiError && err.status === 401) {
+        logout()
+        navigate('/login', { replace: true })
+      }
     } finally {
       setDeleteLoading(false)
     }
@@ -174,19 +180,19 @@ export function AdminUserListPage() {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={pageStyles.container}>
       {error && <p className="alert alert-error" role="alert">{error}</p>}
 
-      <div className={styles.tableCard}>
+      <div className={tableStyles.tableCard}>
         {initialLoad ? (
           <div style={{ padding: 'var(--sp-6)' }}>
             <Skeleton height="300px" />
           </div>
         ) : (
           <>
-            <div className={styles.tableWrap} style={{ position: 'relative' }}>
+            <div className={tableStyles.tableWrap} style={{ position: 'relative' }}>
               {loading && <LoadingSpinner overlay />}
-              <table className={styles.table}>
+              <table className={tableStyles.table}>
                 <thead>
                   <tr>
                     <th>닉네임</th>
@@ -202,7 +208,7 @@ export function AdminUserListPage() {
                 </thead>
                 <tbody>
                   {users.length === 0 ? (
-                    <tr className={styles.emptyRow}>
+                    <tr className={tableStyles.emptyRow}>
                       <td colSpan={9}>등록된 사용자가 없습니다.</td>
                     </tr>
                   ) : (
@@ -213,6 +219,8 @@ export function AdminUserListPage() {
                       const isMyself = user.username === meUsername
                       const isRoleChanging = roleChangingUsername === user.username
                       const canChangeRole = meRole === 'ADMIN' && !isMyself && !user.isDeleted
+                      // MANAGER는 ADMIN 등급 유저를 삭제할 수 없다.
+                      const canDelete = !(meRole === 'MANAGER' && user.role === 'ADMIN')
                       return (
                       <tr key={user.id}>
                         <td>
@@ -222,30 +230,30 @@ export function AdminUserListPage() {
                                 <img
                                   src={avatarSrc}
                                   alt={`${user.nickname} 프로필`}
-                                  className={styles.avatarImage}
+                                  className={pageStyles.avatarImage}
                                 />
                               ) : (
                                 getInitials(user.nickname)
                               )}
                             </span>
-                            <span className={styles.tableUsername}>
+                            <span className={tableStyles.tableUsername}>
                               {user.nickname}
                             </span>
                           </div>
                         </td>
-                        <td className={styles.tableSecondary}>
+                        <td className={tableStyles.tableSecondary}>
                           {user.username}
                         </td>
-                        <td className={styles.tableSecondary}>
+                        <td className={tableStyles.tableSecondary}>
                           {user.userEmail}
                         </td>
                         <td>
                           {user.provider === 'KAKAO' ? (
-                            <span className={styles.badgeKakao}>KAKAO</span>
+                            <span className={tableStyles.badgeKakao}>KAKAO</span>
                           ) : user.provider === 'GOOGLE' ? (
-                            <span className={styles.badgeGoogle}>GOOGLE</span>
+                            <span className={tableStyles.badgeGoogle}>GOOGLE</span>
                           ) : (
-                            <span className={styles.badgeLocal}>일반</span>
+                            <span className={tableStyles.badgeLocal}>일반</span>
                           )}
                         </td>
                         <td>
@@ -259,15 +267,15 @@ export function AdminUserListPage() {
                             <RoleBadge role={user.role} />
                           )}
                         </td>
-                        <td className={styles.tableDate}>
+                        <td className={tableStyles.tableDate}>
                           {formatDateTime(user.createdDate)}
                         </td>
-                        <td className={styles.tableDate}>
+                        <td className={tableStyles.tableDate}>
                           {formatDateTime(user.modifiedDate)}
                         </td>
                         <td>
                           {user.isDeleted ? (
-                            <span className={`badge ${styles.badgeDeleted}`}>
+                            <span className={`badge ${tableStyles.badgeDeleted}`}>
                               탈퇴
                             </span>
                           ) : (
@@ -277,9 +285,9 @@ export function AdminUserListPage() {
                         <td>
                           <button
                             type="button"
-                            className={styles.deleteButton}
+                            className={tableStyles.deleteButton}
                             onClick={() => setDeleteTarget(user)}
-                            disabled={deleteLoading}
+                            disabled={deleteLoading || !canDelete}
                           >
                             삭제
                           </button>
@@ -293,10 +301,10 @@ export function AdminUserListPage() {
             </div>
 
             {totalPages > 1 && (
-              <div className={styles.paginationBar}>
+              <div className={tableStyles.paginationBar}>
                 <button
                   type="button"
-                  className={styles.pageButton}
+                  className={tableStyles.pageButton}
                   onClick={() => handlePageChange(page - 1)}
                   disabled={loading || page === 0}
                 >
@@ -308,8 +316,8 @@ export function AdminUserListPage() {
                     type="button"
                     className={
                       pageNum === page
-                        ? styles.pageButtonActive
-                        : styles.pageButton
+                        ? tableStyles.pageButtonActive
+                        : tableStyles.pageButton
                     }
                     onClick={() => handlePageChange(pageNum)}
                     disabled={loading}
@@ -319,7 +327,7 @@ export function AdminUserListPage() {
                 ))}
                 <button
                   type="button"
-                  className={styles.pageButton}
+                  className={tableStyles.pageButton}
                   onClick={() => handlePageChange(page + 1)}
                   disabled={loading || page >= totalPages - 1}
                 >
