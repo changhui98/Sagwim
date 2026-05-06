@@ -100,6 +100,69 @@
   margin: 0;
 }
 
+/* ── 게시글 이미지 슬라이더 ── */
+
+.imageWrap {
+  position: relative;
+  width: 100%;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--clr-border);
+  background: var(--clr-bg);
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.slideBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: var(--r-full);
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.slideBtnPrev {
+  left: 10px;
+}
+
+.slideBtnNext {
+  right: 10px;
+}
+
+.indicators {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.dotActive {
+  width: 18px;
+  background: #fff;
+}
+
 .tagChipList {
   display: flex;
   flex-wrap: wrap;
