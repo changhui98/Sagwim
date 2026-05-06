@@ -2,6 +2,7 @@ package com.peopleground.sagwim.global.security;
 
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.exception.ErrorResponse;
+import com.peopleground.sagwim.global.log.ErrorLogWriter;
 import com.peopleground.sagwim.global.security.jwt.JwtTokenProvider;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.UserRole;
@@ -83,7 +84,10 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         HttpServletResponse response, AuthenticationException failed)
         throws IOException, ServletException {
 
-        response.setStatus(UserErrorCode.INVALID_CREDENTIALS.getStatus().value());
+        int status = UserErrorCode.INVALID_CREDENTIALS.getStatus().value();
+        ErrorLogWriter.write(request, status, failed.getMessage());
+
+        response.setStatus(status);
         response.setContentType("application/json;charset=UTF-8");
 
         ErrorResponse errorResponse = ErrorResponse.from(UserErrorCode.INVALID_CREDENTIALS);

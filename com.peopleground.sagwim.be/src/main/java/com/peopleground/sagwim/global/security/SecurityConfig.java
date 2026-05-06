@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -60,6 +61,20 @@ public class SecurityConfig {
     ) {
         FilterRegistrationBean<AuthenticationFilter> registration = new FilterRegistrationBean<>(authenticationFilter);
         registration.setEnabled(false);
+        return registration;
+    }
+
+    /**
+     * 요청 바디 캐싱 필터를 서블릿 컨테이너 최우선 순위로 등록한다.
+     *
+     * Security 필터 체인보다 먼저 실행되어야 ErrorLogWriter가 request body를 읽을 수 있다.
+     * AuthenticationFilter는 InputStream을 직접 읽으므로 이 필터가 반드시 선행되어야 한다.
+     */
+    @Bean
+    public FilterRegistrationBean<RequestCachingFilter> requestCachingFilterRegistration() {
+        FilterRegistrationBean<RequestCachingFilter> registration =
+            new FilterRegistrationBean<>(new RequestCachingFilter());
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return registration;
     }
 
