@@ -145,7 +145,7 @@ public class ContentQueryRepository {
         List<Content> contents = queryFactory
             .selectFrom(content)
             .join(content.user, user).fetchJoin()
-            .orderBy(content.createdDate.desc())
+            .orderBy(content.createdDate.desc(), content.id.desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();
@@ -231,7 +231,7 @@ public class ContentQueryRepository {
             .selectFrom(content)
             .join(content.user, user)
             .where(condition)
-            .orderBy(content.createdDate.desc())
+            .orderBy(content.createdDate.desc(), content.id.desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .fetch();

@@ -36,7 +36,8 @@ public class GlobalExceptionHandler {
             request.getMethod(), request.getRequestURI(),
             errorCode.getCode(), errorCode.getStatus(), errorCode.getMessage());
 
-        ErrorLogWriter.write(request, errorCode.getStatus().value());
+        // 비즈니스 예외도 errorMessage를 함께 저장한다
+        ErrorLogWriter.write(request, errorCode.getStatus().value(), errorCode.getMessage());
         return ResponseEntity
             .status(errorCode.getStatus())
             .body(ErrorResponse.from(errorCode));
@@ -55,7 +56,8 @@ public class GlobalExceptionHandler {
         log.info("[Validation] {} {} -> {}",
             request.getMethod(), request.getRequestURI(), message);
 
-        ErrorLogWriter.write(request, HttpStatus.BAD_REQUEST.value());
+        // 검증 실패 메시지를 errorMessage로 저장한다
+        ErrorLogWriter.write(request, HttpStatus.BAD_REQUEST.value(), message);
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(new ErrorResponse("VALIDATION_ERROR", message, null));
@@ -69,6 +71,7 @@ public class GlobalExceptionHandler {
         log.info("[AccessDenied] {} {} -> {}",
             request.getMethod(), request.getRequestURI(), e.getMessage());
 
+        ErrorLogWriter.write(request, HttpStatus.FORBIDDEN.value(), e.getMessage());
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
             .body(ErrorResponse.from(ApiErrorCode.FORBIDDEN));
@@ -82,6 +85,7 @@ public class GlobalExceptionHandler {
         log.info("[AuthorizationDenied] {} {} -> {}",
             request.getMethod(), request.getRequestURI(), e.getMessage());
 
+        ErrorLogWriter.write(request, HttpStatus.FORBIDDEN.value(), e.getMessage());
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
             .body(ErrorResponse.from(ApiErrorCode.FORBIDDEN));

@@ -68,6 +68,7 @@ export function PostDetailPage() {
   const [liked, setLiked] = useState(() => passedPost?.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(() => passedPost?.likeCount ?? 0)
   const [likePending, setLikePending] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const likeInFlightRef = useRef(false)
   const likedRef = useRef(liked)
   const likeCountRef = useRef(likeCount)
@@ -109,6 +110,11 @@ export function PostDetailPage() {
       cancelled = true
     }
   }, [token, contentId, passedPost])
+
+  // post가 교체될 때(API 재로드 등) 슬라이드 인덱스를 초기화한다.
+  useEffect(() => {
+    setCurrentImageIndex(0)
+  }, [post?.id])
 
   const handleLikeClick = useCallback(async () => {
     if (likeInFlightRef.current) return
@@ -398,8 +404,11 @@ export function PostDetailPage() {
     if (!trimmed || editSubmitting || !post) return
     setEditSubmitting(true)
     try {
-      const updated = await updatePost(token, contentId, trimmed, post.tags)
-      setPost(updated)
+      await updatePost(token, contentId, trimmed, post.tags)
+      // updatePost 응답(ContentUpdateResponse)에는 imageUrls 등 일부 필드가 없으므로
+      // 수정 완료 후 단건 조회 API로 최신 ContentResponse를 다시 가져온다.
+      const refreshed = await getPost(token, contentId)
+      setPost(refreshed)
       setEditMode(false)
       setEditBody('')
     } catch (err) {
@@ -581,6 +590,55 @@ export function PostDetailPage() {
         ) : (
           <p className={styles.body}>{post.body}</p>
         )}
+
+        {(post.imageUrls ?? []).length > 0 && (() => {
+          const imageUrls = post.imageUrls!
+          return (
+            <div className={styles.imageWrap}>
+              <img
+                src={imageUrls[currentImageIndex]}
+                alt={`게시글 첨부 이미지 ${currentImageIndex + 1}`}
+                className={styles.image}
+              />
+              {imageUrls.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    className={`${styles.slideBtn} ${styles.slideBtnPrev}`}
+                    aria-label="이전 이미지"
+                    onClick={() =>
+                      setCurrentImageIndex((prev) =>
+                        prev === 0 ? imageUrls.length - 1 : prev - 1,
+                      )
+                    }
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.slideBtn} ${styles.slideBtnNext}`}
+                    aria-label="다음 이미지"
+                    onClick={() =>
+                      setCurrentImageIndex((prev) =>
+                        prev === imageUrls.length - 1 ? 0 : prev + 1,
+                      )
+                    }
+                  >
+                    ›
+                  </button>
+                  <div className={styles.indicators}>
+                    {imageUrls.map((_, index) => (
+                      <span
+                        key={index}
+                        className={`${styles.dot} ${index === currentImageIndex ? styles.dotActive : ''}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )
+        })()}
 
         {tags.length > 0 && (
           <div className={styles.tagChipList} aria-label="태그">

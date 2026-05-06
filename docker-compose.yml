@@ -81,6 +81,7 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://sagwim.duckdns.org}
     volumes:
       - uploads_data:/app/uploads
+      - ./logs:/app/logs
     depends_on:
       postgres:
         condition: service_healthy

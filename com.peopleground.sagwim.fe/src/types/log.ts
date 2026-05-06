@@ -4,8 +4,12 @@ export interface ErrorLogEntry {
   path: string
   status: number
   ip: string
-  userId: string
-  stacktrace?: string
+  /** 인증 유저면 username, 미인증이면 "anonymous" */
+  username: string
+  queryParams?: string | null
+  requestBody?: string | null
+  errorMessage?: string | null
+  stacktrace?: string | null
 }
 
 export interface RegistrationLogEntry {
