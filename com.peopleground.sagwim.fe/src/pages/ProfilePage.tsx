@@ -126,7 +126,7 @@ export function ProfilePage() {
 
   return (
     <>
-      <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+      <Navbar role={viewerProfile?.role ?? null} onLogout={handleLogout} />
 
       <main className={styles.main}>
         {profileError && (
