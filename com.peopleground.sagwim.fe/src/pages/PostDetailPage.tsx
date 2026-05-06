@@ -238,6 +238,11 @@ export function PostDetailPage() {
   const [commentImageFile, setCommentImageFile] = useState<File | null>(null)
   const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null)
 
+  // ── 대댓글 ──
+
+  const [replyingToId, setReplyingToId] = useState<number | null>(null)
+  const [replyBody, setReplyBody] = useState('')
+
   const handleCommentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -257,6 +262,7 @@ export function PostDetailPage() {
 
     setCommentSubmitting(true)
     try {
+      // 일반 댓글 전송
       let imageUrl: string | undefined
       if (commentImageFile) {
         const uploaded = await uploadCommentImage(token, commentImageFile, `temp-${Date.now()}`)
@@ -264,10 +270,10 @@ export function PostDetailPage() {
       }
       const created = await createComment(token, contentId, trimmed, imageUrl)
       setComments((prev) => [created, ...prev])
-      setCommentBody('')
       setCommentImageFile(null)
       setCommentImagePreview(null)
       if (commentImageInputRef.current) commentImageInputRef.current.value = ''
+      setCommentBody('')
       commentInputRef.current?.focus()
     } catch (err) {
       if (!(err instanceof ApiError)) {
@@ -278,35 +284,29 @@ export function PostDetailPage() {
     }
   }
 
-
-  // ── 대댓글 ──
-
-  const [replyingToId, setReplyingToId] = useState<number | null>(null)
-  const [replyBody, setReplyBody] = useState('')
-  const [replySubmitting, setReplySubmitting] = useState(false)
-
-  const handleReplySubmit = async (commentId: number) => {
+  const handleReplySubmit = async (parentCommentId: number) => {
     const trimmed = replyBody.trim()
-    if (!trimmed || replySubmitting) return
+    if (!trimmed || commentSubmitting) return
 
-    setReplySubmitting(true)
+    setCommentSubmitting(true)
     try {
-      const created = await createReply(token, contentId, commentId, trimmed)
+      const created = await createReply(token, contentId, parentCommentId, trimmed)
       setComments((prev) =>
         prev.map((c) =>
-          c.id === commentId ? { ...c, replies: [...c.replies, created] } : c,
+          c.id === parentCommentId ? { ...c, replies: [...c.replies, created] } : c,
         ),
       )
       setReplyBody('')
       setReplyingToId(null)
     } catch (err) {
       if (!(err instanceof ApiError)) {
-        console.error('대댓글 작성 실패', err)
+        console.error('답글 작성 실패', err)
       }
     } finally {
-      setReplySubmitting(false)
+      setCommentSubmitting(false)
     }
   }
+
 
   // ── 댓글 수정 ──
 
@@ -679,14 +679,18 @@ export function PostDetailPage() {
         {/* 댓글 입력 */}
         <div className={styles.inputRow}>
           <div className={styles.avatar} aria-hidden="true">
-            {meDisplayName ? getInitial(meDisplayName) : '?'}
+            {meProfileImageUrl ? (
+              <img src={meProfileImageUrl} alt="" className={styles.avatarImg} />
+            ) : (
+              meDisplayName ? getInitial(meDisplayName) : '?'
+            )}
           </div>
           <div className={styles.inputArea}>
             <input
               ref={commentInputRef}
               type="text"
               className={styles.commentInput}
-              placeholder={`${displayName}님에게 답글 남기기...`}
+              placeholder={`${meDisplayName}님의 생각을 댓글로 남겨보세요...`}
               value={commentBody}
               onChange={(e) => setCommentBody(e.target.value)}
               onKeyDown={(e) => {
@@ -697,26 +701,29 @@ export function PostDetailPage() {
               }}
               aria-label="댓글 입력"
             />
-            {commentBody.trim() ? (
+            <div className={styles.iconBtnWrap}>
+              {/* 전송 버튼: 텍스트 있을 때 fade-in + scale-up */}
               <button
                 type="button"
-                className={styles.iconBtn}
-                disabled={commentSubmitting}
+                className={`${styles.iconBtn}${!commentBody.trim() ? ` ${styles.iconBtnHidden}` : ''}`}
+                disabled={commentSubmitting || !commentBody.trim()}
                 onClick={() => void handleCommentSubmit()}
                 aria-label="댓글 전송"
+                tabIndex={commentBody.trim() ? 0 : -1}
               >
-                <img src={arrowCircleUpIcon} alt="" className={styles.iconBtnImg} />
+                <img src={arrowCircleUpIcon} alt="" className={styles.iconBtnImgSend} />
               </button>
-            ) : (
+              {/* 이미지 첨부 버튼: 텍스트 없을 때 fade-in + scale-up */}
               <button
                 type="button"
-                className={styles.iconBtn}
+                className={`${styles.iconBtn}${commentBody.trim() ? ` ${styles.iconBtnHidden}` : ''}`}
                 aria-label="사진 첨부"
                 onClick={() => commentImageInputRef.current?.click()}
+                tabIndex={commentBody.trim() ? -1 : 0}
               >
-                <img src={pictureIcon} alt="" className={styles.iconBtnImg} />
+                <img src={pictureIcon} alt="" className={styles.iconBtnImgPicture} />
               </button>
-            )}
+            </div>
           </div>
           <input
             ref={commentImageInputRef}
@@ -768,6 +775,8 @@ export function PostDetailPage() {
                 comment={comment}
                 contentId={contentId}
                 meUsername={meUsername}
+                meDisplayName={meDisplayName}
+                meProfileImageUrl={meProfileImageUrl}
                 isCurrentUserPostAuthor={!!meUsername && post.createdBy === meUsername}
                 postAuthorNickname={displayName}
                 postAuthorProfileImageUrl={isMine ? meProfileImageUrl : null}
@@ -777,12 +786,14 @@ export function PostDetailPage() {
                 commentLikeCountMap={commentLikeCountMap}
                 replyingToId={replyingToId}
                 replyBody={replyBody}
-                replySubmitting={replySubmitting}
-                onReplyToggle={(id) =>
-                  setReplyingToId((prev) => (prev === id ? null : id))
-                }
+                replySubmitting={commentSubmitting}
                 onReplyBodyChange={setReplyBody}
                 onReplySubmit={handleReplySubmit}
+                onReplyToggle={(id) => {
+                  const isTogglingOn = replyingToId !== id
+                  setReplyingToId(isTogglingOn ? id : null)
+                  if (!isTogglingOn) setReplyBody('')
+                }}
                 onDelete={handleDeleteComment}
                 onLike={handleCommentLike}
                 onUpdate={handleUpdateComment}
@@ -814,6 +825,8 @@ interface CommentItemProps {
   comment: CommentResponse
   contentId: number
   meUsername: string | null
+  meDisplayName: string
+  meProfileImageUrl: string | null
   isCurrentUserPostAuthor: boolean
   postAuthorNickname: string
   postAuthorProfileImageUrl: string | null
@@ -824,9 +837,9 @@ interface CommentItemProps {
   replyingToId: number | null
   replyBody: string
   replySubmitting: boolean
+  onReplyBodyChange: (value: string) => void
+  onReplySubmit: (parentCommentId: number) => Promise<void>
   onReplyToggle: (id: number) => void
-  onReplyBodyChange: (val: string) => void
-  onReplySubmit: (commentId: number) => Promise<void>
   onDelete: (commentId: number) => Promise<void>
   onLike: (commentId: number) => void
   onUpdate: (commentId: number, newBody: string) => Promise<void>
@@ -835,6 +848,8 @@ interface CommentItemProps {
 function CommentItem({
   comment,
   meUsername,
+  meDisplayName,
+  meProfileImageUrl,
   isCurrentUserPostAuthor,
   postAuthorNickname,
   postAuthorProfileImageUrl,
@@ -845,16 +860,13 @@ function CommentItem({
   replyingToId,
   replyBody,
   replySubmitting,
-  onReplyToggle,
   onReplyBodyChange,
   onReplySubmit,
+  onReplyToggle,
   onDelete,
   onLike,
   onUpdate,
 }: CommentItemProps) {
-  const isReplying = replyingToId === comment.id
-  const replyInputRef = useRef<HTMLInputElement>(null)
-
   // 댓글 미트볼 메뉴 상태
   const [commentMenuOpen, setCommentMenuOpen] = useState(false)
   const commentMenuRef = useRef<HTMLDivElement>(null)
@@ -864,11 +876,6 @@ function CommentItem({
   const [editBody, setEditBody] = useState('')
   const [editSubmitting, setEditSubmitting] = useState(false)
 
-  useEffect(() => {
-    if (isReplying) {
-      replyInputRef.current?.focus()
-    }
-  }, [isReplying])
 
   // 댓글 메뉴 외부 클릭 닫기
   useEffect(() => {
@@ -948,7 +955,7 @@ function CommentItem({
               comment.deleted ? '?' : getInitial(comment.authorNickname)
             )}
           </div>
-          {(hasReplies || isReplying) && <div className={styles.avatarLine} />}
+          {hasReplies && <div className={styles.avatarLine} />}
         </div>
         <div className={styles.commentContent}>
           <div className={styles.commentMeta}>
@@ -1017,9 +1024,10 @@ function CommentItem({
               </button>
               <button
                 type="button"
-                className={styles.commentActionBtn}
+                className={`${styles.commentActionBtn} ${replyingToId === comment.id ? styles.commentLiked : ''}`}
                 onClick={() => onReplyToggle(comment.id)}
                 aria-label="답글 달기"
+                aria-pressed={replyingToId === comment.id}
               >
                 답글
               </button>
@@ -1069,49 +1077,11 @@ function CommentItem({
         )}
       </div>
 
-      {/* 대댓글 입력창 */}
-      {isReplying && (
-        <div className={styles.commentRow}>
-          <div className={styles.avatarCol}>
-            <div className={styles.replyAvatar}>{getInitial(meUsername)}</div>
-            {hasReplies && <div className={styles.avatarLine} />}
-          </div>
-          <div className={styles.replyInputArea}>
-            <input
-              ref={replyInputRef}
-              type="text"
-              className={styles.replyInput}
-              placeholder="답글 입력..."
-              value={replyBody}
-              onChange={(e) => onReplyBodyChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-                  e.preventDefault()
-                  void onReplySubmit(comment.id)
-                }
-                if (e.key === 'Escape') {
-                  onReplyToggle(comment.id)
-                }
-              }}
-              aria-label="답글 입력"
-            />
-            <button
-              type="button"
-              className={styles.submitBtn}
-              disabled={!replyBody.trim() || replySubmitting}
-              onClick={() => void onReplySubmit(comment.id)}
-              aria-label="답글 전송"
-            >
-              전송
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* 대댓글 목록 (플랫하게, 부모와 같은 레벨) */}
       {comment.replies.map((reply, idx) => {
         const isLastReply = idx === comment.replies.length - 1
-        const showReplyLine = !isLastReply || isReplying
+        // 입력창이 표시될 때는 마지막 답글에도 세로선을 유지
+        const showReplyLine = !isLastReply || replyingToId === comment.id
         const isMyReply = !!meUsername && reply.authorUsername === meUsername
         return (
           <div className={styles.commentRow} key={reply.id}>
@@ -1213,6 +1183,64 @@ function CommentItem({
           </div>
         )
       })}
+
+      {/* 답글 입력창: 답글 목록 맨 아래에 인라인으로 표시 */}
+      {replyingToId === comment.id && (
+        <div className={styles.commentRow}>
+          <div className={styles.avatarCol}>
+            <div className={styles.replyAvatar}>
+              {meProfileImageUrl ? (
+                <img src={meProfileImageUrl} alt="" className={styles.avatarImg} />
+              ) : (
+                getInitial(meDisplayName)
+              )}
+            </div>
+          </div>
+          <div className={styles.inputArea}>
+            <input
+              type="text"
+              className={styles.commentInput}
+              placeholder={`${comment.authorNickname?.trim() || comment.authorUsername || ''}님에게 답글 남기기...`}
+              value={replyBody}
+              autoFocus
+              onChange={(e) => onReplyBodyChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                  e.preventDefault()
+                  void onReplySubmit(comment.id)
+                }
+                if (e.key === 'Escape') {
+                  onReplyToggle(comment.id)
+                }
+              }}
+              aria-label="답글 입력"
+            />
+            <div className={styles.iconBtnWrap}>
+              {/* 전송 버튼: 텍스트 있을 때 fade-in + scale-up */}
+              <button
+                type="button"
+                className={`${styles.iconBtn}${!replyBody.trim() ? ` ${styles.iconBtnHidden}` : ''}`}
+                disabled={replySubmitting || !replyBody.trim()}
+                onClick={() => void onReplySubmit(comment.id)}
+                aria-label="답글 전송"
+                tabIndex={replyBody.trim() ? 0 : -1}
+              >
+                <img src={arrowCircleUpIcon} alt="" className={styles.iconBtnImgSend} />
+              </button>
+              {/* 이미지 아이콘 버튼: 텍스트 없을 때 fade-in + scale-up */}
+              <button
+                type="button"
+                className={`${styles.iconBtn}${replyBody.trim() ? ` ${styles.iconBtnHidden}` : ''}`}
+                aria-label="사진 첨부"
+                tabIndex={replyBody.trim() ? -1 : 0}
+                disabled
+              >
+                <img src={pictureIcon} alt="" className={styles.iconBtnImgPicture} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
