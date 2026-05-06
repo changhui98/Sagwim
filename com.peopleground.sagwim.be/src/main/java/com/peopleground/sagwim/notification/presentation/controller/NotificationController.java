@@ -3,11 +3,13 @@ package com.peopleground.sagwim.notification.presentation.controller;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.notification.application.service.NotificationService;
+import com.peopleground.sagwim.notification.application.service.NotificationSseEmitterService;
 import com.peopleground.sagwim.notification.presentation.dto.response.NotificationResponse;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final NotificationSseEmitterService sseEmitterService;
 
     /**
      * 내 알림 목록 (최신순, 페이지네이션).
@@ -39,7 +43,18 @@ public class NotificationController {
     }
 
     /**
-     * 미읽음 알림 수. 사이드바 배지에서 폴링 호출하므로 가벼운 인덱스 카운트만 수행한다.
+     * SSE 스트림 연결. 연결 수립 시 현재 미읽음 수를 즉시 전송하고,
+     * 이후 새 알림 발행 또는 읽음 처리 시마다 push 한다.
+     * EventSource 는 커스텀 헤더를 지원하지 않으므로 ?token=Bearer%20xxx 쿼리 파라미터로 인증한다.
+     */
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(@AuthenticationPrincipal CustomUser user) {
+        long initialCount = notificationService.getUnreadCount(user);
+        return sseEmitterService.connect(user.getId(), initialCount);
+    }
+
+    /**
+     * 미읽음 알림 수. SSE 미지원 환경의 폴백 폴링용으로 유지한다.
      */
     @GetMapping("/unread-count")
     public ResponseEntity<Map<String, Long>> getUnreadCount(

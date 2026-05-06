@@ -70,6 +70,18 @@ public class JwtTokenProvider {
     }
 
     /**
+     * SSE 연결용 쿼리 파라미터에서 토큰 추출.
+     * EventSource 는 커스텀 헤더를 지원하지 않으므로 ?token=Bearer%20xxx 형태로 전달한다.
+     */
+    public String resolveTokenFromParam(HttpServletRequest request) {
+        String param = request.getParameter("token");
+        if (param != null && param.startsWith(BEARER_PREFIX)) {
+            return param.substring(BEARER_PREFIX.length());
+        }
+        return null;
+    }
+
+    /**
      * JWT 토큰 검증
      * 토큰 위조/ 만료 여부 확인
      */
