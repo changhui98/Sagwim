@@ -4,6 +4,8 @@ import com.peopleground.sagwim.comment.domain.entity.Comment;
 import com.peopleground.sagwim.comment.domain.repository.CommentRepository;
 import com.peopleground.sagwim.content.domain.entity.Content;
 import com.peopleground.sagwim.content.domain.repository.ContentRepository;
+import com.peopleground.sagwim.deletelog.application.service.DeleteLogService;
+import com.peopleground.sagwim.deletelog.domain.TargetType;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.group.domain.entity.Group;
@@ -35,6 +37,7 @@ public class ImageAdminService {
     private final UserRepository userRepository;
     private final ImageUrlResolver imageUrlResolver;
     private final ImageStorage imageStorage;
+    private final DeleteLogService deleteLogService;
 
     @Transactional(readOnly = true)
     public PageResponse<AdminImageResponse> getAllImagesForAdmin(int page, int size) {
@@ -44,12 +47,25 @@ public class ImageAdminService {
     }
 
     @Transactional
-    public void deleteImageForAdmin(Long imageId) {
+    public void deleteImageForAdmin(Long imageId, String adminUsername, String reason) {
         Image image = imageRepository.findById(imageId)
             .orElseThrow(() -> new AppException(ImageErrorCode.IMAGE_NOT_FOUND));
+
+        String summary = image.getOriginalFilename() != null
+            ? image.getOriginalFilename()
+            : image.getStoredFilename();
+
         imageStorage.delete(image.getStoredFilename());
         clearImageReference(image);
         imageRepository.deleteById(imageId);
+
+        deleteLogService.log(
+            adminUsername,
+            TargetType.IMAGE.name(),
+            String.valueOf(imageId),
+            summary,
+            reason
+        );
     }
 
     private void clearImageReference(Image image) {

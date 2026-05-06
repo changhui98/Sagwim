@@ -1,17 +1,21 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getErrorLogs, getRegistrationLogs } from '../../api/logApi'
+import { getDeleteLogs, restoreDeleteLog } from '../../api/adminApi'
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
 import { Skeleton } from '../../components/common/Skeleton'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { ErrorLogEntry, LogPageResponse, RegistrationLogEntry } from '../../types/log'
+import type { DeleteLogEntry } from '../../types/deleteLog'
+import type { PageResponse } from '../../types/user'
 import tableStyles from '../../components/admin/adminTable.module.css'
 import pageStyles from './AdminLogPage.module.css'
 
-type Tab = 'error' | 'registration'
+type Tab = 'error' | 'registration' | 'delete'
 
 const PAGE_SIZE = 50
+const DELETE_LOG_PAGE_SIZE = 20
 const POLL_INTERVAL_MS = 10_000
 
 function statusBadgeClass(status: number): string {
@@ -30,6 +34,7 @@ export function AdminLogPage() {
   const [loading, setLoading] = useState(false)
   const [errorLogs, setErrorLogs] = useState<LogPageResponse<ErrorLogEntry> | null>(null)
   const [regLogs, setRegLogs] = useState<LogPageResponse<RegistrationLogEntry> | null>(null)
+  const [deleteLogs, setDeleteLogs] = useState<PageResponse<DeleteLogEntry> | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const handleUnauthorized = useCallback(
@@ -49,9 +54,12 @@ export function AdminLogPage() {
         if (tab === 'error') {
           const data = await getErrorLogs(token, currentPage, PAGE_SIZE)
           setErrorLogs(data)
-        } else {
+        } else if (tab === 'registration') {
           const data = await getRegistrationLogs(token, currentPage, PAGE_SIZE)
           setRegLogs(data)
+        } else {
+          const data = await getDeleteLogs(token, currentPage, DELETE_LOG_PAGE_SIZE)
+          setDeleteLogs(data)
         }
       } catch (err) {
         handleUnauthorized(err)
@@ -83,7 +91,30 @@ export function AdminLogPage() {
     load(next)
   }
 
-  const currentData = tab === 'error' ? errorLogs : regLogs
+  const handleRestore = useCallback(
+    async (logId: number) => {
+      try {
+        const updated = await restoreDeleteLog(token, logId)
+        setDeleteLogs((prev) => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            content: prev.content.map((entry) =>
+              entry.id === updated.id ? updated : entry,
+            ),
+          }
+        })
+      } catch (err) {
+        handleUnauthorized(err)
+        if (err instanceof ApiError) {
+          alert(`복원 실패: ${err.message}`)
+        }
+      }
+    },
+    [token, handleUnauthorized],
+  )
+
+  const currentData = tab === 'error' ? errorLogs : tab === 'registration' ? regLogs : deleteLogs
 
   return (
     <div className={pageStyles.container}>
@@ -103,16 +134,25 @@ export function AdminLogPage() {
           >
             회원가입 로그
           </button>
+          <button
+            className={tab === 'delete' ? tableStyles.tabActive : tableStyles.tab}
+            onClick={() => setTab('delete')}
+            type="button"
+          >
+            삭제 로그
+          </button>
         </div>
 
         <div className={pageStyles.actions}>
-          <button
-            type="button"
-            className={autoRefresh ? pageStyles.btnLiveOn : pageStyles.btnLive}
-            onClick={() => setAutoRefresh((v) => !v)}
-          >
-            {autoRefresh ? '● 자동 새로고침 중' : '자동 새로고침'}
-          </button>
+          {tab !== 'delete' && (
+            <button
+              type="button"
+              className={autoRefresh ? pageStyles.btnLiveOn : pageStyles.btnLive}
+              onClick={() => setAutoRefresh((v) => !v)}
+            >
+              {autoRefresh ? '● 자동 새로고침 중' : '자동 새로고침'}
+            </button>
+          )}
           <button type="button" className={pageStyles.btnRefresh} onClick={() => load(page)}>
             새로고침
           </button>
@@ -123,8 +163,10 @@ export function AdminLogPage() {
         <Skeleton height="400px" />
       ) : tab === 'error' ? (
         <ErrorLogTable logs={errorLogs} />
-      ) : (
+      ) : tab === 'registration' ? (
         <RegistrationLogTable logs={regLogs} />
+      ) : (
+        <DeleteLogTable logs={deleteLogs} onRestore={handleRestore} />
       )}
 
       {currentData && currentData.totalPages > 1 && (
@@ -312,4 +354,114 @@ function providerBadgeClass(provider: string): string {
   if (provider === 'KAKAO') return tableStyles.badgeKakao
   if (provider === 'GOOGLE') return tableStyles.badgeGoogle
   return tableStyles.badgeLocal
+}
+
+function DeleteLogTable({
+  logs,
+  onRestore,
+}: {
+  logs: PageResponse<DeleteLogEntry> | null
+  onRestore: (logId: number) => Promise<void>
+}) {
+  const [restoringId, setRestoringId] = useState<number | null>(null)
+
+  if (!logs) return null
+  if (logs.content.length === 0) {
+    return <p className={pageStyles.empty}>삭제 로그가 없습니다.</p>
+  }
+
+  const handleRestore = async (logId: number) => {
+    setRestoringId(logId)
+    try {
+      await onRestore(logId)
+    } finally {
+      setRestoringId(null)
+    }
+  }
+
+  return (
+    <div className={tableStyles.tableWrap}>
+      <div className={tableStyles.totalCount}>총 {logs.totalElements.toLocaleString()}건</div>
+      <table className={tableStyles.table}>
+        <thead>
+          <tr>
+            <th>삭제자</th>
+            <th>대상 유형</th>
+            <th>대상</th>
+            <th>삭제 사유</th>
+            <th>삭제 일시</th>
+            <th>복원 여부</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          {logs.content.map((entry) => (
+            <tr key={entry.id}>
+              <td className={pageStyles.cellMono}>{entry.deletedBy}</td>
+              <td>
+                <span className={targetTypeBadgeClass(entry.targetType)}>
+                  {targetTypeLabel(entry.targetType)}
+                </span>
+              </td>
+              <td className={pageStyles.cellSummary} title={entry.targetSummary}>
+                {entry.targetSummary}
+              </td>
+              <td className={pageStyles.cellReason} title={entry.reason ?? undefined}>
+                {entry.reason ?? '-'}
+              </td>
+              <td className={pageStyles.cellTime}>{formatDateTime(entry.deletedAt)}</td>
+              <td>
+                {entry.restored ? (
+                  <span className={pageStyles.badgeRestored}>복원됨</span>
+                ) : (
+                  <span className={pageStyles.badgePending}>미복원</span>
+                )}
+                {entry.restored && entry.restoredBy && (
+                  <span className={pageStyles.restoredMeta}>
+                    {' '}by {entry.restoredBy}
+                  </span>
+                )}
+              </td>
+              <td>
+                {entry.targetType !== 'IMAGE' && !entry.restored ? (
+                  <button
+                    type="button"
+                    className={pageStyles.btnRestore}
+                    disabled={restoringId === entry.id}
+                    onClick={() => handleRestore(entry.id)}
+                  >
+                    {restoringId === entry.id ? '복원 중...' : '복원'}
+                  </button>
+                ) : (
+                  <span className={pageStyles.noAction}>
+                    {entry.targetType === 'IMAGE' ? '불가' : '-'}
+                  </span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function targetTypeLabel(type: string): string {
+  switch (type) {
+    case 'USER': return '사용자'
+    case 'GROUP': return '모임'
+    case 'POST': return '게시글'
+    case 'IMAGE': return '이미지'
+    default: return type
+  }
+}
+
+function targetTypeBadgeClass(type: string): string {
+  switch (type) {
+    case 'USER': return pageStyles.badgeUser
+    case 'GROUP': return pageStyles.badgeGroup
+    case 'POST': return pageStyles.badgePost
+    case 'IMAGE': return pageStyles.badgeImage
+    default: return pageStyles.badgePost
+  }
 }

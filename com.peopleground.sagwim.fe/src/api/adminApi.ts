@@ -3,6 +3,7 @@ import type { AdminContentResponse } from '../types/post'
 import type { MonthlyStatsResponse } from '../types/adminStats'
 import type { AdminImageResponse } from '../types/image'
 import type { AdminGroupResponse } from '../types/group'
+import type { DeleteLogEntry } from '../types/deleteLog'
 import { ApiError } from './ApiError'
 import { API_BASE_URL } from './config'
 
@@ -42,10 +43,12 @@ export const getAdminUsers = (
 export const deleteAdminUser = (
   token: string,
   username: string,
+  reason: string,
 ): Promise<void> => {
   return fetch(`${API_BASE_URL}/admin/users/${username}`, {
     method: 'DELETE',
     headers: createAuthHeaders(token),
+    body: JSON.stringify({ reason }),
   }).then(async (response) => {
     if (!response.ok) {
       const text = await response.text()
@@ -99,10 +102,12 @@ export const getAdminContents = (
 export const deleteAdminContent = (
   token: string,
   contentId: number,
+  reason: string,
 ): Promise<void> => {
   return fetch(`${API_BASE_URL}/admin/contents/${contentId}`, {
     method: 'DELETE',
     headers: createAuthHeaders(token),
+    body: JSON.stringify({ reason }),
   }).then(async (response) => {
     if (!response.ok) {
       const text = await response.text()
@@ -187,10 +192,11 @@ export const getAdminImages = (
   }).then((response) => parseResponse<PageResponse<AdminImageResponse>>(response))
 }
 
-export const deleteAdminImage = (token: string, imageId: number): Promise<void> => {
+export const deleteAdminImage = (token: string, imageId: number, reason: string): Promise<void> => {
   return fetch(`${API_BASE_URL}/admin/images/${imageId}`, {
     method: 'DELETE',
     headers: createAuthHeaders(token),
+    body: JSON.stringify({ reason }),
   }).then(async (response) => {
     if (!response.ok) {
       const text = await response.text()
@@ -229,14 +235,35 @@ export const rejectAdminGroup = (
   }).then((response) => parseResponse<AdminGroupResponse>(response))
 }
 
-export const deleteAdminGroup = (token: string, groupId: number): Promise<void> => {
+export const deleteAdminGroup = (token: string, groupId: number, reason: string): Promise<void> => {
   return fetch(`${API_BASE_URL}/admin/groups/${groupId}`, {
     method: 'DELETE',
     headers: createAuthHeaders(token),
+    body: JSON.stringify({ reason }),
   }).then(async (response) => {
     if (!response.ok) {
       const text = await response.text()
       throw new ApiError(response.status, text || `Request failed: ${response.status}`)
     }
   })
+}
+
+export const getDeleteLogs = (
+  token: string,
+  page = 0,
+  size = 20,
+): Promise<PageResponse<DeleteLogEntry>> => {
+  return fetch(`${API_BASE_URL}/admin/delete-logs?page=${page}&size=${size}`, {
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<PageResponse<DeleteLogEntry>>(response))
+}
+
+export const restoreDeleteLog = (
+  token: string,
+  logId: number,
+): Promise<DeleteLogEntry> => {
+  return fetch(`${API_BASE_URL}/admin/delete-logs/${logId}/restore`, {
+    method: 'POST',
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<DeleteLogEntry>(response))
 }

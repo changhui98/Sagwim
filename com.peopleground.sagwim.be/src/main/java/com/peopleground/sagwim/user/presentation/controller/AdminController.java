@@ -3,6 +3,7 @@ package com.peopleground.sagwim.user.presentation.controller;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.user.application.AdminService;
+import com.peopleground.sagwim.user.presentation.dto.request.AdminDeleteUserRequest;
 import com.peopleground.sagwim.user.presentation.dto.request.ChangeUserRoleRequest;
 import com.peopleground.sagwim.user.presentation.dto.response.AdminUserDetailResponse;
 import com.peopleground.sagwim.user.presentation.dto.response.AdminUserResponse;
@@ -51,9 +52,11 @@ public class AdminController {
     @DeleteMapping("/{username}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUserForAdmin(
-        @PathVariable String username
+        @PathVariable String username,
+        @RequestBody @Valid AdminDeleteUserRequest request,
+        @AuthenticationPrincipal CustomUser currentUser
     ) {
-        adminService.deleteUserForAdmin(username);
+        adminService.deleteUserForAdmin(currentUser.getUsername(), username, request.reason());
 
         return ResponseEntity.noContent().build();
     }

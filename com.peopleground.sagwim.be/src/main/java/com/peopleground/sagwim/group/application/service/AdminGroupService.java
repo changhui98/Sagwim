@@ -1,5 +1,7 @@
 package com.peopleground.sagwim.group.application.service;
 
+import com.peopleground.sagwim.deletelog.application.service.DeleteLogService;
+import com.peopleground.sagwim.deletelog.domain.TargetType;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
@@ -24,6 +26,7 @@ public class AdminGroupService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
+    private final DeleteLogService deleteLogService;
 
     @Transactional(readOnly = true)
     public PageResponse<AdminGroupResponse> getAllGroups(int page, int size) {
@@ -54,13 +57,21 @@ public class AdminGroupService {
     }
 
     @Transactional
-    public void deleteGroup(Long groupId, CustomUser customUser) {
+    public void deleteGroup(Long groupId, CustomUser customUser, String reason) {
         Group group = findGroup(groupId);
         User admin = userRepository.findByUsername(customUser.getUsername())
             .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
         groupMemberRepository.deleteAllByGroupId(groupId);
         group.delete(admin);
+
+        deleteLogService.log(
+            customUser.getUsername(),
+            TargetType.GROUP.name(),
+            String.valueOf(groupId),
+            group.getName(),
+            reason
+        );
     }
 
     private Group findGroup(Long groupId) {
