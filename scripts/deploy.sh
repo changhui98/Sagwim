@@ -52,6 +52,19 @@ if [[ ! -f "$ENV_FILE" ]]; then
 fi
 set -a; source "$ENV_FILE"; set +a
 
+# 필수 환경변수 검증
+REQUIRED_VARS=(POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD JWT_SECRET GOOGLE_MAPS_API_KEY MAIL_USERNAME MAIL_PASSWORD)
+missing=()
+for var in "${REQUIRED_VARS[@]}"; do
+    if [[ -z "${!var:-}" ]]; then
+        missing+=("$var")
+    fi
+done
+if [[ ${#missing[@]} -gt 0 ]]; then
+    log_error "필수 환경변수가 .env에 없습니다: ${missing[*]}"
+    exit 1
+fi
+
 # =====================================================
 # 백엔드 헬스체크 함수 (Docker HEALTHCHECK 상태 폴링)
 # health_check_docker <container_name> <timeout_sec>
@@ -208,6 +221,9 @@ deploy_backend() {
     # 여유분 포함 180s 적용
     if ! health_check_docker "$green" 180; then
         log_error "Green 배포 실패. 롤백합니다."
+        log_warn "--- 컨테이너 로그 (마지막 100줄) ---"
+        docker logs --tail=100 "$green" 2>&1 || true
+        log_warn "-------------------------------"
         docker rm -f "$green" 2>/dev/null || true
         exit 1
     fi
