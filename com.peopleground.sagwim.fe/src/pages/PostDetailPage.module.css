@@ -366,8 +366,17 @@
   box-shadow: var(--shadow-focus);
 }
 
-.iconBtn {
+/* 두 아이콘(이미지 / 전송)을 겹쳐두기 위한 컨테이너 */
+.iconBtnWrap {
+  position: relative;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
+}
+
+.iconBtn {
+  position: absolute;
+  inset: 0;
   width: 28px;
   height: 28px;
   border: none;
@@ -378,15 +387,32 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: opacity var(--t-fast), transform var(--t-fast);
+  /* opacity + scale 전환 — 150ms ease-in-out */
+  transition:
+    opacity 150ms ease-in-out,
+    transform 150ms ease-in-out;
   -webkit-tap-highlight-color: transparent;
 }
 
-.iconBtn:hover:not(:disabled) {
+/* 기본 상태: 보임 */
+.iconBtn {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+/* 숨겨진 상태 */
+.iconBtnHidden {
+  opacity: 0;
+  transform: scale(0.75);
+  pointer-events: none;
+}
+
+.iconBtn:hover:not(:disabled):not(.iconBtnHidden) {
   opacity: 0.75;
 }
 
-.iconBtn:active:not(:disabled) {
+.iconBtn:active:not(:disabled):not(.iconBtnHidden) {
   transform: scale(0.93);
 }
 
@@ -405,6 +431,24 @@
   width: 26px;
   height: 26px;
   display: block;
+}
+
+/* 전송 버튼 이미지: 검정 SVG를 살몬/핑크 계열로 필터 변환 */
+.iconBtnImgSend {
+  width: 26px;
+  height: 26px;
+  display: block;
+  /* #F08080(살몬) 근사 필터: 원본이 검정(#000)인 SVG 기준 */
+  filter: invert(60%) sepia(40%) saturate(600%) hue-rotate(310deg) brightness(105%);
+}
+
+/* 이미지 첨부 버튼: muted 컬러 */
+.iconBtnImgPicture {
+  width: 26px;
+  height: 26px;
+  display: block;
+  filter: invert(55%) sepia(0%) saturate(0%) brightness(80%);
+  opacity: 0.7;
 }
 
 .submitBtn {
@@ -622,7 +666,7 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  background: var(--clr-surface);
+  background: transparent;
   border: 1px solid var(--clr-border);
   border-radius: var(--r-lg);
   padding: var(--sp-2) var(--sp-3);
