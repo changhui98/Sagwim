@@ -14,7 +14,7 @@ import { useAuth } from '../context/AuthContext'
 import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
 import { GroupCreateModal } from './group/GroupCreateModal'
 import { SidePanel, type SidePanelType } from './SidePanel'
-import { getUnreadCount } from '../api/notificationApi'
+import { getUnreadCount, getNotificationStreamUrl } from '../api/notificationApi'
 import {
   ActivityIcon,
   AlertIcon,
@@ -66,12 +66,6 @@ export function Navbar({ role, onLogout }: NavbarProps) {
   const [activePanel, setActivePanel] = useState<SidePanelType | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
 
-  /**
-   * 미읽음 알림 수 갱신.
-   * - 인증된 상태에서만 호출 (로그아웃 후 401 호출 회피).
-   * - 실패 시 사용자에게 노출하지 않고 조용히 무시 (배지 0 유지).
-   * - 60초 폴링: 새 탭/세션의 알림을 너무 자주 호출하지 않으면서도 실시간성을 유지하는 절충값.
-   */
   const refreshUnreadCount = useCallback(async () => {
     if (!isAuthenticated || !token) return
     try {
@@ -83,22 +77,62 @@ export function Navbar({ role, onLogout }: NavbarProps) {
   }, [isAuthenticated, token])
 
   useEffect(() => {
-    if (!isAuthenticated) return
-    let cancelled = false
-    // 첫 호출도 setInterval 과 동일하게 다음 tick 으로 미뤄, effect 본문에서 직접 동기적으로
-    // setState 가 발생하는 것으로 정적 분석되는 패턴(react-hooks/set-state-in-effect)을 회피한다.
-    const initialId = window.setTimeout(() => {
-      if (!cancelled) void refreshUnreadCount()
-    }, 0)
-    const intervalId = window.setInterval(() => {
-      if (!cancelled) void refreshUnreadCount()
-    }, 60_000)
-    return () => {
-      cancelled = true
-      window.clearTimeout(initialId)
-      window.clearInterval(intervalId)
+    if (!isAuthenticated || !token) return
+
+    let es: EventSource | null = null
+    let fallbackIntervalId: number | undefined
+    let visibilityHandler: (() => void) | null = null
+
+    const connect = () => {
+      es?.close()
+      es = new EventSource(getNotificationStreamUrl(token))
+
+      es.addEventListener('unread-count', (e) => {
+        try {
+          const data = JSON.parse(e.data) as { count: number }
+          setUnreadCount(data.count)
+        } catch {
+          // 파싱 실패 시 무시
+        }
+      })
+
+      es.onerror = () => {
+        es?.close()
+        es = null
+        // SSE 연결 실패 시 30초 폴링으로 대체
+        if (fallbackIntervalId === undefined) {
+          void refreshUnreadCount()
+          fallbackIntervalId = window.setInterval(() => {
+            void refreshUnreadCount()
+          }, 30_000)
+        }
+      }
+
+      // SSE 연결 성공 시 폴백 폴링 정리
+      es.onopen = () => {
+        if (fallbackIntervalId !== undefined) {
+          window.clearInterval(fallbackIntervalId)
+          fallbackIntervalId = undefined
+        }
+      }
     }
-  }, [isAuthenticated, refreshUnreadCount])
+
+    connect()
+
+    // 탭이 포커스를 되찾을 때 SSE 연결 상태를 확인해 재연결
+    visibilityHandler = () => {
+      if (document.visibilityState === 'visible' && (es === null || es.readyState === EventSource.CLOSED)) {
+        connect()
+      }
+    }
+    document.addEventListener('visibilitychange', visibilityHandler)
+
+    return () => {
+      es?.close()
+      if (fallbackIntervalId !== undefined) window.clearInterval(fallbackIntervalId)
+      if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler)
+    }
+  }, [isAuthenticated, token, refreshUnreadCount])
 
   // 비로그인 상태에서는 배지를 노출하지 않는다.
   // 별도 setState 로 리셋하지 않고 derived value 로 처리하면 effect 내부 setState 가 사라져
@@ -196,8 +230,6 @@ export function Navbar({ role, onLogout }: NavbarProps) {
       ),
       onClick: () => {
         togglePanel('notifications')
-        // 알림 패널이 열리는 시점에 최신 카운트를 한 번 더 확인 (60초 폴링 사이의 갭 보완)
-        void refreshUnreadCount()
       },
       match: () => activePanel === 'notifications',
     },

@@ -23,13 +23,21 @@ export const getNotifications = (
 }
 
 /**
- * 미읽음 알림 수.
- * 사이드바 배지에서 폴링으로 호출하므로 가벼운 인덱스 카운트만 수행한다.
+ * 미읽음 알림 수. SSE 미지원 환경의 폴백 폴링용으로 유지한다.
  */
 export const getUnreadCount = (token: string): Promise<UnreadCountResponse> => {
   return fetch(`${API_BASE_URL}/notifications/unread-count`, {
     headers: createAuthHeaders(token),
   }).then((res) => parseResponse<UnreadCountResponse>(res))
+}
+
+/**
+ * SSE 스트림 연결 URL을 반환한다.
+ * EventSource는 커스텀 헤더를 지원하지 않으므로 토큰을 쿼리 파라미터로 전달한다.
+ */
+export const getNotificationStreamUrl = (token: string): string => {
+  const params = new URLSearchParams({ token })
+  return `${API_BASE_URL}/notifications/stream?${params.toString()}`
 }
 
 /**
