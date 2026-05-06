@@ -68,7 +68,10 @@ public class AdminController {
 
     @PatchMapping("/{contentId}/restore")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<AdminContentResponse> restoreContent(@PathVariable Long contentId) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminService.restoreContent(contentId));
+    public ResponseEntity<AdminContentResponse> restoreContent(
+        @PathVariable Long contentId,
+        @AuthenticationPrincipal CustomUser adminUser
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(adminService.restoreContent(contentId, adminUser.getUsername()));
     }
 }

@@ -74,6 +74,20 @@ public class AdminGroupService {
         );
     }
 
+    @Transactional
+    public AdminGroupResponse restoreGroup(Long groupId, CustomUser customUser) {
+        Group group = groupRepository.findByIdIncludingDeleted(groupId)
+            .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        if (!group.isDeleted()) {
+            throw new AppException(GroupErrorCode.GROUP_NOT_DELETED);
+        }
+
+        group.restore();
+        deleteLogService.markRestoredByTarget(TargetType.GROUP.name(), String.valueOf(groupId), customUser.getUsername());
+        return AdminGroupResponse.from(group);
+    }
+
     private Group findGroup(Long groupId) {
         return groupRepository.findById(groupId)
             .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_NOT_FOUND));

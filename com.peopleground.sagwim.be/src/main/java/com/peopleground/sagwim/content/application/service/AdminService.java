@@ -88,7 +88,7 @@ public class AdminService {
     }
 
     @Transactional
-    public AdminContentResponse restoreContent(Long contentId) {
+    public AdminContentResponse restoreContent(Long contentId, String restoredBy) {
         Content content = getContentIncludingDeleted(contentId);
 
         if (!content.isDeleted()) {
@@ -96,6 +96,7 @@ public class AdminService {
         }
 
         content.restore();
+        deleteLogService.markRestoredByTarget(TargetType.POST.name(), String.valueOf(contentId), restoredBy);
         return AdminContentResponse.from(content);
     }
 

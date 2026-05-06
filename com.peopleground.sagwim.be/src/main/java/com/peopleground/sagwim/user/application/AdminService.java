@@ -57,6 +57,19 @@ public class AdminService {
     }
 
     @Transactional
+    public AdminUserDetailResponse restoreUserForAdmin(String requesterUsername, String targetUsername) {
+        User user = getUser(targetUsername);
+
+        if (!user.isDeleted()) {
+            throw new AppException(UserErrorCode.USER_NOT_DELETED);
+        }
+
+        user.restore();
+        deleteLogService.markRestoredByTarget(TargetType.USER.name(), user.getUsername(), requesterUsername);
+        return AdminUserDetailResponse.from(user);
+    }
+
+    @Transactional
     public void changeUserRole(String requesterUsername, String targetUsername, UserRole newRole) {
 
         if (newRole == UserRole.ADMIN) {
