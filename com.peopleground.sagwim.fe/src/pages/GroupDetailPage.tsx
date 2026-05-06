@@ -8,8 +8,8 @@ import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { extractErrorMessage } from '../utils/errorUtils'
 import { Navbar } from '../components/Navbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
-import { GroupEditForm } from '../components/group/GroupEditForm'
 import { GroupDetailTabs } from '../components/group/GroupDetailTabs'
+import { TabSettings } from '../components/group/TabSettings'
 import { TabMemberList } from '../components/group/TabMemberList'
 import { TabPostList } from '../components/group/TabPostList'
 import { TabSchedule } from '../components/group/TabSchedule'
@@ -398,11 +398,12 @@ export function GroupDetailPage() {
             <TabSchedule groupId={Number(groupId)} isMember={isMember} />
           )}
           {activeTab === 'settings' && isLeader && (
-            <GroupEditForm
+            <TabSettings
               group={group}
               actionLoading={actionLoading}
-              onSubmit={handleEditSubmit}
-              onCancel={() => setActiveTab('schedule')}
+              onSaveInfo={(data) => handleEditSubmit({ ...data, category: group.category, meetingType: group.meetingType, region: group.region ?? null, maxMemberCount: group.maxMemberCount })}
+              onSaveMemberCount={(maxMemberCount) => handleEditSubmit({ name: group.name, description: group.description ?? '', category: group.category, meetingType: group.meetingType, region: group.region ?? null, maxMemberCount })}
+              onDelete={handleDeleteGroup}
             />
           )}
         </div>
