@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getGroup, joinGroup, leaveGroup, updateGroup, deleteGroup, kickGroupMember, uploadGroupImage, toggleGroupLike, getGroupLikeStatus } from '../api/groupApi'
+import { getGroup, joinGroup, leaveGroup, updateGroup, deleteGroup, kickGroupMember, uploadGroupImage, toggleGroupLike, getGroupLikeStatus, getMyJoinRequestStatus, cancelMyJoinRequest } from '../api/groupApi'
 import { GroupLikersModal } from '../components/group/GroupLikersModal'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
@@ -41,21 +41,28 @@ export function GroupDetailPage() {
   const [likeCount, setLikeCount] = useState(0)
   const [likeLoading, setLikeLoading] = useState(false)
   const [likersModalOpen, setLikersModalOpen] = useState(false)
+  const [hasPendingRequest, setHasPendingRequest] = useState(false)
+  const [actionError, setActionError] = useState('')
+
+  const [showAnswerInput, setShowAnswerInput] = useState(false)
+  const [answerText, setAnswerText] = useState('')
 
   const loadData = useCallback(async () => {
     if (!groupId) return
     try {
       setLoading(true)
       setError('')
-      const [groupData, profileData, likeStatus] = await Promise.all([
+      const [groupData, profileData, likeStatus, joinRequestStatus] = await Promise.all([
         getGroup(token, Number(groupId)),
         getMyProfile(token),
         getGroupLikeStatus(token, Number(groupId)).catch(() => ({ liked: false })),
+        getMyJoinRequestStatus(token, Number(groupId)).catch(() => ({ pending: false })),
       ])
       setGroup(groupData)
       setMyProfile(profileData)
       setLikeCount(groupData.likeCount)
       setLiked(likeStatus.liked)
+      setHasPendingRequest(joinRequestStatus.pending)
     } catch (err) {
       setError(extractErrorMessage(err, '모임 정보 조회 실패'))
       handleUnauthorized(err)
@@ -77,14 +84,26 @@ export function GroupDetailPage() {
   const isLeader = myProfile?.username === group?.leaderUsername
   const groupImageUrl = group?.imageUrl?.trim() ? group.imageUrl.trim() : null
 
-  const handleJoin = async () => {
+  const handleJoinClick = () => {
+    if (!group) return
+    if (group.joinType === 'APPROVAL_REQUIRED' && group.joinQuestion) {
+      setShowAnswerInput(true)
+    } else {
+      handleJoinSubmit(undefined)
+    }
+  }
+
+  const handleJoinSubmit = async (answer: string | undefined) => {
     if (!groupId) return
     try {
       setActionLoading(true)
-      await joinGroup(token, Number(groupId))
+      setActionError('')
+      await joinGroup(token, Number(groupId), answer)
+      setShowAnswerInput(false)
+      setAnswerText('')
       await loadData()
     } catch (err) {
-      alert(extractErrorMessage(err, '모임 가입 실패'))
+      setActionError(extractErrorMessage(err, '모임 가입에 실패했습니다.'))
       handleUnauthorized(err)
     } finally {
       setActionLoading(false)
@@ -96,10 +115,27 @@ export function GroupDetailPage() {
     if (!window.confirm('모임에서 탈퇴하시겠습니까?')) return
     try {
       setActionLoading(true)
+      setActionError('')
       await leaveGroup(token, Number(groupId))
       await loadData()
     } catch (err) {
-      alert(extractErrorMessage(err, '모임 탈퇴 실패'))
+      setActionError(extractErrorMessage(err, '모임 탈퇴에 실패했습니다.'))
+      handleUnauthorized(err)
+    } finally {
+      setActionLoading(false)
+    }
+  }
+
+  const handleCancelJoinRequest = async () => {
+    if (!groupId) return
+    if (!window.confirm('가입 신청을 취소하시겠습니까?')) return
+    try {
+      setActionLoading(true)
+      setActionError('')
+      await cancelMyJoinRequest(token, Number(groupId))
+      setHasPendingRequest(false)
+    } catch (err) {
+      setActionError(extractErrorMessage(err, '신청 취소에 실패했습니다.'))
       handleUnauthorized(err)
     } finally {
       setActionLoading(false)
@@ -257,20 +293,63 @@ export function GroupDetailPage() {
                 >
                   {actionLoading ? '처리 중...' : '모임 탈퇴'}
                 </button>
+              ) : hasPendingRequest ? (
+                <button
+                  type="button"
+                  className={styles.topTextAction}
+                  onClick={handleCancelJoinRequest}
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? '처리 중...' : '신청 취소'}
+                </button>
+              ) : showAnswerInput ? (
+                <div className={styles.answerInputArea}>
+                  <p className={styles.answerQuestion}>{group.joinQuestion}</p>
+                  <textarea
+                    className={styles.answerTextarea}
+                    placeholder="답변을 입력하세요 (최대 1000자)"
+                    maxLength={1000}
+                    rows={3}
+                    value={answerText}
+                    onChange={(e) => setAnswerText(e.target.value)}
+                    disabled={actionLoading}
+                  />
+                  <div className={styles.answerActions}>
+                    <button
+                      type="button"
+                      className={styles.cancelButton}
+                      onClick={() => { setShowAnswerInput(false); setAnswerText('') }}
+                      disabled={actionLoading}
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.saveButton}
+                      onClick={() => handleJoinSubmit(answerText)}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? '처리 중...' : '신청'}
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <button
                   type="button"
                   className={styles.topTextAction}
-                  onClick={handleJoin}
+                  onClick={handleJoinClick}
                   disabled={actionLoading || group.currentMemberCount >= group.maxMemberCount}
                 >
                   {actionLoading
                     ? '처리 중...'
                     : group.currentMemberCount >= group.maxMemberCount
                       ? '정원 초과'
-                      : '모임 가입'}
+                      : group.joinType === 'APPROVAL_REQUIRED'
+                        ? '가입 신청'
+                        : '모임 가입'}
                 </button>
               )}
+              {actionError && <p className={styles.actionErrorText}>{actionError}</p>}
             </div>
           )}
         </div>
@@ -400,10 +479,12 @@ export function GroupDetailPage() {
           {activeTab === 'settings' && isLeader && (
             <TabSettings
               group={group}
+              token={token}
               actionLoading={actionLoading}
               onSaveInfo={(data) => handleEditSubmit({ ...data, category: group.category, meetingType: group.meetingType, region: group.region ?? null, maxMemberCount: group.maxMemberCount })}
               onSaveMemberCount={(maxMemberCount) => handleEditSubmit({ name: group.name, description: group.description ?? '', category: group.category, meetingType: group.meetingType, region: group.region ?? null, maxMemberCount })}
               onDelete={handleDeleteGroup}
+              onGroupUpdated={(updated) => setGroup((prev) => prev ? { ...prev, ...updated } : prev)}
             />
           )}
         </div>

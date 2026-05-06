@@ -386,7 +386,16 @@
 /* ── Action Row ── */
 .actionRow {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-2);
+}
+
+.actionErrorText {
+  font-size: 0.8125rem;
+  color: var(--clr-error);
+  margin: 0;
+  text-align: right;
 }
 
 .joinButton {
@@ -727,11 +736,50 @@
 
 .kickButton:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ── 가입 신청 답변 입력 영역 ── */
+.answerInputArea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  width: 260px;
+  max-width: 100%;
+}
+
+.answerQuestion {
+  font-size: 0.875rem;
+  color: var(--clr-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.answerTextarea {
+  width: 100%;
+  padding: var(--sp-3);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-md);
+  background: var(--clr-surface);
+  color: var(--clr-text);
+  font-size: 0.875rem;
+  box-sizing: border-box;
+  resize: vertical;
+  outline: none;
+}
+
+.answerTextarea:focus {
+  border-color: var(--clr-accent);
+}
+
+.answerActions {
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: flex-end;
+}
+
 /* ── Tab Section ── */
 .tabSection {
   display: flex;
   flex-direction: column;
-  /* 탭 네비게이션과 탭 콘텐츠 패널 사이 gap 없음 — 시각적 연결을 위해 border-radius 이어받음 */
+  gap: 3rem;
 }
 
 @media (max-width: 767px) {
