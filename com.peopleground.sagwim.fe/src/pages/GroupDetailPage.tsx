@@ -33,7 +33,6 @@ export function GroupDetailPage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const [isEditMode, setIsEditMode] = useState(false)
   const [activeTab, setActiveTab] = useState<GroupTab>('schedule')
   const [imageUploading, setImageUploading] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
@@ -119,7 +118,6 @@ export function GroupDetailPage() {
     try {
       setActionLoading(true)
       await updateGroup(token, Number(groupId), data)
-      setIsEditMode(false)
       await loadData()
     } catch (err) {
       alert(extractErrorMessage(err, '모임 수정 실패'))
@@ -247,27 +245,6 @@ export function GroupDetailPage() {
           >
             &larr; 모임 목록
           </button>
-
-          {isLeader && !isEditMode && (
-            <div className={styles.topActions}>
-              <button
-                type="button"
-                className={styles.topTextAction}
-                onClick={() => setIsEditMode(true)}
-                disabled={actionLoading}
-              >
-                수정
-              </button>
-              <button
-                type="button"
-                className={styles.topTextAction}
-                onClick={handleDeleteGroup}
-                disabled={actionLoading}
-              >
-                삭제
-              </button>
-            </div>
-          )}
 
           {!isLeader && (
             <div className={styles.actionRow}>
@@ -400,20 +377,11 @@ export function GroupDetailPage() {
           </div>
         </div>
 
-        {isLeader && isEditMode && (
-          <GroupEditForm
-            group={group}
-            actionLoading={actionLoading}
-            onSubmit={handleEditSubmit}
-            onCancel={() => setIsEditMode(false)}
-          />
-        )}
-
         <div className={styles.contentDivider} aria-hidden="true" />
 
         {/* 탭 네비게이션 */}
         <div className={styles.tabSection}>
-          <GroupDetailTabs activeTab={activeTab} onChange={setActiveTab} />
+          <GroupDetailTabs activeTab={activeTab} onChange={setActiveTab} isLeader={isLeader} />
 
           {activeTab === 'posts' && (
             <TabPostList groupId={Number(groupId)} isMember={isMember} />
@@ -428,6 +396,14 @@ export function GroupDetailPage() {
           )}
           {activeTab === 'schedule' && (
             <TabSchedule groupId={Number(groupId)} isMember={isMember} />
+          )}
+          {activeTab === 'settings' && isLeader && (
+            <GroupEditForm
+              group={group}
+              actionLoading={actionLoading}
+              onSubmit={handleEditSubmit}
+              onCancel={() => setActiveTab('schedule')}
+            />
           )}
         </div>
       </main>
