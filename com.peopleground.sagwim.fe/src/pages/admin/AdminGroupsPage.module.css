@@ -1,0 +1,58 @@
+/* ── AdminGroupsPage 고유 스타일 ── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+/* 모임 설명 서브텍스트 */
+.groupDesc {
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+/* 승인/거절 버튼 그룹 */
+.actionButtons {
+  display: flex;
+  gap: var(--sp-2);
+}
+
+/* 상태 배지 — 대기중 (노란 계열) */
+.badgePending {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+[data-theme='dark'] .badgePending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* 상태 배지 — 거절됨 (붉은 계열) */
+.badgeRejected {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  background: var(--clr-error-soft);
+  color: var(--clr-error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}

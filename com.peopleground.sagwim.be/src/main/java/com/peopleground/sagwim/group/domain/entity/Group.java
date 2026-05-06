@@ -17,6 +17,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
 
 // GROUP 은 SQL 예약어이므로 반드시 @Entity(name="p_group") + @Table(name="p_group") 명시
 @Getter
@@ -59,6 +60,10 @@ public class Group extends AuditingEntity {
     @Column(nullable = false)
     private int likeCount = 0;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private GroupStatus status = GroupStatus.PENDING;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id", nullable = false)
     private User leader;
@@ -81,6 +86,7 @@ public class Group extends AuditingEntity {
         group.maxMemberCount = maxMemberCount;
         group.currentMemberCount = 0;
         group.likeCount = 0;
+        group.status = GroupStatus.PENDING;
         group.leader = leader;
         return group;
     }
@@ -110,6 +116,18 @@ public class Group extends AuditingEntity {
 
     public void updateImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public boolean isPending() {
+        return this.status == GroupStatus.PENDING;
+    }
+
+    public void approve() {
+        this.status = GroupStatus.ACTIVE;
+    }
+
+    public void reject() {
+        this.status = GroupStatus.REJECTED;
     }
 
     public void delete(User user) {

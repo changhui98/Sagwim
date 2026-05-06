@@ -364,6 +364,9 @@ export function GroupDetailPage() {
               </span>
             </div>
 
+            {group.status === 'PENDING' && (
+              <div className={styles.pendingBadge}>승인 대기중 — 관리자 승인 후 활성화됩니다.</div>
+            )}
             <h1 className={styles.groupName}>{group.name}</h1>
             <div className={styles.memberCountBox}>
               <img src={userAlt1Icon} alt="" aria-hidden="true" className={styles.memberCountIcon} />

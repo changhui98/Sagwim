@@ -254,6 +254,27 @@
 }
 
 
+/* 승인 대기중 안내 배지 */
+.pendingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #92400e;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  width: fit-content;
+}
+
+[data-theme='dark'] .pendingBadge {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
 .groupName {
   grid-column: 1;
   font-size: 1.5rem;
