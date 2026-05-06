@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './CreateTypeSelectorModal.module.css'
 import groupIcon from '../../assets/cel-rings-love-svgrepo-com.svg'
 import postIcon from '../../assets/clipboard-list-alt-svgrepo-com.svg'
@@ -27,7 +28,7 @@ export function CreateTypeSelectorModal({
 
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       onClick={onClose}
@@ -61,6 +62,7 @@ export function CreateTypeSelectorModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
