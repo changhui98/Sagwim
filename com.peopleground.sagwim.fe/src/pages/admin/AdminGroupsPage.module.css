@@ -6,15 +6,14 @@
   gap: var(--sp-6);
 }
 
-/* 모임 설명 서브텍스트 */
-.groupDesc {
-  font-size: 0.75rem;
+/* 설명 컬럼 셀 — 1줄 말줄임 */
+.groupDescCell {
   color: var(--clr-text-muted);
-  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 200px;
 }
 
 /* 승인/거절 버튼 그룹 */
