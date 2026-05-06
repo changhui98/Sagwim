@@ -686,7 +686,7 @@ export function PostDetailPage() {
               ref={commentInputRef}
               type="text"
               className={styles.commentInput}
-              placeholder={`${meDisplayName}님에게 답글 남기기...`}
+              placeholder={`${displayName}님에게 답글 남기기...`}
               value={commentBody}
               onChange={(e) => setCommentBody(e.target.value)}
               onKeyDown={(e) => {
