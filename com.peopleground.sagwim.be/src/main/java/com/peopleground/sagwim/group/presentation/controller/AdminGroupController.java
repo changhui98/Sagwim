@@ -1,5 +1,6 @@
 package com.peopleground.sagwim.group.presentation.controller;
 
+import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.group.application.service.AdminGroupService;
 import com.peopleground.sagwim.group.presentation.dto.response.AdminGroupResponse;
@@ -7,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,5 +41,14 @@ public class AdminGroupController {
     @PatchMapping("/{groupId}/reject")
     public ResponseEntity<AdminGroupResponse> rejectGroup(@PathVariable Long groupId) {
         return ResponseEntity.status(HttpStatus.OK).body(adminGroupService.rejectGroup(groupId));
+    }
+
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<Void> deleteGroup(
+        @PathVariable Long groupId,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        adminGroupService.deleteGroup(groupId, customUser);
+        return ResponseEntity.noContent().build();
     }
 }

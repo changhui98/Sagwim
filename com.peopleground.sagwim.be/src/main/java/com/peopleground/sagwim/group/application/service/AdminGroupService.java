@@ -1,11 +1,16 @@
 package com.peopleground.sagwim.group.application.service;
 
+import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.group.domain.GroupErrorCode;
 import com.peopleground.sagwim.group.domain.entity.Group;
+import com.peopleground.sagwim.group.domain.repository.GroupMemberRepository;
 import com.peopleground.sagwim.group.domain.repository.GroupRepository;
 import com.peopleground.sagwim.group.presentation.dto.response.AdminGroupResponse;
+import com.peopleground.sagwim.user.domain.UserErrorCode;
+import com.peopleground.sagwim.user.domain.entity.User;
+import com.peopleground.sagwim.user.domain.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminGroupService {
 
     private final GroupRepository groupRepository;
+    private final GroupMemberRepository groupMemberRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public PageResponse<AdminGroupResponse> getAllGroups(int page, int size) {
@@ -44,6 +51,16 @@ public class AdminGroupService {
         }
         group.reject();
         return AdminGroupResponse.from(group);
+    }
+
+    @Transactional
+    public void deleteGroup(Long groupId, CustomUser customUser) {
+        Group group = findGroup(groupId);
+        User admin = userRepository.findByUsername(customUser.getUsername())
+            .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
+
+        groupMemberRepository.deleteAllByGroupId(groupId);
+        group.delete(admin);
     }
 
     private Group findGroup(Long groupId) {
