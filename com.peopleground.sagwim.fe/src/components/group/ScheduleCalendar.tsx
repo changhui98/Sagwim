@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import Holidays from 'date-holidays'
 import type { ScheduleResponse } from '../../types/group'
 import styles from './ScheduleCalendar.module.css'
+import bellIcon from '../../assets/bell-ringing-svgrepo-com.svg'
 
 interface ScheduleCalendarProps {
   year: number
@@ -219,7 +220,14 @@ export function ScheduleCalendar({
                   {holidayName}
                 </span>
               )}
-              {hasSchedule && <span className={styles.dot} aria-hidden="true" />}
+              {hasSchedule && (
+                <img
+                  src={bellIcon}
+                  alt=""
+                  aria-hidden="true"
+                  className={styles.scheduleIcon}
+                />
+              )}
             </button>
           )
         })}

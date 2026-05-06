@@ -153,45 +153,38 @@
 }
 
 .dayCell.today .dayNumber {
-  color: var(--clr-accent);
   font-weight: 700;
 }
 
 /* 선택된 날 */
 .dayCell.selected {
-  background: var(--clr-accent);
+  background: transparent;
   border-color: var(--clr-accent);
+  border-width: 2px;
 }
 
 .dayCell.selected .dayNumber {
-  color: #ffffff;
   font-weight: 700;
 }
 
-.dayCell.selected .holidayName {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.dayCell.selected .dot {
-  background: rgba(255, 255, 255, 0.8);
-}
-
-/* 일정 있는 날 도트 */
-.dot {
-  width: 5px;
-  height: 5px;
-  border-radius: var(--r-full);
-  background: var(--clr-accent);
-  flex-shrink: 0;
+/* 일정 있는 날 벨 아이콘 */
+.scheduleIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  opacity: 0.6;
 }
 
 /* 오늘이면서 선택된 경우 */
 .dayCell.today.selected {
-  background: var(--clr-accent);
+  background: var(--clr-accent-muted);
 }
 
 .dayCell.today.selected .dayNumber {
-  color: #ffffff;
+  font-weight: 700;
 }
 
 @media (max-width: 480px) {
