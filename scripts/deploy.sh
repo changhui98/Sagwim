@@ -158,6 +158,10 @@ deploy_backend() {
     # docker-compose.yml의 environment 기본값은 docker run에 적용되지 않으므로
     # CORS_ALLOWED_ORIGINS, IMAGE_URL_PREFIX 등을 명시적으로 주입한다.
     log_info "Green 컨테이너 기동 중..."
+
+    # 로그 디렉토리 사전 생성 (없으면 Docker가 root 소유로 만들어 non-root 컨테이너가 쓰기 실패)
+    mkdir -p "${HOME}/sagwim/logs"
+
     # CORS_ALLOWED_ORIGINS는 .env 값(구 도메인이 남아있을 수 있음)에 오염되지 않도록
     # 스크립트 상수로 강제 지정한다. --env-file 이후 -e 플래그로 override해도
     # 쉘이 source한 환경변수를 ${VAR:-fallback} 문법으로 참조하면 .env 값이 그대로
