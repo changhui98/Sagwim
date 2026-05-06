@@ -134,6 +134,18 @@ public class LikeService {
         int inserted = commentLikeRepository.insertIfNotExists(commentId, user.getId());
         if (inserted == 1) {
             commentRepository.incrementLikeCount(commentId);
+            User commentAuthor = comment.getAuthor();
+            if (!commentAuthor.getId().equals(user.getId())) {
+                notificationService.notify(
+                    commentAuthor,
+                    NotificationType.COMMENT_LIKED,
+                    user,
+                    comment.getId(),
+                    comment.getBody() != null && comment.getBody().length() > 30
+                        ? comment.getBody().substring(0, 30) + "…"
+                        : comment.getBody()
+                );
+            }
         }
         return LikeToggleResponse.liked(currentCommentLikeCount(commentId));
     }

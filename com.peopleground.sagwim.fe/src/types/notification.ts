@@ -5,6 +5,7 @@
  */
 export type NotificationType =
   | 'CONTENT_LIKED'
+  | 'COMMENT_LIKED'
   | 'COMMENT_ADDED'
   | 'MEETING_MEMBER_JOINED'
   | 'MEETING_SCHEDULE_ADDED'
