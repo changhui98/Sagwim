@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { createGroupSchedule, searchPlaceSuggestions } from '../../api/groupApi'
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
@@ -221,7 +222,7 @@ export function ScheduleCreateModal({ isOpen, groupId, onClose, onCreated }: Sch
     onClose()
   }
 
-  return (
+  return createPortal(
     <>
       <div
         className={styles.overlay}
@@ -469,6 +470,7 @@ export function ScheduleCreateModal({ isOpen, groupId, onClose, onCreated }: Sch
         message="새 일정이 캘린더에 추가되었어요."
         onClose={handleSuccessClose}
       />
-    </>
+    </>,
+    document.body
   )
 }

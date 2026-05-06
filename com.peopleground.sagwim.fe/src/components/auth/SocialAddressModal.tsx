@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { KakaoAddressSearch } from '../common/KakaoAddressSearch'
 import styles from './SocialAddressModal.module.css'
 
@@ -35,7 +36,7 @@ export function SocialAddressModal({
 
   const isSubmittable = nickname.trim().length >= 2 && address.trim().length > 0
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       role="dialog"
@@ -102,6 +103,7 @@ export function SocialAddressModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

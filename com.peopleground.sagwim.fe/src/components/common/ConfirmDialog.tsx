@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './ConfirmDialog.module.css'
 
 type ConfirmVariant = 'primary' | 'danger'
@@ -48,7 +49,7 @@ export function ConfirmDialog({
 
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       onClick={onCancel}
@@ -82,6 +83,7 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

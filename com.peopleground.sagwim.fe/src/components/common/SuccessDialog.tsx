@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './SuccessDialog.module.css'
 
 interface SuccessDialogProps {
@@ -40,7 +41,7 @@ export function SuccessDialog({
 
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       onClick={onClose}
@@ -80,6 +81,7 @@ export function SuccessDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

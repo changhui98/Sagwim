@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { createPortal } from 'react-dom'
 import {
   confirmEmailChange,
   requestEmailChangeVerification,
@@ -238,7 +239,7 @@ export function ProfileEditModal({
   const newPasswordFilled = form.newPassword.length > 0
   const newPwValid = isPasswordValid(form.newPassword)
 
-  return (
+  return createPortal(
     <>
       <div
         className={styles.overlay}
@@ -519,6 +520,7 @@ export function ProfileEditModal({
         message="변경한 정보가 저장되었어요."
         onClose={handleSuccessClose}
       />
-    </>
+    </>,
+    document.body
   )
 }
