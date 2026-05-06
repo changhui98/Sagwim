@@ -1,14 +1,19 @@
 package com.peopleground.sagwim.image.presentation.controller;
 
+import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.image.application.service.ImageAdminService;
+import com.peopleground.sagwim.image.presentation.dto.request.AdminDeleteImageRequest;
 import com.peopleground.sagwim.image.presentation.dto.response.AdminImageResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,8 +36,12 @@ public class AdminImageController {
 
     @DeleteMapping("/{imageId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteImage(@PathVariable Long imageId) {
-        imageAdminService.deleteImageForAdmin(imageId);
+    public ResponseEntity<Void> deleteImage(
+        @PathVariable Long imageId,
+        @RequestBody @Valid AdminDeleteImageRequest request,
+        @AuthenticationPrincipal CustomUser currentUser
+    ) {
+        imageAdminService.deleteImageForAdmin(imageId, currentUser.getUsername(), request.reason());
         return ResponseEntity.noContent().build();
     }
 }

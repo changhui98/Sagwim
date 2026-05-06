@@ -11,6 +11,7 @@ import { formatDateTime } from '../../utils/dateUtils'
 import type { AdminImageResponse } from '../../types/image'
 import tableStyles from '../../components/admin/adminTable.module.css'
 import pageStyles from './AdminImageListPage.module.css'
+import confirmDialogStyles from '../../components/common/ConfirmDialog.module.css'
 
 const PAGE_SIZE = 10
 const MAX_VISIBLE_PAGES = 5
@@ -35,6 +36,7 @@ export function AdminImageListPage() {
   const [deleteTarget, setDeleteTarget] = useState<AdminImageResponse | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteSuccess, setDeleteSuccess] = useState(false)
+  const [deleteReason, setDeleteReason] = useState('')
 
   const handleUnauthorized = useCallback(
     (err: unknown) => {
@@ -79,8 +81,9 @@ export function AdminImageListPage() {
     if (!deleteTarget) return
     try {
       setDeleteLoading(true)
-      await deleteAdminImage(token, deleteTarget.id)
+      await deleteAdminImage(token, deleteTarget.id, deleteReason)
       setDeleteTarget(null)
+      setDeleteReason('')
       setDeleteSuccess(true)
       loadImages(page)
     } catch (err) {
@@ -241,9 +244,27 @@ export function AdminImageListPage() {
         confirmLabel="삭제"
         confirmVariant="danger"
         isLoading={deleteLoading}
+        confirmDisabled={deleteReason.trim() === ''}
         onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteTarget(null)}
-      />
+        onCancel={() => {
+          setDeleteTarget(null)
+          setDeleteReason('')
+        }}
+      >
+        <div className={confirmDialogStyles.reasonField}>
+          <label htmlFor="image-delete-reason" className={confirmDialogStyles.reasonLabel}>
+            삭제 사유 <span aria-hidden="true">*</span>
+          </label>
+          <textarea
+            id="image-delete-reason"
+            className={confirmDialogStyles.reasonTextarea}
+            placeholder="삭제 사유를 입력해주세요."
+            maxLength={500}
+            value={deleteReason}
+            onChange={(e) => setDeleteReason(e.target.value)}
+          />
+        </div>
+      </ConfirmDialog>
 
       <SuccessDialog
         isOpen={deleteSuccess}

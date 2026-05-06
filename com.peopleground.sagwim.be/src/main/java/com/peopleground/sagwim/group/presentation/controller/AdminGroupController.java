@@ -3,7 +3,9 @@ package com.peopleground.sagwim.group.presentation.controller;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.group.application.service.AdminGroupService;
+import com.peopleground.sagwim.group.presentation.dto.request.AdminDeleteGroupRequest;
 import com.peopleground.sagwim.group.presentation.dto.response.AdminGroupResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,9 +49,10 @@ public class AdminGroupController {
     @DeleteMapping("/{groupId}")
     public ResponseEntity<Void> deleteGroup(
         @PathVariable Long groupId,
+        @RequestBody @Valid AdminDeleteGroupRequest request,
         @AuthenticationPrincipal CustomUser customUser
     ) {
-        adminGroupService.deleteGroup(groupId, customUser);
+        adminGroupService.deleteGroup(groupId, customUser, request.reason());
         return ResponseEntity.noContent().build();
     }
 }

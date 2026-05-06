@@ -6,6 +6,8 @@ import com.peopleground.sagwim.content.domain.repository.ContentRepository;
 import com.peopleground.sagwim.content.presentation.dto.request.AdminContentUpdateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.SearchType;
 import com.peopleground.sagwim.content.presentation.dto.response.AdminContentResponse;
+import com.peopleground.sagwim.deletelog.application.service.DeleteLogService;
+import com.peopleground.sagwim.deletelog.domain.TargetType;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
@@ -24,6 +26,7 @@ public class AdminService {
 
     private final ContentRepository contentRepository;
     private final UserRepository userRepository;
+    private final DeleteLogService deleteLogService;
 
     @Transactional(readOnly = true)
     public PageResponse<AdminContentResponse> getAllContents(int page, int size, String keyword, SearchType searchType) {
@@ -61,7 +64,7 @@ public class AdminService {
     }
 
     @Transactional
-    public void deleteContent(Long contentId, CustomUser adminUser) {
+    public void deleteContent(Long contentId, CustomUser adminUser, String reason) {
         Content content = getContentIncludingDeleted(contentId);
 
         if (content.isDeleted()) {
@@ -72,6 +75,16 @@ public class AdminService {
             .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
         content.deleteBy(user);
+
+        String body = content.getBody();
+        String summary = body.length() > 20 ? body.substring(0, 20) + "..." : body;
+        deleteLogService.log(
+            adminUser.getUsername(),
+            TargetType.POST.name(),
+            String.valueOf(contentId),
+            summary,
+            reason
+        );
     }
 
     @Transactional

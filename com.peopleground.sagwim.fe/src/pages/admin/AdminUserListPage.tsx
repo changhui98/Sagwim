@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { changeUserRole, deleteAdminUser, getAdminUsers } from '../../api/adminApi'
 import { ApiError } from '../../api/ApiError'
@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
+import confirmDialogStyles from '../../components/common/ConfirmDialog.module.css'
 import { SuccessDialog } from '../../components/common/SuccessDialog'
 import { getInitials } from '../../utils/stringUtils'
 import { formatDateTime } from '../../utils/dateUtils'
@@ -80,6 +81,8 @@ export function AdminUserListPage() {
   const [deleteTarget, setDeleteTarget] = useState<UserResponse | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteSuccess, setDeleteSuccess] = useState(false)
+  const [deleteReason, setDeleteReason] = useState('')
+  const deleteReasonRef = useRef<HTMLTextAreaElement>(null)
 
   const [roleChangingUsername, setRoleChangingUsername] = useState<string | null>(null)
 
@@ -131,8 +134,9 @@ export function AdminUserListPage() {
     if (!deleteTarget) return
     try {
       setDeleteLoading(true)
-      await deleteAdminUser(token, deleteTarget.username)
+      await deleteAdminUser(token, deleteTarget.username, deleteReason)
       setDeleteTarget(null)
+      setDeleteReason('')
       setDeleteSuccess(true)
       loadUsers(page)
     } catch (err) {
@@ -350,9 +354,28 @@ export function AdminUserListPage() {
         confirmLabel="삭제"
         confirmVariant="danger"
         isLoading={deleteLoading}
+        confirmDisabled={deleteReason.trim() === ''}
         onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteTarget(null)}
-      />
+        onCancel={() => {
+          setDeleteTarget(null)
+          setDeleteReason('')
+        }}
+      >
+        <div className={confirmDialogStyles.reasonField}>
+          <label htmlFor="user-delete-reason" className={confirmDialogStyles.reasonLabel}>
+            삭제 사유 <span aria-hidden="true">*</span>
+          </label>
+          <textarea
+            id="user-delete-reason"
+            ref={deleteReasonRef}
+            className={confirmDialogStyles.reasonTextarea}
+            placeholder="삭제 사유를 입력해주세요."
+            maxLength={500}
+            value={deleteReason}
+            onChange={(e) => setDeleteReason(e.target.value)}
+          />
+        </div>
+      </ConfirmDialog>
 
       <SuccessDialog
         isOpen={deleteSuccess}

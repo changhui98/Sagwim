@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import confirmDialogStyles from '../../components/common/ConfirmDialog.module.css'
 import { useNavigate } from 'react-router-dom'
 import {
   deleteAdminContent,
@@ -41,6 +42,7 @@ export function AdminPostListPage() {
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const [successAction, setSuccessAction] = useState<ConfirmAction | null>(null)
+  const [deleteReason, setDeleteReason] = useState('')
 
   const handleUnauthorized = useCallback(
     (err: unknown) => {
@@ -93,11 +95,12 @@ export function AdminPostListPage() {
     try {
       setActionLoading(true)
       if (action === 'delete') {
-        await deleteAdminContent(token, confirmState.content.id)
+        await deleteAdminContent(token, confirmState.content.id, deleteReason)
       } else {
         await restoreAdminContent(token, confirmState.content.id)
       }
       setConfirmState(null)
+      setDeleteReason('')
       setSuccessAction(action)
       loadContents(page)
     } catch (err) {
@@ -269,9 +272,29 @@ export function AdminPostListPage() {
         confirmLabel={confirmState?.action === 'delete' ? '삭제' : '복구'}
         confirmVariant={confirmState?.action === 'delete' ? 'danger' : 'primary'}
         isLoading={actionLoading}
+        confirmDisabled={confirmState?.action === 'delete' && deleteReason.trim() === ''}
         onConfirm={handleConfirm}
-        onCancel={() => setConfirmState(null)}
-      />
+        onCancel={() => {
+          setConfirmState(null)
+          setDeleteReason('')
+        }}
+      >
+        {confirmState?.action === 'delete' && (
+          <div className={confirmDialogStyles.reasonField}>
+            <label htmlFor="post-delete-reason" className={confirmDialogStyles.reasonLabel}>
+              삭제 사유 <span aria-hidden="true">*</span>
+            </label>
+            <textarea
+              id="post-delete-reason"
+              className={confirmDialogStyles.reasonTextarea}
+              placeholder="삭제 사유를 입력해주세요."
+              maxLength={500}
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+            />
+          </div>
+        )}
+      </ConfirmDialog>
 
       <SuccessDialog
         isOpen={successAction !== null}
