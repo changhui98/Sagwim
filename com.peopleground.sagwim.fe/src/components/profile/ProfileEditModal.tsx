@@ -31,6 +31,7 @@ interface EditFormState {
   currentPassword: string
   newPassword: string
   profileImageUrl: string | null
+  bio: string
 }
 
 const buildInitialForm = (profile: UserDetailResponse | null): EditFormState => ({
@@ -39,6 +40,7 @@ const buildInitialForm = (profile: UserDetailResponse | null): EditFormState => 
   currentPassword: '',
   newPassword: '',
   profileImageUrl: profile?.profileImageUrl ?? null,
+  bio: profile?.bio ?? '',
 })
 
 export function ProfileEditModal({
@@ -151,6 +153,7 @@ export function ProfileEditModal({
       const updated = await updateMyProfile(token, {
         ...form,
         profileImageUrl: form.profileImageUrl ?? null,
+        bio: form.bio,
       })
       setSavedProfile(updated)
       setConfirmOpen(false)
@@ -330,6 +333,19 @@ export function ProfileEditModal({
                 }
                 disabled={submitting}
                 autoFocus
+              />
+            </div>
+
+            <div className={`input-group ${styles.colSpan2}`}>
+              <label className="input-label" htmlFor="edit-bio">한 줄 소개</label>
+              <textarea
+                id="edit-bio"
+                className="input"
+                style={{ resize: 'none', height: '72px' }}
+                placeholder="나를 소개하는 한 마디를 작성해보세요."
+                maxLength={150}
+                value={form.bio}
+                onChange={(e) => setForm((prev) => ({ ...prev, bio: e.target.value }))}
               />
             </div>
 

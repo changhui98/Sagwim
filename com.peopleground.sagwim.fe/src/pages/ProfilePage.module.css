@@ -108,6 +108,14 @@
   margin: var(--sp-1) 0 0;
 }
 
+.bio {
+  font-size: 0.875rem;
+  color: var(--clr-text-secondary);
+  margin: 0;
+  line-height: 1.5;
+  min-height: 1.25rem;
+}
+
 .roleBadge {
   display: inline-flex;
   align-items: center;
