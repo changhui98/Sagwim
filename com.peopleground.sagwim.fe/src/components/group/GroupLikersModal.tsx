@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { getGroupLikers } from '../../api/groupApi'
 import type { GroupLikerResponse } from '../../api/groupApi'
 import styles from './GroupLikersModal.module.css'
@@ -98,7 +99,7 @@ export function GroupLikersModal({ isOpen, groupId, token, onClose }: GroupLiker
   const visibleLikers = allLikers.slice(0, visibleCount)
   const hasMore = visibleCount < allLikers.length
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       onClick={onClose}
@@ -166,6 +167,7 @@ export function GroupLikersModal({ isOpen, groupId, token, onClose }: GroupLiker
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

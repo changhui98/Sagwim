@@ -44,6 +44,9 @@ function GroupCard({ group, liked, likeCount, onNavigate, onLikeToggle }: GroupC
               : GROUP_MEETING_TYPE_LABELS[group.meetingType]}
           </span>
         </div>
+        {group.status === 'PENDING' && (
+          <span className={styles.imageBadgePending}>승인 대기중</span>
+        )}
       </div>
       <div className={styles.cardInfo}>
         <div className={styles.cardNameRow}>

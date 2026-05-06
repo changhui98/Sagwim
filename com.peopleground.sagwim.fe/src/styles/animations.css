@@ -2,6 +2,16 @@
    Animations & Transitions — Sagwim
    ============================================================ */
 
+/* 페이지 전환 — fade-in + subtle slide-up */
+@keyframes pageEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.page-transition {
+  animation: pageEnter 250ms var(--ease) both;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

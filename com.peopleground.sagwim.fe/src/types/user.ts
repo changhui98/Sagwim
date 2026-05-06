@@ -25,6 +25,7 @@ export interface UserDetailResponse {
   role: string
   profileImageUrl?: string | null
   provider?: OAuthProvider
+  bio?: string
   createdAt: string
   modifiedAt: string
 }
@@ -44,6 +45,7 @@ export interface UserUpdateRequest {
   currentPassword: string
   newPassword: string
   profileImageUrl?: string | null
+  bio?: string
 }
 
 export interface EmailChangeRequest {

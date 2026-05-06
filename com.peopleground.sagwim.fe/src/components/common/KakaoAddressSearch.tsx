@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './KakaoAddressSearch.module.css'
 
 interface KakaoAddressSearchProps {
@@ -64,7 +65,7 @@ export function KakaoAddressSearch({
         주소 검색
       </button>
 
-      {isLayerOpen && (
+      {isLayerOpen && createPortal(
         <div
           className={styles.layerOverlay}
           role="dialog"
@@ -82,7 +83,8 @@ export function KakaoAddressSearch({
             </button>
             <div ref={layerRef} className={styles.layerBody} />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

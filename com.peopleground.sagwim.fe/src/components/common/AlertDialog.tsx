@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './AlertDialog.module.css'
 
 type AlertVariant = 'success' | 'error'
@@ -31,7 +32,7 @@ export function AlertDialog({
 
   const emoji = variant === 'success' ? '✅' : '❌'
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       onClick={onClose}
@@ -53,6 +54,7 @@ export function AlertDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

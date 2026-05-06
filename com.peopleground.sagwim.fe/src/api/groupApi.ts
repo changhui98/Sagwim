@@ -2,6 +2,8 @@ import type { PageResponse } from '../types/user'
 import type {
   GroupCreateRequest,
   GroupDetailResponse,
+  GroupJoinRequestResponse,
+  GroupJoinType,
   GroupMemberResponse,
   GroupResponse,
   PlaceSuggestionResponse,
@@ -102,16 +104,40 @@ export const deleteGroup = (token: string, groupId: number): Promise<void> => {
   })
 }
 
-export const joinGroup = (token: string, groupId: number): Promise<void> => {
+export const joinGroup = (token: string, groupId: number, answer?: string): Promise<void> => {
   return fetch(`${API_BASE_URL}/groups/${groupId}/join`, {
     method: 'POST',
     headers: createAuthHeaders(token),
+    body: JSON.stringify({ answer: answer ?? null }),
   }).then((res) => {
     if (!res.ok) {
       return res.text().then((text) => {
         throw new ApiError(res.status, text || `Request failed: ${res.status}`)
       })
     }
+  })
+}
+
+export const getGroupJoinQuestion = (
+  token: string,
+  groupId: number,
+): Promise<{ question: string }> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/join-question`, {
+    headers: createAuthHeaders(token),
+  }).then((res) => parseResponse<{ question: string }>(res))
+}
+
+export const updateGroupJoinQuestion = (
+  token: string,
+  groupId: number,
+  question: string,
+): Promise<void> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/join-question`, {
+    method: 'PUT',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify({ question }),
+  }).then((res) => {
+    if (!res.ok) return res.text().then((t) => { throw new ApiError(res.status, t || `Request failed: ${res.status}`) })
   })
 }
 
@@ -235,6 +261,62 @@ export interface GroupLikerResponse {
   profileImageUrl: string | null
 }
 
+export const getPendingJoinRequests = (
+  token: string,
+  groupId: number,
+): Promise<GroupJoinRequestResponse[]> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/join-requests`, {
+    headers: createAuthHeaders(token),
+  }).then((res) => parseResponse<GroupJoinRequestResponse[]>(res))
+}
+
+export const approveJoinRequest = (
+  token: string,
+  groupId: number,
+  requestId: number,
+): Promise<void> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/join-requests/${requestId}/approve`, {
+    method: 'POST',
+    headers: createAuthHeaders(token),
+  }).then((res) => {
+    if (!res.ok) return res.text().then((t) => { throw new ApiError(res.status, t || `Request failed: ${res.status}`) })
+  })
+}
+
+export const rejectJoinRequest = (
+  token: string,
+  groupId: number,
+  requestId: number,
+): Promise<void> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/join-requests/${requestId}/reject`, {
+    method: 'POST',
+    headers: createAuthHeaders(token),
+  }).then((res) => {
+    if (!res.ok) return res.text().then((t) => { throw new ApiError(res.status, t || `Request failed: ${res.status}`) })
+  })
+}
+
+export const updateGroupJoinType = (
+  token: string,
+  groupId: number,
+  group: GroupDetailResponse,
+  joinType: GroupJoinType,
+): Promise<GroupResponse> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}`, {
+    method: 'PATCH',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify({
+      name: group.name,
+      description: group.description ?? '',
+      category: group.category,
+      meetingType: group.meetingType,
+      region: group.region ?? null,
+      maxMemberCount: group.maxMemberCount,
+      joinType,
+    }),
+  }).then((res) => parseResponse<GroupResponse>(res))
+}
+
 export const getGroupLikers = (
   token: string,
   groupId: number,
@@ -242,4 +324,25 @@ export const getGroupLikers = (
   return fetch(`${API_BASE_URL}/groups/${groupId}/likes/users`, {
     headers: createAuthHeaders(token),
   }).then((res) => parseResponse<GroupLikerResponse[]>(res))
+}
+
+export const getMyJoinRequestStatus = (
+  token: string,
+  groupId: number,
+): Promise<{ pending: boolean }> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/join-requests/me`, {
+    headers: createAuthHeaders(token),
+  }).then((res) => parseResponse<{ pending: boolean }>(res))
+}
+
+export const cancelMyJoinRequest = (
+  token: string,
+  groupId: number,
+): Promise<void> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/join-requests/me`, {
+    method: 'DELETE',
+    headers: createAuthHeaders(token),
+  }).then((res) => {
+    if (!res.ok) return res.text().then((t) => { throw new ApiError(res.status, t || `Request failed: ${res.status}`) })
+  })
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { createPost } from '../../api/postApi'
 import { uploadContentImage } from '../../api/imageApi'
 import { ApiError } from '../../api/ApiError'
@@ -126,7 +127,7 @@ export function PostCreateModal({ isOpen, onClose, onCreated, groupId }: PostCre
     setTags((prev) => prev.filter((tag) => tag !== target))
   }
 
-  return (
+  return createPortal(
     <>
       <div
         className={styles.overlay}
@@ -230,6 +231,7 @@ export function PostCreateModal({ isOpen, onClose, onCreated, groupId }: PostCre
         message="작성하신 게시글이 목록에 등록되었어요."
         onClose={handleSuccessClose}
       />
-    </>
+    </>,
+    document.body
   )
 }

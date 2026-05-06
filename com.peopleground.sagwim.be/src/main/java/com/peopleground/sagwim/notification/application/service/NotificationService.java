@@ -37,9 +37,11 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final ImageUrlResolver imageUrlResolver;
+    private final NotificationSseEmitterService sseEmitterService;
 
     /**
      * 알림 1건 발행. actor 의 닉네임/프로필 이미지를 스냅샷으로 캡처해 저장한다.
+     * 저장 후 수신자에게 최신 미읽음 수를 SSE 로 push 한다.
      */
     @Transactional
     public void notify(
@@ -58,6 +60,8 @@ public class NotificationService {
             targetTitle
         );
         notificationRepository.save(notification);
+        long count = notificationRepository.countUnreadByRecipientId(recipient.getId());
+        sseEmitterService.sendToUser(recipient.getId(), count);
     }
 
     /**
@@ -103,6 +107,8 @@ public class NotificationService {
         }
 
         notification.markAsRead();
+        long count = notificationRepository.countUnreadByRecipientId(customUser.getId());
+        sseEmitterService.sendToUser(customUser.getId(), count);
     }
 
     /**
@@ -113,6 +119,10 @@ public class NotificationService {
      */
     @Transactional
     public int markAllAsRead(CustomUser customUser) {
-        return notificationRepository.markAllAsReadByRecipientId(customUser.getId());
+        int updated = notificationRepository.markAllAsReadByRecipientId(customUser.getId());
+        if (updated > 0) {
+            sseEmitterService.sendToUser(customUser.getId(), 0L);
+        }
+        return updated;
     }
 }

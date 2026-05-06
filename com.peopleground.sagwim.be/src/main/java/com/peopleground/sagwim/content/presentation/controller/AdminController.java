@@ -2,6 +2,7 @@ package com.peopleground.sagwim.content.presentation.controller;
 
 import com.peopleground.sagwim.content.application.service.AdminService;
 import com.peopleground.sagwim.content.presentation.dto.request.AdminContentUpdateRequest;
+import com.peopleground.sagwim.content.presentation.dto.request.AdminDeleteContentRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.SearchType;
 import com.peopleground.sagwim.content.presentation.dto.response.AdminContentResponse;
 import com.peopleground.sagwim.global.configure.CustomUser;
@@ -58,15 +59,19 @@ public class AdminController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> deleteContent(
         @PathVariable Long contentId,
+        @RequestBody @Valid AdminDeleteContentRequest request,
         @AuthenticationPrincipal CustomUser adminUser
     ) {
-        adminService.deleteContent(contentId, adminUser);
+        adminService.deleteContent(contentId, adminUser, request.reason());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PatchMapping("/{contentId}/restore")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<AdminContentResponse> restoreContent(@PathVariable Long contentId) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminService.restoreContent(contentId));
+    public ResponseEntity<AdminContentResponse> restoreContent(
+        @PathVariable Long contentId,
+        @AuthenticationPrincipal CustomUser adminUser
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(adminService.restoreContent(contentId, adminUser.getUsername()));
     }
 }

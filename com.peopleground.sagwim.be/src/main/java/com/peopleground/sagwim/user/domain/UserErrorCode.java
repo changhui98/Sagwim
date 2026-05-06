@@ -24,7 +24,9 @@ public enum UserErrorCode implements ErrorCode {
     SOCIAL_USER_CANNOT_CHANGE_PASSWORD(HttpStatus.BAD_REQUEST, "U013", "소셜 로그인 계정은 비밀번호를 변경할 수 없습니다."),
     EMAIL_ALREADY_EXISTS_WITH_DIFFERENT_PROVIDER(HttpStatus.CONFLICT, "U014", "동일한 이메일로 가입된 계정이 존재합니다. 계정을 연동해주세요."),
     CANNOT_CHANGE_OWN_ROLE(HttpStatus.BAD_REQUEST, "U015", "자기 자신의 역할은 변경할 수 없습니다."),
-    CANNOT_ASSIGN_ADMIN_ROLE(HttpStatus.BAD_REQUEST, "U016", "ADMIN 역할은 부여할 수 없습니다.")
+    CANNOT_ASSIGN_ADMIN_ROLE(HttpStatus.BAD_REQUEST, "U016", "ADMIN 역할은 부여할 수 없습니다."),
+    USER_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "U017", "이미 탈퇴된 사용자입니다."),
+    USER_NOT_DELETED(HttpStatus.BAD_REQUEST, "U018", "탈퇴 처리되지 않은 사용자입니다.")
     ;
 
     private final HttpStatus status;

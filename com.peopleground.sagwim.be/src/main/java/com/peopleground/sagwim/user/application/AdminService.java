@@ -1,5 +1,7 @@
 package com.peopleground.sagwim.user.application;
 
+import com.peopleground.sagwim.deletelog.application.service.DeleteLogService;
+import com.peopleground.sagwim.deletelog.domain.TargetType;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.image.application.ImageUrlResolver;
@@ -21,6 +23,7 @@ public class AdminService {
 
     private final UserRepository userRepository;
     private final ImageUrlResolver imageUrlResolver;
+    private final DeleteLogService deleteLogService;
 
     @Transactional(readOnly = true)
     public PageResponse<AdminUserResponse> getUsersForAdmin(int page, int size) {
@@ -39,10 +42,31 @@ public class AdminService {
     }
 
     @Transactional
-    public void deleteUserForAdmin(String username) {
+    public void deleteUserForAdmin(String requesterUsername, String targetUsername, String reason) {
 
-        User user = getUser(username);
+        User user = getUser(targetUsername);
         user.delete();
+
+        deleteLogService.log(
+            requesterUsername,
+            TargetType.USER.name(),
+            user.getUsername(),
+            user.getUsername() + " (" + user.getNickname() + ")",
+            reason
+        );
+    }
+
+    @Transactional
+    public AdminUserDetailResponse restoreUserForAdmin(String requesterUsername, String targetUsername) {
+        User user = getUser(targetUsername);
+
+        if (!user.isDeleted()) {
+            throw new AppException(UserErrorCode.USER_NOT_DELETED);
+        }
+
+        user.restore();
+        deleteLogService.markRestoredByTarget(TargetType.USER.name(), user.getUsername(), requesterUsername);
+        return AdminUserDetailResponse.from(user);
     }
 
     @Transactional

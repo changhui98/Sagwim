@@ -250,6 +250,8 @@ function buildNotificationMessage(notification: NotificationResponse): ReactNode
   switch (notification.type) {
     case 'CONTENT_LIKED':
       return <>{actor}님이 회원님의 게시글을 좋아합니다.</>
+    case 'COMMENT_LIKED':
+      return <>{actor}님이 회원님의 댓글을 좋아합니다.</>
     case 'COMMENT_ADDED':
       return <>{actor}님이 회원님의 게시글에 댓글을 남겼습니다.</>
     case 'MEETING_MEMBER_JOINED':
@@ -272,6 +274,7 @@ function resolveNotificationLink(notification: NotificationResponse): string | n
   if (notification.targetId == null) return null
   switch (notification.type) {
     case 'CONTENT_LIKED':
+    case 'COMMENT_LIKED':
     case 'COMMENT_ADDED':
       return `/app/posts/${notification.targetId}`
     case 'MEETING_MEMBER_JOINED':

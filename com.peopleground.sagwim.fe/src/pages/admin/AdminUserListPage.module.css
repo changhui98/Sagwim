@@ -63,7 +63,6 @@
 /* ── 역할 pill 토글 ── */
 .roleToggleGroup {
   display: inline-flex;
-  border: 1px solid var(--clr-border-strong);
   border-radius: var(--r-full);
   overflow: hidden;
   background: var(--clr-surface-2);
@@ -80,10 +79,15 @@
   letter-spacing: 0.02em;
   cursor: pointer;
   border: none;
+  border-right: 1px solid var(--clr-border);
   background: transparent;
   color: var(--clr-text-muted);
   transition: background var(--t-fast), color var(--t-fast);
   white-space: nowrap;
+}
+
+.roleToggleBtn:last-child {
+  border-right: none;
 }
 
 .roleToggleBtn:hover:not(:disabled) {

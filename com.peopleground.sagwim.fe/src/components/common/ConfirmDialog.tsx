@@ -1,4 +1,5 @@
-import { useEffect } from 'react'
+import { type ReactNode, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import styles from './ConfirmDialog.module.css'
 
 type ConfirmVariant = 'primary' | 'danger'
@@ -11,6 +12,8 @@ interface ConfirmDialogProps {
   cancelLabel?: string
   confirmVariant?: ConfirmVariant
   isLoading?: boolean
+  confirmDisabled?: boolean
+  children?: ReactNode
   onConfirm: () => void
   onCancel: () => void
 }
@@ -28,6 +31,8 @@ export function ConfirmDialog({
   cancelLabel = '취소',
   confirmVariant = 'primary',
   isLoading = false,
+  confirmDisabled = false,
+  children,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -44,7 +49,7 @@ export function ConfirmDialog({
 
   if (!isOpen) return null
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       onClick={onCancel}
@@ -57,6 +62,7 @@ export function ConfirmDialog({
           {title}
         </h2>
         <p className={styles.message}>{message}</p>
+        {children}
         <div className={styles.actions}>
           <button
             type="button"
@@ -70,13 +76,14 @@ export function ConfirmDialog({
             type="button"
             className={VARIANT_CLASS_MAP[confirmVariant]}
             onClick={onConfirm}
-            disabled={isLoading}
+            disabled={isLoading || confirmDisabled}
             autoFocus
           >
             {isLoading ? '처리 중...' : confirmLabel}
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
