@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminRoute } from './components/AdminRoute'
 import { AdminLayout } from './components/admin/AdminLayout'
@@ -26,10 +26,12 @@ import { PostDetailPage } from './pages/PostDetailPage'
 
 function App() {
   const { isAuthenticated } = useAuth()
+  const location = useLocation()
   useDevToolsProtection()
 
   return (
-    <Routes>
+    <div key={location.key} className="page-transition">
+    <Routes location={location}>
       <Route path="/" element={<HomePage />} />
       <Route
         path="/login"
@@ -62,6 +64,7 @@ function App() {
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </div>
   )
 }
 
