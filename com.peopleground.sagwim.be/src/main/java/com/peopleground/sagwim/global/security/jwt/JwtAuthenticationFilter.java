@@ -35,6 +35,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = jwtTokenProvider.resolveToken(request);
+        if (!StringUtils.hasText(token)) {
+            token = jwtTokenProvider.resolveTokenFromParam(request);
+        }
 
         if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)
             && !tokenBlacklistService.isBlacklisted(token)) {
