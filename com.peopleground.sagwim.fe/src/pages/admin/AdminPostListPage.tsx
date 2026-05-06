@@ -13,7 +13,8 @@ import { ConfirmDialog } from '../../components/common/ConfirmDialog'
 import { SuccessDialog } from '../../components/common/SuccessDialog'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { AdminContentResponse } from '../../types/post'
-import styles from './AdminUserListPage.module.css'
+import tableStyles from '../../components/admin/adminTable.module.css'
+import pageStyles from './AdminPostListPage.module.css'
 
 const PAGE_SIZE = 10
 const MAX_VISIBLE_PAGES = 5
@@ -123,19 +124,19 @@ export function AdminPostListPage() {
   const isDeleted = (content: AdminContentResponse): boolean => content.deletedDate !== null
 
   return (
-    <div className={styles.container}>
+    <div className={pageStyles.container}>
       {error && <p className="alert alert-error" role="alert">{error}</p>}
 
-      <div className={styles.tableCard}>
+      <div className={tableStyles.tableCard}>
         {initialLoad ? (
           <div style={{ padding: 'var(--sp-6)' }}>
             <Skeleton height="300px" />
           </div>
         ) : (
           <>
-            <div className={styles.tableWrap} style={{ position: 'relative' }}>
+            <div className={tableStyles.tableWrap} style={{ position: 'relative' }}>
               {loading && <LoadingSpinner overlay />}
-              <table className={styles.table}>
+              <table className={tableStyles.table}>
                 <thead>
                   <tr>
                     <th>내용</th>
@@ -148,29 +149,29 @@ export function AdminPostListPage() {
                 </thead>
                 <tbody>
                   {contents.length === 0 ? (
-                    <tr className={styles.emptyRow}>
+                    <tr className={tableStyles.emptyRow}>
                       <td colSpan={6}>등록된 게시글이 없습니다.</td>
                     </tr>
                   ) : (
                     contents.map((content) => (
                       <tr key={content.id}>
                         <td>
-                          <span className={styles.tableUsername}>
+                          <span className={tableStyles.tableUsername}>
                             {content.body}
                           </span>
                         </td>
-                        <td className={styles.tableSecondary}>
+                        <td className={tableStyles.tableSecondary}>
                           @{content.createdBy}
                         </td>
-                        <td className={styles.tableDate}>
+                        <td className={tableStyles.tableDate}>
                           {formatDateTime(content.createdDate)}
                         </td>
-                        <td className={styles.tableDate}>
+                        <td className={tableStyles.tableDate}>
                           {formatDateTime(content.lastModifiedDate)}
                         </td>
                         <td>
                           {isDeleted(content) ? (
-                            <span className={`badge ${styles.badgeDeleted}`}>
+                            <span className={`badge ${tableStyles.badgeDeleted}`}>
                               삭제됨
                             </span>
                           ) : (
@@ -182,7 +183,7 @@ export function AdminPostListPage() {
                             {isDeleted(content) ? (
                               <button
                                 type="button"
-                                className={styles.refreshButton}
+                                className={tableStyles.refreshButton}
                                 onClick={() =>
                                   setConfirmState({ content, action: 'restore' })
                                 }
@@ -193,7 +194,7 @@ export function AdminPostListPage() {
                             ) : (
                               <button
                                 type="button"
-                                className={styles.deleteButton}
+                                className={tableStyles.deleteButton}
                                 onClick={() =>
                                   setConfirmState({ content, action: 'delete' })
                                 }
@@ -212,10 +213,10 @@ export function AdminPostListPage() {
             </div>
 
             {totalPages > 1 && (
-              <div className={styles.paginationBar}>
+              <div className={tableStyles.paginationBar}>
                 <button
                   type="button"
-                  className={styles.pageButton}
+                  className={tableStyles.pageButton}
                   onClick={() => handlePageChange(page - 1)}
                   disabled={loading || page === 0}
                 >
@@ -227,8 +228,8 @@ export function AdminPostListPage() {
                     type="button"
                     className={
                       pageNum === page
-                        ? styles.pageButtonActive
-                        : styles.pageButton
+                        ? tableStyles.pageButtonActive
+                        : tableStyles.pageButton
                     }
                     onClick={() => handlePageChange(pageNum)}
                     disabled={loading}
@@ -238,7 +239,7 @@ export function AdminPostListPage() {
                 ))}
                 <button
                   type="button"
-                  className={styles.pageButton}
+                  className={tableStyles.pageButton}
                   onClick={() => handlePageChange(page + 1)}
                   disabled={loading || page >= totalPages - 1}
                 >

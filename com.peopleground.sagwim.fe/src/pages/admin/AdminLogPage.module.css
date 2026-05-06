@@ -1,3 +1,5 @@
+/* ── AdminLogPage 고유 스타일 ── */
+
 .container {
   display: flex;
   flex-direction: column;
@@ -10,40 +12,6 @@
   justify-content: space-between;
   gap: var(--sp-4);
   flex-wrap: wrap;
-}
-
-.tabs {
-  display: flex;
-  gap: var(--sp-1);
-  background: var(--clr-surface-2);
-  border-radius: var(--r-lg);
-  padding: var(--sp-1);
-}
-
-.tab,
-.tabActive {
-  padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--r-md);
-  border: none;
-  cursor: pointer;
-  font-size: 0.875rem;
-  font-weight: 600;
-  transition: background var(--t-fast), color var(--t-fast);
-}
-
-.tab {
-  background: transparent;
-  color: var(--clr-text-secondary);
-}
-
-.tab:hover {
-  background: var(--clr-surface-3);
-}
-
-.tabActive {
-  background: var(--clr-surface-1);
-  color: var(--clr-text-primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .actions {
@@ -94,48 +62,7 @@
   50% { opacity: 0.7; }
 }
 
-.tableWrap {
-  border: 1px solid var(--clr-border-strong);
-  border-radius: var(--r-xl);
-  overflow-x: auto;
-}
-
-.totalCount {
-  padding: var(--sp-3) var(--sp-4);
-  font-size: 0.8125rem;
-  color: var(--clr-text-muted);
-  border-bottom: 1px solid var(--clr-border);
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.875rem;
-}
-
-.table th {
-  text-align: left;
-  padding: var(--sp-3) var(--sp-4);
-  font-weight: 600;
-  color: var(--clr-text-secondary);
-  border-bottom: 1px solid var(--clr-border);
-  white-space: nowrap;
-}
-
-.table td {
-  padding: var(--sp-3) var(--sp-4);
-  border-bottom: 1px solid var(--clr-border);
-  vertical-align: middle;
-}
-
-.table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.table tbody tr:hover {
-  background: var(--clr-surface-2);
-}
-
+/* ── 셀 유틸리티 ── */
 .cellTime {
   white-space: nowrap;
   color: var(--clr-text-secondary);
@@ -157,13 +84,11 @@
   color: var(--clr-text-secondary);
 }
 
+/* ── 로그 전용 뱃지 ── */
 .methodBadge {
-  padding: 2px 8px;
-  border-radius: var(--r-sm);
   font-size: 0.75rem;
   font-weight: 700;
   font-family: monospace;
-  background: var(--clr-surface-2);
   color: var(--clr-text-primary);
 }
 
@@ -194,33 +119,82 @@
   color: #10b981;
 }
 
-.badgeKakao {
-  padding: 2px 8px;
-  border-radius: var(--r-sm);
-  font-size: 0.75rem;
-  font-weight: 700;
-  background: rgba(254, 229, 0, 0.2);
-  color: #92400e;
-}
-
-.badgeGoogle {
-  padding: 2px 8px;
-  border-radius: var(--r-sm);
-  font-size: 0.75rem;
-  font-weight: 700;
-  background: rgba(59, 130, 246, 0.12);
-  color: #3b82f6;
-}
-
-.badgeLocal {
-  padding: 2px 8px;
-  border-radius: var(--r-sm);
-  font-size: 0.75rem;
-  font-weight: 700;
+/* ── 스택트레이스 확장 행 ── */
+.stacktraceRow td {
+  padding: 0;
   background: var(--clr-surface-2);
-  color: var(--clr-text-secondary);
 }
 
+.stacktracePre {
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: #ef4444;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 300px;
+  overflow-y: auto;
+  border-top: 1px solid var(--clr-border);
+}
+
+.expandIcon {
+  font-size: 0.6rem;
+  margin-left: 4px;
+  color: var(--clr-text-muted);
+}
+
+.rowClickable {
+  cursor: pointer;
+}
+
+.noStacktrace {
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4);
+  font-size: 0.8125rem;
+  color: var(--clr-text-muted);
+  border-top: 1px solid var(--clr-border);
+}
+
+/* ── 에러 상세 패널 ── */
+.detailPanel {
+  padding: var(--sp-3) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  border-top: 1px solid var(--clr-border);
+}
+
+.detailSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.detailLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--clr-text-muted);
+}
+
+.detailMono {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-family: monospace;
+  color: var(--clr-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--clr-surface-1);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-2) var(--sp-3);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* ── 빈 상태 / 페이지네이션 (Log 전용 — 이전/다음 텍스트 형태) ── */
 .empty {
   text-align: center;
   color: var(--clr-text-muted);
@@ -259,40 +233,4 @@
   color: var(--clr-text-secondary);
   min-width: 80px;
   text-align: center;
-}
-
-.stacktraceRow td {
-  padding: 0;
-  background: var(--clr-surface-2);
-}
-
-.stacktracePre {
-  margin: 0;
-  padding: var(--sp-3) var(--sp-4);
-  font-size: 0.75rem;
-  font-family: monospace;
-  color: #ef4444;
-  white-space: pre-wrap;
-  word-break: break-all;
-  max-height: 300px;
-  overflow-y: auto;
-  border-top: 1px solid var(--clr-border);
-}
-
-.expandIcon {
-  font-size: 0.6rem;
-  margin-left: 4px;
-  color: var(--clr-text-muted);
-}
-
-.rowClickable {
-  cursor: pointer;
-}
-
-.noStacktrace {
-  margin: 0;
-  padding: var(--sp-3) var(--sp-4);
-  font-size: 0.8125rem;
-  color: var(--clr-text-muted);
-  border-top: 1px solid var(--clr-border);
 }

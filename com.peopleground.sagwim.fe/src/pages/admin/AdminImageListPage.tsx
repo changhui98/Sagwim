@@ -9,7 +9,8 @@ import { ConfirmDialog } from '../../components/common/ConfirmDialog'
 import { SuccessDialog } from '../../components/common/SuccessDialog'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { AdminImageResponse } from '../../types/image'
-import styles from './AdminUserListPage.module.css'
+import tableStyles from '../../components/admin/adminTable.module.css'
+import pageStyles from './AdminImageListPage.module.css'
 
 const PAGE_SIZE = 10
 const MAX_VISIBLE_PAGES = 5
@@ -105,19 +106,19 @@ export function AdminImageListPage() {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={pageStyles.container}>
       {error && <p className="alert alert-error" role="alert">{error}</p>}
 
-      <div className={styles.tableCard}>
+      <div className={tableStyles.tableCard}>
         {initialLoad ? (
           <div style={{ padding: 'var(--sp-6)' }}>
             <Skeleton height="300px" />
           </div>
         ) : (
           <>
-            <div className={styles.tableWrap} style={{ position: 'relative' }}>
+            <div className={tableStyles.tableWrap} style={{ position: 'relative' }}>
               {loading && <LoadingSpinner overlay />}
-              <table className={styles.table}>
+              <table className={tableStyles.table}>
                 <thead>
                   <tr>
                     <th>이미지 코드</th>
@@ -134,13 +135,13 @@ export function AdminImageListPage() {
                 </thead>
                 <tbody>
                   {images.length === 0 ? (
-                    <tr className={styles.emptyRow}>
+                    <tr className={tableStyles.emptyRow}>
                       <td colSpan={10}>등록된 이미지가 없습니다.</td>
                     </tr>
                   ) : (
                     images.map((image) => (
                       <tr key={image.id}>
-                        <td className={styles.tableSecondary} style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                        <td className={tableStyles.tableSecondary} style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
                           {image.imageCode}
                         </td>
                         <td>
@@ -150,22 +151,22 @@ export function AdminImageListPage() {
                             style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }}
                           />
                         </td>
-                        <td className={styles.tableUsername}>
+                        <td className={tableStyles.tableUsername}>
                           {image.originalFilename}
                         </td>
-                        <td className={styles.tableSecondary}>
+                        <td className={tableStyles.tableSecondary}>
                           {image.targetLabel}
                         </td>
-                        <td className={styles.tableSecondary}>
+                        <td className={tableStyles.tableSecondary}>
                           {image.uploaderUsername}
                         </td>
-                        <td className={styles.tableSecondary}>
+                        <td className={tableStyles.tableSecondary}>
                           {formatFileSize(image.fileSize)}
                         </td>
-                        <td className={styles.tableSecondary}>
+                        <td className={tableStyles.tableSecondary}>
                           {image.contentType}
                         </td>
-                        <td className={styles.tableDate}>
+                        <td className={tableStyles.tableDate}>
                           {formatDateTime(image.createdDate)}
                         </td>
                         <td>
@@ -175,7 +176,7 @@ export function AdminImageListPage() {
                           {meRole === 'ADMIN' && (
                             <button
                               type="button"
-                              className={styles.deleteButton}
+                              className={tableStyles.deleteButton}
                               onClick={() => setDeleteTarget(image)}
                               disabled={deleteLoading}
                             >
@@ -191,10 +192,10 @@ export function AdminImageListPage() {
             </div>
 
             {totalPages > 1 && (
-              <div className={styles.paginationBar}>
+              <div className={tableStyles.paginationBar}>
                 <button
                   type="button"
-                  className={styles.pageButton}
+                  className={tableStyles.pageButton}
                   onClick={() => handlePageChange(page - 1)}
                   disabled={loading || page === 0}
                 >
@@ -206,8 +207,8 @@ export function AdminImageListPage() {
                     type="button"
                     className={
                       pageNum === page
-                        ? styles.pageButtonActive
-                        : styles.pageButton
+                        ? tableStyles.pageButtonActive
+                        : tableStyles.pageButton
                     }
                     onClick={() => handlePageChange(pageNum)}
                     disabled={loading}
@@ -217,7 +218,7 @@ export function AdminImageListPage() {
                 ))}
                 <button
                   type="button"
-                  className={styles.pageButton}
+                  className={tableStyles.pageButton}
                   onClick={() => handlePageChange(page + 1)}
                   disabled={loading || page >= totalPages - 1}
                 >
