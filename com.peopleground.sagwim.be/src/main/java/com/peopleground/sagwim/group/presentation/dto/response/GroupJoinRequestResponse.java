@@ -9,7 +9,8 @@ public record GroupJoinRequestResponse(
     String username,
     String nickname,
     GroupJoinRequestStatus status,
-    LocalDateTime createdDate
+    LocalDateTime createdDate,
+    String answer
 ) {
     public static GroupJoinRequestResponse from(GroupJoinRequest r) {
         return new GroupJoinRequestResponse(
@@ -17,7 +18,8 @@ public record GroupJoinRequestResponse(
             r.getUser().getUsername(),
             r.getUser().getNickname(),
             r.getStatus(),
-            r.getCreatedDate()
+            r.getCreatedDate(),
+            r.getAnswer()
         );
     }
 }
