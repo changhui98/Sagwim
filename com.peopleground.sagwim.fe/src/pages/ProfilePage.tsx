@@ -174,7 +174,11 @@ export function ProfilePage() {
               </h1>
             </div>
 
-            <p className={styles.bio}>
+            <p
+              className={`${styles.bio} ${isOwner ? styles.bioClickable : ''}`}
+              onClick={isOwner ? () => setEditOpen(true) : undefined}
+              title={isOwner ? '클릭하여 한 줄 소개 수정' : undefined}
+            >
               {myProfile?.bio
                 ? myProfile.bio
                 : isOwner

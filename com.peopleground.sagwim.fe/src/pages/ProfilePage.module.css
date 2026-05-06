@@ -111,9 +111,18 @@
 .bio {
   font-size: 0.875rem;
   color: var(--clr-text-secondary);
-  margin: 0;
+  margin: var(--sp-2) 0 0;
   line-height: 1.5;
   min-height: 1.25rem;
+}
+
+.bioClickable {
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+
+.bioClickable:hover {
+  color: var(--clr-accent);
 }
 
 .roleBadge {
