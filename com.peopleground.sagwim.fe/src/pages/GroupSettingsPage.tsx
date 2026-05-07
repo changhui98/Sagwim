@@ -8,6 +8,8 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
   updateGroupJoinType,
+  getGroupJoinQuestion,
+  updateGroupJoinQuestion,
 } from '../api/groupApi'
 import { uploadGroupImage } from '../api/imageApi'
 import { getMyProfile } from '../api/userApi'
@@ -58,6 +60,8 @@ export function GroupSettingsPage() {
   const [joinTypeLoading, setJoinTypeLoading] = useState(false)
   const [joinTypeError, setJoinTypeError] = useState('')
   const [editJoinType, setEditJoinType] = useState<GroupJoinType>('OPEN')
+  const [editJoinQuestion, setEditJoinQuestion] = useState('')
+  const [joinQuestionLoading, setJoinQuestionLoading] = useState(false)
 
   const handleLogout = useCallback(() => {
     logout()
@@ -109,6 +113,15 @@ export function GroupSettingsPage() {
   useEffect(() => {
     if (view === 'joinRequests') loadJoinRequests()
   }, [view, loadJoinRequests])
+
+  useEffect(() => {
+    if (view !== 'joinType' || !group) return
+    setJoinQuestionLoading(true)
+    getGroupJoinQuestion(token, group.id)
+      .then((data) => setEditJoinQuestion(data.question ?? ''))
+      .catch(() => setEditJoinQuestion(group.joinQuestion ?? ''))
+      .finally(() => setJoinQuestionLoading(false))
+  }, [view, group, token])
 
   const handleBackToMenu = () => {
     setView('menu')
@@ -188,7 +201,14 @@ export function GroupSettingsPage() {
       setJoinTypeLoading(true)
       setJoinTypeError('')
       await updateGroupJoinType(token, group.id, group, editJoinType)
-      setGroup((prev) => prev ? { ...prev, joinType: editJoinType } : prev)
+      if (editJoinType === 'APPROVAL_REQUIRED') {
+        await updateGroupJoinQuestion(token, group.id, editJoinQuestion)
+      }
+      setGroup((prev) =>
+        prev
+          ? { ...prev, joinType: editJoinType, joinQuestion: editJoinQuestion || null }
+          : prev,
+      )
       handleBackToMenu()
     } catch {
       setJoinTypeError('가입 방식 변경에 실패했습니다.')
@@ -222,7 +242,10 @@ export function GroupSettingsPage() {
   }
 
   const handleBackFromJoinType = async () => {
-    if (editJoinType !== group?.joinType) {
+    const joinTypeChanged = editJoinType !== group?.joinType
+    const joinQuestionChanged =
+      editJoinQuestion.trim() !== (group?.joinQuestion ?? '').trim()
+    if (joinTypeChanged || joinQuestionChanged) {
       await handleSaveJoinType()
     } else {
       handleBackToMenu()
@@ -464,29 +487,50 @@ export function GroupSettingsPage() {
               <h2 className={modalStyles.title}>가입 방식</h2>
               <span style={{ minWidth: '4rem' }} />
             </header>
-            <ul className={profileStyles.settingList}>
-              <li
-                className={profileStyles.settingRow}
-                onClick={() => setEditJoinType('OPEN')}
-                style={{ cursor: 'pointer' }}
-              >
-                <span className={profileStyles.settingLabel}>자유</span>
-                <span className={profileStyles.settingValue}>
-                  {editJoinType === 'OPEN' ? '✓' : ''}
-                </span>
-              </li>
-              <li
-                className={profileStyles.settingRow}
-                onClick={() => setEditJoinType('APPROVAL_REQUIRED')}
-                style={{ cursor: 'pointer' }}
-              >
-                <span className={profileStyles.settingLabel}>승인</span>
-                <span className={profileStyles.settingValue}>
-                  {editJoinType === 'APPROVAL_REQUIRED' ? '✓' : ''}
-                </span>
-              </li>
-            </ul>
-            {joinTypeError && <p className={tabStyles.errorText}>{joinTypeError}</p>}
+            <div style={{ padding: 'var(--sp-5)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-5)' }}>
+              <div>
+                <p className="input-label">가입 방식</p>
+                <div className={tabStyles.joinTypeToggle}>
+                  <button
+                    type="button"
+                    className={`${tabStyles.joinTypeBtn} ${editJoinType === 'OPEN' ? tabStyles.joinTypeBtnActive : ''}`}
+                    onClick={() => setEditJoinType('OPEN')}
+                    disabled={joinTypeLoading || joinQuestionLoading}
+                  >
+                    자유
+                  </button>
+                  <button
+                    type="button"
+                    className={`${tabStyles.joinTypeBtn} ${editJoinType === 'APPROVAL_REQUIRED' ? tabStyles.joinTypeBtnActive : ''}`}
+                    onClick={() => setEditJoinType('APPROVAL_REQUIRED')}
+                    disabled={joinTypeLoading || joinQuestionLoading}
+                  >
+                    승인
+                  </button>
+                </div>
+              </div>
+              {editJoinType === 'APPROVAL_REQUIRED' && (
+                <div className="input-group">
+                  <label className="input-label" htmlFor="join-question-input">
+                    가입 질문
+                  </label>
+                  <textarea
+                    id="join-question-input"
+                    className="input"
+                    placeholder="가입 신청자에게 물어볼 질문을 입력하세요"
+                    maxLength={500}
+                    rows={4}
+                    value={editJoinQuestion}
+                    onChange={(e) => setEditJoinQuestion(e.target.value)}
+                    disabled={joinTypeLoading || joinQuestionLoading}
+                  />
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--clr-text-muted)', textAlign: 'right', margin: 0 }}>
+                    {editJoinQuestion.length} / 500
+                  </p>
+                </div>
+              )}
+              {joinTypeError && <p className={tabStyles.errorText}>{joinTypeError}</p>}
+            </div>
           </div>
         </main>
       </>
