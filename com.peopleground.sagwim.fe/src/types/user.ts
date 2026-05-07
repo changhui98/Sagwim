@@ -31,6 +31,7 @@ export interface UserDetailResponse {
   gender?: Gender
   birthDate?: string | null
   isSearchable?: boolean
+  exposureRangeKm?: number
   createdAt: string
   modifiedAt: string
 }
@@ -54,6 +55,7 @@ export interface UserUpdateRequest {
   gender?: Gender
   birthDate?: string | null
   isSearchable?: boolean
+  exposureRangeKm?: number
 }
 
 export interface EmailChangeRequest {

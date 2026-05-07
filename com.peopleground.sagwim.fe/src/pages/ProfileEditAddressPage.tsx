@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMyProfile, searchAddress, updateMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
@@ -42,6 +42,25 @@ function parseKoreanAddress(addr: string) {
   return { country, city, gu, dong }
 }
 
+function isTooDetailedAddress(addr: string): boolean {
+  if (!addr.trim()) return false
+  const tokens = addr.trim().split(/\s+/)
+  // 동/읍/면/리/가 이후 토큰이 존재하면 상세주소로 판단
+  let foundDong = false
+  for (const token of tokens) {
+    if (foundDong) return true  // 동 이후 토큰이 있으면 too detailed
+    if (
+      token.endsWith('동') || token.endsWith('읍') ||
+      token.endsWith('면') || token.endsWith('리') ||
+      token.endsWith('가')
+    ) {
+      foundDong = true
+    }
+  }
+  // 숫자가 포함된 토큰이 있으면 상세주소 (번지, 호수 등)
+  return tokens.some(t => /\d/.test(t))
+}
+
 export function ProfileEditAddressPage() {
   const navigate = useNavigate()
   const { token, logout } = useAuth()
@@ -55,6 +74,8 @@ export function ProfileEditAddressPage() {
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isUserTyping, setIsUserTyping] = useState(false)
+
+  const [exposureRange, setExposureRange] = useState('1')
 
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertVariant, setAlertVariant] = useState<'success' | 'error'>('success')
@@ -73,6 +94,7 @@ export function ProfileEditAddressPage() {
         if (cancelled) return
         setProfile(res)
         setAddress(res.address ?? '')
+        setExposureRange(String(res.exposureRangeKm ?? 1))
       })
       .catch((err) => {
         if (!cancelled) handleUnauthorized(err)
@@ -99,17 +121,18 @@ export function ProfileEditAddressPage() {
     return () => clearTimeout(timer)
   }, [address, token, isUserTyping])
 
+  const isTooDetailed = isTooDetailedAddress(address)
+
   const isAddressChanged = profile !== null && address.trim() !== (profile.address ?? '').trim()
-  const isSaveEnabled = isAddressChanged && address.trim().length > 0
-
-  const handleCancel = useCallback(() => {
-    navigate(-1)
-  }, [navigate])
-
-  const handleSave = async () => {
-    if (!isSaveEnabled || !profile) return
+  const savedExposureRange = String(profile?.exposureRangeKm ?? 1)
+  const isExposureRangeChanged = profile !== null && exposureRange !== savedExposureRange
+  const handleCancel = useCallback(async () => {
+    const hasChanges = (isAddressChanged && address.trim().length > 0 && !isTooDetailed) || isExposureRangeChanged
+    if (!hasChanges || !profile) {
+      navigate('/app/profile/edit', { replace: true })
+      return
+    }
     setIsSaving(true)
-
     try {
       await updateMyProfile(token, {
         nickname: profile.nickname,
@@ -121,8 +144,9 @@ export function ProfileEditAddressPage() {
         gender: profile.gender,
         birthDate: profile.birthDate ?? null,
         isSearchable: profile.isSearchable,
+        exposureRangeKm: Number(exposureRange),
       })
-      navigate('/app/profile/edit')
+      navigate('/app/profile/edit', { replace: true })
     } catch (err) {
       handleUnauthorized(err)
       setAlertVariant('error')
@@ -131,7 +155,7 @@ export function ProfileEditAddressPage() {
     } finally {
       setIsSaving(false)
     }
-  }
+  }, [navigate, isAddressChanged, isExposureRangeChanged, address, profile, token, handleUnauthorized, exposureRange])
 
   if (profileLoading) {
     return (
@@ -159,17 +183,10 @@ export function ProfileEditAddressPage() {
               onClick={handleCancel}
               disabled={isSaving}
             >
-              취소
+              {isSaving ? '저장 중...' : '돌아가기'}
             </button>
             <h1 className={styles.title}>주소</h1>
-            <button
-              type="button"
-              className={`${styles.headerBtn} ${styles.headerBtnPrimary}`}
-              onClick={handleSave}
-              disabled={!isSaveEnabled || isSaving}
-            >
-              {isSaving ? '저장 중...' : '저장'}
-            </button>
+            <span style={{ width: '4rem' }} />
           </header>
 
           <div className="input-group" style={{ padding: 'var(--sp-5)' }}>
@@ -183,9 +200,10 @@ export function ProfileEditAddressPage() {
                 className="input"
                 value={address}
                 onChange={(e) => { setAddress(e.target.value); setIsUserTyping(true) }}
-                placeholder="주소를 입력하세요"
+                placeholder="동명(읍, 면)으로 검색 (ex. 서초동)"
                 disabled={isSaving}
                 autoComplete="off"
+                style={isTooDetailed ? { border: '1px solid #ef4444' } : undefined}
               />
               {isSearching && (
                 <p style={{ marginTop: 'var(--sp-2)', fontSize: '0.875rem', color: 'var(--clr-text-secondary)' }}>
@@ -232,6 +250,13 @@ export function ProfileEditAddressPage() {
             <p style={{ marginTop: 'var(--sp-3)', fontSize: '0.875rem', color: 'var(--clr-text-secondary)' }}>
               주소는 모임 추천 등에 활용됩니다.
             </p>
+            <p style={{
+              marginTop: 'var(--sp-1)',
+              fontSize: '0.875rem',
+              color: isTooDetailed ? '#ef4444' : 'var(--clr-text-secondary)',
+            }}>
+              동·읍·면 단위까지만 입력해 주세요.
+            </p>
             {(() => {
               const parsed = parseKoreanAddress(address)
               if (!parsed || (!parsed.country && !parsed.city && !parsed.gu && !parsed.dong)) return null
@@ -264,6 +289,43 @@ export function ProfileEditAddressPage() {
                 </ul>
               )
             })()}
+
+            <p className="input-label" style={{ marginTop: 'var(--sp-8)', marginBottom: 'var(--sp-5)' }}>설정</p>
+
+            <div className={pageStyles.rangeSection}>
+              <p className={pageStyles.rangeSectionTitle}>모임 노출 범위 (km)</p>
+              <div className={pageStyles.rangeTrack}>
+                {[1, 2, 3, 4, 5].map((n, i) => {
+                  const active = Number(exposureRange) >= n
+                  const isLast = i === 4
+                  return (
+                    <React.Fragment key={n}>
+                      <div
+                        className={pageStyles.rangeStepWrapper}
+                        onClick={() => setExposureRange(String(n))}
+                      >
+                        <div
+                          className={`${pageStyles.rangeCircle} ${active ? pageStyles.rangeCircleActive : ''}`}
+                        />
+                        <span
+                          className={`${pageStyles.rangeLabel} ${active ? pageStyles.rangeLabelActive : ''}`}
+                        >
+                          {n}
+                        </span>
+                      </div>
+                      {!isLast && (
+                        <div
+                          className={`${pageStyles.rangeLine} ${Number(exposureRange) > n ? pageStyles.rangeLineActive : ''}`}
+                        />
+                      )}
+                    </React.Fragment>
+                  )
+                })}
+              </div>
+              <p style={{ marginTop: 'var(--sp-3)', fontSize: '0.875rem', color: 'var(--clr-text-secondary)' }}>
+                설정한 반경 내의 모임이 추천됩니다.
+              </p>
+            </div>
           </div>
         </div>
       </main>
