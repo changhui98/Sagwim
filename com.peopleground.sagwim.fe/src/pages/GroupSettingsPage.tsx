@@ -56,6 +56,7 @@ export function GroupSettingsPage() {
   const [joinRequests, setJoinRequests] = useState<GroupJoinRequestResponse[]>([])
   const [joinRequestsLoading, setJoinRequestsLoading] = useState(false)
   const [joinRequestError, setJoinRequestError] = useState('')
+  const [expandedRequestId, setExpandedRequestId] = useState<number | null>(null)
 
   const [joinTypeLoading, setJoinTypeLoading] = useState(false)
   const [joinTypeError, setJoinTypeError] = useState('')
@@ -605,41 +606,93 @@ export function GroupSettingsPage() {
                           <td colSpan={4}>대기 중인 가입 신청이 없습니다.</td>
                         </tr>
                       ) : (
-                        joinRequests.map((req) => (
-                          <tr
-                            key={req.requestId}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => navigate(`/app/profile/${req.username}`)}
-                          >
-                            <td>
-                              <span className={tableStyles.tableUsername}>{req.nickname}</span>
-                            </td>
-                            <td className={tableStyles.tableDate}>
-                              {req.createdDate.slice(0, 16).replace('T', ' ')}
-                            </td>
-                            <td className={tabStyles.answerCell}>
-                              {req.answer || <span className={tabStyles.noAnswer}>-</span>}
-                            </td>
-                            <td>
-                              <div className={tabStyles.requestActions} onClick={(e) => e.stopPropagation()}>
-                                <button
-                                  type="button"
-                                  className={tabStyles.approveBtn}
-                                  onClick={() => handleApprove(req.requestId)}
-                                >
-                                  승인
-                                </button>
-                                <button
-                                  type="button"
-                                  className={tableStyles.deleteButton}
-                                  onClick={() => handleReject(req.requestId)}
-                                >
-                                  거절
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
+                        joinRequests.map((req) => {
+                          const parsedAnswers: string[] = (() => {
+                            if (!req.answer) return []
+                            try {
+                              const p = JSON.parse(req.answer)
+                              if (Array.isArray(p)) return p
+                            } catch { /* 구버전 단일 문자열 */ }
+                            return [req.answer]
+                          })()
+                          const questions = group.joinQuestions ?? []
+                          const isExpanded = expandedRequestId === req.requestId
+                          const hasAnswers = parsedAnswers.length > 0
+
+                          return (
+                            <>
+                              <tr
+                                key={req.requestId}
+                                style={{ cursor: 'pointer' }}
+                                onClick={() => navigate(`/app/profile/${req.username}`)}
+                              >
+                                <td>
+                                  <span className={tableStyles.tableUsername}>{req.nickname}</span>
+                                </td>
+                                <td className={tableStyles.tableDate}>
+                                  {req.createdDate.slice(0, 16).replace('T', ' ')}
+                                </td>
+                                <td onClick={(e) => e.stopPropagation()}>
+                                  {hasAnswers ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => setExpandedRequestId(isExpanded ? null : req.requestId)}
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-primary)', fontSize: '0.8125rem', padding: 0, textDecoration: 'underline' }}
+                                    >
+                                      {isExpanded ? '닫기' : '보기'}
+                                    </button>
+                                  ) : (
+                                    <span className={tabStyles.noAnswer}>-</span>
+                                  )}
+                                </td>
+                                <td>
+                                  <div className={tabStyles.requestActions} onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                      type="button"
+                                      className={tabStyles.approveBtn}
+                                      onClick={() => handleApprove(req.requestId)}
+                                    >
+                                      승인
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className={tableStyles.deleteButton}
+                                      onClick={() => handleReject(req.requestId)}
+                                    >
+                                      거절
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                              {isExpanded && (
+                                <tr key={`${req.requestId}-answers`}>
+                                  <td colSpan={4} style={{ padding: '0', background: 'var(--clr-surface)' }}>
+                                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                                      <thead>
+                                        <tr style={{ background: 'var(--clr-bg)' }}>
+                                          <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: 'var(--clr-text-secondary)', width: '45%', borderBottom: '1px solid var(--clr-border)' }}>질문</th>
+                                          <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 600, color: 'var(--clr-text-secondary)', borderBottom: '1px solid var(--clr-border)' }}>답변</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {parsedAnswers.map((ans, i) => (
+                                          <tr key={i} style={{ borderBottom: i < parsedAnswers.length - 1 ? '1px solid var(--clr-border)' : 'none' }}>
+                                            <td style={{ padding: '10px 12px', color: 'var(--clr-text)', verticalAlign: 'top' }}>
+                                              {questions[i] ?? `Q${i + 1}`}
+                                            </td>
+                                            <td style={{ padding: '10px 12px', color: 'var(--clr-text-secondary)', verticalAlign: 'top' }}>
+                                              {ans || <span style={{ color: 'var(--clr-text-muted)' }}>-</span>}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                      </tbody>
+                                    </table>
+                                  </td>
+                                </tr>
+                              )}
+                            </>
+                          )
+                        })
                       )}
                     </tbody>
                   </table>
