@@ -74,7 +74,7 @@ public class Group extends AuditingEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private GroupStatus status = GroupStatus.PENDING;
+    private GroupStatus status = GroupStatus.ACTIVE;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -104,7 +104,7 @@ public class Group extends AuditingEntity {
         group.maxMemberCount = maxMemberCount;
         group.currentMemberCount = 0;
         group.likeCount = 0;
-        group.status = GroupStatus.PENDING;
+        group.status = GroupStatus.ACTIVE;
         group.joinType = GroupJoinType.OPEN;
         group.leader = leader;
         return group;
