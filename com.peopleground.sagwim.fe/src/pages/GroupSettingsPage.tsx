@@ -8,8 +8,6 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
   updateGroupJoinType,
-  getGroupJoinQuestion,
-  updateGroupJoinQuestion,
 } from '../api/groupApi'
 import { uploadGroupImage } from '../api/imageApi'
 import { getMyProfile } from '../api/userApi'
@@ -27,7 +25,7 @@ import tabStyles from '../components/group/TabSettings.module.css'
 import tableStyles from '../components/admin/adminTable.module.css'
 import styles from './GroupSettingsPage.module.css'
 
-type SubView = 'menu' | 'info' | 'description' | 'memberCount' | 'joinRequests' | 'joinQuestion'
+type SubView = 'menu' | 'info' | 'description' | 'memberCount' | 'joinRequests' | 'joinType'
 
 export function GroupSettingsPage() {
   const { groupId } = useParams<{ groupId: string }>()
@@ -59,10 +57,7 @@ export function GroupSettingsPage() {
 
   const [joinTypeLoading, setJoinTypeLoading] = useState(false)
   const [joinTypeError, setJoinTypeError] = useState('')
-
-  const [editJoinQuestion, setEditJoinQuestion] = useState('')
-  const [joinQuestionLoading, setJoinQuestionLoading] = useState(false)
-  const [joinQuestionError, setJoinQuestionError] = useState('')
+  const [editJoinType, setEditJoinType] = useState<GroupJoinType>('OPEN')
 
   const handleLogout = useCallback(() => {
     logout()
@@ -84,6 +79,7 @@ export function GroupSettingsPage() {
       setEditDescription(groupData.description ?? '')
       setEditMaxMemberCount(groupData.maxMemberCount)
       setGroupImageUrl(groupData.imageUrl ?? null)
+      setEditJoinType(groupData.joinType)
     } catch (err) {
       setError(extractErrorMessage(err, '모임 정보 조회 실패'))
       handleUnauthorized(err)
@@ -110,33 +106,14 @@ export function GroupSettingsPage() {
     }
   }, [token, groupId, group])
 
-  const loadJoinQuestion = useCallback(async () => {
-    if (!groupId || !group) return
-    try {
-      setJoinQuestionLoading(true)
-      setJoinQuestionError('')
-      const data = await getGroupJoinQuestion(token, group.id)
-      setEditJoinQuestion(data.question ?? '')
-    } catch {
-      setJoinQuestionError('질문을 불러오지 못했습니다.')
-    } finally {
-      setJoinQuestionLoading(false)
-    }
-  }, [token, groupId, group])
-
   useEffect(() => {
     if (view === 'joinRequests') loadJoinRequests()
   }, [view, loadJoinRequests])
-
-  useEffect(() => {
-    if (view === 'joinQuestion') loadJoinQuestion()
-  }, [view, loadJoinQuestion])
 
   const handleBackToMenu = () => {
     setView('menu')
     setJoinRequestError('')
     setJoinTypeError('')
-    setJoinQuestionError('')
   }
 
   const handleSaveInfo = async () => {
@@ -205,6 +182,21 @@ export function GroupSettingsPage() {
     }
   }
 
+  const handleSaveJoinType = async () => {
+    if (!group) return
+    try {
+      setJoinTypeLoading(true)
+      setJoinTypeError('')
+      await updateGroupJoinType(token, group.id, group, editJoinType)
+      setGroup((prev) => prev ? { ...prev, joinType: editJoinType } : prev)
+      handleBackToMenu()
+    } catch {
+      setJoinTypeError('가입 방식 변경에 실패했습니다.')
+    } finally {
+      setJoinTypeLoading(false)
+    }
+  }
+
   const handleBackFromInfo = async () => {
     if (editName.trim() !== (group?.name ?? '').trim()) {
       await handleSaveInfo()
@@ -229,6 +221,14 @@ export function GroupSettingsPage() {
     }
   }
 
+  const handleBackFromJoinType = async () => {
+    if (editJoinType !== group?.joinType) {
+      await handleSaveJoinType()
+    } else {
+      handleBackToMenu()
+    }
+  }
+
   const handleDeleteGroup = async () => {
     if (!groupId) return
     if (!window.confirm('모임을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
@@ -241,44 +241,6 @@ export function GroupSettingsPage() {
       handleUnauthorized(err)
     } finally {
       setActionLoading(false)
-    }
-  }
-
-  const handleJoinTypeChange = async (joinType: GroupJoinType) => {
-    if (!group || joinType === group.joinType) return
-    try {
-      setJoinTypeLoading(true)
-      setJoinTypeError('')
-      await updateGroupJoinType(token, group.id, group, joinType)
-      setGroup((prev) => prev ? { ...prev, joinType } : prev)
-    } catch {
-      setJoinTypeError('가입 방식 변경에 실패했습니다.')
-    } finally {
-      setJoinTypeLoading(false)
-    }
-  }
-
-  const handleSaveJoinQuestion = async () => {
-    if (!group) return
-    try {
-      setJoinQuestionLoading(true)
-      setJoinQuestionError('')
-      await updateGroupJoinQuestion(token, group.id, editJoinQuestion)
-      setGroup((prev) => prev ? { ...prev, joinQuestion: editJoinQuestion || null } : prev)
-      handleBackToMenu()
-    } catch {
-      setJoinQuestionError('질문 저장에 실패했습니다.')
-    } finally {
-      setJoinQuestionLoading(false)
-    }
-  }
-
-  const handleBackFromJoinQuestion = async () => {
-    const original = group?.joinQuestion ?? ''
-    if (editJoinQuestion.trim() !== original.trim()) {
-      await handleSaveJoinQuestion()
-    } else {
-      handleBackToMenu()
     }
   }
 
@@ -483,8 +445,8 @@ export function GroupSettingsPage() {
     )
   }
 
-  // ── 서브 뷰: 가입 질문 설정 ──
-  if (view === 'joinQuestion') {
+  // ── 서브 뷰: 가입 방식 선택 ──
+  if (view === 'joinType') {
     return (
       <>
         <Navbar role={myProfile.role ?? null} onLogout={handleLogout} />
@@ -494,27 +456,37 @@ export function GroupSettingsPage() {
               <button
                 type="button"
                 className={modalStyles.headerBtn}
-                onClick={handleBackFromJoinQuestion}
-                disabled={joinQuestionLoading}
+                onClick={handleBackFromJoinType}
+                disabled={joinTypeLoading}
               >
-                {joinQuestionLoading ? '저장 중...' : '돌아가기'}
+                {joinTypeLoading ? '저장 중...' : '돌아가기'}
               </button>
-              <h2 className={modalStyles.title}>가입 질문 설정</h2>
+              <h2 className={modalStyles.title}>가입 방식</h2>
               <span style={{ minWidth: '4rem' }} />
             </header>
-            <div className={tabStyles.subForm} style={{ padding: 'var(--sp-5)' }}>
-              {joinQuestionError && <p className={tabStyles.errorText}>{joinQuestionError}</p>}
-              <textarea
-                className={groupPageStyles.editTextarea}
-                placeholder="가입 신청자에게 물어볼 질문을 입력하세요"
-                maxLength={500}
-                rows={4}
-                value={editJoinQuestion}
-                onChange={(e) => setEditJoinQuestion(e.target.value)}
-                disabled={joinQuestionLoading}
-              />
-              <p className={tabStyles.charCount}>{editJoinQuestion.length} / 500</p>
-            </div>
+            <ul className={profileStyles.settingList}>
+              <li
+                className={profileStyles.settingRow}
+                onClick={() => setEditJoinType('OPEN')}
+                style={{ cursor: 'pointer' }}
+              >
+                <span className={profileStyles.settingLabel}>자유</span>
+                <span className={profileStyles.settingValue}>
+                  {editJoinType === 'OPEN' ? '✓' : ''}
+                </span>
+              </li>
+              <li
+                className={profileStyles.settingRow}
+                onClick={() => setEditJoinType('APPROVAL_REQUIRED')}
+                style={{ cursor: 'pointer' }}
+              >
+                <span className={profileStyles.settingLabel}>승인</span>
+                <span className={profileStyles.settingValue}>
+                  {editJoinType === 'APPROVAL_REQUIRED' ? '✓' : ''}
+                </span>
+              </li>
+            </ul>
+            {joinTypeError && <p className={tabStyles.errorText}>{joinTypeError}</p>}
           </div>
         </main>
       </>
@@ -683,39 +655,13 @@ export function GroupSettingsPage() {
               <span className={profileStyles.settingValue}>{joinRequests.length > 0 ? `${joinRequests.length}명` : ''}</span>
               <span className={profileStyles.chevron}>›</span>
             </li>
-            <li className={profileStyles.settingRow} style={{ cursor: 'default' }}>
+            <li className={profileStyles.settingRow} onClick={() => setView('joinType')}>
               <span className={profileStyles.settingLabel}>가입 방식</span>
-              <div className={tabStyles.joinTypeToggle} style={{ marginLeft: 'auto' }}>
-                <button
-                  type="button"
-                  className={`${tabStyles.joinTypeBtn} ${group.joinType === 'OPEN' ? tabStyles.joinTypeBtnActive : ''}`}
-                  onClick={() => handleJoinTypeChange('OPEN')}
-                  disabled={joinTypeLoading}
-                >
-                  자유
-                </button>
-                <button
-                  type="button"
-                  className={`${tabStyles.joinTypeBtn} ${group.joinType === 'APPROVAL_REQUIRED' ? tabStyles.joinTypeBtnActive : ''}`}
-                  onClick={() => handleJoinTypeChange('APPROVAL_REQUIRED')}
-                  disabled={joinTypeLoading}
-                >
-                  승인
-                </button>
-              </div>
-              {joinTypeError && <p className={tabStyles.errorText}>{joinTypeError}</p>}
+              <span className={profileStyles.settingValue}>
+                {group.joinType === 'OPEN' ? '자유' : '승인'}
+              </span>
+              <span className={profileStyles.chevron}>›</span>
             </li>
-            {group.joinType === 'APPROVAL_REQUIRED' && (
-              <li className={profileStyles.settingRow} onClick={() => setView('joinQuestion')}>
-                <span className={profileStyles.settingLabel}>가입 질문 설정</span>
-                <span className={profileStyles.settingValue}>
-                  {group.joinQuestion
-                    ? group.joinQuestion.slice(0, 20) + (group.joinQuestion.length > 20 ? '…' : '')
-                    : '설정 안 됨'}
-                </span>
-                <span className={profileStyles.chevron}>›</span>
-              </li>
-            )}
             <li
               className={profileStyles.settingRow}
               onClick={() => alert('모임장 변경 기능은 준비 중입니다.')}
