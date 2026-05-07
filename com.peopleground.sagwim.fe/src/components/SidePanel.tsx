@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode, type FC } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { searchUsers } from '../api/userApi'
@@ -37,6 +37,33 @@ interface SearchResults {
   users: UserResponse[]
   posts: ContentResponse[]
   groups: GroupResponse[]
+}
+
+interface AvatarImageProps {
+  src: string
+  alt: string
+  fallback: string
+}
+
+const AvatarImage: FC<AvatarImageProps> = ({ src, alt, fallback }) => {
+  const [imgError, setImgError] = useState(false)
+
+  useEffect(() => {
+    setImgError(false)
+  }, [src])
+
+  if (imgError) {
+    return <span className={styles.avatarFallback}>{fallback}</span>
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={styles.avatarImg}
+      onError={() => setImgError(true)}
+    />
+  )
 }
 
 function SearchContent({ onClose }: { onClose: () => void }) {
@@ -148,10 +175,10 @@ function SearchContent({ onClose }: { onClose: () => void }) {
                 >
                   <div className={styles.avatar}>
                     {user.profileImageUrl ? (
-                      <img
+                      <AvatarImage
                         src={user.profileImageUrl}
                         alt={user.nickname}
-                        className={styles.avatarImg}
+                        fallback={user.nickname[0]}
                       />
                     ) : (
                       <span className={styles.avatarFallback}>{user.nickname[0]}</span>
@@ -413,10 +440,10 @@ function NotificationsContent({ onClose, onChange }: NotificationsContentProps) 
                 >
                   <div className={styles.avatar}>
                     {notification.actorProfileImageUrl ? (
-                      <img
+                      <AvatarImage
                         src={notification.actorProfileImageUrl}
                         alt={notification.actorNickname}
-                        className={styles.avatarImg}
+                        fallback={notification.actorNickname[0]}
                       />
                     ) : (
                       <span className={styles.avatarFallback}>

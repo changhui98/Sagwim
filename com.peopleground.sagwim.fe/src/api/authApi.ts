@@ -139,6 +139,22 @@ export const checkUsername = async (username: string): Promise<boolean> => {
   return data.available
 }
 
+export const checkNickname = async (nickname: string): Promise<boolean> => {
+  let response!: Response
+  try {
+    response = await fetch(`${API_BASE_URL}/auth/check-nickname?nickname=${encodeURIComponent(nickname)}`)
+  } catch (err) {
+    wrapNetworkError(err)
+  }
+
+  if (!response.ok) {
+    throw new ApiError(response.status, await toErrorMessage(response))
+  }
+
+  const data = await response.json() as { available: boolean }
+  return data.available
+}
+
 export const signOut = async (token: string): Promise<void> => {
   if (!token.trim()) return
 

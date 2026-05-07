@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { usePostCreatedSubscription } from '../context/PostCreateModalContext'
 import { Navbar } from '../components/Navbar'
-import { ProfileEditModal } from '../components/profile/ProfileEditModal'
 import {
   MyPostsSection,
   type MyPostsSectionHandle,
@@ -26,7 +25,7 @@ export function ProfilePage() {
   const [profileLoading, setProfileLoading] = useState(false)
   const [profileError, setProfileError] = useState('')
   const [avatarUploading, setAvatarUploading] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
+  const [avatarImgError, setAvatarImgError] = useState(false)
   const myPostsRef = useRef<MyPostsSectionHandle | null>(null)
   const avatarInputRef = useRef<HTMLInputElement | null>(null)
   const isOwner = !!viewerProfile && !!myProfile && viewerProfile.username === myProfile.username
@@ -59,12 +58,6 @@ export function ProfilePage() {
       setProfileLoading(false)
     }
   }, [token, handleUnauthorized, username, setMeProfile])
-
-  const handleProfileSaved = (updated: UserDetailResponse) => {
-    setMyProfile(updated)
-    setViewerProfile(updated)
-    setMeProfile(updated)
-  }
 
   const handleLogout = () => {
     logout()
@@ -117,6 +110,10 @@ export function ProfilePage() {
     loadProfile()
   }, [loadProfile])
 
+  useEffect(() => {
+    setAvatarImgError(false)
+  }, [myProfile?.profileImageUrl])
+
   // 새 글 작성 플로우가 완료되면 내 글 목록을 최신화한다.
   usePostCreatedSubscription(
     useCallback(() => {
@@ -143,11 +140,12 @@ export function ProfilePage() {
               disabled={!isOwner || avatarUploading || !myProfile}
               aria-label={isOwner ? '프로필 사진 변경' : '프로필 사진'}
             >
-              {myProfile?.profileImageUrl ? (
+              {myProfile?.profileImageUrl && !avatarImgError ? (
                 <img
                   src={myProfile.profileImageUrl}
                   alt={`${myProfile.nickname} 프로필 이미지`}
                   className={styles.avatarImage}
+                  onError={() => setAvatarImgError(true)}
                 />
               ) : (
                 <span className={`avatar ${styles.avatarLg}`}>
@@ -176,7 +174,7 @@ export function ProfilePage() {
 
             <p
               className={`${styles.bio} ${isOwner ? styles.bioClickable : ''}`}
-              onClick={isOwner ? () => setEditOpen(true) : undefined}
+              onClick={isOwner ? () => navigate('/app/profile/edit') : undefined}
               title={isOwner ? '클릭하여 한 줄 소개 수정' : undefined}
             >
               {myProfile?.bio
@@ -194,7 +192,7 @@ export function ProfilePage() {
             <button
               type="button"
               className={styles.editButton}
-              onClick={() => setEditOpen(true)}
+              onClick={() => navigate('/app/profile/edit')}
               disabled={!myProfile || profileLoading}
             >
               프로필 편집
@@ -221,15 +219,6 @@ export function ProfilePage() {
         />
       </main>
 
-      {isOwner && (
-        <ProfileEditModal
-          isOpen={editOpen}
-          profile={myProfile}
-          onClose={() => setEditOpen(false)}
-          onSaved={handleProfileSaved}
-          onUnauthorized={handleUnauthorized}
-        />
-      )}
     </>
   )
 }
