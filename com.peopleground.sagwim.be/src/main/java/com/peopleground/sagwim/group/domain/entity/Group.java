@@ -2,7 +2,9 @@ package com.peopleground.sagwim.group.domain.entity;
 
 import com.peopleground.sagwim.global.entity.AuditingEntity;
 import com.peopleground.sagwim.user.domain.entity.User;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -13,11 +15,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 // GROUP 은 SQL 예약어이므로 반드시 @Entity(name="p_group") + @Table(name="p_group") 명시
 @Getter
@@ -40,6 +46,12 @@ public class Group extends AuditingEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private GroupCategory category;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "group_sub_category", joinColumns = @JoinColumn(name = "group_id"))
+    @Column(name = "sub_category", length = 100)
+    @Fetch(FetchMode.SUBSELECT)
+    private List<String> subCategories = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -76,6 +88,7 @@ public class Group extends AuditingEntity {
         String name,
         String description,
         GroupCategory category,
+        List<String> subCategories,
         GroupMeetingType meetingType,
         String region,
         int maxMemberCount,
@@ -85,6 +98,7 @@ public class Group extends AuditingEntity {
         group.name = name;
         group.description = description;
         group.category = category;
+        group.subCategories = subCategories != null ? new ArrayList<>(subCategories) : new ArrayList<>();
         group.meetingType = meetingType;
         group.region = meetingType == GroupMeetingType.ONLINE ? null : region;
         group.maxMemberCount = maxMemberCount;
@@ -96,10 +110,11 @@ public class Group extends AuditingEntity {
         return group;
     }
 
-    public void update(String name, String description, GroupCategory category, GroupMeetingType meetingType, String region, int maxMemberCount, GroupJoinType joinType) {
+    public void update(String name, String description, GroupCategory category, List<String> subCategories, GroupMeetingType meetingType, String region, int maxMemberCount, GroupJoinType joinType) {
         this.name = name;
         this.description = description;
         this.category = category;
+        this.subCategories = subCategories != null ? new ArrayList<>(subCategories) : new ArrayList<>();
         this.meetingType = meetingType;
         this.region = meetingType == GroupMeetingType.ONLINE ? null : region;
         this.maxMemberCount = maxMemberCount;
