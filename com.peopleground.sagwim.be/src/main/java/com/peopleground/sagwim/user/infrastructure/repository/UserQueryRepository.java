@@ -72,6 +72,7 @@ public class UserQueryRepository {
 
         BooleanBuilder condition = new BooleanBuilder();
         condition.and(user.deletedDate.isNull());
+        condition.and(user.isSearchable.isTrue());
         if (keyword != null && !keyword.isBlank()) {
             condition.and(user.nickname.containsIgnoreCase(keyword));
         }
