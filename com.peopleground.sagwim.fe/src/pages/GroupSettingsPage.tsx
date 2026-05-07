@@ -581,6 +581,9 @@ export function GroupSettingsPage() {
             </header>
             <div className={tabStyles.subForm} style={{ padding: 'var(--sp-5)' }}>
               {joinRequestError && <p className={tabStyles.errorText}>{joinRequestError}</p>}
+              <p style={{ fontSize: '0.875rem', color: 'var(--clr-text-secondary)', margin: '0 0 var(--sp-2) 0' }}>
+                총 {joinRequests.length}명
+              </p>
               <div className={tableStyles.tableCard}>
                 <div className={tableStyles.tableWrap}>
                   <table className={tableStyles.table}>
