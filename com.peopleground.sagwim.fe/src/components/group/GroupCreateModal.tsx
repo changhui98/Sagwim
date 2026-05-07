@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { createGroup } from '../../api/groupApi'
 import { uploadGroupImage } from '../../api/imageApi'
+import { getMyProfile } from '../../api/userApi'
 import { useAuth } from '../../context/AuthContext'
 import { ImageBoxPicker } from '../post/ImageBoxPicker'
-import { RegionSelectorModal } from './RegionSelectorModal'
 import type { GroupCategory, GroupMeetingType } from '../../types/group'
 import { GROUP_CATEGORY_LABELS } from '../../types/group'
+import type { UserDetailResponse } from '../../types/user'
 import styles from './GroupCreateModal.module.css'
 
 interface GroupCreateModalProps {
@@ -18,26 +19,31 @@ interface GroupCreateModalProps {
 export function GroupCreateModal({ isOpen, onClose, onCreated }: GroupCreateModalProps) {
   const { token } = useAuth()
 
+  const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<GroupCategory>('CLUB')
   const [meetingType, setMeetingType] = useState<GroupMeetingType>('OFFLINE')
-  const [region, setRegion] = useState<string | null>(null)
-  const [regionModalOpen, setRegionModalOpen] = useState(false)
   const [maxMemberCount, setMaxMemberCount] = useState(10)
   const [images, setImages] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  // 모달이 열릴 때 내 프로필 로드
+  useEffect(() => {
+    if (isOpen && token) {
+      getMyProfile(token).then(setMyProfile).catch(() => {})
+    }
+  }, [isOpen, token])
+
   // 모달이 닫힐 때 폼 초기화
   useEffect(() => {
     if (!isOpen) {
+      setMyProfile(null)
       setName('')
       setDescription('')
       setCategory('CLUB')
       setMeetingType('OFFLINE')
-      setRegion(null)
-      setRegionModalOpen(false)
       setMaxMemberCount(10)
       setImages([])
       setErrors({})
@@ -61,7 +67,9 @@ export function GroupCreateModal({ isOpen, onClose, onCreated }: GroupCreateModa
     if (!name.trim()) next.name = '모임 이름은 필수입니다.'
     else if (name.length > 50) next.name = '모임 이름은 50자를 초과할 수 없습니다.'
     if (description.length > 1000) next.description = '설명은 1000자를 초과할 수 없습니다.'
-    if (meetingType === 'OFFLINE' && !region) next.region = '오프라인 모임은 지역 선택이 필요합니다.'
+    if (meetingType === 'OFFLINE' && !myProfile?.address) {
+      next.meetingType = '오프라인 모임은 주소 설정이 필요합니다. 프로필 편집에서 주소를 먼저 설정해주세요.'
+    }
     if (maxMemberCount < 2) next.maxMemberCount = '최대 인원은 2명 이상이어야 합니다.'
     if (maxMemberCount > 1000) next.maxMemberCount = '최대 인원은 1000명을 초과할 수 없습니다.'
     return next
@@ -82,7 +90,6 @@ export function GroupCreateModal({ isOpen, onClose, onCreated }: GroupCreateModa
         description: description.trim(),
         category,
         meetingType,
-        region: meetingType === 'OFFLINE' ? region : null,
         maxMemberCount,
       })
       if (images.length > 0) {
@@ -99,24 +106,11 @@ export function GroupCreateModal({ isOpen, onClose, onCreated }: GroupCreateModa
 
   const handleMeetingTypeChange = (type: GroupMeetingType) => {
     setMeetingType(type)
-    // 온라인으로 바꾸면 지역 초기화
-    if (type === 'ONLINE') {
-      setRegion(null)
-      if (errors.region) setErrors((prev) => ({ ...prev, region: '' }))
-    }
+    if (errors.meetingType) setErrors((prev) => ({ ...prev, meetingType: '' }))
   }
 
   return createPortal(
     <>
-    <RegionSelectorModal
-      isOpen={regionModalOpen}
-      selectedRegion={region}
-      onConfirm={(r) => {
-        setRegion(r)
-        if (errors.region) setErrors((prev) => ({ ...prev, region: '' }))
-      }}
-      onClose={() => setRegionModalOpen(false)}
-    />
     <div
       className={styles.overlay}
       onClick={() => { if (!submitting) onClose() }}
@@ -228,26 +222,21 @@ export function GroupCreateModal({ isOpen, onClose, onCreated }: GroupCreateModa
               ))}
             </div>
           </div>
+          {errors.meetingType && <p className={styles.errorText}>{errors.meetingType}</p>}
 
           {meetingType === 'OFFLINE' && (
             <div className={styles.fieldGroup}>
-              <label className={styles.label}>
-                지역 <span className={styles.required}>*</span>
-              </label>
-              <button
-                type="button"
-                className={`${styles.regionPickerBtn} ${errors.region ? styles.inputError : ''}`}
-                onClick={() => setRegionModalOpen(true)}
-                disabled={submitting}
-              >
-                {region ? (
-                  <span className={styles.regionPickerValue}>{region}</span>
-                ) : (
-                  <span className={styles.regionPickerPlaceholder}>지역을 선택하세요</span>
-                )}
-                <span className={styles.regionPickerArrow} aria-hidden="true">&#8964;</span>
-              </button>
-              {errors.region && <p className={styles.errorText}>{errors.region}</p>}
+              <label className={styles.label}>지역</label>
+              {myProfile?.address ? (
+                <p style={{ fontSize: '0.9375rem', color: 'var(--clr-text-secondary)', margin: 0 }}>
+                  {myProfile.address} (내 주소 자동 적용)
+                </p>
+              ) : (
+                <p style={{ fontSize: '0.875rem', color: 'var(--clr-danger, #ef4444)', margin: 0 }}>
+                  주소를 먼저 설정해야 오프라인 모임을 만들 수 있습니다.
+                  <br />프로필 편집 &rarr; 주소에서 설정해주세요.
+                </p>
+              )}
             </div>
           )}
 

@@ -78,7 +78,6 @@ export interface GroupCreateRequest {
   description: string
   category: GroupCategory
   meetingType: GroupMeetingType
-  region: string | null
   maxMemberCount: number
 }
 

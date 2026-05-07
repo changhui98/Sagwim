@@ -57,12 +57,16 @@ export function GroupCreatePage() {
 
     try {
       setSubmitting(true)
+      if (!myProfile?.address) {
+        alert('오프라인 모임을 만들려면 먼저 주소를 설정해야 합니다. 프로필 편집 → 주소에서 설정해주세요.')
+        return
+      }
+
       const created = await createGroup(token, {
         name: name.trim(),
         description: description.trim(),
         category,
         meetingType: 'OFFLINE',
-        region: null,
         maxMemberCount,
       })
       if (images.length > 0) {
@@ -93,6 +97,14 @@ export function GroupCreatePage() {
 
         <div className={styles.card}>
           <h1 className={styles.title}>모임 만들기</h1>
+
+          {myProfile && !myProfile.address && (
+            <div style={{ background: 'var(--clr-surface)', border: '1px solid var(--clr-danger, #ef4444)', borderRadius: 'var(--r-md)', padding: 'var(--sp-4)', marginBottom: 'var(--sp-5)' }}>
+              <p style={{ color: 'var(--clr-danger, #ef4444)', fontSize: '0.875rem', margin: 0 }}>
+                오프라인 모임을 만들려면 먼저 주소를 설정해야 합니다. 프로필 편집 &rarr; 주소에서 설정해주세요.
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className={styles.form} noValidate>
             <div className={styles.fieldGroup}>
