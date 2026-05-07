@@ -12,7 +12,6 @@ import { useTheme } from '../context/ThemeContext'
 import { usePostCreateModal } from '../context/PostCreateModalContext'
 import { useAuth } from '../context/AuthContext'
 import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
-import { GroupCreateModal } from './group/GroupCreateModal'
 import { SidePanel, type SidePanelType } from './SidePanel'
 import { getUnreadCount, getNotificationStreamUrl } from '../api/notificationApi'
 import {
@@ -62,7 +61,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
   const [moreOpen, setMoreOpen] = useState(false)
   const [moreView, setMoreView] = useState<'root' | 'theme'>('root')
   const menuRef = useRef<HTMLDivElement>(null)
-  const [createFlow, setCreateFlow] = useState<'idle' | 'selecting' | 'group'>('idle')
+  const [createFlow, setCreateFlow] = useState<'idle' | 'selecting'>('idle')
   const [activePanel, setActivePanel] = useState<SidePanelType | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -199,7 +198,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
       label: '만들기',
       icon: <PlusSquareIcon />,
       onClick: () => setCreateFlow('selecting'),
-      match: () => isPostCreateModalOpen || createFlow !== 'idle',
+      match: () => isPostCreateModalOpen || createFlow === 'selecting',
     },
     {
       to: '/app/profile',
@@ -436,12 +435,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
         isOpen={createFlow === 'selecting'}
         onClose={() => setCreateFlow('idle')}
         onSelectPost={() => { setCreateFlow('idle'); openPostCreateModal() }}
-        onSelectGroup={() => setCreateFlow('group')}
-      />
-      <GroupCreateModal
-        isOpen={createFlow === 'group'}
-        onClose={() => setCreateFlow('idle')}
-        onCreated={(groupId) => { setCreateFlow('idle'); navigate(`/app/groups/${groupId}`) }}
+        onSelectGroup={() => { setCreateFlow('idle'); navigate('/app/groups/new') }}
       />
     </aside>
     <SidePanel

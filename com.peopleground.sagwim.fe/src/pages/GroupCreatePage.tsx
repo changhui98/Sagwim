@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createGroup } from '../api/groupApi'
 import { uploadGroupImage } from '../api/imageApi'
@@ -7,24 +7,99 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { Navbar } from '../components/Navbar'
 import { ImageBoxPicker } from '../components/post/ImageBoxPicker'
-import type { GroupCategory } from '../types/group'
+import type { GroupCategory, GroupMeetingType } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
-import { GROUP_CATEGORY_LABELS } from '../types/group'
+import { GROUP_CATEGORY_LABELS, GROUP_SUB_CATEGORY_MAP } from '../types/group'
 import styles from './GroupCreatePage.module.css'
+
+// ── 스텝 인디케이터 ──────────────────────────────────────────────────────────
+
+const STEP_LABELS = ['이름', '설명', '카테고리', '방식', '마무리'] as const
+
+type StepStatus = 'done' | 'active' | 'pending'
+
+interface StepIndicatorProps {
+  visibleStep: number
+  completedStep: number
+}
+
+function StepIndicator({ visibleStep, completedStep }: StepIndicatorProps) {
+  const getStatus = (index: number): StepStatus => {
+    const step = index + 1
+    if (step <= completedStep) return 'done'
+    if (step === visibleStep) return 'active'
+    if (step < visibleStep) return 'done'
+    return 'pending'
+  }
+
+  return (
+    <aside className={styles.stepPanel}>
+      <ol className={styles.stepList}>
+        {STEP_LABELS.map((label, index) => {
+          const status = getStatus(index)
+          return (
+            <li key={label} className={styles.stepItem}>
+              <div
+                className={`${styles.stepDot} ${styles[`stepDot_${status}`]}`}
+                aria-label={`${label} - ${status === 'done' ? '완료' : status === 'active' ? '진행 중' : '대기'}`}
+              >
+                {status === 'done' && (
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                    <path
+                      d="M2 5l2.5 2.5L8 3"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+              </div>
+              <span className={`${styles.stepLabel} ${styles[`stepLabel_${status}`]}`}>
+                {label}
+              </span>
+              {index < STEP_LABELS.length - 1 && (
+                <div
+                  className={`${styles.stepConnector} ${index + 1 < visibleStep ? styles.stepConnectorDone : ''}`}
+                />
+              )}
+            </li>
+          )
+        })}
+      </ol>
+    </aside>
+  )
+}
+
+// ── 메인 페이지 ──────────────────────────────────────────────────────────────
 
 export function GroupCreatePage() {
   const navigate = useNavigate()
   const { token, logout } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
 
+  // 폼 데이터
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState<GroupCategory>('CLUB')
+  const [category, setCategory] = useState<GroupCategory>('SPORTS')
+  const [meetingType, setMeetingType] = useState<GroupMeetingType>('OFFLINE')
   const [maxMemberCount, setMaxMemberCount] = useState(10)
   const [images, setImages] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Progressive Disclosure 상태
+  // visibleStep: 현재 화면에 보이는 가장 높은 스텝 번호 (1~5)
+  const [visibleStep, setVisibleStep] = useState(1)
+  // completedStep: 완료된 스텝 (인디케이터 done 처리용)
+  const [completedStep, setCompletedStep] = useState(0)
+  // 카테고리 선택 여부 (초기값이 있어도 사용자가 명시적으로 선택해야 함)
+  const [categorySelected, setCategorySelected] = useState(false)
+  const [subCategories, setSubCategories] = useState<string[]>([])
+
+  // Step 2 → Step 3 타이머 ref
+  const step3TimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     getMyProfile(token)
@@ -32,9 +107,85 @@ export function GroupCreatePage() {
       .catch(handleUnauthorized)
   }, [token, handleUnauthorized])
 
+  // 클린업: 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (step3TimerRef.current) clearTimeout(step3TimerRef.current)
+    }
+  }, [])
+
+  // Step 1 → 2: 이름 1자 이상 입력 시
+  useEffect(() => {
+    if (name.trim().length > 0 && visibleStep < 2) {
+      setVisibleStep(2)
+    }
+  }, [name, visibleStep])
+
+  // Step 3 → 4: 카테고리 선택 시 + Step 4 → 5: meetingType 기본값 OFFLINE이므로 즉시
+  useEffect(() => {
+    if (categorySelected && visibleStep < 4) {
+      setVisibleStep(4)
+      setCompletedStep((prev) => Math.max(prev, 3))
+      // Step 4가 나타나면 meetingType 기본값 OFFLINE → 즉시 Step 5도 표시
+      setVisibleStep(5)
+      setCompletedStep((prev) => Math.max(prev, 4))
+    }
+  }, [categorySelected, visibleStep])
+
   const handleLogout = () => {
     logout()
     navigate('/login', { replace: true })
+  }
+
+  // Step 2 나타난 후 설명 textarea blur 또는 2초 후 → Step 3 표시
+  const handleDescriptionBlur = () => {
+    if (visibleStep === 2) {
+      revealStep3()
+    }
+  }
+
+  const revealStep3 = () => {
+    if (step3TimerRef.current) {
+      clearTimeout(step3TimerRef.current)
+      step3TimerRef.current = null
+    }
+    setVisibleStep((prev) => {
+      if (prev < 3) {
+        setCompletedStep((c) => Math.max(c, 2))
+        return 3
+      }
+      return prev
+    })
+  }
+
+  // Step 2가 나타난 시점에 2초 타이머 시작
+  useEffect(() => {
+    if (visibleStep === 2) {
+      step3TimerRef.current = setTimeout(() => {
+        revealStep3()
+      }, 2000)
+    }
+    // visibleStep이 2를 지나가면 타이머 정리
+    if (visibleStep > 2 && step3TimerRef.current) {
+      clearTimeout(step3TimerRef.current)
+      step3TimerRef.current = null
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visibleStep])
+
+  const handleSubCategoryToggle = (sub: string) => {
+    setSubCategories((prev) =>
+      prev.includes(sub) ? prev.filter((s) => s !== sub) : [...prev, sub]
+    )
+  }
+
+  const handleCategoryChange = (key: GroupCategory) => {
+    setCategory(key)
+    setSubCategories([])
+    if (!categorySelected) {
+      setCategorySelected(true)
+      setCompletedStep((prev) => Math.max(prev, 3))
+    }
   }
 
   const validate = () => {
@@ -42,6 +193,9 @@ export function GroupCreatePage() {
     if (!name.trim()) next.name = '모임 이름은 필수입니다.'
     else if (name.length > 50) next.name = '모임 이름은 50자를 초과할 수 없습니다.'
     if (description.length > 1000) next.description = '설명은 1000자를 초과할 수 없습니다.'
+    if (meetingType === 'OFFLINE' && !myProfile?.address) {
+      next.meetingType = '오프라인 모임은 주소 설정이 필요합니다. 프로필 편집에서 주소를 먼저 설정해주세요.'
+    }
     if (maxMemberCount < 2) next.maxMemberCount = '최대 인원은 2명 이상이어야 합니다.'
     if (maxMemberCount > 1000) next.maxMemberCount = '최대 인원은 1000명을 초과할 수 없습니다.'
     return next
@@ -57,7 +211,7 @@ export function GroupCreatePage() {
 
     try {
       setSubmitting(true)
-      if (!myProfile?.address) {
+      if (meetingType === 'OFFLINE' && !myProfile?.address) {
         alert('오프라인 모임을 만들려면 먼저 주소를 설정해야 합니다. 프로필 편집 → 주소에서 설정해주세요.')
         return
       }
@@ -66,7 +220,8 @@ export function GroupCreatePage() {
         name: name.trim(),
         description: description.trim(),
         category,
-        meetingType: 'OFFLINE',
+        subCategories: subCategories.length > 0 ? subCategories : undefined,
+        meetingType,
         maxMemberCount,
       })
       if (images.length > 0) {
@@ -95,119 +250,221 @@ export function GroupCreatePage() {
           &larr; 모임 목록
         </button>
 
-        <div className={styles.card}>
-          <h1 className={styles.title}>모임 만들기</h1>
+        <div className={styles.pageLayout}>
+          {/* ── 왼쪽: 폼 카드 ── */}
+          <div className={styles.card}>
+            <h1 className={styles.title}>모임 만들기</h1>
 
-          {myProfile && !myProfile.address && (
-            <div style={{ background: 'var(--clr-surface)', border: '1px solid var(--clr-danger, #ef4444)', borderRadius: 'var(--r-md)', padding: 'var(--sp-4)', marginBottom: 'var(--sp-5)' }}>
-              <p style={{ color: 'var(--clr-danger, #ef4444)', fontSize: '0.875rem', margin: 0 }}>
-                오프라인 모임을 만들려면 먼저 주소를 설정해야 합니다. 프로필 편집 &rarr; 주소에서 설정해주세요.
-              </p>
-            </div>
-          )}
+            {/* 오프라인 + 주소 없음 경고 배너 */}
+            {myProfile && meetingType === 'OFFLINE' && !myProfile.address && visibleStep >= 5 && (
+              <div className={styles.warningBanner}>
+                <p className={styles.warningText}>
+                  오프라인 모임을 만들려면 먼저 주소를 설정해야 합니다.
+                  프로필 편집 &rarr; 주소에서 설정해주세요.
+                </p>
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit} className={styles.form} noValidate>
-            <div className={styles.fieldGroup}>
-              <label htmlFor="name" className={styles.label}>
-                모임 이름 <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="name"
-                type="text"
-                className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value)
-                  if (errors.name) setErrors((prev) => ({ ...prev, name: '' }))
-                }}
-                placeholder="모임 이름을 입력하세요 (최대 50자)"
-                maxLength={50}
-              />
-              {errors.name && <p className={styles.errorText}>{errors.name}</p>}
-            </div>
+            <form onSubmit={handleSubmit} className={styles.form} noValidate>
 
-            <div className={styles.fieldGroup}>
-              <label htmlFor="description" className={styles.label}>
-                설명
-              </label>
-              <textarea
-                id="description"
-                className={`${styles.textarea} ${errors.description ? styles.inputError : ''}`}
-                value={description}
-                onChange={(e) => {
-                  setDescription(e.target.value)
-                  if (errors.description) setErrors((prev) => ({ ...prev, description: '' }))
-                }}
-                placeholder="모임에 대한 설명을 입력하세요 (최대 1000자)"
-                rows={4}
-                maxLength={1000}
-              />
-              {errors.description && <p className={styles.errorText}>{errors.description}</p>}
-            </div>
+              {/* Step 1: 모임 이름 (항상 표시) */}
+              <div className={styles.fieldGroup}>
+                <label htmlFor="name" className={styles.label}>
+                  모임 이름 <span className={styles.required}>*</span>
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  className={`${styles.input} ${errors.name ? styles.inputError : ''}`}
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    if (errors.name) setErrors((prev) => ({ ...prev, name: '' }))
+                  }}
+                  onBlur={() => {
+                    if (name.trim().length > 0) {
+                      setCompletedStep((prev) => Math.max(prev, 1))
+                    }
+                  }}
+                  placeholder="모임 이름을 입력하세요 (최대 50자)"
+                  maxLength={50}
+                  autoFocus
+                />
+                {errors.name && <p className={styles.errorText}>{errors.name}</p>}
+              </div>
 
-            <div className={styles.fieldGroup}>
-              <label htmlFor="category" className={styles.label}>
-                카테고리 <span className={styles.required}>*</span>
-              </label>
-              <select
-                id="category"
-                className={styles.select}
-                value={category}
-                onChange={(e) => setCategory(e.target.value as GroupCategory)}
-              >
-                {(Object.keys(GROUP_CATEGORY_LABELS) as GroupCategory[]).map((key) => (
-                  <option key={key} value={key}>
-                    {GROUP_CATEGORY_LABELS[key]}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className={styles.fieldGroup}>
-              <label htmlFor="maxMemberCount" className={styles.label}>
-                최대 인원 <span className={styles.required}>*</span>
-              </label>
-              <input
-                id="maxMemberCount"
-                type="number"
-                className={`${styles.input} ${errors.maxMemberCount ? styles.inputError : ''}`}
-                value={maxMemberCount}
-                onChange={(e) => {
-                  setMaxMemberCount(Number(e.target.value))
-                  if (errors.maxMemberCount)
-                    setErrors((prev) => ({ ...prev, maxMemberCount: '' }))
-                }}
-                min={2}
-                max={1000}
-              />
-              {errors.maxMemberCount && (
-                <p className={styles.errorText}>{errors.maxMemberCount}</p>
+              {/* Step 2: 설명 */}
+              {visibleStep >= 2 && (
+                <div className={`${styles.fieldGroup} ${styles.stepReveal}`}>
+                  <label htmlFor="description" className={styles.label}>
+                    설명
+                    <span className={styles.optionalBadge}>선택</span>
+                  </label>
+                  <textarea
+                    id="description"
+                    className={`${styles.textarea} ${errors.description ? styles.inputError : ''}`}
+                    value={description}
+                    onChange={(e) => {
+                      setDescription(e.target.value)
+                      if (errors.description) setErrors((prev) => ({ ...prev, description: '' }))
+                    }}
+                    onBlur={handleDescriptionBlur}
+                    placeholder="모임에 대한 설명을 입력하세요 (최대 1000자)"
+                    rows={4}
+                    maxLength={1000}
+                  />
+                  {errors.description && <p className={styles.errorText}>{errors.description}</p>}
+                </div>
               )}
-            </div>
 
-            <div className={styles.fieldGroup}>
-              <label className={styles.label}>사진</label>
-              <ImageBoxPicker images={images} onChange={setImages} disabled={submitting} />
-            </div>
+              {/* Step 3: 카테고리 */}
+              {visibleStep >= 3 && (
+                <div className={`${styles.fieldGroup} ${styles.stepReveal}`}>
+                  <label className={styles.label}>
+                    카테고리 <span className={styles.required}>*</span>
+                  </label>
+                  <div className={styles.categoryGrid}>
+                    {(Object.keys(GROUP_CATEGORY_LABELS) as GroupCategory[]).map((key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`${styles.categoryPill} ${category === key && categorySelected ? styles.categoryPillSelected : ''}`}
+                        onClick={() => handleCategoryChange(key)}
+                        disabled={submitting}
+                      >
+                        {GROUP_CATEGORY_LABELS[key]}
+                      </button>
+                    ))}
+                  </div>
 
-            <div className={styles.buttonRow}>
-              <button
-                type="button"
-                className={styles.cancelButton}
-                onClick={() => navigate('/app/groups')}
-                disabled={submitting}
-              >
-                취소
-              </button>
-              <button
-                type="submit"
-                className={styles.submitButton}
-                disabled={submitting}
-              >
-                {submitting ? '생성 중...' : '모임 만들기'}
-              </button>
-            </div>
-          </form>
+                  {/* 2차 카테고리 — 1차 선택 후 표시 */}
+                  {categorySelected && (
+                    <div className={`${styles.subCategorySection} ${styles.stepReveal}`}>
+                      <p className={styles.subCategoryLabel}>세부 분야 <span className={styles.optionalBadge}>선택</span></p>
+                      <div className={styles.categoryGrid}>
+                        {GROUP_SUB_CATEGORY_MAP[category].map((sub) => (
+                          <button
+                            key={sub}
+                            type="button"
+                            className={`${styles.categoryPill} ${styles.categoryPillSm} ${subCategories.includes(sub) ? styles.categoryPillSelected : ''}`}
+                            onClick={() => handleSubCategoryToggle(sub)}
+                            disabled={submitting}
+                          >
+                            {sub}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {errors.category && <p className={styles.errorText}>{errors.category}</p>}
+                </div>
+              )}
+
+              {/* Step 4: 모임 방식 */}
+              {visibleStep >= 4 && (
+                <div className={`${styles.fieldGroup} ${styles.stepReveal}`}>
+                  <label className={styles.label}>
+                    모임 방식 <span className={styles.required}>*</span>
+                  </label>
+                  <div className={styles.meetingTypeToggle}>
+                    {(['OFFLINE', 'ONLINE'] as GroupMeetingType[]).map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        className={`${styles.meetingTypeBtn} ${meetingType === type ? styles.meetingTypeBtnActive : ''} ${meetingType === type && type === 'ONLINE' ? styles.meetingTypeBtnOnline : ''}`}
+                        onClick={() => {
+                          setMeetingType(type)
+                          if (errors.meetingType) setErrors((prev) => ({ ...prev, meetingType: '' }))
+                        }}
+                        disabled={submitting}
+                      >
+                        {type === 'OFFLINE' ? '오프라인' : '온라인'}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.meetingType && <p className={styles.errorText}>{errors.meetingType}</p>}
+                </div>
+              )}
+
+              {/* Step 5: 지역 / 최대 인원 / 사진 */}
+              {visibleStep >= 5 && (
+                <div className={`${styles.stepReveal}`}>
+                  {/* 지역 (오프라인일 때) */}
+                  {meetingType === 'OFFLINE' && (
+                    <div className={`${styles.fieldGroup} ${styles.step5Field}`}>
+                      <label className={styles.label}>지역</label>
+                      {myProfile?.address ? (
+                        <p className={styles.addressText}>
+                          {myProfile.address}&nbsp;
+                          <span className={styles.addressNote}>(내 주소 자동 적용)</span>
+                        </p>
+                      ) : (
+                        <p className={styles.addressError}>
+                          주소를 먼저 설정해야 오프라인 모임을 만들 수 있습니다.
+                          <br />프로필 편집 &rarr; 주소에서 설정해주세요.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 최대 인원 */}
+                  <div className={`${styles.fieldGroup} ${styles.step5Field}`}>
+                    <label htmlFor="maxMemberCount" className={styles.label}>
+                      최대 인원 <span className={styles.required}>*</span>
+                    </label>
+                    <input
+                      id="maxMemberCount"
+                      type="number"
+                      className={`${styles.input} ${errors.maxMemberCount ? styles.inputError : ''}`}
+                      value={maxMemberCount}
+                      onChange={(e) => {
+                        setMaxMemberCount(Number(e.target.value))
+                        if (errors.maxMemberCount)
+                          setErrors((prev) => ({ ...prev, maxMemberCount: '' }))
+                      }}
+                      min={2}
+                      max={1000}
+                    />
+                    {errors.maxMemberCount && (
+                      <p className={styles.errorText}>{errors.maxMemberCount}</p>
+                    )}
+                  </div>
+
+                  {/* 사진 */}
+                  <div className={`${styles.fieldGroup} ${styles.step5Field}`}>
+                    <label className={styles.label}>
+                      사진
+                      <span className={styles.optionalBadge}>선택</span>
+                    </label>
+                    <ImageBoxPicker images={images} onChange={setImages} disabled={submitting} />
+                  </div>
+
+                  {/* 버튼 행 */}
+                  <div className={styles.buttonRow}>
+                    <button
+                      type="button"
+                      className={styles.cancelButton}
+                      onClick={() => navigate('/app/groups')}
+                      disabled={submitting}
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="submit"
+                      className={styles.submitButton}
+                      disabled={submitting}
+                    >
+                      {submitting ? '생성 중...' : '모임 만들기'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </form>
+          </div>
+
+          {/* ── 오른쪽: 스텝 인디케이터 ── */}
+          <StepIndicator visibleStep={visibleStep} completedStep={completedStep} />
         </div>
       </main>
     </>
