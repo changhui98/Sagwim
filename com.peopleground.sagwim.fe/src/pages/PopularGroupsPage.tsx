@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getPopularGroups, getGroupLikeStatus, toggleGroupLike } from '../api/groupApi'
+import { getPopularGroups, toggleGroupLike } from '../api/groupApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { Navbar } from '../components/Navbar'
@@ -44,23 +44,15 @@ export function PopularGroupsPage() {
         setGroups((prev) => (append ? [...prev, ...incoming] : incoming))
         setHasNext(response.hasNext)
 
-        // 좋아요 수 맵 업데이트
+        // 좋아요 수 및 좋아요 여부 맵 업데이트 (응답에 isLiked 포함)
         setLikeCountMap((prev) => {
           const next = { ...prev }
           incoming.forEach((g) => { next[g.id] = g.likeCount ?? 0 })
           return next
         })
-
-        // 좋아요 여부 병렬 조회
-        const likeStatusResults = await Promise.allSettled(
-          incoming.map((g) => getGroupLikeStatus(token, g.id)),
-        )
         setLikedMap((prev) => {
           const next = { ...prev }
-          incoming.forEach((g, idx) => {
-            const result = likeStatusResults[idx]
-            next[g.id] = result.status === 'fulfilled' ? result.value.liked : false
-          })
+          incoming.forEach((g) => { next[g.id] = g.isLiked })
           return next
         })
       } catch (err) {
