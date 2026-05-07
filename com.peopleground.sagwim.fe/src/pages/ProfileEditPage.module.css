@@ -1,0 +1,185 @@
+/* ── ProfileEditPage ── */
+.main {
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--sp-8) var(--sp-6);
+  padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
+  padding-bottom: calc(var(--sp-8) + var(--layout-bottom-bar-h));
+}
+
+.container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  background: var(--clr-surface);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--clr-border);
+  overflow: hidden;
+}
+
+.loading {
+  color: var(--clr-text-secondary);
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 0;
+    padding-left: var(--layout-sidebar-w);
+    padding-bottom: var(--layout-bottom-bar-h);
+    align-items: flex-start;
+  }
+
+  .container {
+    max-width: none;
+    border-radius: 0;
+    border: none;
+    min-height: calc(100dvh - var(--layout-bottom-bar-h));
+  }
+}
+
+/* ── 설정 리스트 ─────────────────────────────────────────────── */
+.settingList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  padding: var(--sp-4) var(--sp-5);
+  gap: var(--sp-3);
+  cursor: pointer;
+  border-bottom: 1px solid var(--clr-border);
+  transition: background var(--t-fast);
+}
+
+.settingRow:hover {
+  background: var(--clr-surface-raised, var(--clr-surface));
+}
+
+.settingLabel {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--clr-text);
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.settingValue {
+  flex: 1;
+  text-align: right;
+  font-size: 0.9375rem;
+  color: var(--clr-text-muted, var(--clr-text-secondary));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  font-size: 1.25rem;
+  color: var(--clr-text-secondary);
+  flex-shrink: 0;
+}
+
+/* ── ScrollPicker ─────────────────────────────────────────────── */
+.scrollPickerColumn {
+  flex: 1;
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+  z-index: 2;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 30%,
+    black 70%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 30%,
+    black 70%,
+    transparent 100%
+  );
+}
+
+.scrollPickerColumn::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollPickerItem {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: center;
+  font-size: 0.9375rem;
+  color: var(--clr-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.scrollPickerItemSelected {
+  font-weight: 700;
+  color: var(--clr-text);
+  font-size: 1rem;
+}
+
+/* 토글 스위치 */
+.toggleLabel {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.toggleLabel input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggleSlider {
+  position: absolute;
+  inset: 0;
+  background: var(--clr-border);
+  border-radius: 26px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.toggleSlider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.toggleLabel input:checked + .toggleSlider {
+  background: var(--clr-primary, #4f87f7);
+}
+
+.toggleLabel input:checked + .toggleSlider::before {
+  transform: translateX(18px);
+}
+
+.toggleLabel input:disabled + .toggleSlider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
