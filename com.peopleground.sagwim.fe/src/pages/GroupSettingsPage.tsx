@@ -487,31 +487,30 @@ export function GroupSettingsPage() {
               <h2 className={modalStyles.title}>가입 방식</h2>
               <span style={{ minWidth: '4rem' }} />
             </header>
-            <div style={{ padding: 'var(--sp-5)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-5)' }}>
-              <div>
-                <p className="input-label">가입 방식</p>
-                <div className={tabStyles.joinTypeToggle}>
-                  <button
-                    type="button"
-                    className={`${tabStyles.joinTypeBtn} ${editJoinType === 'OPEN' ? tabStyles.joinTypeBtnActive : ''}`}
-                    onClick={() => setEditJoinType('OPEN')}
-                    disabled={joinTypeLoading || joinQuestionLoading}
-                  >
-                    자유
-                  </button>
-                  <button
-                    type="button"
-                    className={`${tabStyles.joinTypeBtn} ${editJoinType === 'APPROVAL_REQUIRED' ? tabStyles.joinTypeBtnActive : ''}`}
-                    onClick={() => setEditJoinType('APPROVAL_REQUIRED')}
-                    disabled={joinTypeLoading || joinQuestionLoading}
-                  >
-                    승인
-                  </button>
-                </div>
-              </div>
+            <ul className={profileStyles.settingList}>
+              <li
+                className={profileStyles.settingRow}
+                onClick={() => setEditJoinType('OPEN')}
+                style={{ cursor: 'pointer' }}
+              >
+                <span className={profileStyles.settingLabel}>자유</span>
+                <span className={profileStyles.settingValue}>
+                  {editJoinType === 'OPEN' ? '✓' : ''}
+                </span>
+              </li>
+              <li
+                className={profileStyles.settingRow}
+                onClick={() => setEditJoinType('APPROVAL_REQUIRED')}
+                style={{ cursor: 'pointer' }}
+              >
+                <span className={profileStyles.settingLabel}>승인</span>
+                <span className={profileStyles.settingValue}>
+                  {editJoinType === 'APPROVAL_REQUIRED' ? '✓' : ''}
+                </span>
+              </li>
               {editJoinType === 'APPROVAL_REQUIRED' && (
-                <div className="input-group">
-                  <label className="input-label" htmlFor="join-question-input">
+                <li className={profileStyles.settingRow} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 'var(--sp-3)', cursor: 'default' }}>
+                  <label className="input-label" htmlFor="join-question-input" style={{ margin: 0 }}>
                     가입 질문
                   </label>
                   <textarea
@@ -523,14 +522,15 @@ export function GroupSettingsPage() {
                     value={editJoinQuestion}
                     onChange={(e) => setEditJoinQuestion(e.target.value)}
                     disabled={joinTypeLoading || joinQuestionLoading}
+                    style={{ width: '100%' }}
                   />
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--clr-text-muted)', textAlign: 'right', margin: 0 }}>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--clr-text-muted)', textAlign: 'right', margin: 0, width: '100%' }}>
                     {editJoinQuestion.length} / 500
                   </p>
-                </div>
+                </li>
               )}
-              {joinTypeError && <p className={tabStyles.errorText}>{joinTypeError}</p>}
-            </div>
+            </ul>
+            {joinTypeError && <p className={tabStyles.errorText} style={{ padding: '0 var(--sp-5)' }}>{joinTypeError}</p>}
           </div>
         </main>
       </>
