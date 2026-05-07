@@ -51,6 +51,7 @@
 .settingRow {
   display: flex;
   align-items: center;
+  min-height: 64px;
   padding: var(--sp-4) var(--sp-5);
   gap: var(--sp-3);
   cursor: pointer;
@@ -182,4 +183,70 @@
 .toggleLabel input:disabled + .toggleSlider {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── 모임 노출 범위 step indicator ────────────────────────────── */
+.rangeSection {
+  margin-top: var(--sp-3);
+  padding-top: 0;
+}
+
+.rangeSectionTitle {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: var(--clr-text);
+  margin: 0 0 var(--sp-4) 0;
+}
+
+.rangeTrack {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.rangeStepWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.rangeCircle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--clr-border);
+  background: transparent;
+  transition: border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+
+.rangeCircleActive {
+  border-color: var(--clr-primary, #4f87f7);
+  background: var(--clr-primary, #4f87f7);
+}
+
+.rangeLine {
+  flex: 1;
+  height: 2px;
+  background: var(--clr-border);
+  margin-top: 10px;
+  transition: background 0.15s;
+}
+
+.rangeLineActive {
+  background: var(--clr-primary, #4f87f7);
+}
+
+.rangeLabel {
+  font-size: 0.9375rem;
+  color: var(--clr-text-secondary);
+}
+
+.rangeLabelActive {
+  color: var(--clr-primary, #4f87f7);
+  font-weight: 600;
 }

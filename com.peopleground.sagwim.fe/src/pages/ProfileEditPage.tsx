@@ -60,7 +60,7 @@ export function ProfileEditPage() {
   }, [token, handleUnauthorized])
 
   const handleCancel = useCallback(() => {
-    navigate(-1)
+    navigate('/app/profile')
   }, [navigate])
 
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -235,6 +235,10 @@ export function ProfileEditPage() {
               <span className={pageStyles.settingLabel}>주소</span>
               <span className={pageStyles.settingValue}>{profile.address || '설정 안 됨'}</span>
               <span className={pageStyles.chevron}>›</span>
+            </li>
+            <li className={pageStyles.settingRow} style={{ cursor: 'default' }}>
+              <span className={pageStyles.settingLabel}>모임 노출 범위</span>
+              <span className={pageStyles.settingValue}>{profile.exposureRangeKm != null ? `${profile.exposureRangeKm}km` : '1km'}</span>
             </li>
           </ul>
         </div>

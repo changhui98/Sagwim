@@ -4,6 +4,7 @@ import { getMyProfile, updateMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { Navbar } from '../components/Navbar'
+import { AlertDialog } from '../components/common/AlertDialog'
 import type { UserDetailResponse } from '../types/user'
 import styles from '../components/profile/ProfileEditModal.module.css'
 import pageStyles from './ProfileEditPage.module.css'
@@ -115,6 +116,9 @@ export function ProfileEditBirthDatePage() {
   const [isSaving, setIsSaving] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
 
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+
   // 피커 인덱스 상태
   const [yearIdx, setYearIdx] = useState(0)
   const [monthIdx, setMonthIdx] = useState(0)
@@ -170,12 +174,11 @@ export function ProfileEditBirthDatePage() {
   const originalDate = profile?.birthDate ?? ''
   const isChanged = profile !== null && selectedDate !== originalDate
 
-  const handleCancel = useCallback(() => {
-    navigate(-1)
-  }, [navigate])
-
-  const handleSave = async () => {
-    if (!profile || !isChanged) return
+  const handleCancel = useCallback(async () => {
+    if (!profile || !isChanged || !isPickerOpen) {
+      navigate('/app/profile/edit', { replace: true })
+      return
+    }
     setIsSaving(true)
     try {
       const updated = await updateMyProfile(token, {
@@ -189,36 +192,15 @@ export function ProfileEditBirthDatePage() {
         birthDate: selectedDate || null,
       })
       setMeProfile(updated)
-      navigate('/app/profile/edit')
+      navigate('/app/profile/edit', { replace: true })
     } catch (err) {
       handleUnauthorized(err)
+      setAlertMessage('생년월일 저장에 실패했습니다. 다시 시도해주세요.')
+      setAlertOpen(true)
     } finally {
       setIsSaving(false)
     }
-  }
-
-  const handleDelete = async () => {
-    if (!profile) return
-    setIsSaving(true)
-    try {
-      const updated = await updateMyProfile(token, {
-        nickname: profile.nickname,
-        address: profile.address ?? '',
-        currentPassword: '',
-        newPassword: '',
-        profileImageUrl: profile.profileImageUrl ?? null,
-        bio: profile.bio ?? '',
-        gender: profile.gender,
-        birthDate: null,
-      })
-      setMeProfile(updated)
-      navigate('/app/profile/edit')
-    } catch (err) {
-      handleUnauthorized(err)
-    } finally {
-      setIsSaving(false)
-    }
-  }
+  }, [navigate, profile, isChanged, isPickerOpen, token, selectedDate, setMeProfile, handleUnauthorized])
 
   if (profileLoading) {
     return (
@@ -246,17 +228,10 @@ export function ProfileEditBirthDatePage() {
               onClick={handleCancel}
               disabled={isSaving}
             >
-              취소
+              {isSaving ? '저장 중...' : '돌아가기'}
             </button>
             <h1 className={styles.title}>생년월일</h1>
-            <button
-              type="button"
-              className={`${styles.headerBtn} ${styles.headerBtnPrimary}`}
-              onClick={handleSave}
-              disabled={!isChanged || isSaving}
-            >
-              {isSaving ? '저장 중...' : '저장'}
-            </button>
+            <span style={{ width: '4rem' }} />
           </header>
 
           <div style={{ padding: 'var(--sp-5)' }}>
@@ -356,6 +331,13 @@ export function ProfileEditBirthDatePage() {
 
         </div>
       </main>
+
+      <AlertDialog
+        isOpen={alertOpen}
+        variant="error"
+        message={alertMessage}
+        onClose={() => setAlertOpen(false)}
+      />
     </>
   )
 }

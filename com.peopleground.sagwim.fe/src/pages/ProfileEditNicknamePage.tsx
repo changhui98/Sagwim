@@ -84,10 +84,14 @@ export function ProfileEditNicknamePage() {
     }
   }
 
-  const handleSaveClick = () => {
-    if (!isSaveEnabled) return
+  const handleCancel = useCallback(async () => {
+    const canSave = isSaveEnabled
+    if (!canSave || !profile) {
+      navigate('/app/profile/edit', { replace: true })
+      return
+    }
     setShowConfirm(true)
-  }
+  }, [isSaveEnabled, profile, navigate])
 
   const handleConfirmSave = async () => {
     if (!profile) return
@@ -104,7 +108,7 @@ export function ProfileEditNicknamePage() {
         bio: profile.bio ?? '',
       })
       setMeProfile(updated)
-      navigate('/app/profile/edit')
+      navigate('/app/profile/edit', { replace: true })
     } catch (err) {
       handleUnauthorized(err)
       setAlertVariant('error')
@@ -114,10 +118,6 @@ export function ProfileEditNicknamePage() {
       setIsSaving(false)
     }
   }
-
-  const handleCancel = useCallback(() => {
-    navigate(-1)
-  }, [navigate])
 
   if (profileLoading) {
     return (
@@ -145,17 +145,10 @@ export function ProfileEditNicknamePage() {
             onClick={handleCancel}
             disabled={isSaving}
           >
-            취소
+            {isSaving ? '저장 중...' : '돌아가기'}
           </button>
           <h1 className={styles.title}>닉네임</h1>
-          <button
-            type="button"
-            className={`${styles.headerBtn} ${styles.headerBtnPrimary}`}
-            onClick={handleSaveClick}
-            disabled={!isSaveEnabled || isSaving}
-          >
-            {isSaving ? '저장 중...' : '저장'}
-          </button>
+          <span style={{ width: '4rem' }} />
         </header>
 
         <div className="input-group" style={{ padding: 'var(--sp-5)' }}>
