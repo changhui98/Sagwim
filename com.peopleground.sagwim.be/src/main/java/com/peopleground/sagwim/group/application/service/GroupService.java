@@ -9,6 +9,7 @@ import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.domain.entity.GroupJoinRequest;
 import com.peopleground.sagwim.group.domain.entity.GroupJoinRequestStatus;
 import com.peopleground.sagwim.group.domain.entity.GroupJoinType;
+import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
 import com.peopleground.sagwim.group.domain.entity.GroupMember;
 import com.peopleground.sagwim.group.domain.entity.GroupMemberRole;
 import com.peopleground.sagwim.group.domain.entity.GroupJoinQuestion;
@@ -58,12 +59,17 @@ public class GroupService {
     public GroupResponse createGroup(GroupCreateRequest request, CustomUser customUser) {
         User leader = getUser(customUser.getUsername());
 
+        if (request.meetingType() == GroupMeetingType.OFFLINE
+                && (leader.getAddress() == null || leader.getAddress().isBlank())) {
+            throw new AppException(GroupErrorCode.LEADER_ADDRESS_REQUIRED);
+        }
+
         Group group = Group.of(
             request.name(),
             request.description(),
             request.category(),
             request.meetingType(),
-            request.region(),
+            request.meetingType() == GroupMeetingType.OFFLINE ? leader.getAddress() : null,
             request.maxMemberCount(),
             leader
         );
