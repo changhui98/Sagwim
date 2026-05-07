@@ -59,19 +59,22 @@
 }
 
 .cardGrid {
-  /* 사이드바(72px) + 좌우 패딩(80px × 2) = 232px 를 제외한 실질 콘텐츠 너비 기준으로
-     브레이크포인트를 설계합니다. (모바일은 사이드바 0px, 좌우 패딩 32px × 2 = 64px)
-     각 열의 최소 너비는 minmax(0, 1fr) 로 컨테이너에 완전히 맞춥니다.            */
   --profile-thumb-gap: 2px;
   --profile-cols: 6;
   --profile-grid-corner-r: 10px;
-  display: grid;
-  grid-template-columns: repeat(var(--profile-cols), minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: var(--profile-thumb-gap);
   width: 100%;
   margin: 0 auto;
   min-width: 0;
   box-sizing: border-box;
+}
+
+.cardGrid > * {
+  flex: 0 0 calc((100% - (var(--profile-cols) - 1) * var(--profile-thumb-gap)) / var(--profile-cols));
+  min-width: 0;
 }
 
 /* 첫 줄의 좌/우 끝 카드만 모서리를 살짝 둥글게 처리 */
