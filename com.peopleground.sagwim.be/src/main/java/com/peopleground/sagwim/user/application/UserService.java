@@ -4,6 +4,9 @@ import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.image.application.ImageUrlResolver;
+import com.peopleground.sagwim.user.domain.entity.Gender;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
@@ -50,7 +53,8 @@ public class UserService {
     public PageResponse<UserResponseMarker> getUsers(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<UserResponse> result = userRepository.findAllUsers(pageable).map(UserResponse::from);
+        Page<UserResponse> result = userRepository.findAllUsers(pageable)
+            .map(u -> UserResponse.from(u, imageUrlResolver.resolve(u.getProfileImageUrl())));
 
         return PageResponse.from(result);
     }
@@ -58,7 +62,8 @@ public class UserService {
     @Transactional(readOnly = true)
     public PageResponse<UserResponseMarker> searchUsers(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<UserResponse> result = userRepository.searchByKeyword(keyword, pageable).map(UserResponse::from);
+        Page<UserResponse> result = userRepository.searchByKeyword(keyword, pageable)
+            .map(u -> UserResponse.from(u, imageUrlResolver.resolve(u.getProfileImageUrl())));
         return PageResponse.from(result);
     }
 
@@ -101,8 +106,23 @@ public class UserService {
             location = user.getLocation();
         }
 
-        String nickname = (req.nickname() != null && !req.nickname().isBlank())
+        String newNickname = (req.nickname() != null && !req.nickname().isBlank())
             ? req.nickname() : user.getNickname();
+
+        // 닉네임이 실제로 변경되는 경우에만 변경 횟수 제한을 적용한다.
+        if (!newNickname.equals(user.getNickname())) {
+            if (!user.canChangeNickname()) {
+                throw new AppException(UserErrorCode.NICKNAME_CHANGE_LIMIT_EXCEEDED);
+            }
+            // 7일 창이 리셋된 경우 카운트를 0으로 초기화한 뒤 변경한다.
+            LocalDateTime windowStart = LocalDateTime.now().minusDays(7);
+            if (user.getNicknameChangedAt() != null && user.getNicknameChangedAt().isBefore(windowStart)) {
+                user.resetNicknameChangeCount();
+            }
+            user.changeNickname(newNickname);
+        }
+
+        String nickname = user.getNickname();
         String profileImageUrl = req.profileImageUrl() != null
             ? req.profileImageUrl() : user.getProfileImageUrl();
 
@@ -110,7 +130,13 @@ public class UserService {
         // 인증되지 않은 자기 이메일 변경을 차단하기 위해 기존 이메일을 그대로 유지한다.
         String bio = req.bio() != null ? req.bio() : user.getBio();
 
-        User updateUser = user.updateUser(nickname, user.getUserEmail(), address, location, encodedNewPassword, bio);
+        Gender gender = req.gender() != null ? req.gender() : user.getGender();
+        // 생년월일은 한 번 설정하면 변경 불가 — 기존 값이 존재하면 요청 값을 무시한다.
+        LocalDate birthDate = user.getBirthDate() != null ? user.getBirthDate() : req.birthDate();
+
+        boolean searchable = req.isSearchable() != null ? req.isSearchable() : user.isSearchable();
+
+        User updateUser = user.updateUser(nickname, user.getUserEmail(), address, location, encodedNewPassword, bio, gender, birthDate, searchable);
         updateUser.updateProfileImageUrl(profileImageUrl);
 
         User saveUser = userRepository.updateProfile(updateUser);

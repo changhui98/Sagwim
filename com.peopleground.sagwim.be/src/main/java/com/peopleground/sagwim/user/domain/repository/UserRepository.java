@@ -18,6 +18,8 @@ public interface UserRepository {
 
     boolean existsByUsername(String username);
 
+    boolean existsByNickname(String nickname);
+
     User save(User user);
 
     Page<User> findAllUsers(Pageable pageable);

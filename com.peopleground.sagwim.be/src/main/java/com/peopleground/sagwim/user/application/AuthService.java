@@ -26,6 +26,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenBlacklistService tokenBlacklistService;
     private final RegistrationLogger registrationLogger;
+    private final RandomNicknameGenerator randomNicknameGenerator;
 
     @Transactional
     public UserCreateResponse signUp(UserCreateRequest request) {
@@ -35,10 +36,17 @@ public class AuthService {
 
         emailVerificationService.checkPreVerified(request.userEmail());
 
+        // 닉네임 미입력 시 랜덤 한글 닉네임 자동 생성
+        String nickname = (request.nickname() != null && !request.nickname().isBlank())
+            ? request.nickname()
+            : randomNicknameGenerator.generate();
+
+        validateDuplicateNickname(nickname);
+
         User user = User.of(
             request.username(),
             passwordEncoder.encode(request.password()),
-            request.nickname(),
+            nickname,
             request.userEmail()
         );
 
@@ -69,6 +77,10 @@ public class AuthService {
         return !userRepository.existsByUsername(username);
     }
 
+    public boolean isNicknameAvailable(String nickname) {
+        return !userRepository.existsByNickname(nickname);
+    }
+
     /**
      * 로그아웃: Access Token을 Redis 블랙리스트에 등록한다.
      *
@@ -86,6 +98,13 @@ public class AuthService {
 
         if (userRepository.existsByUsername(username)) {
             throw new AppException(UserErrorCode.DUPLICATE_USERNAME);
+        }
+    }
+
+    private void validateDuplicateNickname(String nickname) {
+
+        if (userRepository.existsByNickname(nickname)) {
+            throw new AppException(UserErrorCode.DUPLICATE_NICKNAME);
         }
     }
 }

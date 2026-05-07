@@ -38,6 +38,14 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("available", available));
     }
 
+    @GetMapping("/check-nickname")
+    public ResponseEntity<Map<String, Boolean>> checkNickname(
+        @RequestParam String nickname
+    ) {
+        boolean available = authService.isNicknameAvailable(nickname);
+        return ResponseEntity.ok(Map.of("available", available));
+    }
+
     @PostMapping("/sign-up")
     public ResponseEntity<UserCreateResponse> signUp(
         @RequestBody @Valid UserCreateRequest request
