@@ -21,6 +21,7 @@ public record UserDetailResponse(
     Gender gender,
     LocalDate birthDate,
     boolean isSearchable,
+    int exposureRangeKm,
     LocalDateTime createdAt,
     LocalDateTime modifiedAt
 ) {
@@ -43,6 +44,7 @@ public record UserDetailResponse(
             user.getGender(),
             user.getBirthDate(),
             user.isSearchable(),
+            user.getExposureRangeKm(),
             user.getCreatedDate(),
             user.getLastModifiedDate()
         );

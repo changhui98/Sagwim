@@ -83,6 +83,9 @@ public class User extends BaseEntity {
     @Column(name = "is_searchable", nullable = false)
     private boolean isSearchable = true;
 
+    @Column(name = "exposure_range_km", nullable = false)
+    private int exposureRangeKm = 1;
+
     public void updateProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }
@@ -187,7 +190,8 @@ public class User extends BaseEntity {
         String bio,
         Gender gender,
         LocalDate birthDate,
-        boolean isSearchable
+        boolean isSearchable,
+        int exposureRangeKm
     ) {
         this.nickname = nickname;
         this.password = newPassword;
@@ -198,6 +202,7 @@ public class User extends BaseEntity {
         this.gender = gender;
         this.birthDate = birthDate;
         this.isSearchable = isSearchable;
+        this.exposureRangeKm = exposureRangeKm;
         return this;
     }
 

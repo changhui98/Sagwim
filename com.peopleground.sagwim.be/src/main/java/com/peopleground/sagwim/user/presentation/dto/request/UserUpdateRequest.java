@@ -12,7 +12,8 @@ public record UserUpdateRequest(
     String bio,
     Gender gender,
     LocalDate birthDate,
-    Boolean isSearchable
+    Boolean isSearchable,
+    Integer exposureRangeKm
 ) {
 
 }

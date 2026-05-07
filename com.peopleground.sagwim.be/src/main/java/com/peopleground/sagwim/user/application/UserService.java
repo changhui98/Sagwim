@@ -135,8 +135,9 @@ public class UserService {
         LocalDate birthDate = user.getBirthDate() != null ? user.getBirthDate() : req.birthDate();
 
         boolean searchable = req.isSearchable() != null ? req.isSearchable() : user.isSearchable();
+        int exposureRangeKm = req.exposureRangeKm() != null ? req.exposureRangeKm() : user.getExposureRangeKm();
 
-        User updateUser = user.updateUser(nickname, user.getUserEmail(), address, location, encodedNewPassword, bio, gender, birthDate, searchable);
+        User updateUser = user.updateUser(nickname, user.getUserEmail(), address, location, encodedNewPassword, bio, gender, birthDate, searchable, exposureRangeKm);
         updateUser.updateProfileImageUrl(profileImageUrl);
 
         User saveUser = userRepository.updateProfile(updateUser);
