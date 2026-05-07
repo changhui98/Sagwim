@@ -118,24 +118,24 @@ export const joinGroup = (token: string, groupId: number, answer?: string): Prom
   })
 }
 
-export const getGroupJoinQuestion = (
+export const getGroupJoinQuestions = (
   token: string,
   groupId: number,
-): Promise<{ question: string }> => {
-  return fetch(`${API_BASE_URL}/groups/${groupId}/join-question`, {
+): Promise<string[]> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/join-questions`, {
     headers: createAuthHeaders(token),
-  }).then((res) => parseResponse<{ question: string }>(res))
+  }).then((res) => parseResponse<string[]>(res))
 }
 
-export const updateGroupJoinQuestion = (
+export const updateGroupJoinQuestions = (
   token: string,
   groupId: number,
-  question: string,
+  questions: string[],
 ): Promise<void> => {
-  return fetch(`${API_BASE_URL}/groups/${groupId}/join-question`, {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/join-questions`, {
     method: 'PUT',
     headers: createAuthHeaders(token),
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ questions }),
   }).then((res) => {
     if (!res.ok) return res.text().then((t) => { throw new ApiError(res.status, t || `Request failed: ${res.status}`) })
   })

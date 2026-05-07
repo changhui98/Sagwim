@@ -8,8 +8,8 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
   updateGroupJoinType,
-  getGroupJoinQuestion,
-  updateGroupJoinQuestion,
+  getGroupJoinQuestions,
+  updateGroupJoinQuestions,
 } from '../api/groupApi'
 import { uploadGroupImage } from '../api/imageApi'
 import { getMyProfile } from '../api/userApi'
@@ -60,7 +60,7 @@ export function GroupSettingsPage() {
   const [joinTypeLoading, setJoinTypeLoading] = useState(false)
   const [joinTypeError, setJoinTypeError] = useState('')
   const [editJoinType, setEditJoinType] = useState<GroupJoinType>('OPEN')
-  const [editJoinQuestion, setEditJoinQuestion] = useState('')
+  const [editJoinQuestions, setEditJoinQuestions] = useState<string[]>([''])
   const [joinQuestionLoading, setJoinQuestionLoading] = useState(false)
 
   const handleLogout = useCallback(() => {
@@ -117,9 +117,11 @@ export function GroupSettingsPage() {
   useEffect(() => {
     if (view !== 'joinType' || !group) return
     setJoinQuestionLoading(true)
-    getGroupJoinQuestion(token, group.id)
-      .then((data) => setEditJoinQuestion(data.question ?? ''))
-      .catch(() => setEditJoinQuestion(group.joinQuestion ?? ''))
+    getGroupJoinQuestions(token, group.id)
+      .then((data) => setEditJoinQuestions(data.length > 0 ? data : ['']))
+      .catch(() => setEditJoinQuestions(
+        group.joinQuestions && group.joinQuestions.length > 0 ? group.joinQuestions : ['']
+      ))
       .finally(() => setJoinQuestionLoading(false))
   }, [view, group, token])
 
@@ -201,12 +203,11 @@ export function GroupSettingsPage() {
       setJoinTypeLoading(true)
       setJoinTypeError('')
       await updateGroupJoinType(token, group.id, group, editJoinType)
-      if (editJoinType === 'APPROVAL_REQUIRED') {
-        await updateGroupJoinQuestion(token, group.id, editJoinQuestion)
-      }
+      const filteredQuestions = editJoinQuestions.filter((q) => q.trim())
+      await updateGroupJoinQuestions(token, group.id, filteredQuestions)
       setGroup((prev) =>
         prev
-          ? { ...prev, joinType: editJoinType, joinQuestion: editJoinQuestion || null }
+          ? { ...prev, joinType: editJoinType, joinQuestions: filteredQuestions }
           : prev,
       )
       handleBackToMenu()
@@ -243,9 +244,9 @@ export function GroupSettingsPage() {
 
   const handleBackFromJoinType = async () => {
     const joinTypeChanged = editJoinType !== group?.joinType
-    const joinQuestionChanged =
-      editJoinQuestion.trim() !== (group?.joinQuestion ?? '').trim()
-    if (joinTypeChanged || joinQuestionChanged) {
+    const joinQuestionsChanged =
+      editJoinQuestions.join('|') !== (group?.joinQuestions ?? []).join('|')
+    if (joinTypeChanged || joinQuestionsChanged) {
       await handleSaveJoinType()
     } else {
       handleBackToMenu()
@@ -510,23 +511,50 @@ export function GroupSettingsPage() {
               </li>
               {editJoinType === 'APPROVAL_REQUIRED' && (
                 <li className={profileStyles.settingRow} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 'var(--sp-3)', cursor: 'default' }}>
-                  <label className="input-label" htmlFor="join-question-input" style={{ margin: 0 }}>
-                    가입 질문
-                  </label>
-                  <textarea
-                    id="join-question-input"
-                    className="input"
-                    placeholder="가입 신청자에게 물어볼 질문을 입력하세요"
-                    maxLength={500}
-                    rows={4}
-                    value={editJoinQuestion}
-                    onChange={(e) => setEditJoinQuestion(e.target.value)}
-                    disabled={joinTypeLoading || joinQuestionLoading}
-                    style={{ width: '100%' }}
-                  />
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--clr-text-muted)', textAlign: 'right', margin: 0, width: '100%' }}>
-                    {editJoinQuestion.length} / 500
-                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <label className="input-label" style={{ margin: 0, flex: 1 }}>
+                      가입 질문 <span style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', fontWeight: 400 }}>(최대 5개)</span>
+                    </label>
+                    {editJoinQuestions.length < 5 && (
+                      <button
+                        type="button"
+                        onClick={() => setEditJoinQuestions((prev) => [...prev, ''])}
+                        style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: 'var(--clr-primary)', padding: '0 var(--sp-1)' }}
+                        disabled={joinTypeLoading}
+                      >
+                        +
+                      </button>
+                    )}
+                  </div>
+                  {editJoinQuestions.map((q, idx) => (
+                    <div key={idx} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
+                      <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'flex-start' }}>
+                        <textarea
+                          className="input"
+                          placeholder="가입 신청자에게 물어볼 질문을 입력하세요"
+                          maxLength={500}
+                          rows={3}
+                          value={q}
+                          onChange={(e) => setEditJoinQuestions((prev) => prev.map((v, i) => i === idx ? e.target.value : v))}
+                          disabled={joinTypeLoading}
+                          style={{ flex: 1 }}
+                        />
+                        {editJoinQuestions.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setEditJoinQuestions((prev) => prev.filter((_, i) => i !== idx))}
+                            style={{ background: 'none', border: 'none', fontSize: '1.1rem', cursor: 'pointer', color: 'var(--clr-text-muted)', paddingTop: '8px' }}
+                            disabled={joinTypeLoading}
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                      <p style={{ fontSize: '0.8125rem', color: 'var(--clr-text-muted)', textAlign: 'right', margin: 0 }}>
+                        {q.length} / 500
+                      </p>
+                    </div>
+                  ))}
                 </li>
               )}
             </ul>

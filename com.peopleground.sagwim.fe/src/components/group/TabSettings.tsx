@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getPendingJoinRequests, approveJoinRequest, rejectJoinRequest, updateGroupJoinType, getGroupJoinQuestion, updateGroupJoinQuestion } from '../../api/groupApi'
+import { getPendingJoinRequests, approveJoinRequest, rejectJoinRequest, updateGroupJoinType, getGroupJoinQuestions, updateGroupJoinQuestions } from '../../api/groupApi'
 import type { GroupDetailResponse, GroupJoinRequestResponse, GroupJoinType } from '../../types/group'
 import pageStyles from '../../pages/GroupDetailPage.module.css'
 import styles from './TabSettings.module.css'
@@ -8,7 +8,7 @@ import profileStyles from '../../pages/ProfileEditPage.module.css'
 import modalStyles from '../profile/ProfileEditModal.module.css'
 import tableStyles from '../../components/admin/adminTable.module.css'
 
-type SubView = 'menu' | 'info' | 'memberCount' | 'joinRequests' | 'joinQuestion'
+type SubView = 'menu' | 'info' | 'memberCount' | 'joinRequests' | 'joinQuestions'
 
 interface TabSettingsProps {
   group: GroupDetailResponse
@@ -35,7 +35,7 @@ export function TabSettings({ group, token, actionLoading, onSaveInfo, onSaveMem
   const [joinTypeLoading, setJoinTypeLoading] = useState(false)
   const [joinTypeError, setJoinTypeError] = useState('')
 
-  const [editJoinQuestion, setEditJoinQuestion] = useState('')
+  const [editJoinQuestions, setEditJoinQuestions] = useState<string[]>([''])
   const [joinQuestionLoading, setJoinQuestionLoading] = useState(false)
   const [joinQuestionError, setJoinQuestionError] = useState('')
 
@@ -59,33 +59,37 @@ export function TabSettings({ group, token, actionLoading, onSaveInfo, onSaveMem
     }
   }, [token, group.id])
 
-  const loadJoinQuestion = useCallback(async () => {
+  const loadJoinQuestions = useCallback(async () => {
     try {
       setJoinQuestionLoading(true)
       setJoinQuestionError('')
-      const data = await getGroupJoinQuestion(token, group.id)
-      setEditJoinQuestion(data.question ?? '')
+      const data = await getGroupJoinQuestions(token, group.id)
+      setEditJoinQuestions(data.length > 0 ? data : [''])
     } catch {
       setJoinQuestionError('질문을 불러오지 못했습니다.')
+      setEditJoinQuestions(
+        group.joinQuestions && group.joinQuestions.length > 0 ? group.joinQuestions : ['']
+      )
     } finally {
       setJoinQuestionLoading(false)
     }
-  }, [token, group.id])
+  }, [token, group.id, group.joinQuestions])
 
   useEffect(() => {
     if (view === 'joinRequests') loadJoinRequests()
   }, [view, loadJoinRequests])
 
   useEffect(() => {
-    if (view === 'joinQuestion') loadJoinQuestion()
-  }, [view, loadJoinQuestion])
+    if (view === 'joinQuestions') loadJoinQuestions()
+  }, [view, loadJoinQuestions])
 
-  const handleSaveJoinQuestion = async () => {
+  const handleSaveJoinQuestions = async () => {
     try {
       setJoinQuestionLoading(true)
       setJoinQuestionError('')
-      await updateGroupJoinQuestion(token, group.id, editJoinQuestion)
-      onGroupUpdated({ joinQuestion: editJoinQuestion || null })
+      const filtered = editJoinQuestions.filter((q) => q.trim())
+      await updateGroupJoinQuestions(token, group.id, filtered)
+      onGroupUpdated({ joinQuestions: filtered })
       setView('menu')
     } catch {
       setJoinQuestionError('질문 저장에 실패했습니다.')
@@ -210,7 +214,7 @@ export function TabSettings({ group, token, actionLoading, onSaveInfo, onSaveMem
     )
   }
 
-  if (view === 'joinQuestion') {
+  if (view === 'joinQuestions') {
     return (
       <div className={profileStyles.container}>
         <header className={modalStyles.header}>
@@ -220,18 +224,50 @@ export function TabSettings({ group, token, actionLoading, onSaveInfo, onSaveMem
           <h2 className={modalStyles.title}>가입 질문 설정</h2>
           <span style={{ minWidth: '4rem' }} />
         </header>
-        <div className={styles.subForm} style={{ padding: 'var(--sp-5)' }}>
+        <div className={styles.subForm} style={{ padding: 'var(--sp-5)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
           {joinQuestionError && <p className={styles.errorText}>{joinQuestionError}</p>}
-          <textarea
-            className={pageStyles.editTextarea}
-            placeholder="가입 신청자에게 물어볼 질문을 입력하세요"
-            maxLength={500}
-            rows={4}
-            value={editJoinQuestion}
-            onChange={(e) => setEditJoinQuestion(e.target.value)}
-            disabled={joinQuestionLoading}
-          />
-          <p className={styles.charCount}>{editJoinQuestion.length} / 500</p>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <label className="input-label" style={{ margin: 0, flex: 1 }}>
+              가입 질문 <span style={{ fontSize: '0.75rem', color: 'var(--clr-text-muted)', fontWeight: 400 }}>(최대 5개)</span>
+            </label>
+            {editJoinQuestions.length < 5 && (
+              <button
+                type="button"
+                onClick={() => setEditJoinQuestions((prev) => [...prev, ''])}
+                style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: 'var(--clr-primary)', padding: '0 var(--sp-1)' }}
+                disabled={joinQuestionLoading}
+              >
+                +
+              </button>
+            )}
+          </div>
+          {editJoinQuestions.map((q, idx) => (
+            <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-1)' }}>
+              <div style={{ display: 'flex', gap: 'var(--sp-2)', alignItems: 'flex-start' }}>
+                <textarea
+                  className={pageStyles.editTextarea}
+                  placeholder="가입 신청자에게 물어볼 질문을 입력하세요"
+                  maxLength={500}
+                  rows={3}
+                  value={q}
+                  onChange={(e) => setEditJoinQuestions((prev) => prev.map((v, i) => i === idx ? e.target.value : v))}
+                  disabled={joinQuestionLoading}
+                  style={{ flex: 1 }}
+                />
+                {editJoinQuestions.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setEditJoinQuestions((prev) => prev.filter((_, i) => i !== idx))}
+                    style={{ background: 'none', border: 'none', fontSize: '1.1rem', cursor: 'pointer', color: 'var(--clr-text-muted)', paddingTop: '8px' }}
+                    disabled={joinQuestionLoading}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <p className={styles.charCount}>{q.length} / 500</p>
+            </div>
+          ))}
           <div className={styles.formActions}>
             <button type="button" className={pageStyles.cancelButton} onClick={handleBackToMenu} disabled={joinQuestionLoading}>
               취소
@@ -239,7 +275,7 @@ export function TabSettings({ group, token, actionLoading, onSaveInfo, onSaveMem
             <button
               type="button"
               className={pageStyles.saveButton}
-              onClick={handleSaveJoinQuestion}
+              onClick={handleSaveJoinQuestions}
               disabled={joinQuestionLoading}
             >
               {joinQuestionLoading ? '저장 중...' : '저장'}
@@ -373,10 +409,10 @@ export function TabSettings({ group, token, actionLoading, onSaveInfo, onSaveMem
           {joinTypeError && <p className={styles.errorText}>{joinTypeError}</p>}
         </li>
         {group.joinType === 'APPROVAL_REQUIRED' && (
-          <li className={profileStyles.settingRow} onClick={() => setView('joinQuestion')}>
+          <li className={profileStyles.settingRow} onClick={() => setView('joinQuestions')}>
             <span className={profileStyles.settingLabel}>가입 질문 설정</span>
             <span className={profileStyles.settingValue}>
-              {group.joinQuestion ? group.joinQuestion.slice(0, 20) + (group.joinQuestion.length > 20 ? '…' : '') : '설정 안 됨'}
+              {group.joinQuestions && group.joinQuestions.length > 0 ? `${group.joinQuestions.length}개` : '설정 안 됨'}
             </span>
             <span className={profileStyles.chevron}>›</span>
           </li>

@@ -69,7 +69,7 @@ export interface GroupMemberResponse {
 export interface GroupDetailResponse extends GroupResponse {
   status: GroupStatus
   joinType: GroupJoinType
-  joinQuestion?: string | null
+  joinQuestions?: string[]
   members: GroupMemberResponse[]
 }
 

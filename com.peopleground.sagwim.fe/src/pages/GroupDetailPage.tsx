@@ -93,7 +93,7 @@ export function GroupDetailPage() {
 
   const handleJoinClick = () => {
     if (!group) return
-    if (group.joinType === 'APPROVAL_REQUIRED' && group.joinQuestion) {
+    if (group.joinType === 'APPROVAL_REQUIRED' && group.joinQuestions && group.joinQuestions.length > 0) {
       setShowAnswerInput(true)
     } else {
       handleJoinSubmit(undefined)
@@ -311,7 +311,9 @@ export function GroupDetailPage() {
                 </button>
               ) : showAnswerInput ? (
                 <div className={styles.answerInputArea}>
-                  <p className={styles.answerQuestion}>{group.joinQuestion}</p>
+                  {group.joinQuestions && group.joinQuestions.map((q, idx) => (
+                    <p key={idx} className={styles.answerQuestion}>{q}</p>
+                  ))}
                   <textarea
                     className={styles.answerTextarea}
                     placeholder="답변을 입력하세요 (최대 1000자)"
