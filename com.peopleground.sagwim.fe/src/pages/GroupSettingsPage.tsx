@@ -62,7 +62,6 @@ export function GroupSettingsPage() {
   const [joinTypeError, setJoinTypeError] = useState('')
   const [editJoinType, setEditJoinType] = useState<GroupJoinType>('OPEN')
   const [editJoinQuestions, setEditJoinQuestions] = useState<string[]>([''])
-  const [joinQuestionLoading, setJoinQuestionLoading] = useState(false)
 
   const handleLogout = useCallback(() => {
     logout()
@@ -117,13 +116,11 @@ export function GroupSettingsPage() {
 
   useEffect(() => {
     if (view !== 'joinType' || !group) return
-    setJoinQuestionLoading(true)
     getGroupJoinQuestions(token, group.id)
       .then((data) => setEditJoinQuestions(data.length > 0 ? data : ['']))
       .catch(() => setEditJoinQuestions(
         group.joinQuestions && group.joinQuestions.length > 0 ? group.joinQuestions : ['']
       ))
-      .finally(() => setJoinQuestionLoading(false))
   }, [view, group, token])
 
   const handleBackToMenu = () => {
@@ -141,7 +138,6 @@ export function GroupSettingsPage() {
         description: group.description ?? '',
         category: group.category,
         meetingType: group.meetingType,
-        region: group.region ?? null,
         maxMemberCount: group.maxMemberCount,
       })
       setGroup((prev) => prev ? { ...prev, name: editName } : prev)
@@ -163,7 +159,6 @@ export function GroupSettingsPage() {
         description: editDescription,
         category: group.category,
         meetingType: group.meetingType,
-        region: group.region ?? null,
         maxMemberCount: group.maxMemberCount,
       })
       setGroup((prev) => prev ? { ...prev, description: editDescription } : prev)
@@ -185,7 +180,6 @@ export function GroupSettingsPage() {
         description: group.description ?? '',
         category: group.category,
         meetingType: group.meetingType,
-        region: group.region ?? null,
         maxMemberCount: editMaxMemberCount,
       })
       setGroup((prev) => prev ? { ...prev, maxMemberCount: editMaxMemberCount } : prev)
@@ -358,7 +352,7 @@ export function GroupSettingsPage() {
   if (view === 'info') {
     return (
       <>
-        <Navbar role={myProfile.role ?? null} onLogout={handleLogout} />
+        <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={profileStyles.container}>
             <header className={modalStyles.header}>
@@ -398,7 +392,7 @@ export function GroupSettingsPage() {
   if (view === 'description') {
     return (
       <>
-        <Navbar role={myProfile.role ?? null} onLogout={handleLogout} />
+        <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={profileStyles.container}>
             <header className={modalStyles.header}>
@@ -438,7 +432,7 @@ export function GroupSettingsPage() {
   if (view === 'memberCount') {
     return (
       <>
-        <Navbar role={myProfile.role ?? null} onLogout={handleLogout} />
+        <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={profileStyles.container}>
             <header className={modalStyles.header}>
@@ -474,7 +468,7 @@ export function GroupSettingsPage() {
   if (view === 'joinType') {
     return (
       <>
-        <Navbar role={myProfile.role ?? null} onLogout={handleLogout} />
+        <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={profileStyles.container}>
             <header className={modalStyles.header}>
@@ -570,7 +564,7 @@ export function GroupSettingsPage() {
   if (view === 'joinRequests') {
     return (
       <>
-        <Navbar role={myProfile.role ?? null} onLogout={handleLogout} />
+        <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={profileStyles.container}>
             <header className={modalStyles.header}>
@@ -708,7 +702,7 @@ export function GroupSettingsPage() {
   // ── 기본 뷰: 설정 메뉴 ──
   return (
     <>
-      <Navbar role={myProfile.role ?? null} onLogout={handleLogout} />
+      <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
       <main className={styles.main}>
         <div className={profileStyles.container}>
           <header className={modalStyles.header}>

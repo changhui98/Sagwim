@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getGroup, joinGroup, leaveGroup, updateGroup, deleteGroup, kickGroupMember, uploadGroupImage, toggleGroupLike, getGroupLikeStatus, getMyJoinRequestStatus, cancelMyJoinRequest } from '../api/groupApi'
+import { getGroup, joinGroup, leaveGroup, kickGroupMember, uploadGroupImage, toggleGroupLike, getGroupLikeStatus, getMyJoinRequestStatus, cancelMyJoinRequest } from '../api/groupApi'
 import { GroupLikersModal } from '../components/group/GroupLikersModal'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
@@ -15,7 +15,7 @@ import { TabSchedule } from '../components/group/TabSchedule'
 import photoCameraIcon from '../assets/photo-camera-photograph-svgrepo-com.svg'
 import userAlt1Icon from '../assets/user-alt-1-svgrepo-com.svg'
 import type { GroupTab } from '../components/group/GroupDetailTabs'
-import type { GroupCategory, GroupDetailResponse, GroupMeetingType } from '../types/group'
+import type { GroupDetailResponse } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
 import { GROUP_CATEGORY_LABELS, GROUP_MEETING_TYPE_LABELS } from '../types/group'
 import styles from './GroupDetailPage.module.css'
@@ -138,42 +138,6 @@ export function GroupDetailPage() {
       setHasPendingRequest(false)
     } catch (err) {
       setActionError(extractErrorMessage(err, '신청 취소에 실패했습니다.'))
-      handleUnauthorized(err)
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
-  const handleEditSubmit = async (data: {
-    name: string
-    description: string
-    category: GroupCategory
-    meetingType: GroupMeetingType
-    region: string | null
-    maxMemberCount: number
-  }) => {
-    if (!groupId) return
-    try {
-      setActionLoading(true)
-      await updateGroup(token, Number(groupId), data)
-      await loadData()
-    } catch (err) {
-      alert(extractErrorMessage(err, '모임 수정 실패'))
-      handleUnauthorized(err)
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
-  const handleDeleteGroup = async () => {
-    if (!groupId) return
-    if (!window.confirm('모임을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return
-    try {
-      setActionLoading(true)
-      await deleteGroup(token, Number(groupId))
-      navigate('/app/groups', { replace: true })
-    } catch (err) {
-      alert(extractErrorMessage(err, '모임 삭제 실패'))
       handleUnauthorized(err)
     } finally {
       setActionLoading(false)
