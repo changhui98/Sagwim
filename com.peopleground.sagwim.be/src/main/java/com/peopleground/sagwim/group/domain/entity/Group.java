@@ -68,9 +68,6 @@ public class Group extends AuditingEntity {
     @Column(nullable = false)
     private GroupJoinType joinType = GroupJoinType.OPEN;
 
-    @Column(nullable = true, length = 500)
-    private String joinQuestion;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leader_id", nullable = false)
     private User leader;
@@ -111,10 +108,6 @@ public class Group extends AuditingEntity {
 
     public void updateJoinType(GroupJoinType joinType) {
         this.joinType = joinType;
-    }
-
-    public void updateJoinQuestion(String joinQuestion) {
-        this.joinQuestion = joinQuestion;
     }
 
     public void incrementMemberCount() {

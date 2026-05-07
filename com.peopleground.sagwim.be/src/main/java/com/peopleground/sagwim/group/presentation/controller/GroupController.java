@@ -5,7 +5,7 @@ import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.group.application.service.GroupService;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupCreateRequest;
-import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinQuestionUpdateRequest;
+import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinQuestionsUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupDetailResponse;
@@ -119,21 +119,20 @@ public class GroupController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{groupId}/join-question")
-    public ResponseEntity<Map<String, String>> getJoinQuestion(
+    @GetMapping("/{groupId}/join-questions")
+    public ResponseEntity<List<String>> getJoinQuestions(
         @PathVariable Long groupId
     ) {
-        String question = groupService.getJoinQuestion(groupId);
-        return ResponseEntity.ok(Map.of("question", question != null ? question : ""));
+        return ResponseEntity.ok(groupService.getJoinQuestions(groupId));
     }
 
-    @PutMapping("/{groupId}/join-question")
-    public ResponseEntity<Void> updateJoinQuestion(
+    @PutMapping("/{groupId}/join-questions")
+    public ResponseEntity<Void> updateJoinQuestions(
         @PathVariable Long groupId,
-        @Valid @RequestBody GroupJoinQuestionUpdateRequest request,
+        @Valid @RequestBody GroupJoinQuestionsUpdateRequest request,
         @AuthenticationPrincipal CustomUser customUser
     ) {
-        groupService.updateJoinQuestion(groupId, request, customUser);
+        groupService.updateJoinQuestions(groupId, request, customUser);
         return ResponseEntity.ok().build();
     }
 

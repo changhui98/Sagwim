@@ -11,11 +11,13 @@ import com.peopleground.sagwim.group.domain.entity.GroupJoinRequestStatus;
 import com.peopleground.sagwim.group.domain.entity.GroupJoinType;
 import com.peopleground.sagwim.group.domain.entity.GroupMember;
 import com.peopleground.sagwim.group.domain.entity.GroupMemberRole;
+import com.peopleground.sagwim.group.domain.entity.GroupJoinQuestion;
+import com.peopleground.sagwim.group.domain.repository.GroupJoinQuestionRepository;
 import com.peopleground.sagwim.group.domain.repository.GroupJoinRequestRepository;
 import com.peopleground.sagwim.group.domain.repository.GroupMemberRepository;
 import com.peopleground.sagwim.group.domain.repository.GroupRepository;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupCreateRequest;
-import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinQuestionUpdateRequest;
+import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinQuestionsUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupDetailResponse;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupJoinRequestResponse;
@@ -46,6 +48,7 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final GroupJoinRequestRepository joinRequestRepository;
+    private final GroupJoinQuestionRepository joinQuestionRepository;
     private final UserRepository userRepository;
     private final ImageService imageService;
     private final ImageUrlResolver imageUrlResolver;
@@ -113,7 +116,8 @@ public class GroupService {
             .stream()
             .map(GroupMemberResponse::from)
             .toList();
-        return GroupDetailResponse.of(group, imageUrlResolver.resolve(group.getImageUrl()), members);
+        List<GroupJoinQuestion> joinQuestions = joinQuestionRepository.findByGroupIdOrderByDisplayOrder(groupId);
+        return GroupDetailResponse.of(group, imageUrlResolver.resolve(group.getImageUrl()), members, joinQuestions);
     }
 
     @Transactional
@@ -159,15 +163,27 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public String getJoinQuestion(Long groupId) {
-        return findGroup(groupId).getJoinQuestion();
+    public List<String> getJoinQuestions(Long groupId) {
+        findGroup(groupId);
+        return joinQuestionRepository.findByGroupIdOrderByDisplayOrder(groupId)
+            .stream()
+            .map(GroupJoinQuestion::getQuestion)
+            .toList();
     }
 
     @Transactional
-    public void updateJoinQuestion(Long groupId, GroupJoinQuestionUpdateRequest request, CustomUser customUser) {
+    public void updateJoinQuestions(Long groupId, GroupJoinQuestionsUpdateRequest request, CustomUser customUser) {
         Group group = findGroup(groupId);
         validateLeader(group, customUser.getUsername());
-        group.updateJoinQuestion(request.question());
+
+        joinQuestionRepository.deleteByGroupId(groupId);
+
+        List<GroupJoinQuestion> newQuestions = new java.util.ArrayList<>();
+        List<String> questions = request.questions();
+        for (int i = 0; i < questions.size(); i++) {
+            newQuestions.add(GroupJoinQuestion.of(group, questions.get(i), i));
+        }
+        joinQuestionRepository.saveAll(newQuestions);
     }
 
     @Transactional
