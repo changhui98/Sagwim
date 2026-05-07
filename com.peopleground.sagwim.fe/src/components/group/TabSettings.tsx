@@ -10,6 +10,17 @@ import tableStyles from '../../components/admin/adminTable.module.css'
 
 type SubView = 'menu' | 'info' | 'memberCount' | 'joinRequests' | 'joinQuestions'
 
+function parseAnswers(answer: string | null | undefined): string[] {
+  if (!answer) return []
+  try {
+    const parsed = JSON.parse(answer)
+    if (Array.isArray(parsed)) return parsed as string[]
+  } catch {
+    // 구버전 단일 문자열 그대로 반환
+  }
+  return [answer]
+}
+
 interface TabSettingsProps {
   group: GroupDetailResponse
   token: string
@@ -332,7 +343,18 @@ export function TabSettings({ group, token, actionLoading, onSaveInfo, onSaveMem
                           {req.createdDate.slice(0, 16).replace('T', ' ')}
                         </td>
                         <td className={styles.answerCell}>
-                          {req.answer || <span className={styles.noAnswer}>-</span>}
+                          {(() => {
+                            const parsedAnswers = parseAnswers(req.answer)
+                            if (parsedAnswers.length === 0) return <span className={styles.noAnswer}>-</span>
+                            if (parsedAnswers.length === 1) return parsedAnswers[0]
+                            return (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {parsedAnswers.map((a, i) => (
+                                  <span key={i}><strong>Q{i + 1}.</strong> {a}</span>
+                                ))}
+                              </div>
+                            )
+                          })()}
                         </td>
                         <td>
                           <div className={styles.requestActions} onClick={(e) => e.stopPropagation()}>

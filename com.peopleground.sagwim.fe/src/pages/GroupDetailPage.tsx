@@ -43,9 +43,6 @@ export function GroupDetailPage() {
   const [hasPendingRequest, setHasPendingRequest] = useState(false)
   const [actionError, setActionError] = useState('')
 
-  const [showAnswerInput, setShowAnswerInput] = useState(false)
-  const [answerText, setAnswerText] = useState('')
-
   const handleTabChange = (tab: GroupTab) => {
     if (tab === 'settings' && groupId) {
       navigate(`/app/groups/${groupId}/settings`)
@@ -94,7 +91,7 @@ export function GroupDetailPage() {
   const handleJoinClick = () => {
     if (!group) return
     if (group.joinType === 'APPROVAL_REQUIRED' && group.joinQuestions && group.joinQuestions.length > 0) {
-      setShowAnswerInput(true)
+      navigate(`/app/groups/${groupId}/join`)
     } else {
       handleJoinSubmit(undefined)
     }
@@ -106,8 +103,6 @@ export function GroupDetailPage() {
       setActionLoading(true)
       setActionError('')
       await joinGroup(token, Number(groupId), answer)
-      setShowAnswerInput(false)
-      setAnswerText('')
       await loadData()
     } catch (err) {
       setActionError(extractErrorMessage(err, '모임 가입에 실패했습니다.'))
@@ -309,39 +304,6 @@ export function GroupDetailPage() {
                 >
                   {actionLoading ? '처리 중...' : '신청 취소'}
                 </button>
-              ) : showAnswerInput ? (
-                <div className={styles.answerInputArea}>
-                  {group.joinQuestions && group.joinQuestions.map((q, idx) => (
-                    <p key={idx} className={styles.answerQuestion}>{q}</p>
-                  ))}
-                  <textarea
-                    className={styles.answerTextarea}
-                    placeholder="답변을 입력하세요 (최대 1000자)"
-                    maxLength={1000}
-                    rows={3}
-                    value={answerText}
-                    onChange={(e) => setAnswerText(e.target.value)}
-                    disabled={actionLoading}
-                  />
-                  <div className={styles.answerActions}>
-                    <button
-                      type="button"
-                      className={styles.cancelButton}
-                      onClick={() => { setShowAnswerInput(false); setAnswerText('') }}
-                      disabled={actionLoading}
-                    >
-                      취소
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.saveButton}
-                      onClick={() => handleJoinSubmit(answerText)}
-                      disabled={actionLoading}
-                    >
-                      {actionLoading ? '처리 중...' : '신청'}
-                    </button>
-                  </div>
-                </div>
               ) : (
                 <button
                   type="button"

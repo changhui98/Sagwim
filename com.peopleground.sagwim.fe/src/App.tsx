@@ -24,6 +24,7 @@ import { AdminLogPage } from './pages/admin/AdminLogPage'
 import { PostCreatePage } from './pages/PostCreatePage'
 import { GroupListPage } from './pages/GroupListPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
+import { GroupJoinRequestPage } from './pages/GroupJoinRequestPage'
 import { GroupSettingsPage } from './pages/GroupSettingsPage'
 import { GroupCreatePage } from './pages/GroupCreatePage'
 import { NewGroupsPage } from './pages/NewGroupsPage'
@@ -57,6 +58,7 @@ function App() {
         <Route path="/app/groups/recent" element={<NewGroupsPage />} />
         <Route path="/app/groups/popular" element={<PopularGroupsPage />} />
         <Route path="/app/groups/:groupId" element={<GroupDetailPage />} />
+        <Route path="/app/groups/:groupId/join" element={<GroupJoinRequestPage />} />
         <Route path="/app/groups/:groupId/settings" element={<GroupSettingsPage />} />
         <Route path="/app/profile" element={<ProfilePage />} />
         <Route path="/app/profile/edit" element={<ProfileEditPage />} />
