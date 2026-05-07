@@ -4,6 +4,7 @@ import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.group.domain.GroupErrorCode;
+import com.peopleground.sagwim.group.domain.GroupWithLiked;
 import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.domain.entity.GroupJoinRequest;
@@ -68,6 +69,7 @@ public class GroupService {
             request.name(),
             request.description(),
             request.category(),
+            request.subCategories(),
             request.meetingType(),
             request.meetingType() == GroupMeetingType.OFFLINE ? leader.getAddress() : null,
             request.maxMemberCount(),
@@ -89,30 +91,30 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<GroupResponse> getGroups(int page, int size, String keyword, GroupCategory category) {
+    public PageResponse<GroupResponse> getGroups(int page, int size, String keyword, GroupCategory category, CustomUser customUser) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Group> groups = groupRepository.findAll(pageable, keyword, category);
-        return PageResponse.from(groups.map(g -> GroupResponse.from(g, imageUrlResolver.resolve(g.getImageUrl()))));
+        Page<GroupWithLiked> groups = groupRepository.findAll(pageable, keyword, category, customUser.getId());
+        return PageResponse.from(groups.map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked())));
     }
 
     /**
      * 생성된 지 7일 미만인 신규 모임 목록을 조회합니다.
      */
     @Transactional(readOnly = true)
-    public PageResponse<GroupResponse> getNewGroups(int page, int size) {
+    public PageResponse<GroupResponse> getNewGroups(int page, int size, CustomUser customUser) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Group> groups = groupRepository.findNewGroups(pageable);
-        return PageResponse.from(groups.map(g -> GroupResponse.from(g, imageUrlResolver.resolve(g.getImageUrl()))));
+        Page<GroupWithLiked> groups = groupRepository.findNewGroups(pageable, customUser.getId());
+        return PageResponse.from(groups.map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked())));
     }
 
     /**
      * 좋아요 수 내림차순으로 인기 모임 목록을 조회합니다.
      */
     @Transactional(readOnly = true)
-    public PageResponse<GroupResponse> getPopularGroups(int page, int size) {
+    public PageResponse<GroupResponse> getPopularGroups(int page, int size, CustomUser customUser) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Group> groups = groupRepository.findPopularGroups(pageable);
-        return PageResponse.from(groups.map(g -> GroupResponse.from(g, imageUrlResolver.resolve(g.getImageUrl()))));
+        Page<GroupWithLiked> groups = groupRepository.findPopularGroups(pageable, customUser.getId());
+        return PageResponse.from(groups.map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked())));
     }
 
     @Transactional(readOnly = true)
@@ -147,6 +149,7 @@ public class GroupService {
             request.name(),
             request.description(),
             request.category(),
+            request.subCategories(),
             request.meetingType(),
             request.region(),
             request.maxMemberCount(),
@@ -342,8 +345,8 @@ public class GroupService {
     @Transactional(readOnly = true)
     public PageResponse<GroupResponse> getMyGroups(CustomUser customUser, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Group> groups = groupRepository.findByMemberUsername(customUser.getUsername(), pageable);
-        return PageResponse.from(groups.map(g -> GroupResponse.from(g, imageUrlResolver.resolve(g.getImageUrl()))));
+        Page<GroupWithLiked> groups = groupRepository.findByMemberUsername(customUser.getUsername(), pageable, customUser.getId());
+        return PageResponse.from(groups.map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked())));
     }
 
     private Group findGroup(Long groupId) {

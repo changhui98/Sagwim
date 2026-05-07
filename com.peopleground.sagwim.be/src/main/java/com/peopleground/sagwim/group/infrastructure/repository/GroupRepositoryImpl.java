@@ -1,11 +1,13 @@
 package com.peopleground.sagwim.group.infrastructure.repository;
 
+import com.peopleground.sagwim.group.domain.GroupWithLiked;
 import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.domain.repository.GroupRepository;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,23 +31,23 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public Page<Group> findAll(Pageable pageable, String keyword, GroupCategory category) {
-        return groupQueryRepository.findAll(pageable, keyword, category);
+    public Page<GroupWithLiked> findAll(Pageable pageable, String keyword, GroupCategory category, UUID userId) {
+        return groupQueryRepository.findAll(pageable, keyword, category, userId);
     }
 
     @Override
-    public Page<Group> findNewGroups(Pageable pageable) {
-        return groupQueryRepository.findNewGroups(pageable);
+    public Page<GroupWithLiked> findNewGroups(Pageable pageable, UUID userId) {
+        return groupQueryRepository.findNewGroups(pageable, userId);
     }
 
     @Override
-    public Page<Group> findPopularGroups(Pageable pageable) {
-        return groupQueryRepository.findPopularGroups(pageable);
+    public Page<GroupWithLiked> findPopularGroups(Pageable pageable, UUID userId) {
+        return groupQueryRepository.findPopularGroups(pageable, userId);
     }
 
     @Override
-    public Page<Group> findByMemberUsername(String username, Pageable pageable) {
-        return groupQueryRepository.findByMemberUsername(username, pageable);
+    public Page<GroupWithLiked> findByMemberUsername(String username, Pageable pageable, UUID userId) {
+        return groupQueryRepository.findByMemberUsername(username, pageable, userId);
     }
 
     @Override

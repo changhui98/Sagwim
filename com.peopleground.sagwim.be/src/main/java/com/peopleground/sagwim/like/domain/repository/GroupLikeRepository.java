@@ -3,6 +3,7 @@ package com.peopleground.sagwim.like.domain.repository;
 import com.peopleground.sagwim.like.domain.entity.GroupLike;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface GroupLikeRepository {

@@ -36,4 +36,5 @@ public interface GroupLikeJpaRepository extends JpaRepository<GroupLike, Long> {
         nativeQuery = true
     )
     int insertIfNotExists(@Param("groupId") Long groupId, @Param("userId") UUID userId);
+
 }
