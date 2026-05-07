@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getNewGroups, getPopularGroups, getGroupLikeStatus, toggleGroupLike } from '../api/groupApi'
+import { getNewGroups, getPopularGroups, toggleGroupLike } from '../api/groupApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { Navbar } from '../components/Navbar'
@@ -54,8 +54,13 @@ export function GroupListPage() {
         const incoming = newResult.value.content
         setGroups(incoming)
         const countMap: Record<number, number> = {}
-        incoming.forEach((g) => { countMap[g.id] = g.likeCount ?? 0 })
+        const likedMapUpdate: Record<number, boolean> = {}
+        incoming.forEach((g) => {
+          countMap[g.id] = g.likeCount ?? 0
+          likedMapUpdate[g.id] = g.isLiked
+        })
         setLikeCountMap((prev) => ({ ...prev, ...countMap }))
+        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
       } else {
         const message = newResult.reason instanceof Error ? newResult.reason.message : '모임 목록 조회 실패'
         setError(message)
@@ -68,33 +73,18 @@ export function GroupListPage() {
         const incoming = popularResult.value.content
         setPopularGroups(incoming)
         const countMap: Record<number, number> = {}
-        incoming.forEach((g) => { countMap[g.id] = g.likeCount ?? 0 })
+        const likedMapUpdate: Record<number, boolean> = {}
+        incoming.forEach((g) => {
+          countMap[g.id] = g.likeCount ?? 0
+          likedMapUpdate[g.id] = g.isLiked
+        })
         setLikeCountMap((prev) => ({ ...prev, ...countMap }))
+        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
       } else {
         const message = popularResult.reason instanceof Error ? popularResult.reason.message : '인기 모임 목록 조회 실패'
         setPopularError(message)
       }
       setPopularLoading(false)
-
-      // 두 목록 전체에 대해 좋아요 여부 병렬 조회
-      const allGroups: GroupResponse[] = []
-      if (newResult.status === 'fulfilled') allGroups.push(...newResult.value.content)
-      if (popularResult.status === 'fulfilled') allGroups.push(...popularResult.value.content)
-
-      // 중복 제거 (같은 모임이 두 섹션에 동시에 등장할 수 있음)
-      const uniqueGroups = allGroups.filter(
-        (g, idx, arr) => arr.findIndex((x) => x.id === g.id) === idx,
-      )
-
-      const likeStatusResults = await Promise.allSettled(
-        uniqueGroups.map((g) => getGroupLikeStatus(token, g.id)),
-      )
-      const likedMapInit: Record<number, boolean> = {}
-      uniqueGroups.forEach((g, idx) => {
-        const result = likeStatusResults[idx]
-        likedMapInit[g.id] = result.status === 'fulfilled' ? result.value.liked : false
-      })
-      setLikedMap(likedMapInit)
     },
     [token, handleUnauthorized],
   )

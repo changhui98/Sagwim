@@ -19,4 +19,15 @@ public class PlaceService {
         }
         return placeAutocompletePort.autocomplete(keyword);
     }
+
+    /**
+     * 주소 자동완성 검색 결과를 fullAddress 문자열 목록으로 반환한다.
+     * 프로필 주소 편집 페이지의 드롭다운 자동완성에서 사용한다.
+     */
+    public List<String> searchAddressSuggestions(String query) {
+        return searchAutocomplete(query).stream()
+            .map(PlaceSuggestionResponse::fullAddress)
+            .filter(address -> address != null && !address.isBlank())
+            .toList();
+    }
 }

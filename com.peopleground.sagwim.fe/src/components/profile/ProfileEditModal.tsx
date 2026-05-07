@@ -5,6 +5,7 @@ import {
   requestEmailChangeVerification,
   updateMyProfile,
 } from '../../api/userApi'
+import { checkNickname } from '../../api/authApi'
 import { uploadUserProfileImage } from '../../api/imageApi'
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
@@ -12,6 +13,7 @@ import { PasswordInput } from '../PasswordInput'
 import { PasswordChecklist } from '../PasswordChecklist'
 import { ConfirmDialog } from '../common/ConfirmDialog'
 import { SuccessDialog } from '../common/SuccessDialog'
+import { AlertDialog } from '../common/AlertDialog'
 import { KakaoAddressSearch } from '../common/KakaoAddressSearch'
 import { isPasswordValid } from '../../utils/passwordRules'
 import type { UserDetailResponse } from '../../types/user'
@@ -62,6 +64,14 @@ export function ProfileEditModal({
   const [successOpen, setSuccessOpen] = useState(false)
   const [savedProfile, setSavedProfile] = useState<UserDetailResponse | null>(null)
 
+  // 닉네임 중복확인 상태
+  const [isNicknameChecked, setIsNicknameChecked] = useState(false)
+  const [isNicknameAvailable, setIsNicknameAvailable] = useState(false)
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false)
+  const [nicknameAlertOpen, setNicknameAlertOpen] = useState(false)
+  const [nicknameAlertVariant, setNicknameAlertVariant] = useState<'success' | 'error'>('success')
+  const [nicknameAlertMessage, setNicknameAlertMessage] = useState('')
+
   // 이메일 변경 전용 상태 (별도 인증 플로우)
   // 보안: 이메일은 프로필 PATCH로 변경되지 않고, 새 이메일로 발송된 6자리 코드를
   // 검증해야만 변경된다. 검증 성공 시 즉시 백엔드에서 이메일이 갱신되며,
@@ -92,6 +102,11 @@ export function ProfileEditModal({
     setEmailSending(false)
     setEmailVerifying(false)
     setEmailMessage(null)
+
+    setIsNicknameChecked(false)
+    setIsNicknameAvailable(false)
+    setIsCheckingNickname(false)
+    setNicknameAlertOpen(false)
   }, [isOpen, profile])
 
   const handleClose = useCallback(() => {
@@ -123,7 +138,14 @@ export function ProfileEditModal({
 
   const isSocialUser = profile.provider != null && profile.provider !== 'LOCAL'
 
-  const nicknameValid = form.nickname.trim().length > 0
+  // 닉네임이 기존과 다른지 여부 판단 (대소문자 구분, 공백 제거 비교)
+  const isNicknameChanged = form.nickname.trim() !== profile.nickname.trim()
+
+  // 닉네임 변경 시에는 중복확인 필수, 변경 없으면 스킵
+  const nicknameCheckPassed =
+    !isNicknameChanged || (isNicknameChecked && isNicknameAvailable)
+
+  const nicknameValid = form.nickname.trim().length > 0 && nicknameCheckPassed
   const wantsPasswordChange =
     !isSocialUser && (form.newPassword.length > 0 || form.currentPassword.length > 0)
   const passwordChangeValid = wantsPasswordChange
@@ -193,6 +215,31 @@ export function ProfileEditModal({
       setImagePreview(null)
     } finally {
       setImageUploading(false)
+    }
+  }
+
+  const handleCheckNickname = async () => {
+    if (!form.nickname.trim()) return
+    try {
+      setIsCheckingNickname(true)
+      const available = await checkNickname(form.nickname.trim())
+      setIsNicknameChecked(true)
+      setIsNicknameAvailable(available)
+      if (available) {
+        setNicknameAlertVariant('success')
+        setNicknameAlertMessage('사용 가능한 닉네임입니다.')
+      } else {
+        setNicknameAlertVariant('error')
+        setNicknameAlertMessage('이미 사용 중인 닉네임입니다.')
+      }
+      setNicknameAlertOpen(true)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '중복 확인에 실패했습니다.'
+      setNicknameAlertVariant('error')
+      setNicknameAlertMessage(message)
+      setNicknameAlertOpen(true)
+    } finally {
+      setIsCheckingNickname(false)
     }
   }
 
@@ -320,20 +367,43 @@ export function ProfileEditModal({
             />
           </div>
 
+          <hr className={styles.imageDivider} />
+
           <div className={styles.formGrid}>
             <div className="input-group">
               <label className="input-label" htmlFor="edit-nickname">닉네임</label>
-              <input
-                id="edit-nickname"
-                className="input"
-                placeholder="새 닉네임"
-                value={form.nickname}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, nickname: e.target.value }))
-                }
-                disabled={submitting}
-                autoFocus
-              />
+              <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+                <input
+                  id="edit-nickname"
+                  className="input"
+                  placeholder="새 닉네임"
+                  value={form.nickname}
+                  onChange={(e) => {
+                    setForm((prev) => ({ ...prev, nickname: e.target.value }))
+                    setIsNicknameChecked(false)
+                    setIsNicknameAvailable(false)
+                  }}
+                  disabled={submitting}
+                  autoFocus
+                  style={{ flex: 1 }}
+                />
+                {isNicknameChanged && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    disabled={isCheckingNickname || (isNicknameChecked && isNicknameAvailable) || !form.nickname.trim() || submitting}
+                    onClick={handleCheckNickname}
+                    style={{ flexShrink: 0, whiteSpace: 'nowrap', fontSize: '0.8125rem' }}
+                  >
+                    {isCheckingNickname ? '확인 중...' : '중복확인'}
+                  </button>
+                )}
+              </div>
+              {isNicknameChanged && !isNicknameChecked && form.nickname.trim().length > 0 && (
+                <p className={styles.hint} role="status" style={{ marginTop: 'var(--sp-1)' }}>
+                  닉네임을 변경하려면 중복 확인이 필요합니다.
+                </p>
+              )}
             </div>
 
             <div className={`input-group ${styles.colSpan2}`}>
@@ -535,6 +605,13 @@ export function ProfileEditModal({
         title="프로필이 수정되었습니다"
         message="변경한 정보가 저장되었어요."
         onClose={handleSuccessClose}
+      />
+
+      <AlertDialog
+        isOpen={nicknameAlertOpen}
+        variant={nicknameAlertVariant}
+        message={nicknameAlertMessage}
+        onClose={() => setNicknameAlertOpen(false)}
       />
     </>,
     document.body

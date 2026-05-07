@@ -1,0 +1,151 @@
+import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { getMyProfile, updateMyProfile } from '../api/userApi'
+import { useAuth } from '../context/AuthContext'
+import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { Navbar } from '../components/Navbar'
+import { AlertDialog } from '../components/common/AlertDialog'
+import type { Gender, UserDetailResponse } from '../types/user'
+import styles from '../components/profile/ProfileEditModal.module.css'
+import pageStyles from './ProfileEditPage.module.css'
+
+const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: 'MALE', label: '남성' },
+  { value: 'FEMALE', label: '여성' },
+  { value: 'NONE', label: '선택 안 함' },
+]
+
+export function ProfileEditGenderPage() {
+  const navigate = useNavigate()
+  const { token, logout, setMeProfile } = useAuth()
+  const handleUnauthorized = useHandleUnauthorized()
+
+  const [profile, setProfile] = useState<UserDetailResponse | null>(null)
+  const [profileLoading, setProfileLoading] = useState(true)
+  const [selected, setSelected] = useState<Gender>('NONE')
+  const [isSaving, setIsSaving] = useState(false)
+
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+
+  const handleLogout = useCallback(() => {
+    logout()
+    navigate('/login', { replace: true })
+  }, [logout, navigate])
+
+  useEffect(() => {
+    let cancelled = false
+    setProfileLoading(true)
+    getMyProfile(token)
+      .then((res) => {
+        if (cancelled) return
+        setProfile(res)
+        setSelected(res.gender ?? 'NONE')
+      })
+      .catch((err) => {
+        if (!cancelled) handleUnauthorized(err)
+      })
+      .finally(() => {
+        if (!cancelled) setProfileLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [token, handleUnauthorized])
+
+  const handleCancel = useCallback(() => {
+    navigate('/app/profile/edit', { replace: true })
+  }, [navigate])
+
+  const handleSelectGender = async (value: Gender) => {
+    if (!profile || isSaving) return
+    setSelected(value)
+    const hasChange = value !== (profile.gender ?? 'NONE')
+    if (!hasChange) {
+      navigate('/app/profile/edit', { replace: true })
+      return
+    }
+    setIsSaving(true)
+    try {
+      const updated = await updateMyProfile(token, {
+        nickname: profile.nickname,
+        address: profile.address ?? '',
+        currentPassword: '',
+        newPassword: '',
+        profileImageUrl: profile.profileImageUrl ?? null,
+        bio: profile.bio ?? '',
+        gender: value,
+        birthDate: profile.birthDate ?? null,
+      })
+      setMeProfile(updated)
+      navigate('/app/profile/edit', { replace: true })
+    } catch (err) {
+      handleUnauthorized(err)
+      setAlertMessage('성별 저장에 실패했습니다. 다시 시도해주세요.')
+      setAlertOpen(true)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  if (profileLoading) {
+    return (
+      <>
+        <Navbar role={null} onLogout={handleLogout} />
+        <main className={pageStyles.main}>
+          <p className={pageStyles.loading}>프로필을 불러오는 중…</p>
+        </main>
+      </>
+    )
+  }
+
+  if (!profile) return null
+
+  return (
+    <>
+      <Navbar role={profile.role ?? null} onLogout={handleLogout} />
+
+      <main className={pageStyles.main}>
+        <div className={pageStyles.container}>
+          <header className={styles.header}>
+            <button
+              type="button"
+              className={styles.headerBtn}
+              onClick={handleCancel}
+              disabled={isSaving}
+            >
+              돌아가기
+            </button>
+            <h1 className={styles.title}>성별</h1>
+            <span style={{ width: '4rem' }} />
+          </header>
+
+          <ul className={pageStyles.settingList}>
+            {GENDER_OPTIONS.map((option) => (
+              <li
+                key={option.value}
+                className={pageStyles.settingRow}
+                onClick={() => handleSelectGender(option.value)}
+                style={{ cursor: isSaving ? 'default' : 'pointer' }}
+              >
+                <span className={pageStyles.settingLabel}>{option.label}</span>
+                {selected === option.value && (
+                  <span style={{ color: 'var(--clr-primary)', fontWeight: 600 }}>
+                    {isSaving ? '저장 중...' : '✓'}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </main>
+
+      <AlertDialog
+        isOpen={alertOpen}
+        variant="error"
+        message={alertMessage}
+        onClose={() => setAlertOpen(false)}
+      />
+    </>
+  )
+}

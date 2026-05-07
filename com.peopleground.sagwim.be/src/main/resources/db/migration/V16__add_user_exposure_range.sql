@@ -1,0 +1,1 @@
+ALTER TABLE p_user ADD COLUMN exposure_range_km INT NOT NULL DEFAULT 1;

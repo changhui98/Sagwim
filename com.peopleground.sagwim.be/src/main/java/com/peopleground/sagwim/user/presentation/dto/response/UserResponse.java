@@ -8,7 +8,8 @@ public record UserResponse(
     String username,
     String nickname,
     String userEmail,
-    String address
+    String address,
+    String profileImageUrl
 ) implements UserResponseMarker{
 
     public static UserResponse from(User user) {
@@ -17,7 +18,19 @@ public record UserResponse(
             user.getUsername(),
             user.getNickname(),
             user.getUserEmail(),
-            user.getAddress()
+            user.getAddress(),
+            user.getProfileImageUrl()
+        );
+    }
+
+    public static UserResponse from(User user, String resolvedProfileImageUrl) {
+        return new UserResponse(
+            user.getId(),
+            user.getUsername(),
+            user.getNickname(),
+            user.getUserEmail(),
+            user.getAddress(),
+            resolvedProfileImageUrl
         );
     }
 

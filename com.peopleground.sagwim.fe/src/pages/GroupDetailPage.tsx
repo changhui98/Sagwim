@@ -9,7 +9,6 @@ import { extractErrorMessage } from '../utils/errorUtils'
 import { Navbar } from '../components/Navbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { GroupDetailTabs } from '../components/group/GroupDetailTabs'
-import { TabSettings } from '../components/group/TabSettings'
 import { TabMemberList } from '../components/group/TabMemberList'
 import { TabPostList } from '../components/group/TabPostList'
 import { TabSchedule } from '../components/group/TabSchedule'
@@ -44,8 +43,13 @@ export function GroupDetailPage() {
   const [hasPendingRequest, setHasPendingRequest] = useState(false)
   const [actionError, setActionError] = useState('')
 
-  const [showAnswerInput, setShowAnswerInput] = useState(false)
-  const [answerText, setAnswerText] = useState('')
+  const handleTabChange = (tab: GroupTab) => {
+    if (tab === 'settings' && groupId) {
+      navigate(`/app/groups/${groupId}/settings`)
+      return
+    }
+    setActiveTab(tab)
+  }
 
   const loadData = useCallback(async () => {
     if (!groupId) return
@@ -86,8 +90,8 @@ export function GroupDetailPage() {
 
   const handleJoinClick = () => {
     if (!group) return
-    if (group.joinType === 'APPROVAL_REQUIRED' && group.joinQuestion) {
-      setShowAnswerInput(true)
+    if (group.joinType === 'APPROVAL_REQUIRED' && group.joinQuestions && group.joinQuestions.length > 0) {
+      navigate(`/app/groups/${groupId}/join`)
     } else {
       handleJoinSubmit(undefined)
     }
@@ -99,8 +103,6 @@ export function GroupDetailPage() {
       setActionLoading(true)
       setActionError('')
       await joinGroup(token, Number(groupId), answer)
-      setShowAnswerInput(false)
-      setAnswerText('')
       await loadData()
     } catch (err) {
       setActionError(extractErrorMessage(err, '모임 가입에 실패했습니다.'))
@@ -302,37 +304,6 @@ export function GroupDetailPage() {
                 >
                   {actionLoading ? '처리 중...' : '신청 취소'}
                 </button>
-              ) : showAnswerInput ? (
-                <div className={styles.answerInputArea}>
-                  <p className={styles.answerQuestion}>{group.joinQuestion}</p>
-                  <textarea
-                    className={styles.answerTextarea}
-                    placeholder="답변을 입력하세요 (최대 1000자)"
-                    maxLength={1000}
-                    rows={3}
-                    value={answerText}
-                    onChange={(e) => setAnswerText(e.target.value)}
-                    disabled={actionLoading}
-                  />
-                  <div className={styles.answerActions}>
-                    <button
-                      type="button"
-                      className={styles.cancelButton}
-                      onClick={() => { setShowAnswerInput(false); setAnswerText('') }}
-                      disabled={actionLoading}
-                    >
-                      취소
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.saveButton}
-                      onClick={() => handleJoinSubmit(answerText)}
-                      disabled={actionLoading}
-                    >
-                      {actionLoading ? '처리 중...' : '신청'}
-                    </button>
-                  </div>
-                </div>
               ) : (
                 <button
                   type="button"
@@ -460,7 +431,7 @@ export function GroupDetailPage() {
 
         {/* 탭 네비게이션 */}
         <div className={styles.tabSection}>
-          <GroupDetailTabs activeTab={activeTab} onChange={setActiveTab} isLeader={isLeader} />
+          <GroupDetailTabs activeTab={activeTab} onChange={handleTabChange} isLeader={isLeader} />
 
           {activeTab === 'posts' && (
             <TabPostList groupId={Number(groupId)} isMember={isMember} />
@@ -475,17 +446,6 @@ export function GroupDetailPage() {
           )}
           {activeTab === 'schedule' && (
             <TabSchedule groupId={Number(groupId)} isMember={isMember} />
-          )}
-          {activeTab === 'settings' && isLeader && (
-            <TabSettings
-              group={group}
-              token={token}
-              actionLoading={actionLoading}
-              onSaveInfo={(data) => handleEditSubmit({ ...data, category: group.category, meetingType: group.meetingType, region: group.region ?? null, maxMemberCount: group.maxMemberCount })}
-              onSaveMemberCount={(maxMemberCount) => handleEditSubmit({ name: group.name, description: group.description ?? '', category: group.category, meetingType: group.meetingType, region: group.region ?? null, maxMemberCount })}
-              onDelete={handleDeleteGroup}
-              onGroupUpdated={(updated) => setGroup((prev) => prev ? { ...prev, ...updated } : prev)}
-            />
           )}
         </div>
       </main>

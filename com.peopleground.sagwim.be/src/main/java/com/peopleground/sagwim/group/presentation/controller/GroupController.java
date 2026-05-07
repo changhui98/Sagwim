@@ -5,7 +5,7 @@ import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.group.application.service.GroupService;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupCreateRequest;
-import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinQuestionUpdateRequest;
+import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinQuestionsUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupDetailResponse;
@@ -53,22 +53,23 @@ public class GroupController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) GroupCategory category
+        @RequestParam(required = false) GroupCategory category,
+        @AuthenticationPrincipal CustomUser customUser
     ) {
-        PageResponse<GroupResponse> response = groupService.getGroups(page, size, keyword, category);
+        PageResponse<GroupResponse> response = groupService.getGroups(page, size, keyword, category, customUser);
         return ResponseEntity.ok(response);
     }
 
     /**
      * 생성된 지 7일 미만인 신규 모임 목록을 조회합니다.
-     * 인증 없이 접근 가능하지만, 클라이언트는 토큰을 포함하여 호출합니다.
      */
     @GetMapping("/recent")
     public ResponseEntity<PageResponse<GroupResponse>> getNewGroups(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size
+        @RequestParam(defaultValue = "20") int size,
+        @AuthenticationPrincipal CustomUser customUser
     ) {
-        PageResponse<GroupResponse> response = groupService.getNewGroups(page, size);
+        PageResponse<GroupResponse> response = groupService.getNewGroups(page, size, customUser);
         return ResponseEntity.ok(response);
     }
 
@@ -78,9 +79,10 @@ public class GroupController {
     @GetMapping("/popular")
     public ResponseEntity<PageResponse<GroupResponse>> getPopularGroups(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size
+        @RequestParam(defaultValue = "20") int size,
+        @AuthenticationPrincipal CustomUser customUser
     ) {
-        PageResponse<GroupResponse> response = groupService.getPopularGroups(page, size);
+        PageResponse<GroupResponse> response = groupService.getPopularGroups(page, size, customUser);
         return ResponseEntity.ok(response);
     }
 
@@ -119,21 +121,20 @@ public class GroupController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{groupId}/join-question")
-    public ResponseEntity<Map<String, String>> getJoinQuestion(
+    @GetMapping("/{groupId}/join-questions")
+    public ResponseEntity<List<String>> getJoinQuestions(
         @PathVariable Long groupId
     ) {
-        String question = groupService.getJoinQuestion(groupId);
-        return ResponseEntity.ok(Map.of("question", question != null ? question : ""));
+        return ResponseEntity.ok(groupService.getJoinQuestions(groupId));
     }
 
-    @PutMapping("/{groupId}/join-question")
-    public ResponseEntity<Void> updateJoinQuestion(
+    @PutMapping("/{groupId}/join-questions")
+    public ResponseEntity<Void> updateJoinQuestions(
         @PathVariable Long groupId,
-        @Valid @RequestBody GroupJoinQuestionUpdateRequest request,
+        @Valid @RequestBody GroupJoinQuestionsUpdateRequest request,
         @AuthenticationPrincipal CustomUser customUser
     ) {
-        groupService.updateJoinQuestion(groupId, request, customUser);
+        groupService.updateJoinQuestions(groupId, request, customUser);
         return ResponseEntity.ok().build();
     }
 

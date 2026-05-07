@@ -10,7 +10,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        show_sql: true
+        show_sql: false   # p6spy가 SQL을 출력하므로 중복 방지
   sql:
     init:
       mode: never
@@ -24,7 +24,8 @@ decorator:
 ## 개발 로그 레벨
 logging:
   level:
-    root: info
-    web: debug
+    root: warn
     com.peopleground: debug
-    org.flywaydb: debug
+    org.hibernate.SQL: debug
+    org.flywaydb: info
+    org.springframework.web.servlet.DispatcherServlet: info

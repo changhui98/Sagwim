@@ -10,6 +10,11 @@ import { SignUpPage } from './pages/SignUpPage'
 import { PostListPage } from './pages/PostListPage'
 import { UserGridPage } from './pages/UserGridPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { ProfileEditPage } from './pages/ProfileEditPage'
+import { ProfileEditNicknamePage } from './pages/ProfileEditNicknamePage'
+import { ProfileEditGenderPage } from './pages/ProfileEditGenderPage'
+import { ProfileEditBirthDatePage } from './pages/ProfileEditBirthDatePage'
+import { ProfileEditAddressPage } from './pages/ProfileEditAddressPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminUserListPage } from './pages/admin/AdminUserListPage'
 import { AdminGroupsPage } from './pages/admin/AdminGroupsPage'
@@ -19,6 +24,8 @@ import { AdminLogPage } from './pages/admin/AdminLogPage'
 import { PostCreatePage } from './pages/PostCreatePage'
 import { GroupListPage } from './pages/GroupListPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
+import { GroupJoinRequestPage } from './pages/GroupJoinRequestPage'
+import { GroupSettingsPage } from './pages/GroupSettingsPage'
 import { GroupCreatePage } from './pages/GroupCreatePage'
 import { NewGroupsPage } from './pages/NewGroupsPage'
 import { PopularGroupsPage } from './pages/PopularGroupsPage'
@@ -51,7 +58,14 @@ function App() {
         <Route path="/app/groups/recent" element={<NewGroupsPage />} />
         <Route path="/app/groups/popular" element={<PopularGroupsPage />} />
         <Route path="/app/groups/:groupId" element={<GroupDetailPage />} />
+        <Route path="/app/groups/:groupId/join" element={<GroupJoinRequestPage />} />
+        <Route path="/app/groups/:groupId/settings" element={<GroupSettingsPage />} />
         <Route path="/app/profile" element={<ProfilePage />} />
+        <Route path="/app/profile/edit" element={<ProfileEditPage />} />
+        <Route path="/app/profile/edit/nickname" element={<ProfileEditNicknamePage />} />
+        <Route path="/app/profile/edit/gender" element={<ProfileEditGenderPage />} />
+        <Route path="/app/profile/edit/birthdate" element={<ProfileEditBirthDatePage />} />
+        <Route path="/app/profile/edit/address" element={<ProfileEditAddressPage />} />
         <Route path="/app/profile/:username" element={<ProfilePage />} />
         <Route path="/app/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />

@@ -8,6 +8,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -64,6 +66,25 @@ public class User extends BaseEntity {
 
     @Column(nullable = true, length = 150)
     private String bio;
+
+    @Column(name = "nickname_changed_count", nullable = false)
+    private int nicknameChangedCount = 0;
+
+    @Column(name = "nickname_changed_at")
+    private LocalDateTime nicknameChangedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Gender gender = Gender.NONE;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(name = "is_searchable", nullable = false)
+    private boolean isSearchable = true;
+
+    @Column(name = "exposure_range_km", nullable = false)
+    private int exposureRangeKm = 1;
 
     public void updateProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
@@ -140,21 +161,48 @@ public class User extends BaseEntity {
         this.role = newRole;
     }
 
-    public User updateUser
-        (
-            String nickname,
-            String userEmail,
-            String address,
-            Point location,
-            String newPassword,
-            String bio
-        ) {
+    public void changeNickname(String newNickname) {
+        this.nickname = newNickname;
+        this.nicknameChangedAt = LocalDateTime.now();
+        this.nicknameChangedCount++;
+    }
+
+    public boolean canChangeNickname() {
+        if (nicknameChangedAt == null) return true;
+        LocalDateTime windowStart = LocalDateTime.now().minusDays(7);
+        if (nicknameChangedAt.isBefore(windowStart)) {
+            // 7일 창이 리셋됨 — 카운트 리셋은 서비스 레이어에서 처리
+            return true;
+        }
+        return nicknameChangedCount < 2;
+    }
+
+    public void resetNicknameChangeCount() {
+        this.nicknameChangedCount = 0;
+    }
+
+    public User updateUser(
+        String nickname,
+        String userEmail,
+        String address,
+        Point location,
+        String newPassword,
+        String bio,
+        Gender gender,
+        LocalDate birthDate,
+        boolean isSearchable,
+        int exposureRangeKm
+    ) {
         this.nickname = nickname;
         this.password = newPassword;
         this.address = address;
         this.location = location;
         this.userEmail = userEmail;
         this.bio = bio;
+        this.gender = gender;
+        this.birthDate = birthDate;
+        this.isSearchable = isSearchable;
+        this.exposureRangeKm = exposureRangeKm;
         return this;
     }
 

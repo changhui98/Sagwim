@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 
 public record GroupCreateRequest(
 
@@ -21,11 +22,11 @@ public record GroupCreateRequest(
     @NotNull(message = "카테고리는 필수입니다.")
     GroupCategory category,
 
+    @Size(max = 10, message = "세부 카테고리는 최대 10개까지 선택할 수 있습니다.")
+    List<String> subCategories,
+
     @NotNull(message = "모임 방식은 필수입니다.")
     GroupMeetingType meetingType,
-
-    @Size(max = 50, message = "지역은 50자를 초과할 수 없습니다.")
-    String region,
 
     @NotNull(message = "최대 인원은 필수입니다.")
     @Min(value = 2, message = "최대 인원은 2명 이상이어야 합니다.")

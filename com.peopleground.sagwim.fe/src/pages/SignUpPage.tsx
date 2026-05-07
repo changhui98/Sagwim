@@ -1,6 +1,6 @@
 import { type FormEvent, useState, useRef, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { signUp, sendEmailVerification, verifyEmailCode, checkUsername } from '../api/authApi'
+import { signUp, sendEmailVerification, verifyEmailCode, checkUsername, checkNickname } from '../api/authApi'
 import { socialSignIn, linkSocialAccount } from '../api/socialAuthApi'
 import { ApiError } from '../api/ApiError'
 import type { EmailConflictData } from '../types/auth'
@@ -140,6 +140,14 @@ export function SignUpPage() {
   const [usernameAlertVariant, setUsernameAlertVariant] = useState<'success' | 'error'>('success')
   const [usernameAlertMessage, setUsernameAlertMessage] = useState('')
 
+  // 닉네임 중복확인 상태
+  const [isNicknameChecked, setIsNicknameChecked] = useState(false)
+  const [isNicknameAvailable, setIsNicknameAvailable] = useState(false)
+  const [isCheckingNickname, setIsCheckingNickname] = useState(false)
+  const [nicknameAlertOpen, setNicknameAlertOpen] = useState(false)
+  const [nicknameAlertVariant, setNicknameAlertVariant] = useState<'success' | 'error'>('success')
+  const [nicknameAlertMessage, setNicknameAlertMessage] = useState('')
+
   // 이메일 인증 상태
   const [isCodeSent, setIsCodeSent] = useState(false)
   const [isEmailVerified, setIsEmailVerified] = useState(false)
@@ -159,6 +167,12 @@ export function SignUpPage() {
       if (key === 'username') {
         setIsUsernameChecked(false)
         setIsUsernameAvailable(false)
+      }
+
+      // 닉네임 변경 시 중복확인 상태 초기화
+      if (key === 'nickname') {
+        setIsNicknameChecked(false)
+        setIsNicknameAvailable(false)
       }
 
       // 이메일 변경 시 인증 상태 초기화
@@ -196,6 +210,34 @@ export function SignUpPage() {
       setUsernameAlertOpen(true)
     } finally {
       setIsCheckingUsername(false)
+    }
+  }
+
+  const handleCheckNickname = async () => {
+    if (!form.nickname.trim()) {
+      setFieldErrors((prev) => ({ ...prev, nickname: '닉네임을 입력해주세요.' }))
+      return
+    }
+    try {
+      setIsCheckingNickname(true)
+      const available = await checkNickname(form.nickname)
+      setIsNicknameChecked(true)
+      setIsNicknameAvailable(available)
+      if (available) {
+        setNicknameAlertVariant('success')
+        setNicknameAlertMessage('사용 가능한 닉네임입니다.')
+      } else {
+        setNicknameAlertVariant('error')
+        setNicknameAlertMessage('이미 사용 중인 닉네임입니다.')
+      }
+      setNicknameAlertOpen(true)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '중복 확인에 실패했습니다.'
+      setNicknameAlertVariant('error')
+      setNicknameAlertMessage(message)
+      setNicknameAlertOpen(true)
+    } finally {
+      setIsCheckingNickname(false)
     }
   }
 
@@ -283,13 +325,19 @@ export function SignUpPage() {
   const pwValid = isPasswordValid(form.password)
   const confirmValid = isConfirmPasswordValid(form.password, confirmPassword)
 
-  // 비밀번호 복잡도 + 확인 일치 + 아이디 중복확인 + 이메일 인증 모두 충족해야 제출 가능
+  // 닉네임 입력 시에는 중복확인 필수, 미입력 시에는 서버에서 랜덤 닉네임 자동 생성
+  const nicknameCheckPassed =
+    form.nickname.trim().length === 0 ||
+    (isNicknameChecked && isNicknameAvailable)
+
+  // 비밀번호 복잡도 + 확인 일치 + 아이디 중복확인 + 닉네임 중복확인 + 이메일 인증 모두 충족해야 제출 가능
   const canSubmit =
     form.password.length > 0 &&
     pwValid &&
     confirmValid &&
     isUsernameChecked &&
     isUsernameAvailable &&
+    nicknameCheckPassed &&
     isEmailVerified
 
   // 비밀번호 확인 입력창 테두리 색상
@@ -388,17 +436,35 @@ export function SignUpPage() {
           {/* Nickname */}
           <div className="input-group">
             <label className="input-label" htmlFor="su-nickname">
-              닉네임
+              닉네임 <span style={{ color: 'var(--clr-text-muted)', fontWeight: 400, fontSize: '0.8125rem' }}>(선택 — 미입력 시 랜덤 생성)</span>
             </label>
-            <input
-              id="su-nickname"
-              className="input"
-              placeholder="2~10자, 한글·영문·숫자"
-              value={form.nickname}
-              onChange={setField('nickname')}
-            />
+            <div className={styles.emailRow}>
+              <input
+                id="su-nickname"
+                className="input"
+                placeholder="2~10자, 공백 제외 (선택)"
+                value={form.nickname}
+                onChange={setField('nickname')}
+                disabled={isNicknameChecked && isNicknameAvailable}
+              />
+              {form.nickname.trim().length > 0 && (
+                <button
+                  type="button"
+                  className={`btn btn-secondary ${styles.verifyBtn}`}
+                  disabled={isCheckingNickname || (isNicknameChecked && isNicknameAvailable) || !form.nickname.trim()}
+                  onClick={handleCheckNickname}
+                >
+                  {isCheckingNickname ? '확인 중...' : '중복확인'}
+                </button>
+              )}
+            </div>
             {fieldErrors.nickname && (
               <p className="field-error" role="alert">{fieldErrors.nickname}</p>
+            )}
+            {form.nickname.trim().length === 0 && (
+              <p className="field-error" style={{ color: 'var(--clr-text-muted)', marginTop: 'var(--sp-2)' }} role="status">
+                닉네임을 입력하지 않으면 자동으로 랜덤 닉네임이 부여됩니다.
+              </p>
             )}
           </div>
 
@@ -499,6 +565,13 @@ export function SignUpPage() {
       variant={usernameAlertVariant}
       message={usernameAlertMessage}
       onClose={() => setUsernameAlertOpen(false)}
+    />
+
+    <AlertDialog
+      isOpen={nicknameAlertOpen}
+      variant={nicknameAlertVariant}
+      message={nicknameAlertMessage}
+      onClose={() => setNicknameAlertOpen(false)}
     />
 
     <ConfirmDialog

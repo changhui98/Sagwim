@@ -16,6 +16,8 @@ export interface UserResponse {
 
 export type OAuthProvider = 'LOCAL' | 'KAKAO' | 'GOOGLE'
 
+export type Gender = 'MALE' | 'FEMALE' | 'NONE'
+
 export interface UserDetailResponse {
   id: string
   username: string
@@ -26,6 +28,10 @@ export interface UserDetailResponse {
   profileImageUrl?: string | null
   provider?: OAuthProvider
   bio?: string
+  gender?: Gender
+  birthDate?: string | null
+  isSearchable?: boolean
+  exposureRangeKm?: number
   createdAt: string
   modifiedAt: string
 }
@@ -46,6 +52,10 @@ export interface UserUpdateRequest {
   newPassword: string
   profileImageUrl?: string | null
   bio?: string
+  gender?: Gender
+  birthDate?: string | null
+  isSearchable?: boolean
+  exposureRangeKm?: number
 }
 
 export interface EmailChangeRequest {

@@ -26,7 +26,9 @@ public enum UserErrorCode implements ErrorCode {
     CANNOT_CHANGE_OWN_ROLE(HttpStatus.BAD_REQUEST, "U015", "자기 자신의 역할은 변경할 수 없습니다."),
     CANNOT_ASSIGN_ADMIN_ROLE(HttpStatus.BAD_REQUEST, "U016", "ADMIN 역할은 부여할 수 없습니다."),
     USER_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "U017", "이미 탈퇴된 사용자입니다."),
-    USER_NOT_DELETED(HttpStatus.BAD_REQUEST, "U018", "탈퇴 처리되지 않은 사용자입니다.")
+    USER_NOT_DELETED(HttpStatus.BAD_REQUEST, "U018", "탈퇴 처리되지 않은 사용자입니다."),
+    DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "U019", "이미 사용 중인 닉네임입니다."),
+    NICKNAME_CHANGE_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "U020", "닉네임은 7일 동안 최대 두 번까지 변경할 수 있습니다.")
     ;
 
     private final HttpStatus status;

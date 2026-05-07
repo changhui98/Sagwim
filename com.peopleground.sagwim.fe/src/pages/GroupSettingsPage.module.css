@@ -1,0 +1,26 @@
+/* ── GroupSettingsPage ── */
+.main {
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--sp-8) var(--sp-6);
+  padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
+  padding-bottom: calc(var(--sp-8) + var(--layout-bottom-bar-h));
+}
+
+.loadingWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding-top: var(--sp-10);
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 0;
+    padding-left: var(--layout-sidebar-w);
+    padding-bottom: var(--layout-bottom-bar-h);
+    align-items: flex-start;
+  }
+}

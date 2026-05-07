@@ -20,7 +20,8 @@ public enum GroupErrorCode implements ErrorCode {
     GROUP_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "G009", "이미 삭제된 모임입니다."),
     GROUP_NOT_DELETED(HttpStatus.BAD_REQUEST, "G010", "삭제 처리되지 않은 모임입니다."),
     GROUP_JOIN_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "G011", "가입 요청을 찾을 수 없습니다."),
-    GROUP_JOIN_REQUEST_ALREADY_EXISTS(HttpStatus.CONFLICT, "G012", "이미 가입 요청을 보냈습니다.")
+    GROUP_JOIN_REQUEST_ALREADY_EXISTS(HttpStatus.CONFLICT, "G012", "이미 가입 요청을 보냈습니다."),
+    LEADER_ADDRESS_REQUIRED(HttpStatus.BAD_REQUEST, "G013", "오프라인 모임을 만들려면 주소를 먼저 설정해야 합니다.")
     ;
 
     private final HttpStatus status;

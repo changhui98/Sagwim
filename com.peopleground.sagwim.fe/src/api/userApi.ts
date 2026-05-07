@@ -9,6 +9,16 @@ import type {
 import { API_BASE_URL } from './config'
 import { createAuthHeaders, parseResponse } from './apiUtils'
 
+export const searchAddress = async (token: string, query: string): Promise<string[]> => {
+  const res = await fetch(
+    `${API_BASE_URL}/address/search?query=${encodeURIComponent(query)}`,
+    { headers: createAuthHeaders(token) },
+  )
+  if (!res.ok) return []
+  const data = (await res.json()) as { suggestions?: string[] }
+  return data.suggestions ?? []
+}
+
 export const getUsers = (token: string, page = 0, size = 10, keyword = '') => {
   const params = new URLSearchParams({ page: String(page), size: String(size) })
   if (keyword.trim()) params.set('keyword', keyword.trim())

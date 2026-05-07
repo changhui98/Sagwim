@@ -5,12 +5,14 @@ import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
 import com.peopleground.sagwim.group.domain.entity.GroupStatus;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record GroupResponse(
     Long id,
     String name,
     String description,
     GroupCategory category,
+    List<String> subCategories,
     GroupMeetingType meetingType,
     String region,
     int maxMemberCount,
@@ -20,19 +22,25 @@ public record GroupResponse(
     LocalDateTime createdDate,
     String imageUrl,
     int likeCount,
-    GroupStatus status
+    GroupStatus status,
+    boolean isLiked
 ) {
 
     public static GroupResponse from(Group group) {
-        return from(group, group.getImageUrl());
+        return from(group, group.getImageUrl(), false);
     }
 
     public static GroupResponse from(Group group, String resolvedImageUrl) {
+        return from(group, resolvedImageUrl, false);
+    }
+
+    public static GroupResponse from(Group group, String resolvedImageUrl, boolean isLiked) {
         return new GroupResponse(
             group.getId(),
             group.getName(),
             group.getDescription(),
             group.getCategory(),
+            group.getSubCategories(),
             group.getMeetingType(),
             group.getRegion(),
             group.getMaxMemberCount(),
@@ -42,7 +50,8 @@ public record GroupResponse(
             group.getCreatedDate(),
             resolvedImageUrl,
             group.getLikeCount(),
-            group.getStatus()
+            group.getStatus(),
+            isLiked
         );
     }
 }

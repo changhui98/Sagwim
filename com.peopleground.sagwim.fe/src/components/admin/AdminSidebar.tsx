@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { getInitials } from '../../utils/stringUtils'
 import type { UserDetailResponse } from '../../types/user'
@@ -24,6 +25,34 @@ const MENU_ITEMS: readonly MenuItem[] = [
   { path: '/app/admin/logs', label: '로그', icon: logIcon },
 ] as const
 
+interface ProfileAvatarProps {
+  profile: UserDetailResponse
+}
+
+function ProfileAvatar({ profile }: ProfileAvatarProps) {
+  const [imgError, setImgError] = useState(false)
+  const imageUrl = profile.profileImageUrl?.trim()
+
+  useEffect(() => {
+    setImgError(false)
+  }, [imageUrl])
+
+  return (
+    <span className={`avatar avatar-lg ${styles.profileAvatar}`}>
+      {imageUrl && !imgError ? (
+        <img
+          src={imageUrl}
+          alt={`${profile.nickname} 프로필`}
+          className={styles.profileAvatarImg}
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        getInitials(profile.nickname)
+      )}
+    </span>
+  )
+}
+
 interface AdminSidebarProps {
   profile: UserDetailResponse | null
 }
@@ -42,17 +71,7 @@ export function AdminSidebar({ profile }: AdminSidebarProps) {
     <aside className={styles.sidebar}>
       {profile && (
         <div className={styles.profileSection}>
-          <span className={`avatar avatar-lg ${styles.profileAvatar}`}>
-            {profile.profileImageUrl?.trim() ? (
-              <img
-                src={profile.profileImageUrl.trim()}
-                alt={`${profile.nickname} 프로필`}
-                className={styles.profileAvatarImg}
-              />
-            ) : (
-              getInitials(profile.nickname)
-            )}
-          </span>
+          <ProfileAvatar profile={profile} />
           <div className={styles.profileInfo}>
             <span className={styles.profileName}>{profile.nickname}</span>
             <span className={styles.profileRole}>Administrator</span>

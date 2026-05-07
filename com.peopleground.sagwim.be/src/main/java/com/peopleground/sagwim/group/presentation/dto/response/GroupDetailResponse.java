@@ -2,6 +2,7 @@ package com.peopleground.sagwim.group.presentation.dto.response;
 
 import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
+import com.peopleground.sagwim.group.domain.entity.GroupJoinQuestion;
 import com.peopleground.sagwim.group.domain.entity.GroupJoinType;
 import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
 import com.peopleground.sagwim.group.domain.entity.GroupStatus;
@@ -13,6 +14,7 @@ public record GroupDetailResponse(
     String name,
     String description,
     GroupCategory category,
+    List<String> subCategories,
     GroupMeetingType meetingType,
     String region,
     int maxMemberCount,
@@ -24,20 +26,26 @@ public record GroupDetailResponse(
     int likeCount,
     GroupStatus status,
     GroupJoinType joinType,
-    String joinQuestion,
+    List<String> joinQuestions,
     List<GroupMemberResponse> members
 ) {
 
     public static GroupDetailResponse of(Group group, List<GroupMemberResponse> members) {
-        return of(group, group.getImageUrl(), members);
+        return of(group, group.getImageUrl(), members, List.of());
     }
 
-    public static GroupDetailResponse of(Group group, String resolvedImageUrl, List<GroupMemberResponse> members) {
+    public static GroupDetailResponse of(
+        Group group,
+        String resolvedImageUrl,
+        List<GroupMemberResponse> members,
+        List<GroupJoinQuestion> joinQuestions
+    ) {
         return new GroupDetailResponse(
             group.getId(),
             group.getName(),
             group.getDescription(),
             group.getCategory(),
+            group.getSubCategories(),
             group.getMeetingType(),
             group.getRegion(),
             group.getMaxMemberCount(),
@@ -49,7 +57,7 @@ public record GroupDetailResponse(
             group.getLikeCount(),
             group.getStatus(),
             group.getJoinType(),
-            group.getJoinQuestion(),
+            joinQuestions.stream().map(GroupJoinQuestion::getQuestion).toList(),
             members
         );
     }

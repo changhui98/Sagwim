@@ -20,11 +20,12 @@ public record UserCreateRequest(
     )
     String password,
 
-    @NotBlank(message = "닉네임은 필수입니다.")
+    // 닉네임은 선택 입력: 비어있으면 서버에서 랜덤 한글 닉네임을 자동 생성한다.
+    // 입력 시에는 2~10자, 공백 없이 입력한다.
     @Size(min = 2, max = 10, message = "닉네임은 최소2글자 최대10글자까지 가능합니다.")
     @Pattern(
-        regexp = "^[가-힣a-zA-Z0-9]+$",
-        message = "닉네임은 한글, 영어, 숫자만 사용할 수 있습니다."
+        regexp = "^$|^\\S+$",
+        message = "닉네임은 한글, 영문, 숫자, 특수문자를 사용할 수 있으며 공백은 사용할 수 없습니다."
     )
     String nickname,
 

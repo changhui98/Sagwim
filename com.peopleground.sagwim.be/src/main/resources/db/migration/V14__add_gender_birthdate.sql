@@ -1,0 +1,3 @@
+ALTER TABLE p_user
+    ADD COLUMN gender VARCHAR(10) NOT NULL DEFAULT 'NONE',
+    ADD COLUMN birth_date DATE;
