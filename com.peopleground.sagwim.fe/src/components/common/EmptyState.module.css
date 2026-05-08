@@ -37,8 +37,8 @@
 
 .title {
   font-size: 1.0625rem;
-  font-weight: 700;
-  color: var(--clr-text);
+  font-weight: 400;
+  color: var(--clr-text-muted);
   margin: 0;
 }
 
