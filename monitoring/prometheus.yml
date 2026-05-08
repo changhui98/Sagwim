@@ -1,0 +1,15 @@
+## =====================================================
+## Prometheus 스크래핑 설정
+## 개발/운영 공용 (타겟이 동일하게 backend:8080 사용)
+## =====================================================
+global:
+  scrape_interval: 15s       # 15초마다 메트릭 수집
+  evaluation_interval: 15s   # 15초마다 룰 평가
+
+scrape_configs:
+  - job_name: 'sagwim-backend'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['backend:8080']
+        labels:
+          app: 'sagwim'

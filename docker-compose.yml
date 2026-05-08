@@ -115,10 +115,59 @@ services:
     networks:
       - sagwim-net
 
+  # ===================================================
+  # Prometheus - 메트릭 수집
+  # 보안: 127.0.0.1 바인딩으로 서버 외부 직접 접근 차단
+  # 외부 접근이 필요하면 SSH 포트포워딩 사용: ssh -L 9090:localhost:9090 user@server
+  # ===================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sagwim-prometheus
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - sagwim-net
+
+  # ===================================================
+  # Grafana - 메트릭 시각화 대시보드
+  # 보안: 127.0.0.1 바인딩으로 서버 외부 직접 접근 차단
+  # 외부 접근이 필요하면 SSH 포트포워딩 사용: ssh -L 3000:localhost:3000 user@server
+  # ===================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sagwim-grafana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - sagwim-net
+
 volumes:
   postgres_data:
   redis_data:
   uploads_data:
+  prometheus_data:
+  grafana_data:
 
 networks:
   sagwim-net:
