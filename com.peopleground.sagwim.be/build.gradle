@@ -76,6 +76,9 @@ dependencies {
     // actuator - 헬스체크 엔드포인트 (/actuator/health)
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // micrometer prometheus - Prometheus 메트릭 수집 엔드포인트 (/actuator/prometheus)
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
     // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 

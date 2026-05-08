@@ -99,7 +99,7 @@ public class SecurityConfig {
                     // — .cors()만으로도 처리되지만 명시적으로 선언해 의도를 분명히 함
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     // Docker 헬스체크 및 모니터링 (인증 불필요)
-                    .requestMatchers("/actuator/health").permitAll()
+                    .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
                     // Swagger UI (개발/운영 모두 접근 허용 — 필요 시 prod 프로파일에서 비활성화)
                     .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     // 로그아웃은 인증 필요 (토큰을 블랙리스트에 등록해야 하므로)
