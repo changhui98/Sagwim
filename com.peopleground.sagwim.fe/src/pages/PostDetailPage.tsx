@@ -512,21 +512,23 @@ export function PostDetailPage() {
               {formatRelativeTime(post.createdAt)}
             </time>
           </div>
-          <MeatballMenu
-            ariaLabel="게시글 메뉴"
-            iconSize={20}
-            size="md"
-            items={
-              isMine
-                ? [
-                    { label: '수정', onClick: handleEditStart },
-                    { label: '삭제', danger: true, onClick: () => void handleDeletePost() },
-                  ]
-                : [
-                    { label: '신고하기', onClick: () => alert('준비 중인 기능입니다.') },
-                  ]
-            }
-          />
+          <div className={styles.menuWrap}>
+            <MeatballMenu
+              ariaLabel="게시글 메뉴"
+              iconSize={20}
+              size="md"
+              items={
+                isMine
+                  ? [
+                      { label: '수정', onClick: handleEditStart },
+                      { label: '삭제', danger: true, onClick: () => void handleDeletePost() },
+                    ]
+                  : [
+                      { label: '신고하기', onClick: () => alert('준비 중인 기능입니다.') },
+                    ]
+              }
+            />
+          </div>
         </div>
 
         {editMode ? (
