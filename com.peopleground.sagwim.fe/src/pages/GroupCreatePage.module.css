@@ -34,7 +34,7 @@
 .pageLayout {
   display: flex;
   align-items: flex-start;
-  gap: 0;
+  gap: var(--sp-5);
 }
 
 /* ─ 폼 카드 ─ */

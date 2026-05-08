@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getNewGroups, getPopularGroups, toggleGroupLike } from '../api/groupApi'
+import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { Navbar } from '../components/Navbar'
 import type { GroupResponse } from '../types/group'
-import treeIcon from '../assets/tree-svgrepo-com.svg'
-import starPrizeIcon from '../assets/star-prize-award-svgrepo-com.svg'
-import pinPointIcon from '../assets/pin-point-svgrepo-com.svg'
+import type { UserDetailResponse } from '../types/user'
+import mapPinAltIcon from '../assets/map-pin-alt-svgrepo-com.svg'
+import arrowNarrowRightIcon from '../assets/arrow-narrow-right-svgrepo-com.svg'
 import sproutIcon from '../assets/sagwim-section-sprout.svg'
 import flameIcon from '../assets/sagwim-section-flame.svg'
-import pinIcon from '../assets/sagwim-section-pin.svg'
+import deadlineIcon from '../assets/sagwim-section-deadline.svg'
+import thisweekIcon from '../assets/sagwim-section-thisweek.svg'
 import { GroupSection } from '../components/group/GroupSection'
 import styles from './GroupListPage.module.css'
 
@@ -31,6 +33,10 @@ export function GroupListPage() {
   const [popularGroups, setPopularGroups] = useState<GroupResponse[]>([])
   const [popularLoading, setPopularLoading] = useState(true)
   const [popularError, setPopularError] = useState('')
+
+  // 프로필 상태
+  const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
+  const [profileLoading, setProfileLoading] = useState(true)
 
   // 좋아요 상태 (신규 + 인기 모임 통합 관리)
   const [likedMap, setLikedMap] = useState<Record<number, boolean>>({})
@@ -93,6 +99,13 @@ export function GroupListPage() {
     loadGroups()
   }, [loadGroups])
 
+  useEffect(() => {
+    getMyProfile(token)
+      .then(setMyProfile)
+      .catch(() => {})
+      .finally(() => setProfileLoading(false))
+  }, [token])
+
   const handleLikeToggle = async (e: React.MouseEvent, groupId: number) => {
     e.stopPropagation()
     try {
@@ -122,7 +135,6 @@ export function GroupListPage() {
         likedMap={likedMap}
         likeCountMap={likeCountMap}
         onLikeToggle={handleLikeToggle}
-        emptyIcon={<img src={treeIcon} alt="" width={56} height={56} />}
         emptyTitle="최근 7일 내 생성된 모임이 없습니다."
         emptyDescription="첫 번째 모임을 만들어보세요."
       />
@@ -134,28 +146,40 @@ export function GroupListPage() {
         loading={popularLoading}
         error={popularError}
         onRetry={loadGroups}
-        onViewAll={popularGroups.length > 0 ? () => navigate('/app/groups/popular') : undefined}
+        onViewAll={() => navigate('/app/groups/popular')}
         likedMap={likedMap}
         likeCountMap={likeCountMap}
         onLikeToggle={handleLikeToggle}
-        emptyIcon={<img src={starPrizeIcon} alt="" width={56} height={56} />}
         emptyTitle="아직 인기 모임이 없습니다."
         emptyDescription="좋아요를 많이 받은 모임이 여기에 표시됩니다."
       />
       <hr className={styles.divider} />
       <GroupSection
-        title={<><img src={pinIcon} alt="" width={22} height={22} />걸어서 닿는 모임</>}
-        subtitle="가까운 동네에서 시작되는 사귐"
+        title={<><img src={deadlineIcon} alt="" width={22} height={22} />마감 임박 모임</>}
+        subtitle="곧 자리가 사라져요"
         groups={[]}
         loading={false}
         error=""
-        onRetry={undefined}
+        onViewAll={() => navigate('/app/groups/deadline')}
         likedMap={likedMap}
         likeCountMap={likeCountMap}
         onLikeToggle={handleLikeToggle}
-        emptyIcon={<img src={pinPointIcon} alt="" width={56} height={56} />}
-        emptyTitle="아직 근처 모임이 없습니다."
-        emptyDescription="위치 기반 모임 기능이 곧 열립니다."
+        emptyTitle="마감 임박 모임이 없습니다."
+        emptyDescription="곧 자리가 사라질 모임이 여기에 표시됩니다."
+      />
+      <hr className={styles.divider} />
+      <GroupSection
+        title={<><img src={thisweekIcon} alt="" width={22} height={22} />이번 주에 만나요</>}
+        subtitle="가까운 약속이 기다리고 있어요"
+        groups={[]}
+        loading={false}
+        error=""
+        onViewAll={() => navigate('/app/groups/thisweek')}
+        likedMap={likedMap}
+        likeCountMap={likeCountMap}
+        onLikeToggle={handleLikeToggle}
+        emptyTitle="이번 주 모임이 없습니다."
+        emptyDescription="이번 주 일정이 있는 모임이 여기에 표시됩니다."
       />
     </>
   )
@@ -165,7 +189,30 @@ export function GroupListPage() {
       <Navbar role={meRole} onLogout={handleLogout} />
 
       <main className={styles.main}>
-        {renderContent()}
+        {!profileLoading && myProfile?.address
+          ? renderContent()
+          : !profileLoading && (
+            <div className={styles.noAddress}>
+              <p className={`${styles.noAddressText} ${styles.animItem} ${styles.animDelay1}`}>
+                <span style={{ color: '#E06060' }}>사귐</span>은 동네에서 시작돼요
+              </p>
+              <p className={`${styles.noAddressSubText} ${styles.animItem} ${styles.animDelay2}`}>
+                먼저 우리 동네를 알려주세요.
+              </p>
+              <div className={`${styles.animItem} ${styles.animDelay3}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                <img src={mapPinAltIcon} alt="" width={48} height={48} className={styles.noAddressIcon} />
+                <p className={styles.noAddressHint}>내 동네를 등록하면 가까운 모임이 열려요</p>
+              </div>
+              <button
+                type="button"
+                className={`${styles.noAddressButton} ${styles.animItem} ${styles.animDelay4}`}
+                onClick={() => navigate('/app/profile/edit/address')}
+              >
+                등록하기
+                <img src={arrowNarrowRightIcon} alt="" width={16} height={16} className={styles.noAddressButtonIcon} />
+              </button>
+            </div>
+          )}
       </main>
     </>
   )

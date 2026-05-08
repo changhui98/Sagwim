@@ -27,6 +27,7 @@ import org.hibernate.type.StandardBasicTypes;
 public class PostgresKstFunctionContributor implements FunctionContributor {
 
     private static final String KST_MONTH_SQL = "to_char(?1, 'YYYY-MM')";
+    private static final String ST_DWITHIN_SQL = "ST_DWithin(?1, ?2, ?3)";
 
     @Override
     public void contributeFunctions(FunctionContributions functionContributions) {
@@ -38,6 +39,15 @@ public class PostgresKstFunctionContributor implements FunctionContributor {
                 functionContributions.getTypeConfiguration()
                     .getBasicTypeRegistry()
                     .resolve(StandardBasicTypes.STRING)
+            );
+
+        functionContributions.getFunctionRegistry()
+            .registerPattern(
+                "st_dwithin",
+                ST_DWITHIN_SQL,
+                functionContributions.getTypeConfiguration()
+                    .getBasicTypeRegistry()
+                    .resolve(StandardBasicTypes.BOOLEAN)
             );
     }
 }

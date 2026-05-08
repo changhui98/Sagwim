@@ -23,6 +23,7 @@ spring:
       hibernate:
         jdbc:
           time_zone: Asia/Seoul
+        generate_statistics: true  # Micrometer Hibernate 메트릭 수집 (쿼리 수, 실행 시간 등)
     open-in-view: false
   flyway:
     enabled: true
@@ -46,15 +47,18 @@ spring:
   cache:
     type: redis
 
-## Spring Boot Actuator - 헬스체크 (Docker HEALTHCHECK에서 사용)
+## Spring Boot Actuator - 헬스체크 + Prometheus 메트릭
 management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,prometheus
   endpoint:
     health:
       show-details: never
+  metrics:
+    tags:
+      application: ${spring.application.name}
 
 ## logging
 logging:

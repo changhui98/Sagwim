@@ -25,13 +25,15 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className={styles.container}>
-      <span
-        className={`${styles.icon}${icon ? ` ${styles.iconGraphic}` : ''}${icon && iconColor ? ` ${styles.iconGraphicCustom}` : ''}`}
-        style={iconColor ? { color: iconColor } : undefined}
-        aria-hidden="true"
-      >
-        {icon ?? '📭'}
-      </span>
+      {icon && (
+        <span
+          className={`${styles.icon} ${styles.iconGraphic}${iconColor ? ` ${styles.iconGraphicCustom}` : ''}`}
+          style={iconColor ? { color: iconColor } : undefined}
+          aria-hidden="true"
+        >
+          {icon}
+        </span>
+      )}
       {title ? <h3 className={styles.title}>{title}</h3> : null}
       {description && <p className={styles.description}>{description}</p>}
       {action && (
