@@ -193,7 +193,7 @@ public class GroupQueryRepository {
         double rangeMeters = exposureRangeKm * 1000.0;
         BooleanExpression isOnline = group.meetingType.eq(GroupMeetingType.ONLINE);
         BooleanExpression withinRange = Expressions.booleanTemplate(
-            "function('st_dwithin', {0}, {1}, {2})",
+            "st_dwithin({0}, {1}, {2})",
             group.location, userLocation, rangeMeters
         );
         BooleanExpression noLocation = group.location.isNull();
