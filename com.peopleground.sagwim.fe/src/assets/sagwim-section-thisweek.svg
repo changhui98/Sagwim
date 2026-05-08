@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <defs>
+    <linearGradient id="weekGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF8A7A"/>
+      <stop offset="1" stop-color="#E63946"/>
+    </linearGradient>
+  </defs>
+  <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1.5A2.5 2.5 0 0 1 22 6.5v13a2.5 2.5 0 0 1-2.5 2.5h-15A2.5 2.5 0 0 1 2 19.5v-13A2.5 2.5 0 0 1 4.5 4H6V3a1 1 0 0 1 1-1zm13 8H4v9.5c0 .3.2.5.5.5h15c.3 0 .5-.2.5-.5V10z" fill="url(#weekGrad)"/>
+  <rect x="6.5" y="13.5" width="11" height="3" rx="0.8" fill="url(#weekGrad)" opacity="0.35"/>
+</svg>
