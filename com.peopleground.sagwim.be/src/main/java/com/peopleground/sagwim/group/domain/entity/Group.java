@@ -17,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.locationtech.jts.geom.Point;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -68,6 +69,9 @@ public class Group extends AuditingEntity {
 
     @Column(nullable = true, length = 50)
     private String region;
+
+    @Column(columnDefinition = "geography(Point,4326)")
+    private Point location;
 
     @Column(nullable = false)
     private int likeCount = 0;
@@ -141,6 +145,10 @@ public class Group extends AuditingEntity {
 
     public void updateImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public void updateLocation(Point location) {
+        this.location = location;
     }
 
     public boolean isPending() {

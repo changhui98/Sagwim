@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -36,13 +37,13 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public Page<GroupWithLiked> findNewGroups(Pageable pageable, UUID userId) {
-        return groupQueryRepository.findNewGroups(pageable, userId);
+    public Page<GroupWithLiked> findNewGroups(Pageable pageable, UUID userId, Point userLocation, int exposureRangeKm) {
+        return groupQueryRepository.findNewGroups(pageable, userId, userLocation, exposureRangeKm);
     }
 
     @Override
-    public Page<GroupWithLiked> findPopularGroups(Pageable pageable, UUID userId) {
-        return groupQueryRepository.findPopularGroups(pageable, userId);
+    public Page<GroupWithLiked> findPopularGroups(Pageable pageable, UUID userId, Point userLocation, int exposureRangeKm) {
+        return groupQueryRepository.findPopularGroups(pageable, userId, userLocation, exposureRangeKm);
     }
 
     @Override

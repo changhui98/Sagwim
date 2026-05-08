@@ -34,8 +34,13 @@ import com.peopleground.sagwim.notification.domain.entity.NotificationType;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
+import com.peopleground.sagwim.user.infrastructure.GeocodingClient;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +48,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GroupService {
@@ -55,6 +61,8 @@ public class GroupService {
     private final ImageService imageService;
     private final ImageUrlResolver imageUrlResolver;
     private final NotificationService notificationService;
+    private final GeocodingClient geocodingClient;
+    private final GeometryFactory geometryFactory;
 
     @Transactional
     public GroupResponse createGroup(GroupCreateRequest request, CustomUser customUser) {
@@ -82,6 +90,10 @@ public class GroupService {
 
         Group saved = groupRepository.save(group);
 
+        if (group.getMeetingType() == GroupMeetingType.OFFLINE && group.getRegion() != null) {
+            geocodeAndSetLocation(saved, group.getRegion());
+        }
+
         // 생성자를 자동으로 LEADER로 등록
         GroupMember leaderMember = GroupMember.of(saved, leader, GroupMemberRole.LEADER);
         groupMemberRepository.save(leaderMember);
@@ -99,21 +111,25 @@ public class GroupService {
 
     /**
      * 생성된 지 7일 미만인 신규 모임 목록을 조회합니다.
+     * OFFLINE 모임은 사용자의 노출 범위(km) 이내인 것만 포함합니다.
      */
     @Transactional(readOnly = true)
     public PageResponse<GroupResponse> getNewGroups(int page, int size, CustomUser customUser) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<GroupWithLiked> groups = groupRepository.findNewGroups(pageable, customUser.getId());
+        User user = getUser(customUser.getUsername());
+        Page<GroupWithLiked> groups = groupRepository.findNewGroups(pageable, customUser.getId(), user.getLocation(), user.getExposureRangeKm());
         return PageResponse.from(groups.map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked())));
     }
 
     /**
      * 좋아요 수 내림차순으로 인기 모임 목록을 조회합니다.
+     * OFFLINE 모임은 사용자의 노출 범위(km) 이내인 것만 포함합니다.
      */
     @Transactional(readOnly = true)
     public PageResponse<GroupResponse> getPopularGroups(int page, int size, CustomUser customUser) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<GroupWithLiked> groups = groupRepository.findPopularGroups(pageable, customUser.getId());
+        User user = getUser(customUser.getUsername());
+        Page<GroupWithLiked> groups = groupRepository.findPopularGroups(pageable, customUser.getId(), user.getLocation(), user.getExposureRangeKm());
         return PageResponse.from(groups.map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked())));
     }
 
@@ -155,6 +171,12 @@ public class GroupService {
             request.maxMemberCount(),
             joinType
         );
+
+        if (group.getMeetingType() == GroupMeetingType.OFFLINE && group.getRegion() != null) {
+            geocodeAndSetLocation(group, group.getRegion());
+        } else if (group.getMeetingType() == GroupMeetingType.ONLINE) {
+            group.updateLocation(null);
+        }
 
         return GroupResponse.from(group, imageUrlResolver.resolve(group.getImageUrl()));
     }
@@ -362,6 +384,17 @@ public class GroupService {
     private void validateLeader(Group group, String username) {
         if (!group.getLeader().getUsername().equals(username)) {
             throw new AppException(GroupErrorCode.GROUP_FORBIDDEN);
+        }
+    }
+
+    private void geocodeAndSetLocation(Group group, String address) {
+        try {
+            GeocodingClient.GeoPoint geo = geocodingClient.convert(address);
+            Point point = geometryFactory.createPoint(new Coordinate(geo.longitude(), geo.latitude()));
+            point.setSRID(4326);
+            group.updateLocation(point);
+        } catch (Exception e) {
+            log.warn("모임 위치 geocoding 실패 (groupId={}, address={}): {}", group.getId(), address, e.getMessage());
         }
     }
 }

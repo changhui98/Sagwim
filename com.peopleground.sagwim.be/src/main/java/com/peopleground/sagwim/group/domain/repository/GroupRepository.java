@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -18,9 +19,9 @@ public interface GroupRepository {
 
     Page<GroupWithLiked> findAll(Pageable pageable, String keyword, GroupCategory category, UUID userId);
 
-    Page<GroupWithLiked> findNewGroups(Pageable pageable, UUID userId);
+    Page<GroupWithLiked> findNewGroups(Pageable pageable, UUID userId, Point userLocation, int exposureRangeKm);
 
-    Page<GroupWithLiked> findPopularGroups(Pageable pageable, UUID userId);
+    Page<GroupWithLiked> findPopularGroups(Pageable pageable, UUID userId, Point userLocation, int exposureRangeKm);
 
     Page<GroupWithLiked> findByMemberUsername(String username, Pageable pageable, UUID userId);
 

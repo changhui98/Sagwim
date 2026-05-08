@@ -3,6 +3,7 @@ package com.peopleground.sagwim.group.infrastructure.repository;
 import com.peopleground.sagwim.group.domain.GroupWithLiked;
 import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
+import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
 import com.peopleground.sagwim.group.domain.entity.GroupStatus;
 import com.peopleground.sagwim.group.domain.entity.QGroup;
 import com.peopleground.sagwim.group.domain.entity.QGroupMember;
@@ -10,6 +11,7 @@ import com.peopleground.sagwim.like.domain.entity.QGroupLike;
 import com.peopleground.sagwim.user.domain.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -22,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -95,9 +98,9 @@ public class GroupQueryRepository {
 
     /**
      * 생성된 지 7일 미만인 신규 모임을 최신순으로 조회합니다.
-     * KST 기준으로 now - 7days 이후 생성된 모임만 포함합니다.
+     * OFFLINE 모임은 사용자의 노출 범위(km) 이내인 것만 포함합니다.
      */
-    public Page<GroupWithLiked> findNewGroups(Pageable pageable, UUID userId) {
+    public Page<GroupWithLiked> findNewGroups(Pageable pageable, UUID userId, Point userLocation, int exposureRangeKm) {
         QGroup group = QGroup.group;
         QUser leader = QUser.user;
         QGroupLike groupLike = new QGroupLike("groupLikeForStatus");
@@ -108,6 +111,7 @@ public class GroupQueryRepository {
         builder.and(group.deletedDate.isNull());
         builder.and(group.status.eq(GroupStatus.ACTIVE));
         builder.and(group.createdDate.goe(sevenDaysAgo));
+        builder.and(locationFilter(group, userLocation, exposureRangeKm));
 
         List<Tuple> tuples = queryFactory
             .select(group, groupLike.id.isNotNull())
@@ -138,11 +142,18 @@ public class GroupQueryRepository {
 
     /**
      * 좋아요 수 내림차순으로 모임 목록을 조회합니다 (인기 모임).
+     * OFFLINE 모임은 사용자의 노출 범위(km) 이내인 것만 포함합니다.
      */
-    public Page<GroupWithLiked> findPopularGroups(Pageable pageable, UUID userId) {
+    public Page<GroupWithLiked> findPopularGroups(Pageable pageable, UUID userId, Point userLocation, int exposureRangeKm) {
         QGroup group = QGroup.group;
         QUser leader = QUser.user;
         QGroupLike groupLike = new QGroupLike("groupLikeForStatus");
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(group.deletedDate.isNull());
+        builder.and(group.status.eq(GroupStatus.ACTIVE));
+        builder.and(group.likeCount.goe(1));
+        builder.and(locationFilter(group, userLocation, exposureRangeKm));
 
         List<Tuple> tuples = queryFactory
             .select(group, groupLike.id.isNotNull())
@@ -152,7 +163,7 @@ public class GroupQueryRepository {
                 groupLike.group.eq(group),
                 groupLike.user.id.eq(userId)
             )
-            .where(group.deletedDate.isNull(), group.status.eq(GroupStatus.ACTIVE), group.likeCount.goe(1))
+            .where(builder)
             .orderBy(group.likeCount.desc(), group.createdDate.desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -161,7 +172,7 @@ public class GroupQueryRepository {
         Long total = queryFactory
             .select(group.count())
             .from(group)
-            .where(group.deletedDate.isNull(), group.status.eq(GroupStatus.ACTIVE), group.likeCount.goe(1))
+            .where(builder)
             .fetchOne();
 
         List<GroupWithLiked> result = tuples.stream()
@@ -169,6 +180,24 @@ public class GroupQueryRepository {
             .toList();
 
         return new PageImpl<>(result, pageable, total != null ? total : 0);
+    }
+
+    /**
+     * ONLINE 모임은 항상 통과, OFFLINE 모임은 userLocation 기준 exposureRangeKm 이내 또는 위치 미설정 시 통과.
+     * userLocation 이 null 이면 필터를 적용하지 않습니다.
+     */
+    private BooleanExpression locationFilter(QGroup group, Point userLocation, int exposureRangeKm) {
+        if (userLocation == null) {
+            return null;
+        }
+        double rangeMeters = exposureRangeKm * 1000.0;
+        BooleanExpression isOnline = group.meetingType.eq(GroupMeetingType.ONLINE);
+        BooleanExpression withinRange = Expressions.booleanTemplate(
+            "function('st_dwithin', {0}, {1}, {2})",
+            group.location, userLocation, rangeMeters
+        );
+        BooleanExpression noLocation = group.location.isNull();
+        return isOnline.or(withinRange).or(noLocation);
     }
 
     public Page<GroupWithLiked> findByMemberUsername(String username, Pageable pageable, UUID userId) {
