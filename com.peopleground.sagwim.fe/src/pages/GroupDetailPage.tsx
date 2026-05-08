@@ -18,6 +18,7 @@ import type { GroupTab } from '../components/group/GroupDetailTabs'
 import type { GroupDetailResponse } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
 import { GROUP_CATEGORY_LABELS, GROUP_MEETING_TYPE_LABELS } from '../types/group'
+import { removeKoreaPrefix } from '../utils/stringUtils'
 import styles from './GroupDetailPage.module.css'
 
 export function GroupDetailPage() {
@@ -350,7 +351,7 @@ export function GroupDetailPage() {
                 }
               >
                 {group.meetingType === 'OFFLINE' && group.region
-                  ? `오프라인 · ${group.region}`
+                  ? `오프라인 · ${removeKoreaPrefix(group.region)}`
                   : GROUP_MEETING_TYPE_LABELS[group.meetingType]}
               </span>
             </div>

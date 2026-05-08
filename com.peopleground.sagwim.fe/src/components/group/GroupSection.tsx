@@ -4,6 +4,7 @@ import { GROUP_CATEGORY_LABELS, GROUP_MEETING_TYPE_LABELS } from '../../types/gr
 import type { GroupResponse } from '../../types/group'
 import { LoadingSpinner } from '../common/LoadingSpinner'
 import { EmptyState } from '../common/EmptyState'
+import { removeKoreaPrefix } from '../../utils/stringUtils'
 import userAlt1Icon from '../../assets/user-alt-1-svgrepo-com.svg'
 import styles from './GroupSection.module.css'
 
@@ -40,7 +41,7 @@ function GroupCard({ group, liked, likeCount, onNavigate, onLikeToggle }: GroupC
           </span>
           <span className={`${styles.imageBadge} ${group.meetingType === 'ONLINE' ? styles.imageBadgeOnline : styles.imageBadgeOffline}`}>
             {group.meetingType === 'OFFLINE' && group.region
-              ? `오프라인 · ${group.region}`
+              ? `오프라인 · ${removeKoreaPrefix(group.region)}`
               : GROUP_MEETING_TYPE_LABELS[group.meetingType]}
           </span>
         </div>

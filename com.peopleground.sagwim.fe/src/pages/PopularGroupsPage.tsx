@@ -6,6 +6,7 @@ import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { Navbar } from '../components/Navbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { EmptyState } from '../components/common/EmptyState'
+import { removeKoreaPrefix } from '../utils/stringUtils'
 import type { GroupResponse } from '../types/group'
 import { GROUP_CATEGORY_LABELS, GROUP_MEETING_TYPE_LABELS } from '../types/group'
 import userAlt1Icon from '../assets/user-alt-1-svgrepo-com.svg'
@@ -118,7 +119,7 @@ export function PopularGroupsPage() {
           </span>
           <span className={`${styles.imageBadge} ${group.meetingType === 'ONLINE' ? styles.imageBadgeOnline : styles.imageBadgeOffline}`}>
             {group.meetingType === 'OFFLINE' && group.region
-              ? `오프라인 · ${group.region}`
+              ? `오프라인 · ${removeKoreaPrefix(group.region)}`
               : GROUP_MEETING_TYPE_LABELS[group.meetingType]}
           </span>
         </div>
