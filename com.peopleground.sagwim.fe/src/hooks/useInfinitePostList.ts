@@ -19,6 +19,7 @@ interface UseInfinitePostListResult {
   retry: () => void
   loadMore: () => void
   resetAndRefresh: () => void
+  removePost: (postId: number) => void
 }
 
 export function useInfinitePostList(): UseInfinitePostListResult {
@@ -148,6 +149,11 @@ export function useInfinitePostList(): UseInfinitePostListResult {
     fetchPage(0, '', 'TITLE', false)
   }, [fetchPage])
 
+  /** 낙관적으로 특정 게시글을 목록에서 즉시 제거한다. */
+  const removePost = useCallback((postId: number) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId))
+  }, [])
+
   return {
     posts,
     loading,
@@ -159,5 +165,6 @@ export function useInfinitePostList(): UseInfinitePostListResult {
     retry,
     loadMore,
     resetAndRefresh,
+    removePost,
   }
 }

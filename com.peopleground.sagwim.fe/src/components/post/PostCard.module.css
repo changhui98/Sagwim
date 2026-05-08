@@ -54,6 +54,12 @@
   gap: var(--sp-3);
 }
 
+/* 도트 메뉴 래퍼: header 우측 끝으로 밀기 */
+.menuWrap {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
 .avatar {
   width: 36px;
   height: 36px;

@@ -29,6 +29,7 @@ export function PostListPage() {
     retry,
     loadMore,
     resetAndRefresh,
+    removePost,
   } = useInfinitePostList()
 
   usePostCreatedSubscription(
@@ -94,7 +95,7 @@ export function PostListPage() {
       <>
         <div className={styles.feed}>
           {posts.map((post) => (
-            <PostCard key={post.id} post={post} fullWidth />
+            <PostCard key={post.id} post={post} fullWidth onDeleted={removePost} />
           ))}
         </div>
 
