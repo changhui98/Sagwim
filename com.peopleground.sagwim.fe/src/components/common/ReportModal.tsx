@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { createReport, type ReportTargetType } from '../../api/reportApi'
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
+import { useModalKeyboard } from '../../hooks/useModalKeyboard'
 import styles from './ReportModal.module.css'
 
 const MAX_REASON_LENGTH = 500
@@ -46,14 +47,7 @@ export function ReportModal({
   }, [open])
 
   // ESC 키로 닫기
-  useEffect(() => {
-    if (!open) return
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handleKey)
-    return () => document.removeEventListener('keydown', handleKey)
-  }, [open, onClose])
+  useModalKeyboard(open, onClose)
 
   if (!open) return null
 
