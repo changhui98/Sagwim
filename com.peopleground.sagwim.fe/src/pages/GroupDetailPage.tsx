@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getGroup, joinGroup, leaveGroup, kickGroupMember, uploadGroupImage, toggleGroupLike, getGroupLikeStatus, getMyJoinRequestStatus, cancelMyJoinRequest } from '../api/groupApi'
+import { getGroup, joinGroup, leaveGroup, kickGroupMember, toggleGroupLike, getGroupLikeStatus, getMyJoinRequestStatus, cancelMyJoinRequest } from '../api/groupApi'
+import { uploadGroupImage } from '../api/imageApi'
 import { GroupLikersModal } from '../components/group/GroupLikersModal'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
@@ -188,7 +189,7 @@ export function GroupDetailPage() {
 
     try {
       setImageUploading(true)
-      const updated = await uploadGroupImage(token, Number(groupId), file)
+      const updated = await uploadGroupImage(token, file, Number(groupId))
       // 업로드 성공 시 group 상태의 imageUrl만 즉시 반영 (전체 재조회 없이)
       setGroup((prev) => (prev ? { ...prev, imageUrl: updated.imageUrl } : prev))
     } catch (err) {

@@ -1,3 +1,4 @@
+import type { GroupResponse } from '../types/group'
 import { ApiError } from './ApiError'
 import { API_BASE_URL } from './config'
 import { parseResponse } from './apiUtils'
@@ -93,7 +94,7 @@ export const uploadGroupImage = (
   token: string,
   file: File,
   groupId: number,
-): Promise<void> => {
+): Promise<GroupResponse> => {
   if (!token.trim()) {
     throw new ApiError(401, '로그인이 필요합니다.')
   }
@@ -107,7 +108,7 @@ export const uploadGroupImage = (
       Authorization: token.trim(),
     },
     body: formData,
-  }).then((response) => parseResponse<void>(response))
+  }).then((response) => parseResponse<GroupResponse>(response))
 }
 
 export const uploadCommentImage = (

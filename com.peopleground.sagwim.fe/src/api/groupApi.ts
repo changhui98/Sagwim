@@ -216,22 +216,6 @@ export const createGroupSchedule = (
   }).then((res) => parseResponse<ScheduleResponse>(res))
 }
 
-export const uploadGroupImage = (
-  token: string,
-  groupId: number,
-  file: File,
-): Promise<GroupResponse> => {
-  if (!token.trim()) {
-    return Promise.reject(new ApiError(401, '로그인이 필요합니다.'))
-  }
-  const formData = new FormData()
-  formData.append('file', file)
-  return fetch(`${API_BASE_URL}/groups/${groupId}/image`, {
-    method: 'PATCH',
-    headers: { Authorization: token.trim() },
-    body: formData,
-  }).then((res) => parseResponse<GroupResponse>(res))
-}
 
 export const searchPlaceSuggestions = (
   token: string,
