@@ -31,4 +31,18 @@ public record PageResponse<T>(
     public static <T> PageResponse<T> ofSlice(List<T> content, int page, int size, boolean hasNext) {
         return new PageResponse<>(content, page, size, 0L, 0, hasNext);
     }
+
+    /**
+     * size+1 로 조회된 결과에서 마지막 1건 초과 여부로 hasNext 를 판단하고,
+     * 호출측 리스트에서 초과분을 제거한다.
+     *
+     * <p>무한스크롤 API 의 size+1 패턴 전용 헬퍼.</p>
+     */
+    public static <T> boolean trim(List<T> results, int size) {
+        if (results.size() > size) {
+            results.remove(results.size() - 1);
+            return true;
+        }
+        return false;
+    }
 }

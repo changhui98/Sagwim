@@ -4,7 +4,6 @@ import com.peopleground.sagwim.content.application.assembler.ContentResponseAsse
 import com.peopleground.sagwim.content.domain.ContentErrorCode;
 import com.peopleground.sagwim.content.domain.entity.Content;
 import com.peopleground.sagwim.content.domain.repository.ContentRepository;
-import com.peopleground.sagwim.content.infrastructure.repository.ContentQueryRepository;
 import com.peopleground.sagwim.content.presentation.dto.request.ContentCreateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.ContentUpdateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.SearchType;
@@ -60,7 +59,7 @@ public class ContentService {
             ? new ArrayList<>(contentRepository.searchContents(keyword, searchType, page, size))
             : new ArrayList<>(contentRepository.findAllContentsWithoutGroup(page, size));
 
-        boolean hasNext = ContentQueryRepository.trimAndCheckHasNext(raw, size);
+        boolean hasNext = PageResponse.trim(raw, size);
         List<ContentResponse> responses = contentResponseAssembler.toResponseList(raw, user);
         return PageResponse.ofSlice(responses, page, size, hasNext);
     }
@@ -71,7 +70,7 @@ public class ContentService {
     @Transactional(readOnly = true)
     public PageResponse<ContentResponse> getContentsByGroupId(Long groupId, int page, int size, CustomUser user) {
         List<Content> raw = new ArrayList<>(contentRepository.findAllByGroupId(groupId, page, size));
-        boolean hasNext = ContentQueryRepository.trimAndCheckHasNext(raw, size);
+        boolean hasNext = PageResponse.trim(raw, size);
         List<ContentResponse> responses = contentResponseAssembler.toResponseList(raw, user);
         return PageResponse.ofSlice(responses, page, size, hasNext);
     }
@@ -83,7 +82,7 @@ public class ContentService {
     @Transactional(readOnly = true)
     public PageResponse<ContentResponse> getMyContents(CustomUser customUser, int page, int size) {
         List<Content> raw = new ArrayList<>(contentRepository.findAllByUsername(customUser.getUsername(), page, size));
-        boolean hasNext = ContentQueryRepository.trimAndCheckHasNext(raw, size);
+        boolean hasNext = PageResponse.trim(raw, size);
         List<ContentResponse> responses = contentResponseAssembler.toResponseList(raw, customUser);
         return PageResponse.ofSlice(responses, page, size, hasNext);
     }
@@ -98,7 +97,7 @@ public class ContentService {
         }
 
         List<Content> raw = new ArrayList<>(contentRepository.findAllByUsername(username, page, size));
-        boolean hasNext = ContentQueryRepository.trimAndCheckHasNext(raw, size);
+        boolean hasNext = PageResponse.trim(raw, size);
         List<ContentResponse> responses = contentResponseAssembler.toResponseList(raw, customUser);
         return PageResponse.ofSlice(responses, page, size, hasNext);
     }
@@ -162,7 +161,7 @@ public class ContentService {
         String tagName, int page, int size, CustomUser user
     ) {
         List<Content> raw = new ArrayList<>(contentRepository.findAllByTagName(tagName, page, size));
-        boolean hasNext = ContentQueryRepository.trimAndCheckHasNext(raw, size);
+        boolean hasNext = PageResponse.trim(raw, size);
         List<ContentResponse> responses = contentResponseAssembler.toResponseList(raw, user);
         return PageResponse.ofSlice(responses, page, size, hasNext);
     }

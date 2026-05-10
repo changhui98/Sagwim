@@ -35,7 +35,6 @@ import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
 import com.peopleground.sagwim.user.infrastructure.GeocodingClient;
-import com.peopleground.sagwim.group.infrastructure.repository.GroupQueryRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -106,7 +105,7 @@ public class GroupService {
     @Transactional(readOnly = true)
     public PageResponse<GroupResponse> getGroups(int page, int size, String keyword, GroupCategory category, CustomUser customUser) {
         List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findAll(page, size, keyword, category, customUser.getId()));
-        boolean hasNext = GroupQueryRepository.trimAndCheckHasNext(raw, size);
+        boolean hasNext = PageResponse.trim(raw, size);
         List<GroupResponse> responses = raw.stream()
             .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
             .toList();
@@ -122,7 +121,7 @@ public class GroupService {
     public PageResponse<GroupResponse> getNewGroups(int page, int size, CustomUser customUser) {
         User user = getUser(customUser.getUsername());
         List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findNewGroups(page, size, customUser.getId(), user.getLocation(), user.getExposureRangeKm()));
-        boolean hasNext = GroupQueryRepository.trimAndCheckHasNext(raw, size);
+        boolean hasNext = PageResponse.trim(raw, size);
         List<GroupResponse> responses = raw.stream()
             .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
             .toList();
@@ -138,7 +137,7 @@ public class GroupService {
     public PageResponse<GroupResponse> getPopularGroups(int page, int size, CustomUser customUser) {
         User user = getUser(customUser.getUsername());
         List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findPopularGroups(page, size, customUser.getId(), user.getLocation(), user.getExposureRangeKm()));
-        boolean hasNext = GroupQueryRepository.trimAndCheckHasNext(raw, size);
+        boolean hasNext = PageResponse.trim(raw, size);
         List<GroupResponse> responses = raw.stream()
             .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
             .toList();
@@ -375,7 +374,7 @@ public class GroupService {
     @Transactional(readOnly = true)
     public PageResponse<GroupResponse> getMyGroups(CustomUser customUser, int page, int size) {
         List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findByMemberUsername(customUser.getUsername(), page, size, customUser.getId()));
-        boolean hasNext = GroupQueryRepository.trimAndCheckHasNext(raw, size);
+        boolean hasNext = PageResponse.trim(raw, size);
         List<GroupResponse> responses = raw.stream()
             .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
             .toList();

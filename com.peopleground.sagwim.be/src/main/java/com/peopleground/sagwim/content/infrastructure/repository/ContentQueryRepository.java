@@ -261,14 +261,4 @@ public class ContentQueryRepository {
         return builder;
     }
 
-    /**
-     * size+1 로 조회된 결과에서 hasNext 여부를 판단하고, 실제 반환할 목록(size 개)을 잘라낸다.
-     */
-    public static <T> boolean trimAndCheckHasNext(List<T> results, int size) {
-        if (results.size() > size) {
-            results.remove(results.size() - 1);
-            return true;
-        }
-        return false;
-    }
 }
