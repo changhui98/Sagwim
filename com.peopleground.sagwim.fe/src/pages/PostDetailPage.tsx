@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext'
 import { Navbar } from '../components/Navbar'
 import { deletePost, getPost, toggleContentLike, updatePost } from '../api/postApi'
 import { MeatballMenu } from '../components/common/MeatballMenu'
+import { ReportModal } from '../components/common/ReportModal'
 import { createComment, createReply, deleteComment, getComments, toggleCommentLike, updateComment } from '../api/commentApi'
 import { uploadCommentImage } from '../api/imageApi'
 import { ApiError } from '../api/ApiError'
@@ -66,6 +67,9 @@ export function PostDetailPage() {
   const [post, setPost] = useState<ContentResponse | null>(passedPost)
   const [postLoading, setPostLoading] = useState(passedPost === null)
   const [postError, setPostError] = useState<string | null>(null)
+
+  // 신고 모달 상태: { targetType, targetId }
+  const [reportTarget, setReportTarget] = useState<{ targetType: 'POST' | 'COMMENT'; targetId: number } | null>(null)
 
   const [liked, setLiked] = useState(() => passedPost?.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(() => passedPost?.likeCount ?? 0)
@@ -524,7 +528,7 @@ export function PostDetailPage() {
                       { label: '삭제', danger: true, onClick: () => void handleDeletePost() },
                     ]
                   : [
-                      { label: '신고하기', onClick: () => alert('준비 중인 기능입니다.') },
+                      { label: '신고하기', danger: true, onClick: () => setReportTarget({ targetType: 'POST', targetId: contentId }) },
                     ]
               }
             />
@@ -769,6 +773,7 @@ export function PostDetailPage() {
                 onDelete={handleDeleteComment}
                 onLike={handleCommentLike}
                 onUpdate={handleUpdateComment}
+                onReport={(commentId) => setReportTarget({ targetType: 'COMMENT', targetId: commentId })}
               />
             ))}
           </div>
@@ -787,6 +792,13 @@ export function PostDetailPage() {
       </section>
       </div>
       </main>
+
+      <ReportModal
+        open={reportTarget !== null}
+        onClose={() => setReportTarget(null)}
+        targetType={reportTarget?.targetType ?? 'POST'}
+        targetId={reportTarget?.targetId ?? 0}
+      />
     </>
   )
 }
@@ -815,6 +827,7 @@ interface CommentItemProps {
   onDelete: (commentId: number) => Promise<void>
   onLike: (commentId: number) => void
   onUpdate: (commentId: number, newBody: string) => Promise<void>
+  onReport: (commentId: number) => void
 }
 
 function CommentItem({
@@ -838,6 +851,7 @@ function CommentItem({
   onDelete,
   onLike,
   onUpdate,
+  onReport,
 }: CommentItemProps) {
   // 댓글 인라인 수정 상태
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
@@ -993,17 +1007,21 @@ function CommentItem({
         {!comment.deleted && (
           <div className={styles.commentTrailing}>
             {renderPostAuthorLikeAvatar(comment)}
-            {isMyComment && (
-              <MeatballMenu
-                ariaLabel="댓글 메뉴"
-                iconSize={16}
-                size="sm"
-                items={[
-                  { label: '수정', onClick: () => handleEditStart(comment.id, comment.body) },
-                  { label: '삭제', danger: true, onClick: () => void onDelete(comment.id) },
-                ]}
-              />
-            )}
+            <MeatballMenu
+              ariaLabel="댓글 메뉴"
+              iconSize={16}
+              size="sm"
+              items={
+                isMyComment
+                  ? [
+                      { label: '수정', onClick: () => handleEditStart(comment.id, comment.body) },
+                      { label: '삭제', danger: true, onClick: () => void onDelete(comment.id) },
+                    ]
+                  : [
+                      { label: '신고하기', danger: true, onClick: () => onReport(comment.id) },
+                    ]
+              }
+            />
           </div>
         )}
       </div>
@@ -1101,17 +1119,21 @@ function CommentItem({
             {!reply.deleted && (
               <div className={styles.commentTrailing}>
                 {renderPostAuthorLikeAvatar(reply)}
-                {isMyReply && (
-                  <MeatballMenu
-                    ariaLabel="댓글 메뉴"
-                    iconSize={16}
-                    size="sm"
-                    items={[
-                      { label: '수정', onClick: () => handleEditStart(reply.id, reply.body) },
-                      { label: '삭제', danger: true, onClick: () => void onDelete(reply.id) },
-                    ]}
-                  />
-                )}
+                <MeatballMenu
+                  ariaLabel="댓글 메뉴"
+                  iconSize={16}
+                  size="sm"
+                  items={
+                    isMyReply
+                      ? [
+                          { label: '수정', onClick: () => handleEditStart(reply.id, reply.body) },
+                          { label: '삭제', danger: true, onClick: () => void onDelete(reply.id) },
+                        ]
+                      : [
+                          { label: '신고하기', danger: true, onClick: () => onReport(reply.id) },
+                        ]
+                  }
+                />
               </div>
             )}
           </div>

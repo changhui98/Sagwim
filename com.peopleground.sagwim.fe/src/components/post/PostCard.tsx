@@ -6,6 +6,7 @@ import { deletePost, toggleContentLike } from '../../api/postApi'
 import { useAuth } from '../../context/AuthContext'
 import { MeatballMenu } from '../common/MeatballMenu'
 import { ConfirmDialog } from '../common/ConfirmDialog'
+import { ReportModal } from '../common/ReportModal'
 import styles from './PostCard.module.css'
 
 interface PostCardProps {
@@ -61,6 +62,7 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
 
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
 
   const handleCardClick = useCallback(() => {
     navigate(`/app/posts/${post.id}`, { state: { post } })
@@ -174,7 +176,8 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
     : [
         {
           label: '신고하기',
-          onClick: () => alert('준비 중인 기능입니다.'),
+          danger: true,
+          onClick: () => setReportModalOpen(true),
         },
       ]
 
@@ -226,6 +229,12 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
         isLoading={deleteSubmitting}
         onConfirm={() => void handleDeleteConfirm()}
         onCancel={() => setDeleteConfirmOpen(false)}
+      />
+      <ReportModal
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        targetType="POST"
+        targetId={post.id}
       />
       {imageUrls.length > 0 && (
         <div className={styles.imageWrap}>
