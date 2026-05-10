@@ -5,31 +5,8 @@ import type { AdminImageResponse } from '../types/image'
 import type { AdminGroupResponse } from '../types/group'
 import type { DeleteLogEntry } from '../types/deleteLog'
 import type { AdminReportEntry } from '../types/report'
-import { ApiError } from './ApiError'
 import { API_BASE_URL } from './config'
-
-const createAuthHeaders = (token: string): HeadersInit => {
-  if (!token.trim()) {
-    throw new ApiError(401, '로그인이 필요합니다.')
-  }
-
-  return {
-    'Content-Type': 'application/json',
-    Authorization: token.trim(),
-  }
-}
-
-const parseResponse = async <T>(response: Response): Promise<T> => {
-  if (!response.ok) {
-    const text = await response.text()
-    throw new ApiError(
-      response.status,
-      text || `Request failed: ${response.status} ${response.statusText}`,
-    )
-  }
-
-  return response.json() as Promise<T>
-}
+import { createAuthHeaders, parseResponse } from './apiUtils'
 
 export const getAdminUsers = (
   token: string,
@@ -50,15 +27,7 @@ export const deleteAdminUser = (
     method: 'DELETE',
     headers: createAuthHeaders(token),
     body: JSON.stringify({ reason }),
-  }).then(async (response) => {
-    if (!response.ok) {
-      const text = await response.text()
-      throw new ApiError(
-        response.status,
-        text || `Request failed: ${response.status} ${response.statusText}`,
-      )
-    }
-  })
+  }).then((response) => parseResponse<void>(response))
 }
 
 export const getAdminUserDetail = (
@@ -79,15 +48,7 @@ export const changeUserRole = (
     method: 'PATCH',
     headers: createAuthHeaders(token),
     body: JSON.stringify(request),
-  }).then(async (response) => {
-    if (!response.ok) {
-      const text = await response.text()
-      throw new ApiError(
-        response.status,
-        text || `Request failed: ${response.status} ${response.statusText}`,
-      )
-    }
-  })
+  }).then((response) => parseResponse<void>(response))
 }
 
 export const getAdminContents = (
@@ -109,15 +70,7 @@ export const deleteAdminContent = (
     method: 'DELETE',
     headers: createAuthHeaders(token),
     body: JSON.stringify({ reason }),
-  }).then(async (response) => {
-    if (!response.ok) {
-      const text = await response.text()
-      throw new ApiError(
-        response.status,
-        text || `Request failed: ${response.status} ${response.statusText}`,
-      )
-    }
-  })
+  }).then((response) => parseResponse<void>(response))
 }
 
 export const restoreAdminContent = (
@@ -127,15 +80,7 @@ export const restoreAdminContent = (
   return fetch(`${API_BASE_URL}/admin/contents/${contentId}/restore`, {
     method: 'PATCH',
     headers: createAuthHeaders(token),
-  }).then(async (response) => {
-    if (!response.ok) {
-      const text = await response.text()
-      throw new ApiError(
-        response.status,
-        text || `Request failed: ${response.status} ${response.statusText}`,
-      )
-    }
-  })
+  }).then((response) => parseResponse<void>(response))
 }
 
 export const getAdminContentDetail = (
@@ -198,12 +143,7 @@ export const deleteAdminImage = (token: string, imageId: number, reason: string)
     method: 'DELETE',
     headers: createAuthHeaders(token),
     body: JSON.stringify({ reason }),
-  }).then(async (response) => {
-    if (!response.ok) {
-      const text = await response.text()
-      throw new ApiError(response.status, text || `Request failed: ${response.status}`)
-    }
-  })
+  }).then((response) => parseResponse<void>(response))
 }
 
 export const getAdminGroups = (
@@ -241,12 +181,7 @@ export const deleteAdminGroup = (token: string, groupId: number, reason: string)
     method: 'DELETE',
     headers: createAuthHeaders(token),
     body: JSON.stringify({ reason }),
-  }).then(async (response) => {
-    if (!response.ok) {
-      const text = await response.text()
-      throw new ApiError(response.status, text || `Request failed: ${response.status}`)
-    }
-  })
+  }).then((response) => parseResponse<void>(response))
 }
 
 export const getDeleteLogs = (
