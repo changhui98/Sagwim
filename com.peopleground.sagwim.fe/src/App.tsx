@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminRoute } from './components/AdminRoute'
 import { AdminLayout } from './components/admin/AdminLayout'
+import { ChatFab } from './components/chat/ChatFab'
 import { useAuth } from './context/AuthContext'
 import { useDevToolsProtection } from './hooks/useDevToolsProtection'
 import { HomePage } from './pages/HomePage'
@@ -21,6 +22,7 @@ import { AdminGroupsPage } from './pages/admin/AdminGroupsPage'
 import { AdminPostListPage } from './pages/admin/AdminPostListPage'
 import { AdminImageListPage } from './pages/admin/AdminImageListPage'
 import { AdminLogPage } from './pages/admin/AdminLogPage'
+import { AdminReportListPage } from './pages/admin/AdminReportListPage'
 import { PostCreatePage } from './pages/PostCreatePage'
 import { GroupListPage } from './pages/GroupListPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
@@ -30,6 +32,7 @@ import { GroupCreatePage } from './pages/GroupCreatePage'
 import { NewGroupsPage } from './pages/NewGroupsPage'
 import { PopularGroupsPage } from './pages/PopularGroupsPage'
 import { PostDetailPage } from './pages/PostDetailPage'
+import { MessagesPage } from './pages/MessagesPage'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -38,6 +41,7 @@ function App() {
 
   return (
     <div key={location.key} className="page-transition">
+    {isAuthenticated && <ChatFab />}
     <Routes location={location}>
       <Route path="/" element={<HomePage />} />
       <Route
@@ -67,12 +71,15 @@ function App() {
         <Route path="/app/profile/edit/birthdate" element={<ProfileEditBirthDatePage />} />
         <Route path="/app/profile/edit/address" element={<ProfileEditAddressPage />} />
         <Route path="/app/profile/:username" element={<ProfilePage />} />
+        <Route path="/app/messages" element={<MessagesPage />} />
+        <Route path="/app/messages/:roomId" element={<MessagesPage />} />
         <Route path="/app/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="users" element={<AdminUserListPage />} />
           <Route path="groups" element={<AdminGroupsPage />} />
           <Route path="posts" element={<AdminPostListPage />} />
           <Route path="images" element={<AdminImageListPage />} />
+          <Route path="reports" element={<AdminReportListPage />} />
           <Route path="logs" element={<AdminLogPage />} />
         </Route>
       </Route>

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.peopleground.sagwim.chat.infrastructure.pubsub.ChatRedisSubscriber;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,9 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.cache.RedisCacheWriter;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.PatternTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -115,5 +119,32 @@ public class RedisConfig {
             .cacheDefaults(defaultConfig)
             .withInitialCacheConfigurations(cacheConfigurations)
             .build();
+    }
+
+    /**
+     * 채팅 Pub/Sub 수신 어댑터. ChatRedisSubscriber.onMessage() 를 리스너로 등록한다.
+     * 직렬화는 redisTemplate 과 동일한 JSON 직렬화를 사용한다.
+     */
+    @Bean
+    public MessageListenerAdapter chatMessageListenerAdapter(ChatRedisSubscriber subscriber) {
+        MessageListenerAdapter adapter = new MessageListenerAdapter(subscriber, "onMessage");
+        adapter.setSerializer(buildJsonSerializer());
+        return adapter;
+    }
+
+    /**
+     * chat:room:* 패턴 채널을 구독하는 Redis 리스너 컨테이너.
+     * 단일 인스턴스에서도 WebSocket → Redis Pub/Sub → WebSocket 경로를 유지해
+     * 다중 인스턴스 스케일아웃 시 코드 변경 없이 동작하도록 한다.
+     */
+    @Bean
+    public RedisMessageListenerContainer chatRedisListenerContainer(
+        RedisConnectionFactory connectionFactory,
+        MessageListenerAdapter chatMessageListenerAdapter
+    ) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.addMessageListener(chatMessageListenerAdapter, new PatternTopic("chat:room:*"));
+        return container;
     }
 }

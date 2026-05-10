@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getGroup, joinGroup, leaveGroup, kickGroupMember, uploadGroupImage, toggleGroupLike, getGroupLikeStatus, getMyJoinRequestStatus, cancelMyJoinRequest } from '../api/groupApi'
+import { getGroup, getGroupMembers, joinGroup, leaveGroup, kickGroupMember, toggleGroupLike, getGroupLikeStatus, getMyJoinRequestStatus, cancelMyJoinRequest } from '../api/groupApi'
 import { GroupLikersModal } from '../components/group/GroupLikersModal'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
@@ -15,10 +15,11 @@ import { TabSchedule } from '../components/group/TabSchedule'
 import photoCameraIcon from '../assets/photo-camera-photograph-svgrepo-com.svg'
 import userAlt1Icon from '../assets/user-alt-1-svgrepo-com.svg'
 import type { GroupTab } from '../components/group/GroupDetailTabs'
-import type { GroupDetailResponse } from '../types/group'
+import type { GroupDetailResponse, GroupMemberResponse } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
 import { GROUP_CATEGORY_LABELS, GROUP_MEETING_TYPE_LABELS } from '../types/group'
 import { removeKoreaPrefix } from '../utils/stringUtils'
+import { uploadGroupImage } from '../api/imageApi'
 import styles from './GroupDetailPage.module.css'
 
 export function GroupDetailPage() {
@@ -28,6 +29,8 @@ export function GroupDetailPage() {
   const handleUnauthorized = useHandleUnauthorized()
 
   const [group, setGroup] = useState<GroupDetailResponse | null>(null)
+  const [members, setMembers] = useState<GroupMemberResponse[]>([])
+  const [membersLoaded, setMembersLoaded] = useState(false)
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState(false)
@@ -44,10 +47,26 @@ export function GroupDetailPage() {
   const [hasPendingRequest, setHasPendingRequest] = useState(false)
   const [actionError, setActionError] = useState('')
 
+  /** 멤버 목록을 서버에서 새로 불러온다. */
+  const loadMembers = useCallback(async () => {
+    if (!groupId) return
+    try {
+      const pagedResult = await getGroupMembers(token, Number(groupId))
+      setMembers(pagedResult.content)
+      setMembersLoaded(true)
+    } catch {
+      // 멤버 목록 조회 실패 시 조용히 처리 (isMember는 false로 유지)
+    }
+  }, [token, groupId])
+
   const handleTabChange = (tab: GroupTab) => {
     if (tab === 'settings' && groupId) {
       navigate(`/app/groups/${groupId}/settings`)
       return
+    }
+    // 멤버 탭 진입 시 아직 로드 안 됐으면 lazy 로드
+    if (tab === 'members' && !membersLoaded) {
+      void loadMembers()
     }
     setActiveTab(tab)
   }
@@ -77,15 +96,16 @@ export function GroupDetailPage() {
   }, [token, groupId, handleUnauthorized])
 
   useEffect(() => {
-    loadData()
-  }, [loadData])
+    void loadData()
+    void loadMembers()
+  }, [loadData, loadMembers])
 
   const handleLogout = () => {
     logout()
     navigate('/login', { replace: true })
   }
 
-  const isMember = group?.members.some((m) => m.username === myProfile?.username) ?? false
+  const isMember = members.some((m) => m.username === myProfile?.username)
   const isLeader = myProfile?.username === group?.leaderUsername
   const groupImageUrl = group?.imageUrl?.trim() ? group.imageUrl.trim() : null
 
@@ -104,7 +124,7 @@ export function GroupDetailPage() {
       setActionLoading(true)
       setActionError('')
       await joinGroup(token, Number(groupId), answer)
-      await loadData()
+      await Promise.all([loadData(), loadMembers()])
     } catch (err) {
       setActionError(extractErrorMessage(err, '모임 가입에 실패했습니다.'))
       handleUnauthorized(err)
@@ -120,7 +140,7 @@ export function GroupDetailPage() {
       setActionLoading(true)
       setActionError('')
       await leaveGroup(token, Number(groupId))
-      await loadData()
+      await Promise.all([loadData(), loadMembers()])
     } catch (err) {
       setActionError(extractErrorMessage(err, '모임 탈퇴에 실패했습니다.'))
       handleUnauthorized(err)
@@ -151,7 +171,8 @@ export function GroupDetailPage() {
     try {
       setActionLoading(true)
       await kickGroupMember(token, Number(groupId), username)
-      await loadData()
+      // 강퇴 후 멤버 목록만 부분 갱신
+      await loadMembers()
     } catch (err) {
       alert(extractErrorMessage(err, '강퇴 실패'))
       handleUnauthorized(err)
@@ -188,7 +209,7 @@ export function GroupDetailPage() {
 
     try {
       setImageUploading(true)
-      const updated = await uploadGroupImage(token, Number(groupId), file)
+      const updated = await uploadGroupImage(token, file, Number(groupId))
       // 업로드 성공 시 group 상태의 imageUrl만 즉시 반영 (전체 재조회 없이)
       setGroup((prev) => (prev ? { ...prev, imageUrl: updated.imageUrl } : prev))
     } catch (err) {
@@ -403,7 +424,7 @@ export function GroupDetailPage() {
           )}
           {activeTab === 'members' && (
             <TabMemberList
-              members={group.members}
+              members={members}
               isLeader={isLeader}
               actionLoading={actionLoading}
               onKick={handleKick}

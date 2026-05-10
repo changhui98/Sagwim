@@ -46,6 +46,20 @@ export function GroupSettingsPage() {
   const [imageUploading, setImageUploading] = useState(false)
   const [imgError, setImgError] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const imagePreviewRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    imagePreviewRef.current = imagePreview
+  }, [imagePreview])
+
+  // 컴포넌트 unmount 시 미해제된 blob URL 정리
+  useEffect(() => {
+    return () => {
+      if (imagePreviewRef.current) {
+        URL.revokeObjectURL(imagePreviewRef.current)
+      }
+    }
+  }, [])
 
   const [view, setView] = useState<SubView>('menu')
 
@@ -289,6 +303,10 @@ export function GroupSettingsPage() {
     const file = e.target.files?.[0]
     if (!file || !group) return
 
+    // 기존 preview blob URL 해제
+    if (imagePreviewRef.current) {
+      URL.revokeObjectURL(imagePreviewRef.current)
+    }
     const objectUrl = URL.createObjectURL(file)
     setImagePreview(objectUrl)
     setImgError(false)
@@ -299,6 +317,9 @@ export function GroupSettingsPage() {
       setGroupImageUrl(objectUrl)
     } catch (err) {
       alert(extractErrorMessage(err, '이미지 업로드에 실패했습니다.'))
+      if (imagePreviewRef.current) {
+        URL.revokeObjectURL(imagePreviewRef.current)
+      }
       setImagePreview(null)
     } finally {
       setImageUploading(false)

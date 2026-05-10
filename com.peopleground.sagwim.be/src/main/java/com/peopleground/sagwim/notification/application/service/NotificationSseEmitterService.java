@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -76,5 +77,28 @@ public class NotificationSseEmitterService {
         emitters.remove(userId);
         ScheduledFuture<?> future = heartbeats.remove(userId);
         if (future != null) future.cancel(false);
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        emitters.forEach((userId, emitter) -> {
+            try {
+                emitter.complete();
+            } catch (Exception ignored) {
+            }
+        });
+        emitters.clear();
+        heartbeats.forEach((userId, future) -> future.cancel(false));
+        heartbeats.clear();
+
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

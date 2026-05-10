@@ -1,9 +1,9 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { getErrorLogs, getRegistrationLogs } from '../../api/logApi'
 import { getDeleteLogs, restoreDeleteLog } from '../../api/adminApi'
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
+import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { Skeleton } from '../../components/common/Skeleton'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { ErrorLogEntry, LogPageResponse, RegistrationLogEntry } from '../../types/log'
@@ -25,8 +25,8 @@ function statusBadgeClass(status: number): string {
 }
 
 export function AdminLogPage() {
-  const navigate = useNavigate()
-  const { token, logout } = useAuth()
+  const { token } = useAuth()
+  const handleUnauthorized = useHandleUnauthorized()
 
   const [tab, setTab] = useState<Tab>('error')
   const [autoRefresh, setAutoRefresh] = useState(false)
@@ -36,16 +36,6 @@ export function AdminLogPage() {
   const [regLogs, setRegLogs] = useState<LogPageResponse<RegistrationLogEntry> | null>(null)
   const [deleteLogs, setDeleteLogs] = useState<PageResponse<DeleteLogEntry> | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const handleUnauthorized = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        logout()
-        navigate('/login', { replace: true })
-      }
-    },
-    [logout, navigate],
-  )
 
   const load = useCallback(
     async (currentPage: number) => {

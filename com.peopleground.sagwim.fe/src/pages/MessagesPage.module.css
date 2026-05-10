@@ -1,0 +1,63 @@
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.chatLayout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebarWrapper {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.roomViewWrapper {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* 모바일: roomId 있으면 사이드바 숨김, 없으면 룸뷰 숨김 */
+@media (max-width: 768px) {
+  .chatLayout.showRoom .sidebarWrapper {
+    display: none;
+  }
+
+  .chatLayout.showList .roomViewWrapper {
+    display: none;
+  }
+}
+
+/* ── 홈 이동 FAB ─────────────────────────────────────────────── */
+.homeFab {
+  position: fixed;
+  bottom: var(--sp-8);
+  right: var(--sp-6);
+  z-index: 200;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-full);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--clr-text);
+  cursor: pointer;
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+
+.homeFab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 48px rgba(240, 128, 128, 0.35);
+}
+
+.homeFab:active {
+  transform: translateY(0);
+}

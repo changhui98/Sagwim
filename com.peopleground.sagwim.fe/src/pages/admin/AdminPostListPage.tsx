@@ -1,24 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
 import confirmDialogStyles from '../../components/common/ConfirmDialog.module.css'
-import { useNavigate } from 'react-router-dom'
 import {
   deleteAdminContent,
   getAdminContents,
   restoreAdminContent,
 } from '../../api/adminApi'
-import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
+import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
 import { SuccessDialog } from '../../components/common/SuccessDialog'
+import { Pagination } from '../../components/common/Pagination'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { AdminContentResponse } from '../../types/post'
 import tableStyles from '../../components/admin/adminTable.module.css'
 import pageStyles from './AdminPostListPage.module.css'
 
 const PAGE_SIZE = 10
-const MAX_VISIBLE_PAGES = 5
 
 type ConfirmAction = 'delete' | 'restore'
 
@@ -28,8 +27,8 @@ interface ConfirmState {
 }
 
 export function AdminPostListPage() {
-  const navigate = useNavigate()
-  const { token, logout } = useAuth()
+  const { token } = useAuth()
+  const handleUnauthorized = useHandleUnauthorized()
 
   const [contents, setContents] = useState<AdminContentResponse[]>([])
   const [page, setPage] = useState(0)
@@ -43,16 +42,6 @@ export function AdminPostListPage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [successAction, setSuccessAction] = useState<ConfirmAction | null>(null)
   const [deleteReason, setDeleteReason] = useState('')
-
-  const handleUnauthorized = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        logout()
-        navigate('/login', { replace: true })
-      }
-    },
-    [logout, navigate],
-  )
 
   const loadContents = useCallback(
     async (targetPage: number) => {
@@ -111,19 +100,6 @@ export function AdminPostListPage() {
     } finally {
       setActionLoading(false)
     }
-  }
-
-  const getPageNumbers = (): number[] => {
-    if (totalPages <= MAX_VISIBLE_PAGES) {
-      return Array.from({ length: totalPages }, (_, i) => i)
-    }
-    const half = Math.floor(MAX_VISIBLE_PAGES / 2)
-    let start = Math.max(0, page - half)
-    const end = Math.min(totalPages, start + MAX_VISIBLE_PAGES)
-    if (end - start < MAX_VISIBLE_PAGES) {
-      start = Math.max(0, end - MAX_VISIBLE_PAGES)
-    }
-    return Array.from({ length: end - start }, (_, i) => start + i)
   }
 
   const isDeleted = (content: AdminContentResponse): boolean => content.deletedDate !== null
@@ -220,41 +196,12 @@ export function AdminPostListPage() {
               </table>
             </div>
 
-            {totalPages > 1 && (
-              <div className={tableStyles.paginationBar}>
-                <button
-                  type="button"
-                  className={tableStyles.pageButton}
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={loading || page === 0}
-                >
-                  이전
-                </button>
-                {getPageNumbers().map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    type="button"
-                    className={
-                      pageNum === page
-                        ? tableStyles.pageButtonActive
-                        : tableStyles.pageButton
-                    }
-                    onClick={() => handlePageChange(pageNum)}
-                    disabled={loading}
-                  >
-                    {pageNum + 1}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className={tableStyles.pageButton}
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={loading || page >= totalPages - 1}
-                >
-                  다음
-                </button>
-              </div>
-            )}
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              disabled={loading}
+            />
           </>
         )}
       </div>

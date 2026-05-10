@@ -29,6 +29,9 @@ spring:
     enabled: true
     # dev: V1 + V2(시드), prod: V1만 실행
     locations: classpath:db/migration
+    # 한 마이그레이션 파일 안에서 transactional + non-transactional 문 혼용 허용
+    # (예: V23 = CREATE EXTENSION + CREATE INDEX CONCURRENTLY)
+    mixed: true
   mail:
     host: smtp.gmail.com
     port: 587

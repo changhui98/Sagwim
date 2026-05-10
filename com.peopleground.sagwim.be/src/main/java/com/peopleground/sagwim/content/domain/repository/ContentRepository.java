@@ -17,27 +17,37 @@ public interface ContentRepository {
 
     Optional<Content> findByIdIncludingDeleted(Long id);
 
-    Page<Content> findAllContents(Pageable pageable);
+    /**
+     * 무한스크롤용: groupId가 null인 게시글을 size+1 개 조회해 반환한다.
+     * hasNext 판단은 호출측(ContentService)이 담당한다.
+     */
+    List<Content> findAllContentsWithoutGroup(int page, int size);
 
     /**
-     * groupId가 null인 게시글(전체 피드 전용) 목록만 반환한다.
+     * 무한스크롤용: 특정 모임의 게시글을 size+1 개 조회해 반환한다.
      */
-    Page<Content> findAllContentsWithoutGroup(Pageable pageable);
+    List<Content> findAllByGroupId(Long groupId, int page, int size);
 
     /**
-     * 특정 모임에 속한 게시글 목록을 반환한다.
+     * 무한스크롤용: 특정 사용자의 게시글을 size+1 개 조회해 반환한다.
      */
-    Page<Content> findAllByGroupId(Long groupId, Pageable pageable);
+    List<Content> findAllByUsername(String username, int page, int size);
+
+    /**
+     * 무한스크롤용: 키워드 검색 결과를 size+1 개 조회해 반환한다.
+     */
+    List<Content> searchContents(String keyword, SearchType searchType, int page, int size);
+
+    /**
+     * 무한스크롤용: 태그별 게시글을 size+1 개 조회해 반환한다.
+     */
+    List<Content> findAllByTagName(String tagName, int page, int size);
+
+    // ---- 어드민 전용 (COUNT 쿼리 유지) ----
 
     Page<Content> findAllContentsIncludingDeleted(Pageable pageable);
 
-    Page<Content> findAllByUsername(String username, Pageable pageable);
-
-    Page<Content> searchContents(String keyword, SearchType searchType, Pageable pageable);
-
     Page<Content> searchContentsIncludingDeleted(String keyword, SearchType searchType, Pageable pageable);
-
-    Page<Content> findAllByTagName(String tagName, Pageable pageable);
 
     List<Content> findAllByIds(List<Long> ids);
 

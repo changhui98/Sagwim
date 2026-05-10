@@ -1,0 +1,96 @@
+/* ── MeatballMenu (공통 미트볼 드롭다운) ── */
+
+.wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* 트리거 버튼 공통 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover {
+  background: var(--clr-accent-muted);
+  color: var(--clr-text);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* 크기 변형 */
+.btnMd {
+  width: 32px;
+  height: 32px;
+}
+
+.btnSm {
+  width: 26px;
+  height: 26px;
+}
+
+/* 드롭다운 팝오버 */
+.popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 110px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--sp-1);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 20;
+  animation: menuFadeIn 120ms ease-out;
+}
+
+@keyframes menuFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 메뉴 항목 */
+.item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 9px 14px;
+  border: none;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--clr-text);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.item:hover {
+  background: var(--clr-accent-muted);
+}
+
+.item:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.itemDanger:hover {
+  background: var(--clr-error-soft);
+  color: var(--clr-error);
+}

@@ -2,13 +2,18 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { ContentResponse } from '../../types/post'
 import { ApiError } from '../../api/ApiError'
-import { toggleContentLike } from '../../api/postApi'
+import { deletePost, toggleContentLike } from '../../api/postApi'
 import { useAuth } from '../../context/AuthContext'
+import { MeatballMenu } from '../common/MeatballMenu'
+import { ConfirmDialog } from '../common/ConfirmDialog'
+import { ReportModal } from '../common/ReportModal'
 import styles from './PostCard.module.css'
 
 interface PostCardProps {
   post: ContentResponse
   fullWidth?: boolean
+  /** 삭제 성공 후 부모에서 목록 갱신 등을 처리할 콜백. 미제공 시 페이지 전체 새로고침. */
+  onDeleted?: (postId: number) => void
 }
 
 /**
@@ -51,9 +56,13 @@ function formatCount(n: number): string {
   return `${Math.floor(n / 1000)}K`
 }
 
-export function PostCard({ post, fullWidth = false }: PostCardProps) {
+export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) {
   const { token, meUsername, meProfileImageUrl } = useAuth()
   const navigate = useNavigate()
+
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
 
   const handleCardClick = useCallback(() => {
     navigate(`/app/posts/${post.id}`, { state: { post } })
@@ -135,6 +144,43 @@ export function PostCard({ post, fullWidth = false }: PostCardProps) {
   const isMine = !!meUsername && post.createdBy === meUsername
   const avatarUrl = isMine ? meProfileImageUrl : null
 
+  const handleEditClick = useCallback(() => {
+    navigate(`/app/posts/${post.id}`, { state: { post, editMode: true } })
+  }, [navigate, post])
+
+  const handleDeleteConfirm = useCallback(async () => {
+    setDeleteSubmitting(true)
+    try {
+      await deletePost(token, post.id)
+      setDeleteConfirmOpen(false)
+      if (onDeleted) {
+        onDeleted(post.id)
+      } else {
+        // onDeleted 콜백이 없는 경우(레거시 사용처) 페이지 새로고침으로 폴백
+        window.location.reload()
+      }
+    } catch (err) {
+      if (!(err instanceof ApiError)) {
+        console.error('게시글 삭제 실패', err)
+      }
+    } finally {
+      setDeleteSubmitting(false)
+    }
+  }, [token, post.id, onDeleted])
+
+  const menuItems = isMine
+    ? [
+        { label: '수정', onClick: handleEditClick },
+        { label: '삭제', danger: true, onClick: () => setDeleteConfirmOpen(true) },
+      ]
+    : [
+        {
+          label: '신고하기',
+          danger: true,
+          onClick: () => setReportModalOpen(true),
+        },
+      ]
+
   return (
     <article
       className={`${styles.card} ${fullWidth ? styles.cardFullWidth : ''}`}
@@ -165,7 +211,31 @@ export function PostCard({ post, fullWidth = false }: PostCardProps) {
             {formatRelativeTime(post.createdAt)}
           </time>
         </div>
+        <div className={styles.menuWrap} onClick={(e) => e.stopPropagation()}>
+          <MeatballMenu
+            items={menuItems}
+            ariaLabel="게시글 메뉴"
+            iconSize={18}
+            size="md"
+          />
+        </div>
       </div>
+      <ConfirmDialog
+        isOpen={deleteConfirmOpen}
+        title="게시글 삭제"
+        message="이 게시글을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다."
+        confirmLabel="삭제"
+        confirmVariant="danger"
+        isLoading={deleteSubmitting}
+        onConfirm={() => void handleDeleteConfirm()}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
+      <ReportModal
+        open={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        targetType="POST"
+        targetId={post.id}
+      />
       {imageUrls.length > 0 && (
         <div className={styles.imageWrap}>
           <img

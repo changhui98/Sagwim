@@ -1,5 +1,6 @@
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { useModalKeyboard } from '../../hooks/useModalKeyboard'
 import styles from './ConfirmDialog.module.css'
 
 type ConfirmVariant = 'primary' | 'danger'
@@ -36,16 +37,7 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  useEffect(() => {
-    if (!isOpen) return
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel()
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onCancel])
+  useModalKeyboard(isOpen, onCancel)
 
   if (!isOpen) return null
 

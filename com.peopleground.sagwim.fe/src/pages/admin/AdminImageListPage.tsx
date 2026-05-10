@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { deleteAdminImage, getAdminImages } from '../../api/adminApi'
-import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
+import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
 import { SuccessDialog } from '../../components/common/SuccessDialog'
+import { Pagination } from '../../components/common/Pagination'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { AdminImageResponse } from '../../types/image'
 import tableStyles from '../../components/admin/adminTable.module.css'
@@ -14,7 +14,6 @@ import pageStyles from './AdminImageListPage.module.css'
 import confirmDialogStyles from '../../components/common/ConfirmDialog.module.css'
 
 const PAGE_SIZE = 10
-const MAX_VISIBLE_PAGES = 5
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -23,8 +22,8 @@ function formatFileSize(bytes: number): string {
 }
 
 export function AdminImageListPage() {
-  const navigate = useNavigate()
-  const { token, logout, meRole } = useAuth()
+  const { token, meRole } = useAuth()
+  const handleUnauthorized = useHandleUnauthorized()
 
   const [images, setImages] = useState<AdminImageResponse[]>([])
   const [page, setPage] = useState(0)
@@ -37,16 +36,6 @@ export function AdminImageListPage() {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteSuccess, setDeleteSuccess] = useState(false)
   const [deleteReason, setDeleteReason] = useState('')
-
-  const handleUnauthorized = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        logout()
-        navigate('/login', { replace: true })
-      }
-    },
-    [logout, navigate],
-  )
 
   const loadImages = useCallback(
     async (targetPage: number) => {
@@ -93,19 +82,6 @@ export function AdminImageListPage() {
     } finally {
       setDeleteLoading(false)
     }
-  }
-
-  const getPageNumbers = (): number[] => {
-    if (totalPages <= MAX_VISIBLE_PAGES) {
-      return Array.from({ length: totalPages }, (_, i) => i)
-    }
-    const half = Math.floor(MAX_VISIBLE_PAGES / 2)
-    let start = Math.max(0, page - half)
-    const end = Math.min(totalPages, start + MAX_VISIBLE_PAGES)
-    if (end - start < MAX_VISIBLE_PAGES) {
-      start = Math.max(0, end - MAX_VISIBLE_PAGES)
-    }
-    return Array.from({ length: end - start }, (_, i) => start + i)
   }
 
   return (
@@ -194,41 +170,12 @@ export function AdminImageListPage() {
               </table>
             </div>
 
-            {totalPages > 1 && (
-              <div className={tableStyles.paginationBar}>
-                <button
-                  type="button"
-                  className={tableStyles.pageButton}
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={loading || page === 0}
-                >
-                  이전
-                </button>
-                {getPageNumbers().map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    type="button"
-                    className={
-                      pageNum === page
-                        ? tableStyles.pageButtonActive
-                        : tableStyles.pageButton
-                    }
-                    onClick={() => handlePageChange(pageNum)}
-                    disabled={loading}
-                  >
-                    {pageNum + 1}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className={tableStyles.pageButton}
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={loading || page >= totalPages - 1}
-                >
-                  다음
-                </button>
-              </div>
-            )}
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              disabled={loading}
+            />
           </>
         )}
       </div>

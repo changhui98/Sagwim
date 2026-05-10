@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { createDirectRoom } from '../api/chatApi'
 import { getMyProfile, getUserProfile, updateMyProfile } from '../api/userApi'
 import { uploadUserProfileImage } from '../api/imageApi'
 import { useAuth } from '../context/AuthContext'
@@ -204,7 +205,18 @@ export function ProfilePage() {
             <button type="button" className={`${styles.socialButton} ${styles.followButton}`}>
               팔로우
             </button>
-            <button type="button" className={styles.socialButton}>
+            <button
+              type="button"
+              className={styles.socialButton}
+              onClick={async () => {
+                try {
+                  const room = await createDirectRoom(token, myProfile.id)
+                  navigate(`/app/messages/${room.roomId}`)
+                } catch {
+                  // 에러 무시 (이미 방이 존재하면 그 방으로 이동)
+                }
+              }}
+            >
               메시지 보내기
             </button>
           </div>

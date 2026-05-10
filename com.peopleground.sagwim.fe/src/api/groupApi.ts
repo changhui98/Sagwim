@@ -158,10 +158,13 @@ export const leaveGroup = (token: string, groupId: number): Promise<void> => {
 export const getGroupMembers = (
   token: string,
   groupId: number,
-): Promise<GroupMemberResponse[]> => {
-  return fetch(`${API_BASE_URL}/groups/${groupId}/members`, {
+  page = 0,
+  size = 100,
+): Promise<PageResponse<GroupMemberResponse>> => {
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  return fetch(`${API_BASE_URL}/groups/${groupId}/members?${params.toString()}`, {
     headers: createAuthHeaders(token),
-  }).then((res) => parseResponse<GroupMemberResponse[]>(res))
+  }).then((res) => parseResponse<PageResponse<GroupMemberResponse>>(res))
 }
 
 export const getMyGroups = (
@@ -216,22 +219,6 @@ export const createGroupSchedule = (
   }).then((res) => parseResponse<ScheduleResponse>(res))
 }
 
-export const uploadGroupImage = (
-  token: string,
-  groupId: number,
-  file: File,
-): Promise<GroupResponse> => {
-  if (!token.trim()) {
-    return Promise.reject(new ApiError(401, '로그인이 필요합니다.'))
-  }
-  const formData = new FormData()
-  formData.append('file', file)
-  return fetch(`${API_BASE_URL}/groups/${groupId}/image`, {
-    method: 'PATCH',
-    headers: { Authorization: token.trim() },
-    body: formData,
-  }).then((res) => parseResponse<GroupResponse>(res))
-}
 
 export const searchPlaceSuggestions = (
   token: string,

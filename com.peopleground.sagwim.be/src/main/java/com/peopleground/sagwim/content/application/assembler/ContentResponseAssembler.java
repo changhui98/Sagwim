@@ -76,12 +76,7 @@ public class ContentResponseAssembler {
 
     /**
      * {@link Page}&lt;{@link Content}&gt; 를 {@link ContentResponse} 페이지로 변환한다.
-     *
-     * <ul>
-     *   <li>현재 페이지 작성자 username 을 중복 제거하여 한 번에 nickname 을 조회한다.</li>
-     *   <li>로그인 사용자가 있을 때만 좋아요 여부를 배치 조회한다.</li>
-     *   <li>페이지가 비어있는 경우 추가 쿼리 없이 즉시 반환한다.</li>
-     * </ul>
+     * 어드민 페이지네이션처럼 totalElements/totalPages 가 필요한 경우에 사용한다.
      */
     public Page<ContentResponse> toResponsePage(Page<Content> contents, CustomUser user) {
 
@@ -110,6 +105,39 @@ public class ContentResponseAssembler {
             tagsByContentId.getOrDefault(c.getId(), List.of()),
             imagesByContentId.getOrDefault(String.valueOf(c.getId()), List.of())
         ));
+    }
+
+    /**
+     * 무한스크롤용: {@link List}&lt;{@link Content}&gt; 를 {@link ContentResponse} 리스트로 변환한다.
+     * COUNT 쿼리 없이 hasNext 방식을 사용하는 API 전용. totalElements/totalPages 는 0.
+     */
+    public List<ContentResponse> toResponseList(List<Content> contents, CustomUser user) {
+
+        if (contents.isEmpty()) {
+            return List.of();
+        }
+
+        Set<String> usernames = contents.stream()
+            .map(Content::getCreatedBy)
+            .filter(name -> name != null && !name.isBlank())
+            .collect(Collectors.toSet());
+        Map<String, String> nicknames = usernames.isEmpty()
+            ? Collections.emptyMap()
+            : userRepository.findNicknamesByUsernames(usernames);
+
+        Set<Long> likedIds = resolveLikedIds(contents, user);
+        Map<Long, List<String>> tagsByContentId = resolveTagsByContentId(contents);
+        Map<String, List<String>> imagesByContentId = resolveImagesByContentId(contents);
+
+        return contents.stream()
+            .map(c -> ContentResponse.from(
+                c,
+                nicknames.get(c.getCreatedBy()),
+                likedIds.contains(c.getId()),
+                tagsByContentId.getOrDefault(c.getId(), List.of()),
+                imagesByContentId.getOrDefault(String.valueOf(c.getId()), List.of())
+            ))
+            .toList();
     }
 
     private Set<Long> resolveLikedIds(List<Content> contents, CustomUser user) {

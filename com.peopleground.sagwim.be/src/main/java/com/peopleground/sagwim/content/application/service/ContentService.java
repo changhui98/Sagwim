@@ -7,9 +7,7 @@ import com.peopleground.sagwim.content.domain.repository.ContentRepository;
 import com.peopleground.sagwim.content.presentation.dto.request.ContentCreateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.ContentUpdateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.SearchType;
-import com.peopleground.sagwim.content.presentation.dto.response.ContentCreateResponse;
 import com.peopleground.sagwim.content.presentation.dto.response.ContentResponse;
-import com.peopleground.sagwim.content.presentation.dto.response.ContentUpdateResponse;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
@@ -17,12 +15,10 @@ import com.peopleground.sagwim.tag.application.service.TagService;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +33,7 @@ public class ContentService {
 
     @CacheEvict(value = "contentList", allEntries = true)
     @Transactional
-    public ContentCreateResponse contentCreate(ContentCreateRequest req, CustomUser user) {
+    public ContentResponse contentCreate(ContentCreateRequest req, CustomUser user) {
 
         User findUser = getUser(user);
         Content content = contentRepository.save(Content.of(req.body(), findUser, req.groupId()));
@@ -48,43 +44,47 @@ public class ContentService {
             tagService.attachTagsToContent(content, tags);
         }
 
-        return ContentCreateResponse.from(content);
+        return contentResponseAssembler.toResponse(content, user);
     }
 
     /**
      * 전체 피드 게시글 목록 조회. groupId가 null인 게시글(모임 게시글 제외)만 반환한다.
+     * COUNT 쿼리 없이 size+1 방식으로 hasNext를 판단한다.
      */
     @Transactional(readOnly = true)
     public PageResponse<ContentResponse> getContents(
         int page, int size, String keyword, SearchType searchType, CustomUser user
     ) {
-        Pageable pageable = PageRequest.of(page, size);
+        List<Content> raw = (keyword != null && !keyword.isBlank())
+            ? new ArrayList<>(contentRepository.searchContents(keyword, searchType, page, size))
+            : new ArrayList<>(contentRepository.findAllContentsWithoutGroup(page, size));
 
-        Page<Content> contents = (keyword != null && !keyword.isBlank())
-            ? contentRepository.searchContents(keyword, searchType, pageable)
-            : contentRepository.findAllContentsWithoutGroup(pageable);
-
-        return PageResponse.from(contentResponseAssembler.toResponsePage(contents, user));
+        boolean hasNext = PageResponse.trim(raw, size);
+        List<ContentResponse> responses = contentResponseAssembler.toResponseList(raw, user);
+        return PageResponse.ofSlice(responses, page, size, hasNext);
     }
 
     /**
-     * 특정 모임의 게시글 목록 조회.
+     * 특정 모임의 게시글 목록 조회. COUNT 쿼리 없이 size+1 방식.
      */
     @Transactional(readOnly = true)
     public PageResponse<ContentResponse> getContentsByGroupId(Long groupId, int page, int size, CustomUser user) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Content> contents = contentRepository.findAllByGroupId(groupId, pageable);
-        return PageResponse.from(contentResponseAssembler.toResponsePage(contents, user));
+        List<Content> raw = new ArrayList<>(contentRepository.findAllByGroupId(groupId, page, size));
+        boolean hasNext = PageResponse.trim(raw, size);
+        List<ContentResponse> responses = contentResponseAssembler.toResponseList(raw, user);
+        return PageResponse.ofSlice(responses, page, size, hasNext);
     }
 
     /**
      * 현재 로그인한 사용자가 작성한 글 목록을 최신순으로 페이지네이션하여 반환한다.
+     * COUNT 쿼리 없이 size+1 방식.
      */
     @Transactional(readOnly = true)
     public PageResponse<ContentResponse> getMyContents(CustomUser customUser, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Content> contents = contentRepository.findAllByUsername(customUser.getUsername(), pageable);
-        return PageResponse.from(contentResponseAssembler.toResponsePage(contents, customUser));
+        List<Content> raw = new ArrayList<>(contentRepository.findAllByUsername(customUser.getUsername(), page, size));
+        boolean hasNext = PageResponse.trim(raw, size);
+        List<ContentResponse> responses = contentResponseAssembler.toResponseList(raw, customUser);
+        return PageResponse.ofSlice(responses, page, size, hasNext);
     }
 
     @Transactional(readOnly = true)
@@ -96,9 +96,10 @@ public class ContentService {
             throw new AppException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Content> contents = contentRepository.findAllByUsername(username, pageable);
-        return PageResponse.from(contentResponseAssembler.toResponsePage(contents, customUser));
+        List<Content> raw = new ArrayList<>(contentRepository.findAllByUsername(username, page, size));
+        boolean hasNext = PageResponse.trim(raw, size);
+        List<ContentResponse> responses = contentResponseAssembler.toResponseList(raw, customUser);
+        return PageResponse.ofSlice(responses, page, size, hasNext);
     }
 
     /**
@@ -113,7 +114,7 @@ public class ContentService {
 
     @CacheEvict(value = "contentList", allEntries = true)
     @Transactional
-    public ContentUpdateResponse updateContent(Long contentId, ContentUpdateRequest req, CustomUser customUser) {
+    public ContentResponse updateContent(Long contentId, ContentUpdateRequest req, CustomUser customUser) {
 
         Content content = getContentByOwner(contentId, customUser);
         content.update(req.body());
@@ -123,7 +124,7 @@ public class ContentService {
             tagService.updateContentTags(content, req.tags());
         }
 
-        return ContentUpdateResponse.from(content);
+        return contentResponseAssembler.toResponse(content, customUser);
     }
 
     @CacheEvict(value = "contentList", allEntries = true)
@@ -149,7 +150,7 @@ public class ContentService {
     }
 
     /**
-     * 특정 태그의 게시글 목록을 조회한다.
+     * 특정 태그의 게시글 목록을 조회한다. COUNT 쿼리 없이 size+1 방식.
      *
      * <p>작성자 닉네임과 현재 로그인 사용자의 좋아요 여부(likedByMe)를
      * {@link ContentResponseAssembler}를 통해 일관되게 배치로 채운다.
@@ -159,9 +160,10 @@ public class ContentService {
     public PageResponse<ContentResponse> getContentsByTagName(
         String tagName, int page, int size, CustomUser user
     ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Content> contents = contentRepository.findAllByTagName(tagName, pageable);
-        return PageResponse.from(contentResponseAssembler.toResponsePage(contents, user));
+        List<Content> raw = new ArrayList<>(contentRepository.findAllByTagName(tagName, page, size));
+        boolean hasNext = PageResponse.trim(raw, size);
+        List<ContentResponse> responses = contentResponseAssembler.toResponseList(raw, user);
+        return PageResponse.ofSlice(responses, page, size, hasNext);
     }
 
     private User getUser(CustomUser user) {

@@ -85,6 +85,9 @@ dependencies {
     // Redis - 조회수, 좋아요 카운트, 인기 태그, 게시글 목록 캐싱을 위한 인메모리 데이터 스토어
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+    // WebSocket + STOMP — 실시간 채팅
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
 }
 
 def loadEnv() {

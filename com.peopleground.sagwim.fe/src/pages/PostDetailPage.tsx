@@ -8,7 +8,8 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Navbar } from '../components/Navbar'
 import { deletePost, getPost, toggleContentLike, updatePost } from '../api/postApi'
-import { MenuMeatballsIcon } from '../components/NavIcons'
+import { MeatballMenu } from '../components/common/MeatballMenu'
+import { ReportModal } from '../components/common/ReportModal'
 import { createComment, createReply, deleteComment, getComments, toggleCommentLike, updateComment } from '../api/commentApi'
 import { uploadCommentImage } from '../api/imageApi'
 import { ApiError } from '../api/ApiError'
@@ -59,11 +60,16 @@ export function PostDetailPage() {
   const contentId = Number(postId)
 
   // 게시글 데이터: location.state로 넘어온 경우 우선 사용, 없으면 API 호출
-  const passedPost = (location.state as { post?: ContentResponse } | null)?.post ?? null
+  const locationState = location.state as { post?: ContentResponse; editMode?: boolean } | null
+  const passedPost = locationState?.post ?? null
+  const passedEditMode = locationState?.editMode ?? false
 
   const [post, setPost] = useState<ContentResponse | null>(passedPost)
   const [postLoading, setPostLoading] = useState(passedPost === null)
   const [postError, setPostError] = useState<string | null>(null)
+
+  // 신고 모달 상태: { targetType, targetId }
+  const [reportTarget, setReportTarget] = useState<{ targetType: 'POST' | 'COMMENT'; targetId: number } | null>(null)
 
   const [liked, setLiked] = useState(() => passedPost?.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(() => passedPost?.likeCount ?? 0)
@@ -145,10 +151,9 @@ export function PostDetailPage() {
     }
   }, [contentId, token, updateLiked, updateLikeCount])
 
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const [editMode, setEditMode] = useState(false)
-  const [editBody, setEditBody] = useState('')
+  const [editMode, setEditMode] = useState(passedEditMode)
+  // passedEditMode가 true일 때 passedPost.body를 초기값으로 사용
+  const [editBody, setEditBody] = useState(() => (passedEditMode ? (passedPost?.body ?? '') : ''))
   const [editSubmitting, setEditSubmitting] = useState(false)
 
   // ── 댓글 ──
@@ -211,17 +216,6 @@ export function PostDetailPage() {
     loadComments().finally(() => setCommentsLoading(false))
   }, [loadComments])
 
-  useEffect(() => {
-    if (!menuOpen) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [menuOpen])
-
   const handleLoadMore = async () => {
     if (!hasNext || nextCursorId === null) return
     setLoadingMore(true)
@@ -237,6 +231,21 @@ export function PostDetailPage() {
   const commentImageInputRef = useRef<HTMLInputElement>(null)
   const [commentImageFile, setCommentImageFile] = useState<File | null>(null)
   const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null)
+  // blob URL 누수 방지: 최신 preview URL을 ref로 추적하여 unmount 시 revoke
+  const commentImagePreviewRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    commentImagePreviewRef.current = commentImagePreview
+  }, [commentImagePreview])
+
+  // 컴포넌트 unmount 시 미해제된 blob URL 정리
+  useEffect(() => {
+    return () => {
+      if (commentImagePreviewRef.current) {
+        URL.revokeObjectURL(commentImagePreviewRef.current)
+      }
+    }
+  }, [])
 
   // ── 대댓글 ──
 
@@ -246,11 +255,19 @@ export function PostDetailPage() {
   const handleCommentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    // 기존 preview가 있으면 먼저 해제
+    if (commentImagePreviewRef.current) {
+      URL.revokeObjectURL(commentImagePreviewRef.current)
+    }
+    const newUrl = URL.createObjectURL(file)
     setCommentImageFile(file)
-    setCommentImagePreview(URL.createObjectURL(file))
+    setCommentImagePreview(newUrl)
   }
 
   const handleCommentImageRemove = () => {
+    if (commentImagePreviewRef.current) {
+      URL.revokeObjectURL(commentImagePreviewRef.current)
+    }
     setCommentImageFile(null)
     setCommentImagePreview(null)
     if (commentImageInputRef.current) commentImageInputRef.current.value = ''
@@ -270,6 +287,10 @@ export function PostDetailPage() {
       }
       const created = await createComment(token, contentId, trimmed, imageUrl)
       setComments((prev) => [created, ...prev])
+      // 전송 성공 시 blob URL 해제
+      if (commentImagePreviewRef.current) {
+        URL.revokeObjectURL(commentImagePreviewRef.current)
+      }
       setCommentImageFile(null)
       setCommentImagePreview(null)
       if (commentImageInputRef.current) commentImageInputRef.current.value = ''
@@ -391,7 +412,6 @@ export function PostDetailPage() {
   const handleEditStart = () => {
     setEditBody(post?.body ?? '')
     setEditMode(true)
-    setMenuOpen(false)
   }
 
   const handleEditCancel = () => {
@@ -404,10 +424,7 @@ export function PostDetailPage() {
     if (!trimmed || editSubmitting || !post) return
     setEditSubmitting(true)
     try {
-      await updatePost(token, contentId, trimmed, post.tags)
-      // updatePost 응답(ContentUpdateResponse)에는 imageUrls 등 일부 필드가 없으므로
-      // 수정 완료 후 단건 조회 API로 최신 ContentResponse를 다시 가져온다.
-      const refreshed = await getPost(token, contentId)
+      const refreshed = await updatePost(token, contentId, trimmed, post.tags)
       setPost(refreshed)
       setEditMode(false)
       setEditBody('')
@@ -523,40 +540,23 @@ export function PostDetailPage() {
               {formatRelativeTime(post.createdAt)}
             </time>
           </div>
-          {isMine && (
-            <div className={styles.postMenu} ref={menuRef}>
-              <button
-                type="button"
-                className={styles.postMenuBtn}
-                onClick={() => setMenuOpen((v) => !v)}
-                aria-label="게시글 메뉴"
-                aria-expanded={menuOpen}
-                aria-haspopup="menu"
-              >
-                <MenuMeatballsIcon width={20} height={20} />
-              </button>
-              {menuOpen && (
-                <div className={styles.postMenuPopover} role="menu">
-                  <button
-                    type="button"
-                    className={styles.postMenuItem}
-                    role="menuitem"
-                    onClick={handleEditStart}
-                  >
-                    수정
-                  </button>
-                  <button
-                    type="button"
-                    className={`${styles.postMenuItem} ${styles.postMenuItemDanger}`}
-                    role="menuitem"
-                    onClick={() => { setMenuOpen(false); void handleDeletePost() }}
-                  >
-                    삭제
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+          <div className={styles.menuWrap}>
+            <MeatballMenu
+              ariaLabel="게시글 메뉴"
+              iconSize={20}
+              size="md"
+              items={
+                isMine
+                  ? [
+                      { label: '수정', onClick: handleEditStart },
+                      { label: '삭제', danger: true, onClick: () => void handleDeletePost() },
+                    ]
+                  : [
+                      { label: '신고하기', danger: true, onClick: () => setReportTarget({ targetType: 'POST', targetId: contentId }) },
+                    ]
+              }
+            />
+          </div>
         </div>
 
         {editMode ? (
@@ -797,6 +797,7 @@ export function PostDetailPage() {
                 onDelete={handleDeleteComment}
                 onLike={handleCommentLike}
                 onUpdate={handleUpdateComment}
+                onReport={(commentId) => setReportTarget({ targetType: 'COMMENT', targetId: commentId })}
               />
             ))}
           </div>
@@ -815,6 +816,13 @@ export function PostDetailPage() {
       </section>
       </div>
       </main>
+
+      <ReportModal
+        open={reportTarget !== null}
+        onClose={() => setReportTarget(null)}
+        targetType={reportTarget?.targetType ?? 'POST'}
+        targetId={reportTarget?.targetId ?? 0}
+      />
     </>
   )
 }
@@ -843,6 +851,7 @@ interface CommentItemProps {
   onDelete: (commentId: number) => Promise<void>
   onLike: (commentId: number) => void
   onUpdate: (commentId: number, newBody: string) => Promise<void>
+  onReport: (commentId: number) => void
 }
 
 function CommentItem({
@@ -866,28 +875,12 @@ function CommentItem({
   onDelete,
   onLike,
   onUpdate,
+  onReport,
 }: CommentItemProps) {
-  // 댓글 미트볼 메뉴 상태
-  const [commentMenuOpen, setCommentMenuOpen] = useState(false)
-  const commentMenuRef = useRef<HTMLDivElement>(null)
-
   // 댓글 인라인 수정 상태
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
   const [editBody, setEditBody] = useState('')
   const [editSubmitting, setEditSubmitting] = useState(false)
-
-
-  // 댓글 메뉴 외부 클릭 닫기
-  useEffect(() => {
-    if (!commentMenuOpen) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (commentMenuRef.current && !commentMenuRef.current.contains(e.target as Node)) {
-        setCommentMenuOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [commentMenuOpen])
 
   const isMyComment = !!meUsername && comment.authorUsername === meUsername
 
@@ -900,7 +893,6 @@ function CommentItem({
   const handleEditStart = (targetId: number, currentBody: string) => {
     setEditingCommentId(targetId)
     setEditBody(currentBody)
-    setCommentMenuOpen(false)
   }
 
   const handleEditCancel = () => {
@@ -1039,40 +1031,21 @@ function CommentItem({
         {!comment.deleted && (
           <div className={styles.commentTrailing}>
             {renderPostAuthorLikeAvatar(comment)}
-            {isMyComment && (
-              <div className={styles.commentMenu} ref={commentMenuRef}>
-                <button
-                  type="button"
-                  className={styles.commentMenuBtn}
-                  onClick={() => setCommentMenuOpen((v) => !v)}
-                  aria-label="댓글 메뉴"
-                  aria-expanded={commentMenuOpen}
-                  aria-haspopup="menu"
-                >
-                  <MenuMeatballsIcon width={16} height={16} />
-                </button>
-                {commentMenuOpen && (
-                  <div className={styles.commentMenuPopover} role="menu">
-                    <button
-                      type="button"
-                      className={styles.postMenuItem}
-                      role="menuitem"
-                      onClick={() => handleEditStart(comment.id, comment.body)}
-                    >
-                      수정
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.postMenuItem} ${styles.postMenuItemDanger}`}
-                      role="menuitem"
-                      onClick={() => { setCommentMenuOpen(false); void onDelete(comment.id) }}
-                    >
-                      삭제
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+            <MeatballMenu
+              ariaLabel="댓글 메뉴"
+              iconSize={16}
+              size="sm"
+              items={
+                isMyComment
+                  ? [
+                      { label: '수정', onClick: () => handleEditStart(comment.id, comment.body) },
+                      { label: '삭제', danger: true, onClick: () => void onDelete(comment.id) },
+                    ]
+                  : [
+                      { label: '신고하기', danger: true, onClick: () => onReport(comment.id) },
+                    ]
+              }
+            />
           </div>
         )}
       </div>
@@ -1170,14 +1143,21 @@ function CommentItem({
             {!reply.deleted && (
               <div className={styles.commentTrailing}>
                 {renderPostAuthorLikeAvatar(reply)}
-                {isMyReply && (
-                  <ReplyMenuButton
-                    replyId={reply.id}
-                    replyBody={reply.body}
-                    onEditStart={handleEditStart}
-                    onDelete={onDelete}
-                  />
-                )}
+                <MeatballMenu
+                  ariaLabel="댓글 메뉴"
+                  iconSize={16}
+                  size="sm"
+                  items={
+                    isMyReply
+                      ? [
+                          { label: '수정', onClick: () => handleEditStart(reply.id, reply.body) },
+                          { label: '삭제', danger: true, onClick: () => void onDelete(reply.id) },
+                        ]
+                      : [
+                          { label: '신고하기', danger: true, onClick: () => onReport(reply.id) },
+                        ]
+                  }
+                />
               </div>
             )}
           </div>
@@ -1239,65 +1219,6 @@ function CommentItem({
               </button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-// 대댓글용 독립 미트볼 메뉴 — 각 대댓글이 자신의 팝업 열림 상태를 관리
-interface ReplyMenuButtonProps {
-  replyId: number
-  replyBody: string
-  onEditStart: (id: number, body: string) => void
-  onDelete: (id: number) => Promise<void>
-}
-
-function ReplyMenuButton({ replyId, replyBody, onEditStart, onDelete }: ReplyMenuButtonProps) {
-  const [open, setOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [open])
-
-  return (
-    <div className={styles.commentMenu} ref={menuRef}>
-      <button
-        type="button"
-        className={styles.commentMenuBtn}
-        onClick={() => setOpen((v) => !v)}
-        aria-label="댓글 메뉴"
-        aria-expanded={open}
-        aria-haspopup="menu"
-      >
-        <MenuMeatballsIcon width={16} height={16} />
-      </button>
-      {open && (
-        <div className={styles.commentMenuPopover} role="menu">
-          <button
-            type="button"
-            className={styles.postMenuItem}
-            role="menuitem"
-            onClick={() => { setOpen(false); onEditStart(replyId, replyBody) }}
-          >
-            수정
-          </button>
-          <button
-            type="button"
-            className={`${styles.postMenuItem} ${styles.postMenuItemDanger}`}
-            role="menuitem"
-            onClick={() => { setOpen(false); void onDelete(replyId) }}
-          >
-            삭제
-          </button>
         </div>
       )}
     </div>

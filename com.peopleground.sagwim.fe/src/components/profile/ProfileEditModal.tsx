@@ -59,6 +59,20 @@ export function ProfileEditModal({
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageUploading, setImageUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const imagePreviewRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    imagePreviewRef.current = imagePreview
+  }, [imagePreview])
+
+  // 컴포넌트 unmount 시 미해제된 blob URL 정리
+  useEffect(() => {
+    return () => {
+      if (imagePreviewRef.current) {
+        URL.revokeObjectURL(imagePreviewRef.current)
+      }
+    }
+  }, [])
 
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [successOpen, setSuccessOpen] = useState(false)
@@ -92,6 +106,10 @@ export function ProfileEditModal({
     setConfirmOpen(false)
     setSuccessOpen(false)
     setSavedProfile(null)
+    // 모달 재오픈 시 이전 blob URL 해제
+    if (imagePreviewRef.current) {
+      URL.revokeObjectURL(imagePreviewRef.current)
+    }
     setImagePreview(null)
     setImageUploading(false)
 
@@ -203,6 +221,10 @@ export function ProfileEditModal({
     const file = e.target.files?.[0]
     if (!file || !profile) return
 
+    // 기존 preview blob URL 해제
+    if (imagePreviewRef.current) {
+      URL.revokeObjectURL(imagePreviewRef.current)
+    }
     const objectUrl = URL.createObjectURL(file)
     setImagePreview(objectUrl)
 
@@ -212,6 +234,9 @@ export function ProfileEditModal({
       setForm((prev) => ({ ...prev, profileImageUrl: result.fileUrl }))
     } catch (err) {
       setError(err instanceof Error ? err.message : '이미지 업로드에 실패했습니다.')
+      if (imagePreviewRef.current) {
+        URL.revokeObjectURL(imagePreviewRef.current)
+      }
       setImagePreview(null)
     } finally {
       setImageUploading(false)

@@ -112,6 +112,9 @@ public class SecurityConfig {
                     // 이미지 조회 공개 API (비로그인 사용자도 이미지 조회 가능)
                     .requestMatchers(HttpMethod.GET, "/api/v1/images").permitAll()
                     .requestMatchers("/images/**").permitAll()
+                    // WebSocket 핸드셰이크는 HTTP 레벨에서 인증 없이 허용
+                    // 실제 인증은 STOMP CONNECT 단계의 StompHandlerInterceptor에서 처리한다.
+                    .requestMatchers("/ws-chat/**").permitAll()
                     .anyRequest().authenticated())
 
             .exceptionHandling(e ->

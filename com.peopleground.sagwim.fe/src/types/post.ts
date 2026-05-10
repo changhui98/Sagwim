@@ -32,6 +32,3 @@ export interface CreateContentRequest {
   tags?: string[]
   groupId?: number | null
 }
-
-// 하위 호환용 타입 alias
-export type PostResponse = ContentResponse

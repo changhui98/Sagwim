@@ -1,0 +1,98 @@
+/* ── ReportModal ── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  animation: fadeIn 0.2s var(--ease) both;
+}
+
+.modal {
+  max-width: 420px;
+  width: calc(100% - 32px);
+  padding: var(--sp-8);
+  border-radius: var(--r-xl);
+  background: var(--clr-surface);
+  box-shadow: var(--shadow-lg);
+  animation: scaleIn 0.25s var(--ease) both;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  margin: 0 0 var(--sp-2);
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--clr-text-secondary);
+  margin: 0 0 var(--sp-5);
+  line-height: 1.5;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--clr-text);
+  margin-bottom: var(--sp-2);
+}
+
+.textareaWrap {
+  position: relative;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: var(--sp-3);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-md);
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color var(--transition);
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--clr-accent);
+}
+
+.textarea::placeholder {
+  color: var(--clr-text-muted);
+}
+
+.charCount {
+  display: block;
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+  margin-top: var(--sp-1);
+}
+
+.charCountWarn {
+  color: var(--clr-error);
+}
+
+.actions {
+  display: flex;
+  gap: var(--sp-3);
+  justify-content: flex-end;
+  margin-top: var(--sp-6);
+}
+
+.errorMsg {
+  font-size: 0.875rem;
+  color: var(--clr-error);
+  margin-top: var(--sp-3);
+}

@@ -143,7 +143,6 @@ export interface GroupDetailResponse extends GroupResponse {
   status: GroupStatus
   joinType: GroupJoinType
   joinQuestions?: string[]
-  members: GroupMemberResponse[]
 }
 
 export interface GroupCreateRequest {
