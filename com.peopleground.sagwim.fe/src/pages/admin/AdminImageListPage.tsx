@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { deleteAdminImage, getAdminImages } from '../../api/adminApi'
-import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
+import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
@@ -23,8 +22,8 @@ function formatFileSize(bytes: number): string {
 }
 
 export function AdminImageListPage() {
-  const navigate = useNavigate()
-  const { token, logout, meRole } = useAuth()
+  const { token, meRole } = useAuth()
+  const handleUnauthorized = useHandleUnauthorized()
 
   const [images, setImages] = useState<AdminImageResponse[]>([])
   const [page, setPage] = useState(0)
@@ -37,16 +36,6 @@ export function AdminImageListPage() {
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [deleteSuccess, setDeleteSuccess] = useState(false)
   const [deleteReason, setDeleteReason] = useState('')
-
-  const handleUnauthorized = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        logout()
-        navigate('/login', { replace: true })
-      }
-    },
-    [logout, navigate],
-  )
 
   const loadImages = useCallback(
     async (targetPage: number) => {

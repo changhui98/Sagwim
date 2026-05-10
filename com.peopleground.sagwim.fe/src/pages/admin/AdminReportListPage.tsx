@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { getAdminReports } from '../../api/adminApi'
-import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
+import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { Skeleton } from '../../components/common/Skeleton'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { formatDateTime } from '../../utils/dateUtils'
@@ -14,8 +13,8 @@ import pageStyles from './AdminReportListPage.module.css'
 const PAGE_SIZE = 20
 
 export function AdminReportListPage() {
-  const navigate = useNavigate()
-  const { token, logout } = useAuth()
+  const { token } = useAuth()
+  const handleUnauthorized = useHandleUnauthorized()
 
   const [reports, setReports] = useState<AdminReportEntry[]>([])
   const [page, setPage] = useState(0)
@@ -24,16 +23,6 @@ export function AdminReportListPage() {
   const [loading, setLoading] = useState(true)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
-
-  const handleUnauthorized = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        logout()
-        navigate('/login', { replace: true })
-      }
-    },
-    [logout, navigate],
-  )
 
   const loadReports = useCallback(
     async (targetPage: number) => {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { changeUserRole, deleteAdminUser, getAdminUsers } from '../../api/adminApi'
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
+import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
@@ -70,6 +71,7 @@ function RoleToggle({
 export function AdminUserListPage() {
   const navigate = useNavigate()
   const { token, logout, meUsername, meRole, meProfileImageUrl } = useAuth()
+  const handleUnauthorized = useHandleUnauthorized()
 
   const [users, setUsers] = useState<UserResponse[]>([])
   const [page, setPage] = useState(0)
@@ -85,16 +87,6 @@ export function AdminUserListPage() {
   const deleteReasonRef = useRef<HTMLTextAreaElement>(null)
 
   const [roleChangingUsername, setRoleChangingUsername] = useState<string | null>(null)
-
-  const handleUnauthorized = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        logout()
-        navigate('/login', { replace: true })
-      }
-    },
-    [logout, navigate],
-  )
 
   const loadUsers = useCallback(
     async (targetPage: number) => {

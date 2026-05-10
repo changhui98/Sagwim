@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
   getAdminUsers,
   getMonthlyContentCreations,
@@ -8,6 +7,7 @@ import {
 } from '../../api/adminApi'
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
+import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { StatCard } from '../../components/admin/StatCard'
 import { MonthlyChartCard } from '../../components/admin/MonthlyChartCard'
 import { Skeleton } from '../../components/common/Skeleton'
@@ -31,8 +31,8 @@ function formatDate(date: Date): string {
 }
 
 export function AdminDashboardPage() {
-  const navigate = useNavigate()
-  const { token, logout, meUsername, meProfileImageUrl } = useAuth()
+  const { token, meUsername, meProfileImageUrl } = useAuth()
+  const handleUnauthorized = useHandleUnauthorized()
 
   const [currentTime, setCurrentTime] = useState(new Date())
   const [totalUsers, setTotalUsers] = useState<number | null>(null)
@@ -46,16 +46,6 @@ export function AdminDashboardPage() {
   const [signupError, setSignupError] = useState<string | null>(null)
   const [contentError, setContentError] = useState<string | null>(null)
   const [groupError, setGroupError] = useState<string | null>(null)
-
-  const handleUnauthorized = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        logout()
-        navigate('/login', { replace: true })
-      }
-    },
-    [logout, navigate],
-  )
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)

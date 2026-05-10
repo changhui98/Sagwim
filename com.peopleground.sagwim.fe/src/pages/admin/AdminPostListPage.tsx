@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import confirmDialogStyles from '../../components/common/ConfirmDialog.module.css'
-import { useNavigate } from 'react-router-dom'
 import {
   deleteAdminContent,
   getAdminContents,
   restoreAdminContent,
 } from '../../api/adminApi'
-import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
+import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
@@ -28,8 +27,8 @@ interface ConfirmState {
 }
 
 export function AdminPostListPage() {
-  const navigate = useNavigate()
-  const { token, logout } = useAuth()
+  const { token } = useAuth()
+  const handleUnauthorized = useHandleUnauthorized()
 
   const [contents, setContents] = useState<AdminContentResponse[]>([])
   const [page, setPage] = useState(0)
@@ -43,16 +42,6 @@ export function AdminPostListPage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [successAction, setSuccessAction] = useState<ConfirmAction | null>(null)
   const [deleteReason, setDeleteReason] = useState('')
-
-  const handleUnauthorized = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
-        logout()
-        navigate('/login', { replace: true })
-      }
-    },
-    [logout, navigate],
-  )
 
   const loadContents = useCallback(
     async (targetPage: number) => {
