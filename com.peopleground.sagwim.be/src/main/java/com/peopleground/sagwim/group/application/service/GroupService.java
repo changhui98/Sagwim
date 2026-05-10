@@ -42,8 +42,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import java.util.ArrayList;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -347,12 +347,11 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public List<GroupMemberResponse> getMembers(Long groupId) {
+    public PageResponse<GroupMemberResponse> getMembers(Long groupId, int page, int size) {
         findGroup(groupId);
-        return groupMemberRepository.findByGroupId(groupId)
-            .stream()
-            .map(GroupMemberResponse::from)
-            .toList();
+        Page<GroupMember> result =
+            groupMemberRepository.findByGroupId(groupId, PageRequest.of(page, size));
+        return PageResponse.from(result.map(GroupMemberResponse::from));
     }
 
     @Transactional(readOnly = true)

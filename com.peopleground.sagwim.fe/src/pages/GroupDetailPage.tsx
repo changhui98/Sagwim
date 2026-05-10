@@ -51,8 +51,8 @@ export function GroupDetailPage() {
   const loadMembers = useCallback(async () => {
     if (!groupId) return
     try {
-      const memberList = await getGroupMembers(token, Number(groupId))
-      setMembers(memberList)
+      const pagedResult = await getGroupMembers(token, Number(groupId))
+      setMembers(pagedResult.content)
       setMembersLoaded(true)
     } catch {
       // 멤버 목록 조회 실패 시 조용히 처리 (isMember는 false로 유지)

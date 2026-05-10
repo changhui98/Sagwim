@@ -158,10 +158,13 @@ export const leaveGroup = (token: string, groupId: number): Promise<void> => {
 export const getGroupMembers = (
   token: string,
   groupId: number,
-): Promise<GroupMemberResponse[]> => {
-  return fetch(`${API_BASE_URL}/groups/${groupId}/members`, {
+  page = 0,
+  size = 100,
+): Promise<PageResponse<GroupMemberResponse>> => {
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  return fetch(`${API_BASE_URL}/groups/${groupId}/members?${params.toString()}`, {
     headers: createAuthHeaders(token),
-  }).then((res) => parseResponse<GroupMemberResponse[]>(res))
+  }).then((res) => parseResponse<PageResponse<GroupMemberResponse>>(res))
 }
 
 export const getMyGroups = (

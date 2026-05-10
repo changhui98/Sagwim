@@ -5,6 +5,8 @@ import com.peopleground.sagwim.group.domain.repository.GroupMemberRepository;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -26,6 +28,11 @@ public class GroupMemberRepositoryImpl implements GroupMemberRepository {
     @Override
     public List<GroupMember> findByGroupId(Long groupId) {
         return groupMemberJpaRepository.findByGroupId(groupId);
+    }
+
+    @Override
+    public Page<GroupMember> findByGroupId(Long groupId, Pageable pageable) {
+        return groupMemberJpaRepository.findByGroupIdPaged(groupId, pageable);
     }
 
     @Override

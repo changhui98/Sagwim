@@ -169,8 +169,12 @@ public class GroupController {
     }
 
     @GetMapping("/{groupId}/members")
-    public ResponseEntity<List<GroupMemberResponse>> getMembers(@PathVariable Long groupId) {
-        List<GroupMemberResponse> response = groupService.getMembers(groupId);
+    public ResponseEntity<PageResponse<GroupMemberResponse>> getMembers(
+        @PathVariable Long groupId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "100") int size
+    ) {
+        PageResponse<GroupMemberResponse> response = groupService.getMembers(groupId, page, size);
         return ResponseEntity.ok(response);
     }
 
