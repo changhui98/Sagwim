@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { Skeleton } from '../../components/common/Skeleton'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
+import { Pagination } from '../../components/common/Pagination'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { AdminReportEntry, ReportTargetType } from '../../types/report'
 import type { PageResponse } from '../../types/user'
@@ -110,41 +111,12 @@ export function AdminReportListPage() {
               </table>
             </div>
 
-            {totalPages > 1 && (
-              <div className={tableStyles.paginationBar}>
-                <button
-                  type="button"
-                  className={tableStyles.pageButton}
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={loading || page === 0}
-                >
-                  이전
-                </button>
-                {getPageNumbers(page, totalPages).map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    type="button"
-                    className={
-                      pageNum === page
-                        ? tableStyles.pageButtonActive
-                        : tableStyles.pageButton
-                    }
-                    onClick={() => handlePageChange(pageNum)}
-                    disabled={loading}
-                  >
-                    {pageNum + 1}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className={tableStyles.pageButton}
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={loading || page >= totalPages - 1}
-                >
-                  다음
-                </button>
-              </div>
-            )}
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              disabled={loading}
+            />
           </>
         )}
       </div>
@@ -170,17 +142,3 @@ function targetTypeBadgeClass(type: ReportTargetType): string {
   }
 }
 
-const MAX_VISIBLE_PAGES = 5
-
-function getPageNumbers(page: number, totalPages: number): number[] {
-  if (totalPages <= MAX_VISIBLE_PAGES) {
-    return Array.from({ length: totalPages }, (_, i) => i)
-  }
-  const half = Math.floor(MAX_VISIBLE_PAGES / 2)
-  let start = Math.max(0, page - half)
-  const end = Math.min(totalPages, start + MAX_VISIBLE_PAGES)
-  if (end - start < MAX_VISIBLE_PAGES) {
-    start = Math.max(0, end - MAX_VISIBLE_PAGES)
-  }
-  return Array.from({ length: end - start }, (_, i) => start + i)
-}

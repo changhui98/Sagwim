@@ -9,6 +9,7 @@ import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
 import confirmDialogStyles from '../../components/common/ConfirmDialog.module.css'
 import { SuccessDialog } from '../../components/common/SuccessDialog'
+import { Pagination } from '../../components/common/Pagination'
 import { getInitials } from '../../utils/stringUtils'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { UserResponse, UserRole } from '../../types/user'
@@ -16,7 +17,6 @@ import tableStyles from '../../components/admin/adminTable.module.css'
 import pageStyles from './AdminUserListPage.module.css'
 
 const PAGE_SIZE = 10
-const MAX_VISIBLE_PAGES = 5
 
 function RoleBadge({ role }: { role?: UserRole }) {
   if (role === 'ADMIN') return <span className={pageStyles.badgeRoleAdmin}>ADMIN</span>
@@ -162,19 +162,6 @@ export function AdminUserListPage() {
     }
   }
 
-  const getPageNumbers = (): number[] => {
-    if (totalPages <= MAX_VISIBLE_PAGES) {
-      return Array.from({ length: totalPages }, (_, i) => i)
-    }
-    const half = Math.floor(MAX_VISIBLE_PAGES / 2)
-    let start = Math.max(0, page - half)
-    const end = Math.min(totalPages, start + MAX_VISIBLE_PAGES)
-    if (end - start < MAX_VISIBLE_PAGES) {
-      start = Math.max(0, end - MAX_VISIBLE_PAGES)
-    }
-    return Array.from({ length: end - start }, (_, i) => start + i)
-  }
-
   return (
     <div className={pageStyles.container}>
       {error && <p className="alert alert-error" role="alert">{error}</p>}
@@ -296,41 +283,12 @@ export function AdminUserListPage() {
               </table>
             </div>
 
-            {totalPages > 1 && (
-              <div className={tableStyles.paginationBar}>
-                <button
-                  type="button"
-                  className={tableStyles.pageButton}
-                  onClick={() => handlePageChange(page - 1)}
-                  disabled={loading || page === 0}
-                >
-                  이전
-                </button>
-                {getPageNumbers().map((pageNum) => (
-                  <button
-                    key={pageNum}
-                    type="button"
-                    className={
-                      pageNum === page
-                        ? tableStyles.pageButtonActive
-                        : tableStyles.pageButton
-                    }
-                    onClick={() => handlePageChange(pageNum)}
-                    disabled={loading}
-                  >
-                    {pageNum + 1}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className={tableStyles.pageButton}
-                  onClick={() => handlePageChange(page + 1)}
-                  disabled={loading || page >= totalPages - 1}
-                >
-                  다음
-                </button>
-              </div>
-            )}
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              disabled={loading}
+            />
           </>
         )}
       </div>
