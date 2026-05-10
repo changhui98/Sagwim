@@ -9,6 +9,10 @@ import com.peopleground.sagwim.group.domain.entity.GroupStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * 모임 상세 응답 DTO. 멤버 목록은 포함하지 않는다.
+ * 멤버 목록은 GET /api/v1/groups/{groupId}/members 엔드포인트로 별도 lazy 조회한다.
+ */
 public record GroupDetailResponse(
     Long id,
     String name,
@@ -26,20 +30,10 @@ public record GroupDetailResponse(
     int likeCount,
     GroupStatus status,
     GroupJoinType joinType,
-    List<String> joinQuestions,
-    List<GroupMemberResponse> members
+    List<String> joinQuestions
 ) {
 
-    public static GroupDetailResponse of(Group group, List<GroupMemberResponse> members) {
-        return of(group, group.getImageUrl(), members, List.of());
-    }
-
-    public static GroupDetailResponse of(
-        Group group,
-        String resolvedImageUrl,
-        List<GroupMemberResponse> members,
-        List<GroupJoinQuestion> joinQuestions
-    ) {
+    public static GroupDetailResponse of(Group group, String resolvedImageUrl, List<GroupJoinQuestion> joinQuestions) {
         return new GroupDetailResponse(
             group.getId(),
             group.getName(),
@@ -57,8 +51,7 @@ public record GroupDetailResponse(
             group.getLikeCount(),
             group.getStatus(),
             group.getJoinType(),
-            joinQuestions.stream().map(GroupJoinQuestion::getQuestion).toList(),
-            members
+            joinQuestions.stream().map(GroupJoinQuestion::getQuestion).toList()
         );
     }
 }

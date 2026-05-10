@@ -148,12 +148,8 @@ public class GroupService {
     @Transactional(readOnly = true)
     public GroupDetailResponse getGroup(Long groupId) {
         Group group = findGroup(groupId);
-        List<GroupMemberResponse> members = groupMemberRepository.findByGroupId(groupId)
-            .stream()
-            .map(GroupMemberResponse::from)
-            .toList();
         List<GroupJoinQuestion> joinQuestions = joinQuestionRepository.findByGroupIdOrderByDisplayOrder(groupId);
-        return GroupDetailResponse.of(group, imageUrlResolver.resolve(group.getImageUrl()), members, joinQuestions);
+        return GroupDetailResponse.of(group, imageUrlResolver.resolve(group.getImageUrl()), joinQuestions);
     }
 
     @Transactional
