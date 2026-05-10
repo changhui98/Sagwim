@@ -17,9 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service("userAdminService")
+@Service
 @RequiredArgsConstructor
-public class AdminService {
+public class AdminUserService {
 
     private final UserRepository userRepository;
     private final ImageUrlResolver imageUrlResolver;

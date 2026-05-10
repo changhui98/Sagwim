@@ -2,7 +2,7 @@ package com.peopleground.sagwim.user.presentation.controller;
 
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
-import com.peopleground.sagwim.user.application.AdminService;
+import com.peopleground.sagwim.user.application.AdminUserService;
 import com.peopleground.sagwim.user.presentation.dto.request.AdminDeleteUserRequest;
 import com.peopleground.sagwim.user.presentation.dto.request.ChangeUserRoleRequest;
 import com.peopleground.sagwim.user.presentation.dto.response.AdminUserDetailResponse;
@@ -22,20 +22,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController("userAdminController")
+@RestController
 @RequestMapping("/api/v1/admin/users")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-public class AdminController {
+public class AdminUserController {
 
-    private final AdminService adminService;
+    private final AdminUserService adminUserService;
 
     @GetMapping
     public ResponseEntity<PageResponse<AdminUserResponse>> getUsersForAdmin(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size
     ) {
-        PageResponse<AdminUserResponse> res = adminService.getUsersForAdmin(page, size);
+        PageResponse<AdminUserResponse> res = adminUserService.getUsersForAdmin(page, size);
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
@@ -44,7 +44,7 @@ public class AdminController {
     public ResponseEntity<AdminUserDetailResponse> getUserForAdmin(
         @PathVariable String username
     ) {
-        AdminUserDetailResponse res = adminService.getUserForAdmin(username);
+        AdminUserDetailResponse res = adminUserService.getUserForAdmin(username);
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
@@ -56,7 +56,7 @@ public class AdminController {
         @RequestBody @Valid AdminDeleteUserRequest request,
         @AuthenticationPrincipal CustomUser currentUser
     ) {
-        adminService.deleteUserForAdmin(currentUser.getUsername(), username, request.reason());
+        adminUserService.deleteUserForAdmin(currentUser.getUsername(), username, request.reason());
 
         return ResponseEntity.noContent().build();
     }
@@ -67,7 +67,7 @@ public class AdminController {
         @PathVariable String username,
         @AuthenticationPrincipal CustomUser currentUser
     ) {
-        return ResponseEntity.ok(adminService.restoreUserForAdmin(currentUser.getUsername(), username));
+        return ResponseEntity.ok(adminUserService.restoreUserForAdmin(currentUser.getUsername(), username));
     }
 
     @PatchMapping("/{username}/role")
@@ -77,7 +77,7 @@ public class AdminController {
         @RequestBody @Valid ChangeUserRoleRequest request,
         @AuthenticationPrincipal CustomUser currentUser
     ) {
-        adminService.changeUserRole(currentUser.getUsername(), username, request.role());
+        adminUserService.changeUserRole(currentUser.getUsername(), username, request.role());
 
         return ResponseEntity.noContent().build();
     }

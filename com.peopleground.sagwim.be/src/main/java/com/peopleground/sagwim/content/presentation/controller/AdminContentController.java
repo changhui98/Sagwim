@@ -1,6 +1,6 @@
 package com.peopleground.sagwim.content.presentation.controller;
 
-import com.peopleground.sagwim.content.application.service.AdminService;
+import com.peopleground.sagwim.content.application.service.AdminContentService;
 import com.peopleground.sagwim.content.presentation.dto.request.AdminContentUpdateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.AdminDeleteContentRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.SearchType;
@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController("contentAdminController")
+@RestController
 @RequestMapping("/api/v1/admin/contents")
 @RequiredArgsConstructor
-public class AdminController {
+public class AdminContentController {
 
-    private final AdminService adminService;
+    private final AdminContentService adminContentService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
@@ -37,13 +37,13 @@ public class AdminController {
         @RequestParam(required = false) String keyword,
         @RequestParam(required = false, defaultValue = "TITLE") SearchType searchType
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminService.getAllContents(page, size, keyword, searchType));
+        return ResponseEntity.status(HttpStatus.OK).body(adminContentService.getAllContents(page, size, keyword, searchType));
     }
 
     @GetMapping("/{contentId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<AdminContentResponse> getContent(@PathVariable Long contentId) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminService.getContent(contentId));
+        return ResponseEntity.status(HttpStatus.OK).body(adminContentService.getContent(contentId));
     }
 
     @PatchMapping("/{contentId}")
@@ -52,7 +52,7 @@ public class AdminController {
         @PathVariable Long contentId,
         @RequestBody @Valid AdminContentUpdateRequest req
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminService.updateContent(contentId, req));
+        return ResponseEntity.status(HttpStatus.OK).body(adminContentService.updateContent(contentId, req));
     }
 
     @DeleteMapping("/{contentId}")
@@ -62,7 +62,7 @@ public class AdminController {
         @RequestBody @Valid AdminDeleteContentRequest request,
         @AuthenticationPrincipal CustomUser adminUser
     ) {
-        adminService.deleteContent(contentId, adminUser, request.reason());
+        adminContentService.deleteContent(contentId, adminUser, request.reason());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -72,6 +72,6 @@ public class AdminController {
         @PathVariable Long contentId,
         @AuthenticationPrincipal CustomUser adminUser
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminService.restoreContent(contentId, adminUser.getUsername()));
+        return ResponseEntity.status(HttpStatus.OK).body(adminContentService.restoreContent(contentId, adminUser.getUsername()));
     }
 }
