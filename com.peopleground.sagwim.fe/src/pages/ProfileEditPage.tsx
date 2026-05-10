@@ -32,6 +32,20 @@ export function ProfileEditPage() {
   const [imageError, setImageError] = useState<string | null>(null)
   const [avatarImgError, setAvatarImgError] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const imagePreviewRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    imagePreviewRef.current = imagePreview
+  }, [imagePreview])
+
+  // 컴포넌트 unmount 시 미해제된 blob URL 정리
+  useEffect(() => {
+    return () => {
+      if (imagePreviewRef.current) {
+        URL.revokeObjectURL(imagePreviewRef.current)
+      }
+    }
+  }, [])
 
   const handleLogout = useCallback(() => {
     logout()
@@ -67,6 +81,10 @@ export function ProfileEditPage() {
     const file = e.target.files?.[0]
     if (!file || !profile) return
 
+    // 기존 preview blob URL 해제
+    if (imagePreviewRef.current) {
+      URL.revokeObjectURL(imagePreviewRef.current)
+    }
     const objectUrl = URL.createObjectURL(file)
     setImagePreview(objectUrl)
     setImageError(null)
@@ -77,6 +95,9 @@ export function ProfileEditPage() {
       setProfileImageUrl(result.fileUrl)
     } catch (err) {
       setImageError(err instanceof Error ? err.message : '이미지 업로드에 실패했습니다.')
+      if (imagePreviewRef.current) {
+        URL.revokeObjectURL(imagePreviewRef.current)
+      }
       setImagePreview(null)
     } finally {
       setImageUploading(false)

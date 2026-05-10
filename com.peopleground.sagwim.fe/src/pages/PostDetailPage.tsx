@@ -231,6 +231,21 @@ export function PostDetailPage() {
   const commentImageInputRef = useRef<HTMLInputElement>(null)
   const [commentImageFile, setCommentImageFile] = useState<File | null>(null)
   const [commentImagePreview, setCommentImagePreview] = useState<string | null>(null)
+  // blob URL 누수 방지: 최신 preview URL을 ref로 추적하여 unmount 시 revoke
+  const commentImagePreviewRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    commentImagePreviewRef.current = commentImagePreview
+  }, [commentImagePreview])
+
+  // 컴포넌트 unmount 시 미해제된 blob URL 정리
+  useEffect(() => {
+    return () => {
+      if (commentImagePreviewRef.current) {
+        URL.revokeObjectURL(commentImagePreviewRef.current)
+      }
+    }
+  }, [])
 
   // ── 대댓글 ──
 
@@ -240,11 +255,19 @@ export function PostDetailPage() {
   const handleCommentImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    // 기존 preview가 있으면 먼저 해제
+    if (commentImagePreviewRef.current) {
+      URL.revokeObjectURL(commentImagePreviewRef.current)
+    }
+    const newUrl = URL.createObjectURL(file)
     setCommentImageFile(file)
-    setCommentImagePreview(URL.createObjectURL(file))
+    setCommentImagePreview(newUrl)
   }
 
   const handleCommentImageRemove = () => {
+    if (commentImagePreviewRef.current) {
+      URL.revokeObjectURL(commentImagePreviewRef.current)
+    }
     setCommentImageFile(null)
     setCommentImagePreview(null)
     if (commentImageInputRef.current) commentImageInputRef.current.value = ''
@@ -264,6 +287,10 @@ export function PostDetailPage() {
       }
       const created = await createComment(token, contentId, trimmed, imageUrl)
       setComments((prev) => [created, ...prev])
+      // 전송 성공 시 blob URL 해제
+      if (commentImagePreviewRef.current) {
+        URL.revokeObjectURL(commentImagePreviewRef.current)
+      }
       setCommentImageFile(null)
       setCommentImagePreview(null)
       if (commentImageInputRef.current) commentImageInputRef.current.value = ''
