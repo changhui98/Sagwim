@@ -21,6 +21,7 @@ import { AdminGroupsPage } from './pages/admin/AdminGroupsPage'
 import { AdminPostListPage } from './pages/admin/AdminPostListPage'
 import { AdminImageListPage } from './pages/admin/AdminImageListPage'
 import { AdminLogPage } from './pages/admin/AdminLogPage'
+import { AdminReportListPage } from './pages/admin/AdminReportListPage'
 import { PostCreatePage } from './pages/PostCreatePage'
 import { GroupListPage } from './pages/GroupListPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
@@ -73,6 +74,7 @@ function App() {
           <Route path="groups" element={<AdminGroupsPage />} />
           <Route path="posts" element={<AdminPostListPage />} />
           <Route path="images" element={<AdminImageListPage />} />
+          <Route path="reports" element={<AdminReportListPage />} />
           <Route path="logs" element={<AdminLogPage />} />
         </Route>
       </Route>

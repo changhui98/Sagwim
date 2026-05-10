@@ -1,0 +1,147 @@
+/* ── AdminReportListPage 고유 스타일 ── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.pageTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.btnRefresh {
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--clr-border-strong);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--clr-text-secondary);
+  transition: background var(--t-fast);
+}
+
+.btnRefresh:hover {
+  background: var(--clr-surface-2);
+}
+
+/* 대상 유형 뱃지 */
+.badgePost,
+.badgeComment,
+.badgeMessage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+}
+
+.badgePost {
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid #ddd6fe;
+}
+
+.badgeComment {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.badgeMessage {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+/* 셀 유틸리티 */
+.cellTime {
+  white-space: nowrap;
+  color: var(--clr-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.cellMono {
+  font-family: monospace;
+  font-size: 0.8125rem;
+  color: var(--clr-text-secondary);
+}
+
+.cellContent {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+
+.cellReason {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  color: var(--clr-text-secondary);
+}
+
+/* 빈 상태 */
+.empty {
+  text-align: center;
+  color: var(--clr-text-muted);
+  padding: var(--sp-12);
+}
+
+/* 페이지네이션 */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-4);
+}
+
+.pageBtn {
+  padding: var(--sp-1) var(--sp-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--clr-border-strong);
+  background: transparent;
+  color: var(--clr-text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+
+.pageBtn:hover:not(:disabled) {
+  background: var(--clr-surface-2);
+}
+
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pageInfo {
+  font-size: 0.875rem;
+  color: var(--clr-text-secondary);
+  min-width: 80px;
+  text-align: center;
+}

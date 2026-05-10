@@ -4,6 +4,7 @@ import type { MonthlyStatsResponse } from '../types/adminStats'
 import type { AdminImageResponse } from '../types/image'
 import type { AdminGroupResponse } from '../types/group'
 import type { DeleteLogEntry } from '../types/deleteLog'
+import type { AdminReportEntry } from '../types/report'
 import { ApiError } from './ApiError'
 import { API_BASE_URL } from './config'
 
@@ -266,4 +267,14 @@ export const restoreDeleteLog = (
     method: 'POST',
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<DeleteLogEntry>(response))
+}
+
+export const getAdminReports = (
+  token: string,
+  page = 0,
+  size = 20,
+): Promise<PageResponse<AdminReportEntry>> => {
+  return fetch(`${API_BASE_URL}/admin/reports?page=${page}&size=${size}`, {
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<PageResponse<AdminReportEntry>>(response))
 }
