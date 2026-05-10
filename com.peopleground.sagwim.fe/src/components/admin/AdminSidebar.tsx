@@ -8,7 +8,7 @@ import usersIcon from '../../assets/users-svgrepo-com.svg'
 import groupIcon from '../../assets/heart-alt-svgrepo-com.svg'
 import clipboardIcon from '../../assets/clipboard-list-alt-svgrepo-com.svg'
 import pictureIcon from '../../assets/picture-svgrepo-com.svg'
-import reportIcon from '../../assets/face-scan-square-svgrepo-com.svg'
+import reportIcon from '../../assets/square-list-svgrepo-com.svg'
 import logIcon from '../../assets/clipboard-heart-svgrepo-com.svg'
 
 interface MenuItem {
