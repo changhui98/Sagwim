@@ -4,6 +4,7 @@ import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.domain.GroupWithLiked;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,15 +18,27 @@ public interface GroupRepository {
 
     Optional<Group> findById(Long id);
 
-    Page<GroupWithLiked> findAll(Pageable pageable, String keyword, GroupCategory category, UUID userId);
+    /**
+     * 무한스크롤용 모임 목록. COUNT 쿼리 없이 size+1 방식으로 hasNext를 판단한다.
+     */
+    List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId);
 
-    Page<GroupWithLiked> findNewGroups(Pageable pageable, UUID userId, Point userLocation, int exposureRangeKm);
+    /**
+     * 무한스크롤용 신규 모임 목록. COUNT 쿼리 없이 size+1 방식.
+     */
+    List<GroupWithLiked> findNewGroups(int page, int size, UUID userId, Point userLocation, int exposureRangeKm);
 
-    Page<GroupWithLiked> findPopularGroups(Pageable pageable, UUID userId, Point userLocation, int exposureRangeKm);
+    /**
+     * 무한스크롤용 인기 모임 목록. COUNT 쿼리 없이 size+1 방식.
+     */
+    List<GroupWithLiked> findPopularGroups(int page, int size, UUID userId, Point userLocation, int exposureRangeKm);
 
-    Page<GroupWithLiked> findByMemberUsername(String username, Pageable pageable, UUID userId);
+    /**
+     * 무한스크롤용 내 모임 목록. COUNT 쿼리 없이 size+1 방식.
+     */
+    List<GroupWithLiked> findByMemberUsername(String username, int page, int size, UUID userId);
 
-    // 관리자용: 소프트 삭제 제외, 상태 무관 전체 조회
+    // 관리자용: 소프트 삭제 제외, 상태 무관 전체 조회 (COUNT 쿼리 유지)
     Page<Group> findAllForAdmin(Pageable pageable);
 
     // 복원용: 삭제된 그룹 포함 조회

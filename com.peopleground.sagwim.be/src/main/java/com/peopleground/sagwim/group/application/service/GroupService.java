@@ -35,13 +35,14 @@ import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
 import com.peopleground.sagwim.user.infrastructure.GeocodingClient;
+import com.peopleground.sagwim.group.infrastructure.repository.GroupQueryRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.springframework.data.domain.Page;
+import java.util.ArrayList;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -104,33 +105,44 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public PageResponse<GroupResponse> getGroups(int page, int size, String keyword, GroupCategory category, CustomUser customUser) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<GroupWithLiked> groups = groupRepository.findAll(pageable, keyword, category, customUser.getId());
-        return PageResponse.from(groups.map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked())));
+        List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findAll(page, size, keyword, category, customUser.getId()));
+        boolean hasNext = GroupQueryRepository.trimAndCheckHasNext(raw, size);
+        List<GroupResponse> responses = raw.stream()
+            .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
+            .toList();
+        return PageResponse.ofSlice(responses, page, size, hasNext);
     }
 
     /**
      * 생성된 지 7일 미만인 신규 모임 목록을 조회합니다.
      * OFFLINE 모임은 사용자의 노출 범위(km) 이내인 것만 포함합니다.
+     * COUNT 쿼리 없이 size+1 방식.
      */
     @Transactional(readOnly = true)
     public PageResponse<GroupResponse> getNewGroups(int page, int size, CustomUser customUser) {
-        Pageable pageable = PageRequest.of(page, size);
         User user = getUser(customUser.getUsername());
-        Page<GroupWithLiked> groups = groupRepository.findNewGroups(pageable, customUser.getId(), user.getLocation(), user.getExposureRangeKm());
-        return PageResponse.from(groups.map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked())));
+        List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findNewGroups(page, size, customUser.getId(), user.getLocation(), user.getExposureRangeKm()));
+        boolean hasNext = GroupQueryRepository.trimAndCheckHasNext(raw, size);
+        List<GroupResponse> responses = raw.stream()
+            .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
+            .toList();
+        return PageResponse.ofSlice(responses, page, size, hasNext);
     }
 
     /**
      * 좋아요 수 내림차순으로 인기 모임 목록을 조회합니다.
      * OFFLINE 모임은 사용자의 노출 범위(km) 이내인 것만 포함합니다.
+     * COUNT 쿼리 없이 size+1 방식.
      */
     @Transactional(readOnly = true)
     public PageResponse<GroupResponse> getPopularGroups(int page, int size, CustomUser customUser) {
-        Pageable pageable = PageRequest.of(page, size);
         User user = getUser(customUser.getUsername());
-        Page<GroupWithLiked> groups = groupRepository.findPopularGroups(pageable, customUser.getId(), user.getLocation(), user.getExposureRangeKm());
-        return PageResponse.from(groups.map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked())));
+        List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findPopularGroups(page, size, customUser.getId(), user.getLocation(), user.getExposureRangeKm()));
+        boolean hasNext = GroupQueryRepository.trimAndCheckHasNext(raw, size);
+        List<GroupResponse> responses = raw.stream()
+            .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
+            .toList();
+        return PageResponse.ofSlice(responses, page, size, hasNext);
     }
 
     @Transactional(readOnly = true)
@@ -366,9 +378,12 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public PageResponse<GroupResponse> getMyGroups(CustomUser customUser, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<GroupWithLiked> groups = groupRepository.findByMemberUsername(customUser.getUsername(), pageable, customUser.getId());
-        return PageResponse.from(groups.map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked())));
+        List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findByMemberUsername(customUser.getUsername(), page, size, customUser.getId()));
+        boolean hasNext = GroupQueryRepository.trimAndCheckHasNext(raw, size);
+        List<GroupResponse> responses = raw.stream()
+            .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
+            .toList();
+        return PageResponse.ofSlice(responses, page, size, hasNext);
     }
 
     private Group findGroup(Long groupId) {

@@ -5,6 +5,7 @@ import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
 import com.peopleground.sagwim.group.domain.repository.GroupRepository;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,23 +33,23 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public Page<GroupWithLiked> findAll(Pageable pageable, String keyword, GroupCategory category, UUID userId) {
-        return groupQueryRepository.findAll(pageable, keyword, category, userId);
+    public List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId) {
+        return groupQueryRepository.findAll(page, size, keyword, category, userId);
     }
 
     @Override
-    public Page<GroupWithLiked> findNewGroups(Pageable pageable, UUID userId, Point userLocation, int exposureRangeKm) {
-        return groupQueryRepository.findNewGroups(pageable, userId, userLocation, exposureRangeKm);
+    public List<GroupWithLiked> findNewGroups(int page, int size, UUID userId, Point userLocation, int exposureRangeKm) {
+        return groupQueryRepository.findNewGroups(page, size, userId, userLocation, exposureRangeKm);
     }
 
     @Override
-    public Page<GroupWithLiked> findPopularGroups(Pageable pageable, UUID userId, Point userLocation, int exposureRangeKm) {
-        return groupQueryRepository.findPopularGroups(pageable, userId, userLocation, exposureRangeKm);
+    public List<GroupWithLiked> findPopularGroups(int page, int size, UUID userId, Point userLocation, int exposureRangeKm) {
+        return groupQueryRepository.findPopularGroups(page, size, userId, userLocation, exposureRangeKm);
     }
 
     @Override
-    public Page<GroupWithLiked> findByMemberUsername(String username, Pageable pageable, UUID userId) {
-        return groupQueryRepository.findByMemberUsername(username, pageable, userId);
+    public List<GroupWithLiked> findByMemberUsername(String username, int page, int size, UUID userId) {
+        return groupQueryRepository.findByMemberUsername(username, page, size, userId);
     }
 
     @Override

@@ -38,21 +38,33 @@ public class ContentRepositoryImpl implements ContentRepository {
     }
 
     @Override
-    public Page<Content> findAllContents(Pageable pageable) {
+    public List<Content> findAllContentsWithoutGroup(int page, int size) {
 
-        return contentQueryRepository.findAllContents(pageable);
+        return contentQueryRepository.findAllContentsWithoutGroup(page, size);
     }
 
     @Override
-    public Page<Content> findAllContentsWithoutGroup(Pageable pageable) {
+    public List<Content> findAllByGroupId(Long groupId, int page, int size) {
 
-        return contentQueryRepository.findAllContentsWithoutGroup(pageable);
+        return contentQueryRepository.findAllByGroupId(groupId, page, size);
     }
 
     @Override
-    public Page<Content> findAllByGroupId(Long groupId, Pageable pageable) {
+    public List<Content> findAllByUsername(String username, int page, int size) {
 
-        return contentQueryRepository.findAllByGroupId(groupId, pageable);
+        return contentQueryRepository.findAllByUsername(username, page, size);
+    }
+
+    @Override
+    public List<Content> searchContents(String keyword, SearchType searchType, int page, int size) {
+
+        return contentQueryRepository.searchContents(keyword, searchType, page, size);
+    }
+
+    @Override
+    public List<Content> findAllByTagName(String tagName, int page, int size) {
+
+        return contentQueryRepository.findAllByTagName(tagName, page, size);
     }
 
     @Override
@@ -62,27 +74,9 @@ public class ContentRepositoryImpl implements ContentRepository {
     }
 
     @Override
-    public Page<Content> findAllByUsername(String username, Pageable pageable) {
-
-        return contentQueryRepository.findAllByUsername(username, pageable);
-    }
-
-    @Override
-    public Page<Content> searchContents(String keyword, SearchType searchType, Pageable pageable) {
-
-        return contentQueryRepository.searchContents(keyword, searchType, pageable);
-    }
-
-    @Override
     public Page<Content> searchContentsIncludingDeleted(String keyword, SearchType searchType, Pageable pageable) {
 
         return contentQueryRepository.searchContentsIncludingDeleted(keyword, searchType, pageable);
-    }
-
-    @Override
-    public Page<Content> findAllByTagName(String tagName, Pageable pageable) {
-
-        return contentQueryRepository.findAllByTagName(tagName, pageable);
     }
 
     @Override

@@ -12,6 +12,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,86 +57,114 @@ public class ContentQueryRepository {
         );
     }
 
-    public Page<Content> findAllContents(Pageable pageable) {
-
-        QContent content = QContent.content;
-
-        List<Content> contents = queryFactory
-            .selectFrom(content)
-            .where(content.deletedDate.isNull())
-            .orderBy(content.createdDate.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
-
-        Long total = queryFactory
-            .select(content.count())
-            .from(content)
-            .where(content.deletedDate.isNull())
-            .fetchOne();
-
-        return new PageImpl<>(contents, pageable, total != null ? total : 0);
-    }
-
     /**
-     * groupId가 null인 게시글만 조회한다. 전체 피드에서 모임 게시글을 제외할 때 사용한다.
+     * 무한스크롤용 전체 피드 조회. COUNT 쿼리 없이 size+1 방식으로 hasNext를 판단한다.
+     * groupId가 null인 게시글만 조회한다(모임 게시글 제외).
+     *
+     * @return size+1 개까지 조회한 결과. 호출측은 size와 비교해 hasNext를 판단한다.
      */
-    public Page<Content> findAllContentsWithoutGroup(Pageable pageable) {
+    public List<Content> findAllContentsWithoutGroup(int page, int size) {
 
         QContent content = QContent.content;
 
-        List<Content> contents = queryFactory
+        return queryFactory
             .selectFrom(content)
             .where(
                 content.deletedDate.isNull(),
                 content.groupId.isNull()
             )
             .orderBy(content.createdDate.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
+            .offset((long) page * size)
+            .limit(size + 1L)
             .fetch();
-
-        Long total = queryFactory
-            .select(content.count())
-            .from(content)
-            .where(
-                content.deletedDate.isNull(),
-                content.groupId.isNull()
-            )
-            .fetchOne();
-
-        return new PageImpl<>(contents, pageable, total != null ? total : 0);
     }
 
     /**
-     * 특정 모임(groupId)에 속한 삭제되지 않은 게시글을 최신순으로 반환한다.
+     * 무한스크롤용 특정 모임 게시글 조회. COUNT 쿼리 없이 size+1 방식.
      */
-    public Page<Content> findAllByGroupId(Long groupId, Pageable pageable) {
+    public List<Content> findAllByGroupId(Long groupId, int page, int size) {
 
         QContent content = QContent.content;
 
-        List<Content> contents = queryFactory
+        return queryFactory
             .selectFrom(content)
             .where(
                 content.groupId.eq(groupId),
                 content.deletedDate.isNull()
             )
             .orderBy(content.createdDate.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
+            .offset((long) page * size)
+            .limit(size + 1L)
             .fetch();
+    }
 
-        Long total = queryFactory
-            .select(content.count())
-            .from(content)
+    /**
+     * 무한스크롤용 특정 사용자의 게시글 조회. COUNT 쿼리 없이 size+1 방식.
+     * groupId가 null인 게시글만 반환한다(모임 게시글 제외).
+     */
+    public List<Content> findAllByUsername(String username, int page, int size) {
+
+        QContent content = QContent.content;
+        QUser user = QUser.user;
+
+        return queryFactory
+            .selectFrom(content)
+            .join(content.user, user)
             .where(
-                content.groupId.eq(groupId),
+                user.username.eq(username),
+                content.deletedDate.isNull(),
+                content.groupId.isNull()
+            )
+            .orderBy(content.createdDate.desc())
+            .offset((long) page * size)
+            .limit(size + 1L)
+            .fetch();
+    }
+
+    /**
+     * 무한스크롤용 게시글 검색. COUNT 쿼리 없이 size+1 방식.
+     */
+    public List<Content> searchContents(String keyword, SearchType searchType, int page, int size) {
+
+        QContent content = QContent.content;
+        QUser user = QUser.user;
+        BooleanBuilder condition = buildSearchCondition(content, user, keyword, searchType);
+        condition.and(content.deletedDate.isNull());
+
+        return queryFactory
+            .selectFrom(content)
+            .join(content.user, user)
+            .where(condition)
+            .orderBy(content.createdDate.desc())
+            .offset((long) page * size)
+            .limit(size + 1L)
+            .fetch();
+    }
+
+    /**
+     * 무한스크롤용 태그별 게시글 조회. COUNT 쿼리 없이 size+1 방식.
+     */
+    public List<Content> findAllByTagName(String tagName, int page, int size) {
+
+        QContent content = QContent.content;
+        QContentTag contentTag = QContentTag.contentTag;
+        QTag tag = QTag.tag;
+
+        return queryFactory
+            .selectFrom(content)
+            .join(contentTag).on(contentTag.content.eq(content))
+            .join(contentTag.tag, tag)
+            .where(
+                tag.name.eq(tagName.toLowerCase()),
                 content.deletedDate.isNull()
             )
-            .fetchOne();
-
-        return new PageImpl<>(contents, pageable, total != null ? total : 0);
+            .orderBy(content.createdDate.desc())
+            .offset((long) page * size)
+            .limit(size + 1L)
+            .fetch();
     }
+
+    // ---- 어드민 전용 (COUNT 쿼리 유지 — 페이지 번호 UI 필요) ----
 
     public Page<Content> findAllContentsIncludingDeleted(Pageable pageable) {
 
@@ -153,69 +182,6 @@ public class ContentQueryRepository {
         Long total = queryFactory
             .select(content.count())
             .from(content)
-            .fetchOne();
-
-        return new PageImpl<>(contents, pageable, total != null ? total : 0);
-    }
-
-    /**
-     * 특정 username(로그인 ID) 에 해당하는 작성자의 삭제되지 않은 글만 최신순으로 반환한다.
-     * containsIgnoreCase 가 아닌 정확 일치(eq) 를 사용해야 "내 글" 목록이 오염되지 않는다.
-     * groupId가 null인 게시글(모임 게시글 제외)만 반환한다.
-     */
-    public Page<Content> findAllByUsername(String username, Pageable pageable) {
-
-        QContent content = QContent.content;
-        QUser user = QUser.user;
-
-        List<Content> contents = queryFactory
-            .selectFrom(content)
-            .join(content.user, user)
-            .where(
-                user.username.eq(username),
-                content.deletedDate.isNull(),
-                content.groupId.isNull()
-            )
-            .orderBy(content.createdDate.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
-
-        Long total = queryFactory
-            .select(content.count())
-            .from(content)
-            .join(content.user, user)
-            .where(
-                user.username.eq(username),
-                content.deletedDate.isNull(),
-                content.groupId.isNull()
-            )
-            .fetchOne();
-
-        return new PageImpl<>(contents, pageable, total != null ? total : 0);
-    }
-
-    public Page<Content> searchContents(String keyword, SearchType searchType, Pageable pageable) {
-
-        QContent content = QContent.content;
-        QUser user = QUser.user;
-        BooleanBuilder condition = buildSearchCondition(content, user, keyword, searchType);
-        condition.and(content.deletedDate.isNull());
-
-        List<Content> contents = queryFactory
-            .selectFrom(content)
-            .join(content.user, user)
-            .where(condition)
-            .orderBy(content.createdDate.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
-
-        Long total = queryFactory
-            .select(content.count())
-            .from(content)
-            .join(content.user, user)
-            .where(condition)
             .fetchOne();
 
         return new PageImpl<>(contents, pageable, total != null ? total : 0);
@@ -241,43 +207,6 @@ public class ContentQueryRepository {
             .from(content)
             .join(content.user, user)
             .where(condition)
-            .fetchOne();
-
-        return new PageImpl<>(contents, pageable, total != null ? total : 0);
-    }
-
-    /**
-     * 특정 태그명으로 게시글 목록을 조회한다.
-     * ContentTag 조인을 통해 태그가 연결된 삭제되지 않은 게시글만 반환한다.
-     */
-    public Page<Content> findAllByTagName(String tagName, Pageable pageable) {
-
-        QContent content = QContent.content;
-        QContentTag contentTag = QContentTag.contentTag;
-        QTag tag = QTag.tag;
-
-        List<Content> contents = queryFactory
-            .selectFrom(content)
-            .join(contentTag).on(contentTag.content.eq(content))
-            .join(contentTag.tag, tag)
-            .where(
-                tag.name.eq(tagName.toLowerCase()),
-                content.deletedDate.isNull()
-            )
-            .orderBy(content.createdDate.desc())
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
-
-        Long total = queryFactory
-            .select(content.count())
-            .from(content)
-            .join(contentTag).on(contentTag.content.eq(content))
-            .join(contentTag.tag, tag)
-            .where(
-                tag.name.eq(tagName.toLowerCase()),
-                content.deletedDate.isNull()
-            )
             .fetchOne();
 
         return new PageImpl<>(contents, pageable, total != null ? total : 0);
@@ -330,5 +259,16 @@ public class ContentQueryRepository {
         }
 
         return builder;
+    }
+
+    /**
+     * size+1 로 조회된 결과에서 hasNext 여부를 판단하고, 실제 반환할 목록(size 개)을 잘라낸다.
+     */
+    public static <T> boolean trimAndCheckHasNext(List<T> results, int size) {
+        if (results.size() > size) {
+            results.remove(results.size() - 1);
+            return true;
+        }
+        return false;
     }
 }
