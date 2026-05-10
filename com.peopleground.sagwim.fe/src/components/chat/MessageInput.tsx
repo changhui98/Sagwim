@@ -22,6 +22,9 @@ export function MessageInput({ onSend, disabled }: Props) {
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
+      // 한글 IME 조합 중 Enter는 무시한다.
+      // isComposing이 true이거나 keyCode 229(IME 합성 키)인 경우 조합이 아직 진행 중임.
+      if (e.nativeEvent.isComposing || e.keyCode === 229) return
       e.preventDefault()
       handleSend()
     }
