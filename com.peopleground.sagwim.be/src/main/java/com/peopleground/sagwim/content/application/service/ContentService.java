@@ -7,9 +7,7 @@ import com.peopleground.sagwim.content.domain.repository.ContentRepository;
 import com.peopleground.sagwim.content.presentation.dto.request.ContentCreateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.ContentUpdateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.SearchType;
-import com.peopleground.sagwim.content.presentation.dto.response.ContentCreateResponse;
 import com.peopleground.sagwim.content.presentation.dto.response.ContentResponse;
-import com.peopleground.sagwim.content.presentation.dto.response.ContentUpdateResponse;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
@@ -37,7 +35,7 @@ public class ContentService {
 
     @CacheEvict(value = "contentList", allEntries = true)
     @Transactional
-    public ContentCreateResponse contentCreate(ContentCreateRequest req, CustomUser user) {
+    public ContentResponse contentCreate(ContentCreateRequest req, CustomUser user) {
 
         User findUser = getUser(user);
         Content content = contentRepository.save(Content.of(req.body(), findUser, req.groupId()));
@@ -48,7 +46,7 @@ public class ContentService {
             tagService.attachTagsToContent(content, tags);
         }
 
-        return ContentCreateResponse.from(content);
+        return contentResponseAssembler.toResponse(content, user);
     }
 
     /**
@@ -113,7 +111,7 @@ public class ContentService {
 
     @CacheEvict(value = "contentList", allEntries = true)
     @Transactional
-    public ContentUpdateResponse updateContent(Long contentId, ContentUpdateRequest req, CustomUser customUser) {
+    public ContentResponse updateContent(Long contentId, ContentUpdateRequest req, CustomUser customUser) {
 
         Content content = getContentByOwner(contentId, customUser);
         content.update(req.body());
@@ -123,7 +121,7 @@ public class ContentService {
             tagService.updateContentTags(content, req.tags());
         }
 
-        return ContentUpdateResponse.from(content);
+        return contentResponseAssembler.toResponse(content, customUser);
     }
 
     @CacheEvict(value = "contentList", allEntries = true)

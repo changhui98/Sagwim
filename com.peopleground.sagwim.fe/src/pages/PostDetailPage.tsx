@@ -424,10 +424,7 @@ export function PostDetailPage() {
     if (!trimmed || editSubmitting || !post) return
     setEditSubmitting(true)
     try {
-      await updatePost(token, contentId, trimmed, post.tags)
-      // updatePost 응답(ContentUpdateResponse)에는 imageUrls 등 일부 필드가 없으므로
-      // 수정 완료 후 단건 조회 API로 최신 ContentResponse를 다시 가져온다.
-      const refreshed = await getPost(token, contentId)
+      const refreshed = await updatePost(token, contentId, trimmed, post.tags)
       setPost(refreshed)
       setEditMode(false)
       setEditBody('')

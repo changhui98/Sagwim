@@ -4,9 +4,7 @@ import com.peopleground.sagwim.content.application.service.ContentService;
 import com.peopleground.sagwim.content.presentation.dto.request.ContentCreateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.ContentUpdateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.SearchType;
-import com.peopleground.sagwim.content.presentation.dto.response.ContentCreateResponse;
 import com.peopleground.sagwim.content.presentation.dto.response.ContentResponse;
-import com.peopleground.sagwim.content.presentation.dto.response.ContentUpdateResponse;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import jakarta.validation.Valid;
@@ -96,21 +94,21 @@ public class ContentController {
     }
 
     @PostMapping
-    public ResponseEntity<ContentCreateResponse> contentCreate(
+    public ResponseEntity<ContentResponse> contentCreate(
         @RequestBody ContentCreateRequest req,
         @AuthenticationPrincipal CustomUser user
     ) {
-        ContentCreateResponse res = contentService.contentCreate(req, user);
+        ContentResponse res = contentService.contentCreate(req, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(res);
     }
 
     @PatchMapping("/{contentId}")
-    public ResponseEntity<ContentUpdateResponse> updateContent(
+    public ResponseEntity<ContentResponse> updateContent(
         @PathVariable Long contentId,
         @Valid @RequestBody ContentUpdateRequest req,
         @AuthenticationPrincipal CustomUser user
     ) {
-        ContentUpdateResponse res = contentService.updateContent(contentId, req, user);
+        ContentResponse res = contentService.updateContent(contentId, req, user);
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
