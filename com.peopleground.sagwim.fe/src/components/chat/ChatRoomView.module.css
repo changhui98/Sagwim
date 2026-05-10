@@ -1,0 +1,114 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  background: var(--clr-bg);
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--clr-border);
+  background: var(--clr-surface);
+  flex-shrink: 0;
+}
+
+.backButton {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--clr-text-secondary);
+  padding: var(--sp-1);
+  border-radius: var(--r-sm);
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--clr-accent);
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.partnerName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+.messageList {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-4);
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.loadMore {
+  text-align: center;
+  padding: var(--sp-2) 0;
+}
+
+.loadMoreButton {
+  background: transparent;
+  border: 1px solid var(--clr-border-strong);
+  border-radius: var(--r-md);
+  color: var(--clr-text-secondary);
+  font-size: 0.8rem;
+  padding: var(--sp-1) var(--sp-3);
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+
+.loadMoreButton:hover {
+  background: var(--clr-bg-alt);
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--clr-text-muted);
+  font-size: 0.875rem;
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: var(--sp-3);
+  color: var(--clr-text-muted);
+}
+
+.placeholder svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.3;
+}
+
+@media (max-width: 768px) {
+  .backButton {
+    display: flex;
+    align-items: center;
+  }
+}

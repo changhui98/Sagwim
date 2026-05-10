@@ -1,0 +1,57 @@
+.container {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--clr-border);
+  background: var(--clr-surface);
+}
+
+.textarea {
+  flex: 1;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--clr-border-strong);
+  border-radius: var(--r-xl);
+  background: var(--clr-bg-alt);
+  color: var(--clr-text);
+  font-size: 0.9rem;
+  resize: none;
+  outline: none;
+  max-height: 120px;
+  line-height: 1.5;
+  font-family: inherit;
+  transition: border-color var(--t-fast);
+}
+
+.textarea:focus {
+  border-color: var(--clr-accent);
+}
+
+.sendButton {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent-gradient);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity var(--t-fast), transform var(--t-fast);
+}
+
+.sendButton:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.sendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sendButton svg {
+  width: 18px;
+  height: 18px;
+  color: #fff;
+}

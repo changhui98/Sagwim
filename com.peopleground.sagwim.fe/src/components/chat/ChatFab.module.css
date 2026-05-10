@@ -1,0 +1,50 @@
+.fab {
+  position: fixed;
+  right: var(--sp-6);
+  bottom: var(--sp-8);
+  z-index: 200;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent-gradient);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+
+.fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 48px rgba(240, 128, 128, 0.35);
+}
+
+.fab:active {
+  transform: translateY(0);
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--r-full);
+  background: var(--clr-error);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
