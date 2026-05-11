@@ -28,7 +28,7 @@ import { useAuth } from '../../src/context/AuthContext'
 import { signIn } from '../../src/api/authApi'
 import { TextField } from '../../src/components/TextField'
 import { PrimaryButton } from '../../src/components/PrimaryButton'
-import { colors, spacing, radius, fontSize, shadow } from '../../src/constants/theme'
+import { colors, spacing, radius, fontSize } from '../../src/constants/theme'
 
 export default function LoginScreen() {
   const { login } = useAuth()
@@ -170,16 +170,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.sp6,
+    paddingHorizontal: spacing.sp8,
     paddingVertical: spacing.sp8,
   },
   card: {
     width: '100%',
     maxWidth: 420,
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    padding: spacing.sp8,
-    ...shadow.card,
   },
   heading: {
     fontSize: fontSize.xl4,

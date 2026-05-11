@@ -41,7 +41,7 @@ import { PasswordChecklist } from '../../src/components/PasswordChecklist'
 import { PrimaryButton } from '../../src/components/PrimaryButton'
 import { SecondaryButton } from '../../src/components/SecondaryButton'
 import { isPasswordValid, isConfirmPasswordValid } from '../../src/utils/passwordRules'
-import { colors, spacing, radius, fontSize, shadow } from '../../src/constants/theme'
+import { colors, spacing, radius, fontSize } from '../../src/constants/theme'
 
 type SignUpField = 'username' | 'password' | 'nickname' | 'userEmail'
 
@@ -487,16 +487,12 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.sp6,
+    paddingHorizontal: spacing.sp8,
     paddingVertical: spacing.sp8,
   },
   card: {
     width: '100%',
     maxWidth: 480,
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    padding: spacing.sp8,
-    ...shadow.card,
   },
   heading: {
     fontSize: fontSize.xl4,
