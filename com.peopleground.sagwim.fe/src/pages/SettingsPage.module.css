@@ -1,0 +1,40 @@
+/* ── SettingsPage ── */
+.main {
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--sp-8) var(--sp-6);
+  padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
+  padding-bottom: calc(var(--sp-8) + var(--layout-bottom-bar-h));
+}
+
+.container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  background: var(--clr-surface);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--clr-border);
+  overflow: hidden;
+}
+
+.body {
+  flex: 1;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: 0;
+    padding-left: var(--layout-sidebar-w);
+    padding-bottom: var(--layout-bottom-bar-h);
+    align-items: flex-start;
+  }
+
+  .container {
+    max-width: none;
+    border-radius: 0;
+    border: none;
+    min-height: calc(100dvh - var(--layout-bottom-bar-h));
+  }
+}

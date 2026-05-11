@@ -32,6 +32,7 @@ import { NewGroupsPage } from './pages/NewGroupsPage'
 import { PopularGroupsPage } from './pages/PopularGroupsPage'
 import { PostDetailPage } from './pages/PostDetailPage'
 import { MessagesPage } from './pages/MessagesPage'
+import { SettingsPage } from './pages/SettingsPage'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -65,6 +66,7 @@ function App() {
         <Route path="/app/groups/:groupId/settings" element={<GroupSettingsPage />} />
         <Route path="/app/profile" element={<ProfilePage />} />
         <Route path="/app/profile/edit" element={<ProfileEditPage />} />
+        <Route path="/app/settings" element={<SettingsPage />} />
         <Route path="/app/profile/edit/nickname" element={<ProfileEditNicknamePage />} />
         <Route path="/app/profile/edit/gender" element={<ProfileEditGenderPage />} />
         <Route path="/app/profile/edit/birthdate" element={<ProfileEditBirthDatePage />} />
