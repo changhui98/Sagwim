@@ -1,0 +1,75 @@
+// FE com.peopleground.sagwim.fe/src/types/user.ts 와 호환 유지
+// packages/shared 분리 전까지 복붙 관리
+
+export type UserRole = 'USER' | 'MANAGER' | 'ADMIN'
+
+export type OAuthProvider = 'LOCAL' | 'KAKAO' | 'GOOGLE'
+
+export type Gender = 'MALE' | 'FEMALE' | 'NONE'
+
+export interface UserResponse {
+  id: string
+  username: string
+  nickname: string
+  userEmail: string
+  address: string
+  profileImageUrl?: string | null
+  provider?: OAuthProvider
+  role?: UserRole
+  isDeleted?: boolean
+  createdDate?: string | null
+  modifiedDate?: string | null
+}
+
+export interface UserDetailResponse {
+  id: string
+  username: string
+  nickname: string
+  userEmail: string
+  address: string
+  role: string
+  profileImageUrl?: string | null
+  provider?: OAuthProvider
+  bio?: string
+  gender?: Gender
+  birthDate?: string | null
+  isSearchable?: boolean
+  exposureRangeKm?: number
+  createdAt: string
+  modifiedAt: string
+}
+
+export interface PageResponse<T> {
+  content: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+  hasNext: boolean
+}
+
+export interface UserUpdateRequest {
+  nickname: string
+  address: string
+  currentPassword: string
+  newPassword: string
+  profileImageUrl?: string | null
+  bio?: string
+  gender?: Gender
+  birthDate?: string | null
+  isSearchable?: boolean
+  exposureRangeKm?: number
+}
+
+export interface EmailChangeRequest {
+  newEmail: string
+}
+
+export interface EmailChangeConfirmRequest {
+  newEmail: string
+  code: string
+}
+
+export interface ChangeUserRoleRequest {
+  role: UserRole
+}

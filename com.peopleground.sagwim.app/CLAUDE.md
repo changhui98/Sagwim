@@ -53,10 +53,68 @@ xcrun simctl list devices booted
 - **iOS Bundle Identifier**: `com.peopleground.sagwim.app`
 - **딥링크 Scheme**: `sagwim://`
 
+### API 레이어
+
+- **HTTP 클라이언트**: `axios` (`src/lib/apiClient.ts`)
+- **토큰 저장**: `expo-secure-store` Keychain/Keystore (`src/lib/secureStore.ts`, 키: `sagwim_access_token`)
+- **환경변수**: `EXPO_PUBLIC_API_BASE_URL` — `.env` 파일 설정 필요 (`.env.example` 참고)
+- **Authorization 헤더**: Request 인터셉터가 SecureStore에서 토큰을 읽어 자동 부착
+- **401 처리**: Response 인터셉터가 토큰 삭제만 수행, 화면 전환은 AuthContext가 담당 (미구현)
+
+### 실기기 백엔드 접근
+
+실기기에서는 `localhost`가 Mac을 가리키지 않으므로 아래 방법 중 하나를 사용합니다.
+
+#### 옵션 1 — LAN IP (권장 개발 환경)
+
+```bash
+# Mac의 LAN IP 확인
+ifconfig | grep "inet " | grep -v 127.0.0.1
+```
+
+확인한 IP를 `.env`에 적용:
+
+```
+EXPO_PUBLIC_API_BASE_URL=http://192.168.x.x:8080/api/v1
+```
+
+**주의**: HTTP 평문 통신이므로 iOS ATS(App Transport Security)가 차단할 수 있습니다.
+개발 중에는 `ios/SAGWIM/Info.plist`에 아래를 추가해 ATS를 임시 허용합니다.
+운영 빌드에서는 반드시 제거하고 HTTPS를 사용하세요.
+
+```xml
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+</dict>
+```
+
+#### 옵션 2 — ngrok (HTTPS, ATS 무관)
+
+```bash
+# ngrok 설치 후 BE 포트 터널링
+ngrok http 8080
+```
+
+발급된 `https://xxxx.ngrok-free.app` URL을 `.env`에 적용:
+
+```
+EXPO_PUBLIC_API_BASE_URL=https://xxxx.ngrok-free.app/api/v1
+```
+
+HTTPS이므로 Info.plist 수정 불필요. ngrok 재시작 시 URL이 바뀌므로 `.env` 재갱신 필요.
+
+#### 옵션 3 — 운영 서버
+
+```
+EXPO_PUBLIC_API_BASE_URL=https://sagwim.com/api/v1
+```
+
 ### 향후 추가 예정
 
-- Navigation (React Navigation 또는 expo-router 확장)
-- SecureStore 기반 토큰 저장
+- Navigation (expo-router 확장)
+- AuthContext (토큰 소실 감지 → 로그인 화면 전환)
 - STOMP/SockJS 채팅 연동
 - 푸시 알림
 
