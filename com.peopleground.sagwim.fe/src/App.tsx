@@ -6,7 +6,6 @@ import { ChatFab } from './components/chat/ChatFab'
 import { useAuth } from './context/AuthContext'
 import { useDevToolsProtection } from './hooks/useDevToolsProtection'
 import { HomePage } from './pages/HomePage'
-import { LoginPage } from './pages/LoginPage'
 import { SignUpPage } from './pages/SignUpPage'
 import { PostListPage } from './pages/PostListPage'
 import { UserGridPage } from './pages/UserGridPage'
@@ -46,7 +45,7 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route
         path="/login"
-        element={isAuthenticated ? <Navigate to="/app" replace /> : <LoginPage />}
+        element={isAuthenticated ? <Navigate to="/app" replace /> : <HomePage />}
       />
       <Route path="/sign-up" element={<SignUpPage />} />
       <Route element={<ProtectedRoute />}>
