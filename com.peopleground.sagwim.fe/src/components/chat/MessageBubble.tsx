@@ -5,6 +5,8 @@ import styles from './MessageBubble.module.css'
 interface Props {
   message: ChatMessage
   isMyMessage: boolean
+  /** 그룹의 마지막 메시지 여부 — true일 때만 시간을 표시한다 */
+  showTime: boolean
 }
 
 function formatTime(dateStr: string): string {
@@ -14,7 +16,7 @@ function formatTime(dateStr: string): string {
   })
 }
 
-export function MessageBubble({ message, isMyMessage }: Props) {
+export function MessageBubble({ message, isMyMessage, showTime }: Props) {
   if (message.type === 'SYSTEM') {
     return <div className={styles.system}>{message.content}</div>
   }
@@ -35,7 +37,9 @@ export function MessageBubble({ message, isMyMessage }: Props) {
           <span className={styles.senderName}>{message.senderNickname}</span>
         )}
         <div className={styles.bubble}>{message.content}</div>
-        <span className={styles.time}>{formatTime(message.createdDate)}</span>
+        {showTime && (
+          <span className={styles.time}>{formatTime(message.createdDate)}</span>
+        )}
       </div>
     </div>
   )

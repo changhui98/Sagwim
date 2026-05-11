@@ -159,13 +159,37 @@ export function ChatRoomView({ roomId, roomSummary, myUsername }: Props) {
 
       <div className={styles.messageList}>
         <div ref={bottomRef} />
-        {messages.map((msg) => (
-          <MessageBubble
-            key={msg.id}
-            message={msg}
-            isMyMessage={msg.senderUsername === myUsername}
-          />
-        ))}
+        {messages.map((msg, idx) => {
+          // messages 배열은 [최신(index 0), ..., 가장 오래된] 역순이고,
+          // messageList는 flex-direction: column-reverse 로 렌더링되므로
+          // 화면에서 "더 아래에 있는 메시지(더 최신)"는 배열에서 더 작은 인덱스다.
+          //
+          // 카카오톡 스타일: 같은 발신자·같은 분(시:분)의 연속 그룹에서
+          // 화면 기준 가장 아래 메시지(= 그룹 중 배열 인덱스가 가장 낮은 것)에만 시간 표시.
+          //
+          // 따라서 "이 메시지에 시간을 표시할지"는
+          // 바로 앞 인덱스(= 화면상 바로 아래, 더 최신) 메시지와 비교한다:
+          //   - 앞 메시지가 없다(현재가 배열 첫 번째 = 화면 최하단) → 표시
+          //   - 앞 메시지의 발신자가 다르다 → 표시
+          //   - 앞 메시지의 시:분이 다르다 → 표시
+          //   - 그 외(같은 발신자·같은 분) → 숨김
+          const prev = messages[idx - 1] // 배열 기준 앞 = 화면 기준 아래(더 최신)
+          const isSameSenderAndMinute =
+            prev !== undefined &&
+            prev.senderUsername === msg.senderUsername &&
+            new Date(prev.createdDate).getHours() === new Date(msg.createdDate).getHours() &&
+            new Date(prev.createdDate).getMinutes() === new Date(msg.createdDate).getMinutes()
+          const showTime = !isSameSenderAndMinute
+
+          return (
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              isMyMessage={msg.senderUsername === myUsername}
+              showTime={showTime}
+            />
+          )
+        })}
         {hasNext && (
           <div className={styles.loadMore}>
             <button
