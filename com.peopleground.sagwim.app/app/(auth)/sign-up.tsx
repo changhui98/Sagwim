@@ -266,7 +266,7 @@ export default function SignUpScreen() {
               <Text style={styles.fieldLabel}>아이디</Text>
               <View style={styles.inlineRow}>
                 <TextField
-                  style={styles.inlineInput}
+                  containerStyle={styles.inlineInput}
                   placeholder="영문, 숫자 입력 가능"
                   value={form.username}
                   onChangeText={setField('username')}
@@ -332,7 +332,7 @@ export default function SignUpScreen() {
               </Text>
               <View style={styles.inlineRow}>
                 <TextField
-                  style={styles.inlineInput}
+                  containerStyle={styles.inlineInput}
                   placeholder="2~10자 (선택)"
                   value={form.nickname}
                   onChangeText={setField('nickname')}
@@ -366,7 +366,7 @@ export default function SignUpScreen() {
               <Text style={styles.fieldLabel}>이메일</Text>
               <View style={styles.inlineRow}>
                 <TextField
-                  style={styles.inlineInput}
+                  containerStyle={styles.inlineInput}
                   placeholder="name@example.com"
                   value={form.userEmail}
                   onChangeText={setField('userEmail')}
@@ -393,7 +393,7 @@ export default function SignUpScreen() {
                 <Text style={styles.fieldLabel}>인증코드</Text>
                 <View style={styles.inlineRow}>
                   <TextField
-                    style={styles.inlineInput}
+                    containerStyle={styles.inlineInput}
                     placeholder="인증코드를 입력하세요"
                     value={verificationCode}
                     onChangeText={setVerificationCode}
@@ -526,6 +526,7 @@ const styles = StyleSheet.create({
   },
   inlineInput: {
     flex: 1,
+    marginBottom: 0,
   },
   inlineBtn: {
     flexShrink: 0,

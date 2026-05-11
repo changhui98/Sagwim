@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
   type TextInputProps,
+  type ViewStyle,
 } from 'react-native'
 import { colors, radius, spacing, fontSize } from '../constants/theme'
 
@@ -16,6 +17,12 @@ interface Props extends TextInputProps {
   isPassword?: boolean
   /** 유효성 상태 테두리 피드백 (success | error | undefined) */
   validationState?: 'success' | 'error'
+  /**
+   * wrapper View(바깥 컨테이너)에 적용할 스타일.
+   * inlineRow 안에서 flex:1 배분이 필요할 때 사용.
+   * 기존 style prop은 TextInput에 그대로 전달됨.
+   */
+  containerStyle?: ViewStyle
 }
 
 export function TextField({
@@ -24,6 +31,7 @@ export function TextField({
   isPassword,
   validationState,
   style,
+  containerStyle,
   editable = true,
   ...rest
 }: Props) {
@@ -37,7 +45,7 @@ export function TextField({
         : colors.borderStrong
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, containerStyle]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
 
       <View
