@@ -10,6 +10,10 @@ import { MessageBubble } from './MessageBubble'
 import { MessageInput } from './MessageInput'
 import styles from './ChatRoomView.module.css'
 
+// 낙관적 업데이트 메시지의 임시 id 식별자.
+// 음수 값을 사용하므로 서버가 발급하는 양수 id와 절대 겹치지 않는다.
+let optimisticIdCounter = -1
+
 interface Props {
   roomId: number
   roomSummary: ChatRoomSummary | null
@@ -61,22 +65,51 @@ export function ChatRoomView({ roomId, roomSummary, myUsername }: Props) {
     }
   }, [messages, cursor])
 
-  // 읽음 처리
+  // 읽음 처리: 낙관적 메시지(음수 id)는 아직 서버에 저장되지 않았으므로 건너뛴다.
   useEffect(() => {
     if (!token || messages.length === 0) return
     const lastId = messages[0].id
+    if (lastId <= 0) return
     void markAsRead(token, roomId, lastId).catch(() => null)
   }, [token, roomId, messages])
 
-  // 실시간 메시지 수신
+  // 실시간 메시지 수신: 서버 echo가 도착하면 동일 id의 낙관적 메시지를 교체한다.
+  // 낙관적 메시지가 없는 경우(상대방 메시지 등)는 맨 앞에 추가한다.
   useChatRoom({
     roomId,
     onMessage: (msg) => {
-      setMessages((prev) => [msg, ...prev])
+      setMessages((prev) => {
+        // 이미 서버 id로 존재하는 메시지면 중복 방지
+        if (prev.some((m) => m.id === msg.id)) return prev
+        // 내가 보낸 메시지 echo가 도착하면 첫 번째 낙관적 메시지(음수 id)를 교체한다.
+        const optimisticIdx = prev.findIndex(
+          (m) => m.id < 0 && m.senderUsername === msg.senderUsername && m.content === msg.content,
+        )
+        if (optimisticIdx !== -1) {
+          const next = [...prev]
+          next[optimisticIdx] = msg
+          return next
+        }
+        return [msg, ...prev]
+      })
     },
   })
 
   const handleSend = (content: string) => {
+    // 낙관적 업데이트: 서버 echo를 기다리지 않고 즉시 화면에 표시한다.
+    // 임시 id로 음수 값을 사용하므로 서버 id(양수)와 충돌하지 않는다.
+    const tempId = optimisticIdCounter--
+    const optimistic: ChatMessage = {
+      id: tempId,
+      roomId,
+      senderUsername: myUsername,
+      senderNickname: myUsername,
+      senderProfileImageUrl: null,
+      content,
+      type: 'TEXT',
+      createdDate: new Date().toISOString(),
+    }
+    setMessages((prev) => [optimistic, ...prev])
     chatSocket.sendMessage({ roomId, content })
   }
 

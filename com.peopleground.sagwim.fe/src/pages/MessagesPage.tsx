@@ -5,7 +5,7 @@ import { ChatRoomView } from '../components/chat/ChatRoomView'
 import { ChatSidebar } from '../components/chat/ChatSidebar'
 import { HomeIcon } from '../components/NavIcons'
 import { useAuth } from '../context/AuthContext'
-import { useChatSocket } from '../hooks/useChatSocket'
+import { useChatSocket, useRoomsLiveUpdate } from '../hooks/useChatSocket'
 import type { ChatRoomSummary } from '../types/chat'
 import styles from './MessagesPage.module.css'
 
@@ -37,6 +37,15 @@ export function MessagesPage() {
       cancelled = true
     }
   }, [token])
+
+  // 채팅방 목록 사이드바 실시간 업데이트:
+  // 각 방의 STOMP topic을 구독하여 새 메시지 도착 시 lastMessage·시간·unread 갱신
+  useRoomsLiveUpdate({
+    rooms,
+    activeRoomId,
+    myUsername: meUsername ?? '',
+    setRooms,
+  })
 
   const activeRoom = activeRoomId
     ? rooms.find((r) => r.roomId === activeRoomId) ?? null

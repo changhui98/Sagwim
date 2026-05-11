@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.peopleground.sagwim.chat.infrastructure.pubsub.ChatRedisSubscriber;
+import com.peopleground.sagwim.chat.presentation.dto.response.ChatMessageResponse;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -122,13 +124,50 @@ public class RedisConfig {
     }
 
     /**
-     * 채팅 Pub/Sub 수신 어댑터. ChatRedisSubscriber.onMessage() 를 리스너로 등록한다.
-     * 직렬화는 redisTemplate 과 동일한 JSON 직렬화를 사용한다.
+     * 채팅 메시지 전용 직렬화기. 타겟 타입을 ChatMessageResponse 로 고정하여
+     * default typing(@class) 없이도 정확히 역직렬화 가능하게 한다.
+     *
+     * <p>왜 이게 필요한가: 전역 redisTemplate 의 SagwimJsonRedisSerializer 는
+     * default typing 을 NON_FINAL 로 활성화하는데, ChatMessageResponse 가 record
+     * (Java 의 final 클래스) 라서 @class 가 직렬화에 포함되지 않는다. 결과적으로
+     * Object.class 로 역직렬화 시 타입 ID 누락으로 InvalidTypeIdException 이 발생,
+     * Pub/Sub broadcast 가 매번 실패한다.</p>
      */
     @Bean
-    public MessageListenerAdapter chatMessageListenerAdapter(ChatRedisSubscriber subscriber) {
+    public Jackson2JsonRedisSerializer<ChatMessageResponse> chatMessageRedisSerializer() {
+        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        return new Jackson2JsonRedisSerializer<>(mapper, ChatMessageResponse.class);
+    }
+
+    /**
+     * 채팅 Pub/Sub 전용 RedisTemplate. valueSerializer 가 ChatMessageResponse 를
+     * 정확히 매핑하므로 publish/subscribe 양쪽에서 일관된 직렬화가 보장된다.
+     */
+    @Bean
+    public RedisTemplate<String, ChatMessageResponse> chatRedisTemplate(
+        RedisConnectionFactory connectionFactory,
+        Jackson2JsonRedisSerializer<ChatMessageResponse> chatMessageRedisSerializer
+    ) {
+        RedisTemplate<String, ChatMessageResponse> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(chatMessageRedisSerializer);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(chatMessageRedisSerializer);
+        return template;
+    }
+
+    /**
+     * 채팅 Pub/Sub 수신 어댑터. ChatRedisSubscriber.onMessage() 를 리스너로 등록한다.
+     * 채팅 전용 직렬화기를 사용하므로 publish 와 동일한 형식으로 역직렬화된다.
+     */
+    @Bean
+    public MessageListenerAdapter chatMessageListenerAdapter(
+        ChatRedisSubscriber subscriber,
+        Jackson2JsonRedisSerializer<ChatMessageResponse> chatMessageRedisSerializer
+    ) {
         MessageListenerAdapter adapter = new MessageListenerAdapter(subscriber, "onMessage");
-        adapter.setSerializer(buildJsonSerializer());
+        adapter.setSerializer(chatMessageRedisSerializer);
         return adapter;
     }
 

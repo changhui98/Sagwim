@@ -80,12 +80,15 @@ public class ChatQueryRepository {
             .from(anyMsg)
             .where(anyMsg.room.id.eq(myMember.room.id));
 
-        // 안읽은 메시지 수 서브쿼리
+        // 안읽은 메시지 수 서브쿼리.
+        // 본인이 보낸 메시지는 안읽은 수에서 제외해야 한다 — 그렇지 않으면
+        // 메시지 전송 직후 본인의 사이드바에 자기 메시지가 unread로 카운트된다.
         var unreadCountSubquery = JPAExpressions
             .select(unreadMsg.count())
             .from(unreadMsg)
             .where(
                 unreadMsg.room.id.eq(myMember.room.id),
+                unreadMsg.sender.id.ne(userId),
                 myMember.lastReadMessageId.isNull()
                     .or(unreadMsg.id.gt(myMember.lastReadMessageId))
             );
