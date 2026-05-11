@@ -1,0 +1,49 @@
+/* header variant: ChatRoomView topBar 우측 끝에 absolute 고정 */
+.header {
+  position: absolute;
+  right: var(--sp-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--clr-text-secondary);
+  padding: var(--sp-1);
+  border-radius: var(--r-sm);
+  transition: color var(--t-fast), background var(--t-fast);
+}
+
+.header:hover {
+  color: var(--clr-text);
+  background: var(--clr-bg-alt);
+}
+
+/* floating variant: ChatFab과 동일한 위치·크기·스타일 */
+.floating {
+  position: fixed;
+  right: var(--sp-6);
+  bottom: var(--sp-8);
+  z-index: 200;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent-gradient);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  color: #fff;
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+
+.floating:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 48px rgba(240, 128, 128, 0.35);
+}
+
+.floating:active {
+  transform: translateY(0);
+}

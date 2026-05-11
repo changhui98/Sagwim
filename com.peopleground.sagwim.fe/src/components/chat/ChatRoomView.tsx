@@ -6,6 +6,7 @@ import { useChatRoom } from '../../hooks/useChatSocket'
 import { chatSocket } from '../../lib/chatSocket'
 import type { ChatMessage, ChatRoomSummary } from '../../types/chat'
 import { getInitials } from '../../utils/stringUtils'
+import { HomeButton } from './HomeButton'
 import { MessageBubble } from './MessageBubble'
 import { MessageInput } from './MessageInput'
 import styles from './ChatRoomView.module.css'
@@ -126,6 +127,7 @@ export function ChatRoomView({ roomId, roomSummary, myUsername }: Props) {
           </svg>
           <span>대화를 선택하세요.</span>
         </div>
+        <HomeButton variant="floating" />
       </div>
     )
   }
@@ -142,14 +144,17 @@ export function ChatRoomView({ roomId, roomSummary, myUsername }: Props) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <div className={styles.avatar}>
-          {roomSummary.partnerProfileImageUrl ? (
-            <img src={roomSummary.partnerProfileImageUrl} alt={roomSummary.partnerNickname} />
-          ) : (
-            getInitials(roomSummary.partnerNickname)
-          )}
+        <div className={styles.partnerInfo}>
+          <div className={styles.avatar}>
+            {roomSummary.partnerProfileImageUrl ? (
+              <img src={roomSummary.partnerProfileImageUrl} alt={roomSummary.partnerNickname} />
+            ) : (
+              getInitials(roomSummary.partnerNickname)
+            )}
+          </div>
+          <span className={styles.partnerName}>{roomSummary.partnerNickname}</span>
         </div>
-        <span className={styles.partnerName}>{roomSummary.partnerNickname}</span>
+        <HomeButton variant="header" />
       </div>
 
       <div className={styles.messageList}>

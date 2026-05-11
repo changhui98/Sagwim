@@ -8,9 +8,10 @@
 }
 
 .topBar {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  justify-content: center;
   padding: var(--sp-4) var(--sp-5);
   border-bottom: 1px solid var(--clr-border);
   background: var(--clr-surface);
@@ -19,12 +20,20 @@
 
 .backButton {
   display: none;
+  position: absolute;
+  left: var(--sp-5);
   background: transparent;
   border: none;
   cursor: pointer;
   color: var(--clr-text-secondary);
   padding: var(--sp-1);
   border-radius: var(--r-sm);
+}
+
+.partnerInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
 }
 
 .avatar {
