@@ -23,5 +23,6 @@ export default function AppLayout() {
     return <Redirect href="/(auth)/login" />
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />
+  // gestureEnabled: false — 인증 후 화면에서 스와이프 백으로 로그인 화면으로 돌아가는 것 차단
+  return <Stack screenOptions={{ headerShown: false, gestureEnabled: false }} />
 }
