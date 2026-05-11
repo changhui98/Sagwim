@@ -1,5 +1,5 @@
 /**
- * 로그인 화면 — FE LoginPage 디자인 이식
+ * 로그인 화면 — FE HomePage 디자인 이식 (BrandLogo 헤더)
  *
  * 모바일 표준 인터랙션:
  * - SafeAreaView: 노치/홈 인디케이터 고려
@@ -28,6 +28,7 @@ import { useAuth } from '../../src/context/AuthContext'
 import { signIn } from '../../src/api/authApi'
 import { TextField } from '../../src/components/TextField'
 import { PrimaryButton } from '../../src/components/PrimaryButton'
+import { BrandLogo } from '../../src/components/BrandLogo'
 import { colors, spacing, radius, fontSize } from '../../src/constants/theme'
 
 export default function LoginScreen() {
@@ -71,9 +72,12 @@ export default function LoginScreen() {
         >
           {/* 카드 */}
           <View style={styles.card}>
-            {/* 헤딩 */}
-            <Text style={styles.heading}>다시 오셨군요</Text>
-            <Text style={styles.subheading}>계정에 로그인하세요</Text>
+            {/* Brand 헤더 — FE HomePage 디자인 */}
+            <View style={styles.brand}>
+              <BrandLogo size={72} />
+              <Text style={styles.brandName}>Sagwim</Text>
+              <Text style={styles.tagline}>함께 모이는 공간</Text>
+            </View>
 
             {/* 아이디 */}
             <TextField
@@ -177,16 +181,22 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 420,
   },
-  heading: {
-    fontSize: fontSize.xl4,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: spacing.sp1,
-  },
-  subheading: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
+  brand: {
+    alignItems: 'center',
     marginBottom: spacing.sp8,
+  },
+  brandName: {
+    fontSize: 36,
+    fontWeight: '300',
+    color: colors.accent,
+    letterSpacing: 0.5,
+    marginTop: spacing.sp4,
+    marginBottom: spacing.sp3,
+    lineHeight: 43,
+  },
+  tagline: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
   },
   submitBtn: {
     marginTop: spacing.sp2,
