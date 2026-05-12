@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { colors } from '../../../src/constants/theme'
 
 const ICON_SIZE = 24
-const TAB_CONTENT_HEIGHT = 52 // 아이콘 + 라벨 영역 고정 높이
+const TAB_CONTENT_HEIGHT = 44 // 아이콘 전용 영역 고정 높이 (라벨 제거 후 축소)
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets()
@@ -64,6 +64,7 @@ export default function TabsLayout() {
         ),
 
         // ─── 하단 탭바 ────────────────────────────────────────────
+        tabBarShowLabel: false,
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
@@ -71,11 +72,7 @@ export default function TabsLayout() {
           borderTopColor: colors.border,
           height: tabBarHeight,
           paddingBottom: insets.bottom,
-          paddingTop: 6,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
+          paddingTop: 0,
         },
       }}
     >
