@@ -21,6 +21,15 @@
 
 .body {
   flex: 1;
+  padding: var(--sp-6) var(--sp-5);
+}
+
+.message {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--clr-text);
 }
 
 @media (max-width: 767px) {

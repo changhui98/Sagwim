@@ -8,7 +8,7 @@ import pageStyles from './WithdrawPage.module.css'
 
 export function WithdrawPage() {
   const navigate = useNavigate()
-  const { logout, meRole } = useAuth()
+  const { logout, meRole, meNickname } = useAuth()
   useHandleUnauthorized()
 
   const handleLogout = useCallback(() => {
@@ -34,7 +34,13 @@ export function WithdrawPage() {
             <span style={{ minWidth: '4rem' }} />
           </header>
 
-          <div className={pageStyles.body} />
+          <div className={pageStyles.body}>
+            <p className={pageStyles.message}>
+              {meNickname ? `${meNickname}님` : ''}
+              <br />
+              정말 탈퇴하시겠어요?
+            </p>
+          </div>
         </div>
       </main>
     </>
