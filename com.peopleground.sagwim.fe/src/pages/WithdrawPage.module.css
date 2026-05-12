@@ -21,7 +21,7 @@
 
 .body {
   flex: 1;
-  padding: var(--sp-6) var(--sp-5);
+  padding: var(--sp-10) var(--sp-8);
 }
 
 .message {
