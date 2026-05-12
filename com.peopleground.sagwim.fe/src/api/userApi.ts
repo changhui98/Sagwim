@@ -81,10 +81,14 @@ export const confirmEmailChange = async (
   await parseResponse<{ message: string }>(response)
 }
 
-export const deleteMyAccount = async (token: string): Promise<void> => {
+export const deleteMyAccount = async (token: string, reason: string): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/users/me`, {
     method: 'DELETE',
-    headers: createAuthHeaders(token),
+    headers: {
+      ...createAuthHeaders(token),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ reason }),
   })
   // 백엔드 응답 204 No Content — 본문 없으므로 parseResponse 대신 직접 처리
   if (!response.ok) {

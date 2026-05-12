@@ -54,7 +54,7 @@ export function WithdrawPage() {
     if (!canSubmit) return
     setIsSubmitting(true)
     try {
-      await deleteMyAccount(token)
+      await deleteMyAccount(token, reason)
       logout()
       navigate('/', { replace: true })
     } catch (err) {
