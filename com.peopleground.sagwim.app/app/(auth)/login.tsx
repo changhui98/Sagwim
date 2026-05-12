@@ -190,9 +190,9 @@ const styles = StyleSheet.create({
     fontFamily: 'PlaywriteIE_300Light',
     color: colors.accent,
     letterSpacing: 0.5,
-    marginTop: spacing.sp4,
-    marginBottom: spacing.sp3,
-    lineHeight: 43,
+    marginTop: 0,
+    marginBottom: 0,
+    lineHeight: 56,
   },
   tagline: {
     fontSize: fontSize.sm,
