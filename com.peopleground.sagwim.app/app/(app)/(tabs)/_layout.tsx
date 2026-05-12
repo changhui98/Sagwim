@@ -74,6 +74,9 @@ export default function TabsLayout() {
           paddingBottom: insets.bottom,
           paddingTop: 0,
         },
+        tabBarIconStyle: {
+          marginTop: insets.bottom / 2,
+        },
       }}
     >
       <Tabs.Screen
