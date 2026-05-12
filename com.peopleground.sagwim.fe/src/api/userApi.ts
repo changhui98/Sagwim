@@ -8,6 +8,7 @@ import type {
 } from '../types/user'
 import { API_BASE_URL } from './config'
 import { createAuthHeaders, parseResponse } from './apiUtils'
+import { ApiError } from './ApiError'
 
 export const searchAddress = async (token: string, query: string): Promise<string[]> => {
   const res = await fetch(
@@ -78,4 +79,19 @@ export const confirmEmailChange = async (
     body: JSON.stringify(body),
   })
   await parseResponse<{ message: string }>(response)
+}
+
+export const deleteMyAccount = async (token: string, reason: string): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/users/me`, {
+    method: 'DELETE',
+    headers: {
+      ...createAuthHeaders(token),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ reason }),
+  })
+  // 백엔드 응답 204 No Content — 본문 없으므로 parseResponse 대신 직접 처리
+  if (!response.ok) {
+    throw new ApiError(response.status, '회원 탈퇴에 실패했습니다. 잠시 후 다시 시도해주세요.')
+  }
 }

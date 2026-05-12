@@ -1,0 +1,58 @@
+/* ── AdminInquiryListPage 고유 스타일 ── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* 문의 경로 뱃지 */
+.badgeWithdrawal,
+.badgeInquiry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+}
+
+.badgeWithdrawal {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.badgeInquiry {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+/* 셀 유틸리티 */
+.cellTime {
+  white-space: nowrap;
+  color: var(--clr-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.cellAuthor {
+  font-size: 0.875rem;
+  color: var(--clr-text);
+  white-space: nowrap;
+}
+
+.cellAuthorMuted {
+  color: var(--clr-text-secondary);
+  font-style: italic;
+}
+
+.cellContent {
+  max-width: 420px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+}

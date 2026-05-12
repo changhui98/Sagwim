@@ -6,7 +6,6 @@ import { ChatFab } from './components/chat/ChatFab'
 import { useAuth } from './context/AuthContext'
 import { useDevToolsProtection } from './hooks/useDevToolsProtection'
 import { HomePage } from './pages/HomePage'
-import { LoginPage } from './pages/LoginPage'
 import { SignUpPage } from './pages/SignUpPage'
 import { PostListPage } from './pages/PostListPage'
 import { UserGridPage } from './pages/UserGridPage'
@@ -23,6 +22,7 @@ import { AdminPostListPage } from './pages/admin/AdminPostListPage'
 import { AdminImageListPage } from './pages/admin/AdminImageListPage'
 import { AdminLogPage } from './pages/admin/AdminLogPage'
 import { AdminReportListPage } from './pages/admin/AdminReportListPage'
+import { AdminInquiryListPage } from './pages/admin/AdminInquiryListPage'
 import { PostCreatePage } from './pages/PostCreatePage'
 import { GroupListPage } from './pages/GroupListPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
@@ -33,6 +33,8 @@ import { NewGroupsPage } from './pages/NewGroupsPage'
 import { PopularGroupsPage } from './pages/PopularGroupsPage'
 import { PostDetailPage } from './pages/PostDetailPage'
 import { MessagesPage } from './pages/MessagesPage'
+import { SettingsPage } from './pages/SettingsPage'
+import { WithdrawPage } from './pages/WithdrawPage'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -46,7 +48,7 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route
         path="/login"
-        element={isAuthenticated ? <Navigate to="/app" replace /> : <LoginPage />}
+        element={isAuthenticated ? <Navigate to="/app" replace /> : <HomePage />}
       />
       <Route path="/sign-up" element={<SignUpPage />} />
       <Route element={<ProtectedRoute />}>
@@ -66,6 +68,8 @@ function App() {
         <Route path="/app/groups/:groupId/settings" element={<GroupSettingsPage />} />
         <Route path="/app/profile" element={<ProfilePage />} />
         <Route path="/app/profile/edit" element={<ProfileEditPage />} />
+        <Route path="/app/settings" element={<SettingsPage />} />
+        <Route path="/app/settings/withdraw" element={<WithdrawPage />} />
         <Route path="/app/profile/edit/nickname" element={<ProfileEditNicknamePage />} />
         <Route path="/app/profile/edit/gender" element={<ProfileEditGenderPage />} />
         <Route path="/app/profile/edit/birthdate" element={<ProfileEditBirthDatePage />} />
@@ -80,6 +84,7 @@ function App() {
           <Route path="posts" element={<AdminPostListPage />} />
           <Route path="images" element={<AdminImageListPage />} />
           <Route path="reports" element={<AdminReportListPage />} />
+          <Route path="inquiries" element={<AdminInquiryListPage />} />
           <Route path="logs" element={<AdminLogPage />} />
         </Route>
       </Route>

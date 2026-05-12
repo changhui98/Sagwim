@@ -5,6 +5,7 @@ import type { AdminImageResponse } from '../types/image'
 import type { AdminGroupResponse } from '../types/group'
 import type { DeleteLogEntry } from '../types/deleteLog'
 import type { AdminReportEntry } from '../types/report'
+import type { AdminInquiryEntry } from '../types/inquiry'
 import { API_BASE_URL } from './config'
 import { createAuthHeaders, parseResponse } from './apiUtils'
 
@@ -212,4 +213,14 @@ export const getAdminReports = (
   return fetch(`${API_BASE_URL}/admin/reports?page=${page}&size=${size}`, {
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<PageResponse<AdminReportEntry>>(response))
+}
+
+export const getAdminInquiries = (
+  token: string,
+  page = 0,
+  size = 20,
+): Promise<PageResponse<AdminInquiryEntry>> => {
+  return fetch(`${API_BASE_URL}/admin/inquiries?page=${page}&size=${size}`, {
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<PageResponse<AdminInquiryEntry>>(response))
 }

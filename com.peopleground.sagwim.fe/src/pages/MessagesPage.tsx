@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { fetchRooms } from '../api/chatApi'
 import { ChatRoomView } from '../components/chat/ChatRoomView'
 import { ChatSidebar } from '../components/chat/ChatSidebar'
-import { HomeIcon } from '../components/NavIcons'
 import { useAuth } from '../context/AuthContext'
 import { useChatSocket, useRoomsLiveUpdate } from '../hooks/useChatSocket'
 import type { ChatRoomSummary } from '../types/chat'
@@ -12,7 +11,6 @@ import styles from './MessagesPage.module.css'
 export function MessagesPage() {
   const { roomId: roomIdParam } = useParams<{ roomId?: string }>()
   const { token, meUsername } = useAuth()
-  const navigate = useNavigate()
   const activeRoomId = roomIdParam ? Number(roomIdParam) : null
 
   const [rooms, setRooms] = useState<ChatRoomSummary[]>([])
@@ -90,14 +88,6 @@ export function MessagesPage() {
           실시간 연결 중...
         </div>
       )}
-      <button
-        type="button"
-        className={styles.homeFab}
-        onClick={() => navigate('/app')}
-        aria-label="홈으로 이동"
-      >
-        <HomeIcon width={24} height={24} />
-      </button>
     </div>
   )
 }

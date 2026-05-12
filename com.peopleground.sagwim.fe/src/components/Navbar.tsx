@@ -321,7 +321,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
                   <button
                     type="button"
                     className={styles.menuItem}
-                    onClick={() => goPlaceholder('설정')}
+                    onClick={() => navigate('/app/settings')}
                     role="menuitem"
                   >
                     <span className={styles.menuItemLabel}>설정</span>
