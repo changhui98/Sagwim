@@ -31,7 +31,7 @@ export default function TabsLayout() {
         headerTitle: 'Sagwim',
         headerTitleStyle: {
           fontSize: 19,
-          fontWeight: '700',
+          fontFamily: 'PlaywriteIE_300Light',
           color: colors.text,
         },
         headerTitleAlign: 'center',
@@ -56,7 +56,7 @@ export default function TabsLayout() {
             accessibilityLabel="알림"
             accessibilityRole="button"
           >
-            <Ionicons name="notifications-outline" size={ICON_SIZE} color={colors.text} />
+            <Ionicons name="heart-outline" size={ICON_SIZE} color={colors.text} />
           </Pressable>
         ),
 
