@@ -43,6 +43,24 @@
 
 .checkItem {
   margin: 0;
+  animation: revealItem 260ms ease-out both;
+}
+
+@keyframes revealItem {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checkItem {
+    animation: none;
+  }
 }
 
 .agreementItem {
