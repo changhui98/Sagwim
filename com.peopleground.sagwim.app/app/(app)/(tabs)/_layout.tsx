@@ -38,10 +38,7 @@ export default function TabsLayout() {
         headerStyle: {
           backgroundColor: colors.surface,
         },
-        headerShadowVisible: true,
-        // headerShadowVisible 이 true 이면 iOS 에서 borderBottom 이 자동으로 그려짐.
-        // Android 용 elevation 도 함께 적용하기 위해 headerStyle 안에 elevation 을 넣지 않고
-        // headerShadowVisible 로만 처리 (RN 표준).
+        headerShadowVisible: false,
         headerLeft: () => (
           <Pressable
             onPress={() => router.push('/(app)/(tabs)/create')}
@@ -70,6 +67,7 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
+          borderTopWidth: 0,
           height: tabBarHeight,
           paddingBottom: insets.bottom,
           paddingTop: 0,

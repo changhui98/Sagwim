@@ -91,8 +91,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sp8,
     backgroundColor: colors.surface,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
