@@ -1,18 +1,18 @@
 /**
- * 임시 보호 홈 화면
- * - 로그인 후 진입 확인용 (실제 홈은 별도 단계에서 구현)
- * - 현재 사용자 정보 표시 + 로그아웃 버튼
+ * 프로필 탭 — Step 1 단순 버전.
+ * 임시: 사용자 정보 표시 + 로그아웃 (기존 placeholder 홈에 있던 로그아웃 기능 이관).
+ * 실제 프로필 화면(편집/설정/회원 탈퇴 등)은 추후 단계에서 구현.
  */
 
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
-import { useAuth } from '../../src/context/AuthContext'
-import { PrimaryButton } from '../../src/components/PrimaryButton'
-import { colors, spacing, radius, fontSize } from '../../src/constants/theme'
+import { useAuth } from '../../../src/context/AuthContext'
+import { PrimaryButton } from '../../../src/components/PrimaryButton'
+import { colors, fontSize, radius, spacing } from '../../../src/constants/theme'
 
-export default function AppHomeScreen() {
+export default function ProfileScreen() {
   const { meUsername, meNickname, logout } = useAuth()
 
   const handleLogout = async () => {
@@ -21,15 +21,12 @@ export default function AppHomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <View style={styles.body}>
         <View style={styles.card}>
           <Text style={styles.greeting}>안녕하세요!</Text>
-          <Text style={styles.username}>
-            {meNickname ?? meUsername ?? '사용자'}
-          </Text>
-          <Text style={styles.hint}>로그인 상태입니다.</Text>
-          <Text style={styles.hint2}>홈 화면은 별도 단계에서 구현됩니다.</Text>
+          <Text style={styles.nickname}>{meNickname ?? meUsername ?? '사용자'}</Text>
+          <Text style={styles.hint}>프로필 화면은 준비 중이에요.</Text>
         </View>
 
         <PrimaryButton
@@ -43,11 +40,8 @@ export default function AppHomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  container: {
+  safe: { flex: 1, backgroundColor: colors.bg },
+  body: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -60,11 +54,8 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
     padding: spacing.sp8,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.09,
-    shadowRadius: 16,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   greeting: {
     fontSize: fontSize.xl2,
@@ -72,23 +63,18 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: spacing.sp2,
   },
-  username: {
+  nickname: {
     fontSize: fontSize.xl3,
     fontWeight: '700',
     color: colors.accent,
     marginBottom: spacing.sp4,
   },
   hint: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-    marginBottom: spacing.sp1,
-  },
-  hint2: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
-    textAlign: 'center',
   },
   logoutBtn: {
+    width: '100%',
     backgroundColor: colors.error,
   },
 })

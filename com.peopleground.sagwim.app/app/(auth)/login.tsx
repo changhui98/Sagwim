@@ -49,7 +49,7 @@ export default function LoginScreen() {
       setError('')
       const token = await signIn({ username: username.trim(), password })
       await login(token)
-      router.replace('/(app)')
+      router.replace('/(app)/(tabs)')
     } catch (err) {
       setError(err instanceof Error ? err.message : '로그인에 실패했습니다.')
     } finally {
