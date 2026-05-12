@@ -24,6 +24,7 @@ export function WithdrawPage() {
 
   const [checked, setChecked] = useState<boolean[]>(() => NOTICES.map(() => false))
   const [agreed, setAgreed] = useState(false)
+  const [reason, setReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleLogout = useCallback(() => {
@@ -121,6 +122,19 @@ export function WithdrawPage() {
                 </li>
               )}
             </ul>
+
+            {allNoticesChecked && (
+              <section className={pageStyles.reasonSection}>
+                <h2 className={pageStyles.reasonLabel}>떠나시는 이유를 알려주세요.</h2>
+                <textarea
+                  className={pageStyles.reasonTextarea}
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder={'서비스 탈퇴 사유에 대해 알려주세요.\n고객님의 소중한 피드백을 담아\n더 나은 서비스로 보답 드리도록 하겠습니다.'}
+                  maxLength={500}
+                />
+              </section>
+            )}
 
             <button
               type="button"
