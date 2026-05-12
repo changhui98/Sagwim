@@ -4,6 +4,7 @@ import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.image.application.ImageUrlResolver;
+import com.peopleground.sagwim.inquiry.application.service.InquiryService;
 import com.peopleground.sagwim.user.domain.entity.Gender;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,6 +37,7 @@ public class UserService {
     private final GeocodingClient geocodingClient;
     private final GeometryFactory geometryFactory;
     private final ImageUrlResolver imageUrlResolver;
+    private final InquiryService inquiryService;
 
     @Transactional(readOnly = true)
     public UserDetailResponse getMyProfile(CustomUser customUser) {
@@ -146,8 +148,17 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(CustomUser customUser) {
+    public void deleteUser(CustomUser customUser, String reason) {
         User user = getUser(customUser);
+
+        // 사유는 사용자 데이터 삭제 여부와 무관하게 inquiry 테이블에 보존된다.
+        // username/nickname 을 snapshot 으로 저장하여 영구 삭제 후에도 작성자 식별 가능.
+        inquiryService.saveWithdrawalReason(
+            user.getId(),
+            user.getUsername(),
+            user.getNickname(),
+            reason
+        );
 
         user.delete();
         userRepository.save(user);

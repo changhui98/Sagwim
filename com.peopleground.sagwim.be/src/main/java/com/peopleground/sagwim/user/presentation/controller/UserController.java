@@ -7,6 +7,7 @@ import com.peopleground.sagwim.user.application.UserService;
 import com.peopleground.sagwim.user.presentation.dto.request.EmailChangeConfirmRequest;
 import com.peopleground.sagwim.user.presentation.dto.request.EmailChangeRequest;
 import com.peopleground.sagwim.user.presentation.dto.request.UserUpdateRequest;
+import com.peopleground.sagwim.user.presentation.dto.request.UserWithdrawRequest;
 import com.peopleground.sagwim.user.presentation.dto.response.UserDetailResponse;
 import com.peopleground.sagwim.user.presentation.dto.response.UserResponseMarker;
 import jakarta.validation.Valid;
@@ -84,9 +85,11 @@ public class UserController {
 
     @DeleteMapping("/me")
     public ResponseEntity<Void> deleteUser(
-        @AuthenticationPrincipal CustomUser customUser
+        @AuthenticationPrincipal CustomUser customUser,
+        @RequestBody(required = false) UserWithdrawRequest req
     ) {
-        userService.deleteUser(customUser);
+        String reason = req == null ? null : req.reason();
+        userService.deleteUser(customUser, reason);
 
         return ResponseEntity.noContent().build();
     }
