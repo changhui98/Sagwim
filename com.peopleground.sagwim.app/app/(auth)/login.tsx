@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   brandName: {
     fontSize: 36,
-    fontWeight: '300',
+    fontFamily: 'PlaywriteIE_300Light',
     color: colors.accent,
     letterSpacing: 0.5,
     marginTop: spacing.sp4,
