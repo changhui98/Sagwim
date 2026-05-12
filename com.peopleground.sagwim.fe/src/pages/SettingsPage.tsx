@@ -68,7 +68,7 @@ export function SettingsPage() {
                 >
                   회원 탈퇴
                 </span>
-                <span className={listStyles.chevron}>›</span>
+                <span className={listStyles.chevron} style={{ marginLeft: 'auto' }}>›</span>
               </li>
             </ul>
           </div>
