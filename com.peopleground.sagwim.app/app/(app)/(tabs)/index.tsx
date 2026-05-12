@@ -13,16 +13,14 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react'
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { router } from 'expo-router'
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native'
 import { getNewGroups, getPopularGroups } from '../../../src/api/groupApi'
 import { getMe } from '../../../src/api/userApi'
 import { useAuth } from '../../../src/context/AuthContext'
 import { GroupSection } from '../../../src/components/group/GroupSection'
 import { AddressOnboarding } from '../../../src/components/home/AddressOnboarding'
 import type { GroupResponse } from '../../../src/types/group'
-import { colors, fontSize, spacing } from '../../../src/constants/theme'
+import { colors, spacing } from '../../../src/constants/theme'
 
 const PREVIEW_COUNT = 3
 
@@ -80,22 +78,19 @@ export default function HomeScreen() {
   // 주소 분기: meAddress 없으면 온보딩만 노출
   if (!loading && !address) {
     return (
-      <SafeAreaView style={styles.safe} edges={['top']}>
-        <View style={styles.headerEmpty} />
+      <View style={styles.safe}>
         <AddressOnboarding
           onPressSetAddress={() => {
             // 주소 설정 화면도 추후 단계 — 우선 임시 알림 처리.
             console.log('[Home] navigate to address setup — pending')
           }}
         />
-      </SafeAreaView>
+      </View>
     )
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.headerEmpty} />
-
+    <View style={styles.safe}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -137,7 +132,7 @@ export default function HomeScreen() {
           onPressGroup={handlePressGroup}
         />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   )
 }
 
@@ -145,10 +140,6 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: colors.bg,
-  },
-  headerEmpty: {
-    // 상단 헤더 자리 — Step 1 에서는 비움
-    height: 12,
   },
   scroll: {
     flex: 1,

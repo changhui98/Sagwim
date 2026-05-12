@@ -6,7 +6,6 @@
 
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { useAuth } from '../../../src/context/AuthContext'
 import { PrimaryButton } from '../../../src/components/PrimaryButton'
@@ -21,7 +20,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <View style={styles.safe}>
       <View style={styles.body}>
         <View style={styles.card}>
           <Text style={styles.greeting}>안녕하세요!</Text>
@@ -35,7 +34,7 @@ export default function ProfileScreen() {
           style={styles.logoutBtn}
         />
       </View>
-    </SafeAreaView>
+    </View>
   )
 }
 

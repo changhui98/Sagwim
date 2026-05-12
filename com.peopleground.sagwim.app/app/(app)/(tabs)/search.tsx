@@ -1,16 +1,15 @@
 import React from 'react'
 import { StyleSheet, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { colors, fontSize, spacing } from '../../../src/constants/theme'
 
 export default function SearchScreen() {
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <View style={styles.safe}>
       <View style={styles.body}>
         <Text style={styles.title}>검색</Text>
         <Text style={styles.hint}>검색 기능은 준비 중이에요.</Text>
       </View>
-    </SafeAreaView>
+    </View>
   )
 }
 

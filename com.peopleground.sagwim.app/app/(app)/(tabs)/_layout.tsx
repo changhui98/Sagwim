@@ -1,29 +1,76 @@
 /**
- * 하단 탭 네비게이션 (홈 / 검색 / 게시글 / 만들기 / 프로필).
+ * 하단 탭 네비게이션 (홈 / 검색 / 게시글 / 프로필).
  *
  * - 웹의 사이드바 네비게이션을 모바일 하단 탭으로 이식.
- * - 상단 헤더는 비워 둠 (headerShown: false). 화면별 헤더는 각 화면에서 직접 구성.
- * - 알림 / 관리자 메뉴는 추후 단계에서 추가 예정.
+ * - 탭바: useSafeAreaInsets.bottom 으로 home indicator 영역 확보.
+ * - 상단 공통 헤더:
+ *   · 가운데: "Sagwim" 타이틀
+ *   · 왼쪽: 만들기 아이콘 → /(app)/(tabs)/create
+ *   · 오른쪽: 알림 아이콘 (placeholder)
+ * - 만들기 탭: 라우트는 유지하되 href: null 로 탭바에서 숨김.
  */
 
-import { Tabs } from 'expo-router'
+import { Tabs, router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
+import { Pressable } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { colors } from '../../../src/constants/theme'
 
 const ICON_SIZE = 24
+const TAB_CONTENT_HEIGHT = 52 // 아이콘 + 라벨 영역 고정 높이
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets()
+  const tabBarHeight = TAB_CONTENT_HEIGHT + insets.bottom
+
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        // ─── 상단 공통 헤더 ───────────────────────────────────────
+        headerShown: true,
+        headerTitle: 'Sagwim',
+        headerTitleStyle: {
+          fontSize: 19,
+          fontWeight: '700',
+          color: colors.text,
+        },
+        headerTitleAlign: 'center',
+        headerStyle: {
+          backgroundColor: colors.surface,
+        },
+        headerShadowVisible: true,
+        // headerShadowVisible 이 true 이면 iOS 에서 borderBottom 이 자동으로 그려짐.
+        // Android 용 elevation 도 함께 적용하기 위해 headerStyle 안에 elevation 을 넣지 않고
+        // headerShadowVisible 로만 처리 (RN 표준).
+        headerLeft: () => (
+          <Pressable
+            onPress={() => router.push('/(app)/(tabs)/create')}
+            style={{ paddingLeft: 16, paddingVertical: 8 }}
+            accessibilityLabel="만들기"
+            accessibilityRole="button"
+          >
+            <Ionicons name="add-outline" size={26} color={colors.text} />
+          </Pressable>
+        ),
+        headerRight: () => (
+          <Pressable
+            onPress={() => console.log('[Header] notifications — pending')}
+            style={{ paddingRight: 16, paddingVertical: 8 }}
+            accessibilityLabel="알림"
+            accessibilityRole="button"
+          >
+            <Ionicons name="notifications-outline" size={ICON_SIZE} color={colors.text} />
+          </Pressable>
+        ),
+
+        // ─── 하단 탭바 ────────────────────────────────────────────
         tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
-          height: 64,
-          paddingBottom: 8,
+          height: tabBarHeight,
+          paddingBottom: insets.bottom,
           paddingTop: 6,
         },
         tabBarLabelStyle: {
@@ -59,13 +106,11 @@ export default function TabsLayout() {
           ),
         }}
       />
+      {/* 만들기: 라우트는 유지, 탭바에서만 숨김 */}
       <Tabs.Screen
         name="create"
         options={{
-          title: '만들기',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="add-circle-outline" size={ICON_SIZE + 4} color={color} />
-          ),
+          href: null,
         }}
       />
       <Tabs.Screen
