@@ -33,6 +33,7 @@ import { PopularGroupsPage } from './pages/PopularGroupsPage'
 import { PostDetailPage } from './pages/PostDetailPage'
 import { MessagesPage } from './pages/MessagesPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { WithdrawPage } from './pages/WithdrawPage'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -67,6 +68,7 @@ function App() {
         <Route path="/app/profile" element={<ProfilePage />} />
         <Route path="/app/profile/edit" element={<ProfileEditPage />} />
         <Route path="/app/settings" element={<SettingsPage />} />
+        <Route path="/app/settings/withdraw" element={<WithdrawPage />} />
         <Route path="/app/profile/edit/nickname" element={<ProfileEditNicknamePage />} />
         <Route path="/app/profile/edit/gender" element={<ProfileEditGenderPage />} />
         <Route path="/app/profile/edit/birthdate" element={<ProfileEditBirthDatePage />} />

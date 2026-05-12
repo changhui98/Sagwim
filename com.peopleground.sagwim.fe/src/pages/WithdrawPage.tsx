@@ -4,10 +4,9 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { Navbar } from '../components/Navbar'
 import styles from '../components/profile/ProfileEditModal.module.css'
-import pageStyles from './SettingsPage.module.css'
-import listStyles from './ProfileEditPage.module.css'
+import pageStyles from './WithdrawPage.module.css'
 
-export function SettingsPage() {
+export function WithdrawPage() {
   const navigate = useNavigate()
   const { logout, meRole } = useAuth()
   useHandleUnauthorized()
@@ -31,26 +30,11 @@ export function SettingsPage() {
             >
               돌아가기
             </button>
-            <h1 className={styles.title}>설정</h1>
+            <h1 className={styles.title}>회원 탈퇴</h1>
             <span style={{ minWidth: '4rem' }} />
           </header>
 
-          <div className={pageStyles.body}>
-            <ul className={listStyles.settingList}>
-              <li
-                className={listStyles.settingRow}
-                onClick={() => navigate('/app/settings/withdraw')}
-              >
-                <span
-                  className={listStyles.settingLabel}
-                  style={{ color: 'var(--clr-error)' }}
-                >
-                  회원 탈퇴
-                </span>
-                <span className={listStyles.chevron} style={{ marginLeft: 'auto' }}>›</span>
-              </li>
-            </ul>
-          </div>
+          <div className={pageStyles.body} />
         </div>
       </main>
     </>
