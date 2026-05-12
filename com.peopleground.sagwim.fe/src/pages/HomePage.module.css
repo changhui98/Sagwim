@@ -99,6 +99,7 @@
   .root {
     align-items: flex-start;
     padding: var(--sp-12) 0 var(--sp-8);
+    background: var(--clr-surface);
   }
 
   /* 카드 컨테이너: 데스크탑 카드 외관 전부 제거 */
