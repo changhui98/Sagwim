@@ -49,7 +49,7 @@ export default function LoginScreen() {
       setError('')
       const token = await signIn({ username: username.trim(), password })
       await login(token)
-      router.replace('/(app)')
+      router.replace('/(app)/(tabs)')
     } catch (err) {
       setError(err instanceof Error ? err.message : '로그인에 실패했습니다.')
     } finally {
@@ -187,12 +187,12 @@ const styles = StyleSheet.create({
   },
   brandName: {
     fontSize: 36,
-    fontWeight: '300',
+    fontFamily: 'PlaywriteIE_300Light',
     color: colors.accent,
     letterSpacing: 0.5,
-    marginTop: spacing.sp4,
-    marginBottom: spacing.sp3,
-    lineHeight: 43,
+    marginTop: 0,
+    marginBottom: 0,
+    lineHeight: 56,
   },
   tagline: {
     fontSize: fontSize.sm,

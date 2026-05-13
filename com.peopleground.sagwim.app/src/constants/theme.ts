@@ -18,7 +18,7 @@ export const colors = {
   warning: '#f59e0b',
 
   // Surface — Light Mode (기본)
-  bg: '#F5F5F5',
+  bg: '#ffffff',
   bgAlt: '#ebebeb',
   surface: '#ffffff',
   surface2: '#f9f9f9',
