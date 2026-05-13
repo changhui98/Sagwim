@@ -1,0 +1,99 @@
+/* ── MobileHeader: 모바일 전용 sticky 상단 헤더 (≤640px에서만 표시) ── */
+
+.header {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  /* grid: [+ 버튼] [로고] [spacer] — 1fr/auto/1fr 로 로고를 시각적 정중앙에 고정 */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    width: 100%;
+    height: calc(56px + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+    padding-left: var(--sp-3);
+    padding-right: var(--sp-3);
+    background: var(--clr-surface);
+  }
+
+  .plusButton {
+    /* 좌측 셀: justify-self: start 로 왼쪽 끝 정렬 */
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    border-radius: var(--r-md);
+    color: var(--clr-text);
+    cursor: pointer;
+    transition: background var(--t-fast);
+  }
+
+  .plusButton:hover,
+  .plusButton:active {
+    background: var(--clr-surface-3);
+  }
+
+  .brandName {
+    /* 가운데 셀: auto 폭으로 로고 텍스트만큼만 차지 */
+    font-family: var(--font-brand) !important;
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--clr-text);
+    line-height: 1;
+    letter-spacing: 0.01em;
+  }
+
+  /* 우측 하트 버튼: + 버튼과 동일 폭(40px)으로 로고가 수학적 정중앙에 위치 */
+  .heartButton {
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: transparent;
+    border-radius: var(--r-md);
+    color: var(--clr-text);
+    cursor: pointer;
+    transition: background var(--t-fast);
+  }
+
+  .heartButton:hover,
+  .heartButton:active {
+    background: var(--clr-surface-3);
+  }
+
+  .notifIconWrap {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .unreadBadge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: var(--r-full);
+    background: var(--clr-error, #ef4444);
+    color: #fff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+    box-sizing: border-box;
+    box-shadow: 0 0 0 2px var(--clr-surface);
+    pointer-events: none;
+  }
+}
