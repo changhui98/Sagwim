@@ -20,8 +20,8 @@ import {
   BookmarkIcon,
   BrandLogo,
   ChevronLeftIcon,
+  HeartIcon,
   HomeIcon,
-  IdeaIcon,
   LogoutIcon,
   GridEvenMoreIcon,
   MoonIcon,
@@ -47,6 +47,8 @@ interface NavItem {
   to?: string
   onClick?: () => void
   match?: (pathname: string) => boolean
+  adminOnly?: boolean
+  mobileHidden?: boolean
 }
 
 export function Navbar({ role, onLogout }: NavbarProps) {
@@ -66,6 +68,8 @@ export function Navbar({ role, onLogout }: NavbarProps) {
   const [unreadCount, setUnreadCount] = useState(0)
 
   const refreshUnreadCount = useCallback(async () => {
+    // 모바일에서는 MobileHeader가 처리하므로 Navbar는 조회하지 않음
+    if (window.matchMedia('(max-width: 640px)').matches) return
     if (!isAuthenticated || !token) return
     try {
       const res = await getUnreadCount(token)
@@ -76,6 +80,8 @@ export function Navbar({ role, onLogout }: NavbarProps) {
   }, [isAuthenticated, token])
 
   useEffect(() => {
+    // 모바일에서는 MobileHeader가 SSE를 담당하므로 Navbar는 연결하지 않음
+    if (window.matchMedia('(max-width: 640px)').matches) return
     if (!isAuthenticated || !token) return
 
     let es: EventSource | null = null
@@ -134,8 +140,6 @@ export function Navbar({ role, onLogout }: NavbarProps) {
   }, [isAuthenticated, token, refreshUnreadCount])
 
   // 비로그인 상태에서는 배지를 노출하지 않는다.
-  // 별도 setState 로 리셋하지 않고 derived value 로 처리하면 effect 내부 setState 가 사라져
-  // cascading re-render 를 회피할 수 있다 (react-hooks/set-state-in-effect 규칙 준수).
   const visibleUnreadCount = useMemo(
     () => (isAuthenticated ? unreadCount : 0),
     [isAuthenticated, unreadCount],
@@ -216,7 +220,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
       label: '알림',
       icon: (
         <span className={styles.navIconWrap}>
-          <IdeaIcon />
+          <HeartIcon />
           {visibleUnreadCount > 0 && (
             <span
               className={styles.unreadBadge}
@@ -231,6 +235,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
         togglePanel('notifications')
       },
       match: () => activePanel === 'notifications',
+      mobileHidden: true,
     },
   ]
 
@@ -240,6 +245,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
       label: '관리자',
       icon: <ShieldIcon />,
       match: (p) => p.startsWith('/app/admin'),
+      adminOnly: true,
     })
   }
 
@@ -283,8 +289,13 @@ export function Navbar({ role, onLogout }: NavbarProps) {
                 </>
               )
 
+              const liClassName = [
+                item.adminOnly ? styles.adminNavItem : '',
+                item.mobileHidden ? styles.mobileHiddenNavItem : '',
+              ].filter(Boolean).join(' ') || undefined
+
               return (
-                <li key={item.label}>
+                <li key={item.label} className={liClassName}>
                   {item.onClick ? (
                     <button
                       type="button"
