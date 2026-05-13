@@ -95,18 +95,23 @@
     display: none;
   }
 
-  /* 루트 패딩: 상하 여유만 남기고 좌우는 카드 안에서 처리 */
+  /* 루트: 풀스크린 세로 중앙 정렬 */
   .root {
-    align-items: flex-start;
-    padding: var(--sp-12) 0 var(--sp-8);
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    min-height: 100dvh;
+    padding: var(--sp-8) 0;
     background: var(--clr-surface);
+    overflow: visible;
   }
 
-  /* 카드 컨테이너: 데스크탑 카드 외관 전부 제거 */
+  /* 카드 컨테이너: 데스크탑 카드 외관 전부 제거, margin: auto로 세로 중앙 */
   .card {
     max-width: 100%;
     width: 100%;
     padding: 0 var(--sp-6);
+    margin: auto 0;
   }
 
   /* 전역 .card 클래스의 배경·테두리·그림자·반경 무력화 */
