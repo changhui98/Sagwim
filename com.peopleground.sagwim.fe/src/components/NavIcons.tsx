@@ -91,6 +91,16 @@ export function IdeaIcon(props: IconProps) {
   )
 }
 
+export function HeartIcon(props: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
+      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
+        <path d="M128 176 C128 176 68 140 68 98 C68 76 86 60 108 64 C118 66 126 72 128 78 C130 72 138 66 148 64 C170 60 188 76 188 98 C188 140 128 176 128 176 Z" />
+      </g>
+    </svg>
+  )
+}
+
 export function PlusSquareIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
@@ -105,10 +115,12 @@ export function PlusSquareIcon(props: IconProps) {
 
 export function UserCircleIcon(props: IconProps) {
   return (
-    <svg {...BASE} {...props}>
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="10" r="3.2" />
-      <path d="M5.5 19c1.2-2.6 3.8-4 6.5-4s5.3 1.4 6.5 4" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
+      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
+        <circle cx="128" cy="128" r="64" />
+        <circle cx="128" cy="110" r="22" />
+        <path d="M84 178 C92 158 108 150 128 150 C148 150 164 158 172 178" />
+      </g>
     </svg>
   )
 }
