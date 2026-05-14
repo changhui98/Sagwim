@@ -468,8 +468,10 @@ export function GroupSettingsPage() {
               <h2 className={modalStyles.title}>모임 인원 변경</h2>
               <span style={{ minWidth: '4rem' }} />
             </header>
-            <div className={tabStyles.subForm} style={{ padding: 'var(--sp-5)' }}>
+            <div className={tabStyles.subForm} style={{ padding: 'var(--sp-5)', display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
+              <label className="input-label" htmlFor="memberCountInput">현재 모임 인원</label>
               <input
+                id="memberCountInput"
                 type="number"
                 className={groupPageStyles.editInput}
                 min={2}
@@ -478,6 +480,9 @@ export function GroupSettingsPage() {
                 onChange={(e) => setEditMaxMemberCount(Number(e.target.value))}
                 disabled={actionLoading}
               />
+              <p style={{ fontSize: '0.8125rem', color: 'var(--clr-text-muted)', margin: 0 }}>
+                최대 인원은 최대 1,000명까지 변경할 수 있습니다.
+              </p>
             </div>
           </div>
         </main>
