@@ -365,6 +365,16 @@
    Mobile (≤640px) — bottom bar style
    ============================================================ */
 @media (max-width: 640px) {
+  /* 관리자 전용 탭은 모바일 하단 바에서 숨김 — 화면이 좁아 아이콘이 넘침 */
+  .adminNavItem {
+    display: none;
+  }
+
+  /* 모바일에서는 헤더 하트 버튼이 알림을 담당하므로 하단 바 알림 탭 숨김 */
+  .mobileHiddenNavItem {
+    display: none;
+  }
+
   .sidebar,
   .sidebar:hover,
   .sidebar:focus-within,
@@ -375,7 +385,6 @@
     height: 56px;
     border-right: none;
     border-top: none;
-    box-shadow: none;
   }
 
   .sidebarInner {

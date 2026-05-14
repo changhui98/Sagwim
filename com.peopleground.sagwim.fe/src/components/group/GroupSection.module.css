@@ -73,8 +73,55 @@
 @media (max-width: 799px) {
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 499px) {
-  .grid { grid-template-columns: repeat(1, 1fr); }
+
+/* 모바일: 3열 컴팩트 그리드 */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-2);
+  }
+
+  /* 섹션 헤더 축소 */
+  .sectionTitle {
+    font-size: 1.125rem;
+  }
+
+  .sectionSubtitle {
+    font-size: 0.875rem;
+  }
+
+  /* 카드 정보 영역 컴팩트화 */
+  .cardInfo {
+    padding: var(--sp-1) 0;
+    gap: 2px;
+  }
+
+  .cardName {
+    font-size: 0.8125rem;
+  }
+
+  .cardMemberCount {
+    font-size: 0.75rem;
+  }
+
+  .cardDesc {
+    display: none;
+  }
+
+  .likeButton {
+    font-size: 0.75rem;
+  }
+
+  /* 이미지 위 배지 크기 축소 */
+  .imageBadge {
+    font-size: 0.625rem;
+    padding: 1px 4px;
+  }
+
+  .imageBadgePending {
+    font-size: 0.625rem;
+    padding: 1px 5px;
+  }
 }
 
 /* ── GroupCard ── */

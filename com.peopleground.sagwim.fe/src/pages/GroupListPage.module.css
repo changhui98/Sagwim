@@ -20,6 +20,13 @@
   }
 }
 
+/* 모바일: sticky 헤더가 공간을 차지하므로 상단 padding 제거 */
+@media (max-width: 640px) {
+  .main {
+    padding-top: var(--sp-4);
+  }
+}
+
 @keyframes fadeSlideUp {
   from {
     opacity: 0;

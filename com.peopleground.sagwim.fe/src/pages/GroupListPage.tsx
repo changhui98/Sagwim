@@ -14,6 +14,7 @@ import flameIcon from '../assets/sagwim-section-flame.svg'
 import deadlineIcon from '../assets/sagwim-section-deadline.svg'
 import thisweekIcon from '../assets/sagwim-section-thisweek.svg'
 import { GroupSection } from '../components/group/GroupSection'
+import { MobileHeader } from '../components/MobileHeader'
 import styles from './GroupListPage.module.css'
 
 // 메인 화면에서 노출할 최대 개수
@@ -187,6 +188,7 @@ export function GroupListPage() {
   return (
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
+      <MobileHeader />
 
       <main className={styles.main}>
         {!profileLoading && myProfile?.address
