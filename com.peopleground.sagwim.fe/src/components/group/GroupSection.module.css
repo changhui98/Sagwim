@@ -172,7 +172,10 @@
   position: absolute;
   top: var(--sp-2);
   left: var(--sp-2);
+  right: var(--sp-2);
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: var(--sp-1);
   flex-wrap: wrap;
 }
