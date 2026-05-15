@@ -73,6 +73,11 @@ export const parseResponse = async <T>(response: Response): Promise<T> => {
     throw new ApiError(response.status, message)
   }
 
+  // 204 No Content 또는 빈 body 응답은 JSON 파싱을 시도하지 않는다.
+  if (response.status === 204 || response.headers.get('Content-Length') === '0') {
+    return undefined as T
+  }
+
   return response.json() as Promise<T>
 }
 
