@@ -23,6 +23,7 @@ import { AdminImageListPage } from './pages/admin/AdminImageListPage'
 import { AdminLogPage } from './pages/admin/AdminLogPage'
 import { AdminReportListPage } from './pages/admin/AdminReportListPage'
 import { AdminInquiryListPage } from './pages/admin/AdminInquiryListPage'
+import { AdminForbiddenWordsPage } from './pages/admin/AdminForbiddenWordsPage'
 import { PostCreatePage } from './pages/PostCreatePage'
 import { GroupListPage } from './pages/GroupListPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
@@ -84,6 +85,7 @@ function App() {
           <Route path="posts" element={<AdminPostListPage />} />
           <Route path="images" element={<AdminImageListPage />} />
           <Route path="reports" element={<AdminReportListPage />} />
+          <Route path="forbidden-words" element={<AdminForbiddenWordsPage />} />
           <Route path="inquiries" element={<AdminInquiryListPage />} />
           <Route path="logs" element={<AdminLogPage />} />
         </Route>
