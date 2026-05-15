@@ -39,6 +39,13 @@ export function SettingsPage() {
             <ul className={listStyles.settingList}>
               <li
                 className={listStyles.settingRow}
+                onClick={() => navigate('/app/settings/change-password')}
+              >
+                <span className={listStyles.settingLabel}>비밀번호 변경</span>
+                <span className={listStyles.chevron} style={{ marginLeft: 'auto' }}>›</span>
+              </li>
+              <li
+                className={listStyles.settingRow}
                 onClick={() => navigate('/app/settings/withdraw')}
               >
                 <span

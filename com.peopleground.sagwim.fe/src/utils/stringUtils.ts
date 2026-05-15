@@ -7,3 +7,12 @@ export function removeKoreaPrefix(region: string | null | undefined): string | n
   if (!region) return region ?? null
   return region.startsWith('대한민국 ') ? region.slice('대한민국 '.length) : region
 }
+
+/** region 문자열(예: "대한민국 서울특별시 강남구 삼성동")에서 가장 세부 행정구역(마지막 토큰)을 추출 */
+export function extractLastRegionToken(region: string | null | undefined): string | null {
+  if (!region) return null
+  const trimmed = region.trim()
+  if (!trimmed) return null
+  const parts = trimmed.split(/\s+/)
+  return parts[parts.length - 1] ?? null
+}

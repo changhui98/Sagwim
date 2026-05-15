@@ -23,6 +23,7 @@ import { AdminImageListPage } from './pages/admin/AdminImageListPage'
 import { AdminLogPage } from './pages/admin/AdminLogPage'
 import { AdminReportListPage } from './pages/admin/AdminReportListPage'
 import { AdminInquiryListPage } from './pages/admin/AdminInquiryListPage'
+import { AdminForbiddenWordsPage } from './pages/admin/AdminForbiddenWordsPage'
 import { PostCreatePage } from './pages/PostCreatePage'
 import { GroupListPage } from './pages/GroupListPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
@@ -35,6 +36,7 @@ import { PostDetailPage } from './pages/PostDetailPage'
 import { MessagesPage } from './pages/MessagesPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { WithdrawPage } from './pages/WithdrawPage'
+import { ChangePasswordPage } from './pages/ChangePasswordPage'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -69,6 +71,7 @@ function App() {
         <Route path="/app/profile" element={<ProfilePage />} />
         <Route path="/app/profile/edit" element={<ProfileEditPage />} />
         <Route path="/app/settings" element={<SettingsPage />} />
+        <Route path="/app/settings/change-password" element={<ChangePasswordPage />} />
         <Route path="/app/settings/withdraw" element={<WithdrawPage />} />
         <Route path="/app/profile/edit/nickname" element={<ProfileEditNicknamePage />} />
         <Route path="/app/profile/edit/gender" element={<ProfileEditGenderPage />} />
@@ -84,6 +87,7 @@ function App() {
           <Route path="posts" element={<AdminPostListPage />} />
           <Route path="images" element={<AdminImageListPage />} />
           <Route path="reports" element={<AdminReportListPage />} />
+          <Route path="forbidden-words" element={<AdminForbiddenWordsPage />} />
           <Route path="inquiries" element={<AdminInquiryListPage />} />
           <Route path="logs" element={<AdminLogPage />} />
         </Route>

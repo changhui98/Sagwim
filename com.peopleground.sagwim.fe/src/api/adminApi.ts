@@ -6,6 +6,7 @@ import type { AdminGroupResponse } from '../types/group'
 import type { DeleteLogEntry } from '../types/deleteLog'
 import type { AdminReportEntry } from '../types/report'
 import type { AdminInquiryEntry } from '../types/inquiry'
+import type { ForbiddenWordResponse } from '../types/moderation'
 import { API_BASE_URL } from './config'
 import { createAuthHeaders, parseResponse } from './apiUtils'
 
@@ -223,4 +224,57 @@ export const getAdminInquiries = (
   return fetch(`${API_BASE_URL}/admin/inquiries?page=${page}&size=${size}`, {
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<PageResponse<AdminInquiryEntry>>(response))
+}
+
+export const getAdminForbiddenWords = (
+  token: string,
+  page = 0,
+  size = 10,
+): Promise<PageResponse<ForbiddenWordResponse>> => {
+  return fetch(`${API_BASE_URL}/admin/forbidden-words?page=${page}&size=${size}`, {
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<PageResponse<ForbiddenWordResponse>>(response))
+}
+
+export const createAdminForbiddenWord = (
+  token: string,
+  word: string,
+): Promise<ForbiddenWordResponse> => {
+  return fetch(`${API_BASE_URL}/admin/forbidden-words`, {
+    method: 'POST',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify({ word }),
+  }).then((response) => parseResponse<ForbiddenWordResponse>(response))
+}
+
+export const updateAdminForbiddenWord = (
+  token: string,
+  id: number,
+  word: string,
+): Promise<ForbiddenWordResponse> => {
+  return fetch(`${API_BASE_URL}/admin/forbidden-words/${id}`, {
+    method: 'PATCH',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify({ word }),
+  }).then((response) => parseResponse<ForbiddenWordResponse>(response))
+}
+
+export const deleteAdminForbiddenWord = (
+  token: string,
+  id: number,
+): Promise<void> => {
+  return fetch(`${API_BASE_URL}/admin/forbidden-words/${id}`, {
+    method: 'DELETE',
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<void>(response))
+}
+
+export const restoreAdminForbiddenWord = (
+  token: string,
+  id: number,
+): Promise<ForbiddenWordResponse> => {
+  return fetch(`${API_BASE_URL}/admin/forbidden-words/${id}/restore`, {
+    method: 'POST',
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<ForbiddenWordResponse>(response))
 }

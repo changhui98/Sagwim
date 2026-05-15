@@ -117,6 +117,10 @@ public class RedisConfig {
         cacheConfigurations.put("commentLikeCount",
             defaultConfig.entryTtl(jitteredTtl(3600, 300)));
 
+        // 금지 단어 목록: 30분 TTL (관리자가 단어를 추가/삭제하면 다음 단계에서 @CacheEvict 로 즉시 무효화)
+        cacheConfigurations.put("moderation:forbidden-words",
+            defaultConfig.entryTtl(jitteredTtl(1800, 120)));
+
         return RedisCacheManager.builder(connectionFactory)
             .cacheDefaults(defaultConfig)
             .withInitialCacheConfigurations(cacheConfigurations)

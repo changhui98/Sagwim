@@ -9,6 +9,7 @@ import groupIcon from '../../assets/heart-alt-svgrepo-com.svg'
 import clipboardIcon from '../../assets/clipboard-list-alt-svgrepo-com.svg'
 import pictureIcon from '../../assets/picture-svgrepo-com.svg'
 import reportIcon from '../../assets/square-list-svgrepo-com.svg'
+import forbiddenIcon from '../../assets/xmark-svgrepo-com.svg'
 import inquiryIcon from '../../assets/bulb-svgrepo-com.svg'
 import logIcon from '../../assets/clipboard-heart-svgrepo-com.svg'
 
@@ -25,6 +26,7 @@ const MENU_ITEMS: readonly MenuItem[] = [
   { path: '/app/admin/posts', label: '게시글 관리', icon: clipboardIcon },
   { path: '/app/admin/images', label: '이미지 관리', icon: pictureIcon },
   { path: '/app/admin/reports', label: '신고 내역', icon: reportIcon },
+  { path: '/app/admin/forbidden-words', label: '금지 단어', icon: forbiddenIcon },
   { path: '/app/admin/inquiries', label: '서비스 관리', icon: inquiryIcon },
   { path: '/app/admin/logs', label: '로그', icon: logIcon },
 ] as const
