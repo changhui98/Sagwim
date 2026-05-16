@@ -11,9 +11,9 @@ import styles from './Navbar.module.css'
 import { useTheme } from '../context/ThemeContext'
 import { usePostCreateModal } from '../context/PostCreateModalContext'
 import { useAuth } from '../context/AuthContext'
+import { useNotificationCount } from '../context/NotificationCountContext'
 import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
 import { SidePanel, type SidePanelType } from './SidePanel'
-import { getUnreadCount, getNotificationStreamUrl } from '../api/notificationApi'
 import {
   ActivityIcon,
   AlertIcon,
@@ -52,7 +52,8 @@ interface NavItem {
 }
 
 export function Navbar({ role, onLogout }: NavbarProps) {
-  const { meRole, meProfileImageUrl, token, isAuthenticated } = useAuth()
+  const { meRole, meProfileImageUrl } = useAuth()
+  const { unreadCount } = useNotificationCount()
   const effectiveRole = role ?? meRole ?? null
   const isAdmin = effectiveRole !== null && ADMIN_ROLES.has(effectiveRole)
   const location = useLocation()
@@ -65,85 +66,10 @@ export function Navbar({ role, onLogout }: NavbarProps) {
   const menuRef = useRef<HTMLDivElement>(null)
   const [createFlow, setCreateFlow] = useState<'idle' | 'selecting'>('idle')
   const [activePanel, setActivePanel] = useState<SidePanelType | null>(null)
-  const [unreadCount, setUnreadCount] = useState(0)
 
-  const refreshUnreadCount = useCallback(async () => {
-    // 모바일에서는 MobileHeader가 처리하므로 Navbar는 조회하지 않음
-    if (window.matchMedia('(max-width: 640px)').matches) return
-    if (!isAuthenticated || !token) return
-    try {
-      const res = await getUnreadCount(token)
-      setUnreadCount(res.count)
-    } catch {
-      // 네트워크/인증 오류 시 배지를 변경하지 않는다 — UX 깜빡임 방지.
-    }
-  }, [isAuthenticated, token])
-
-  useEffect(() => {
-    // 모바일에서는 MobileHeader가 SSE를 담당하므로 Navbar는 연결하지 않음
-    if (window.matchMedia('(max-width: 640px)').matches) return
-    if (!isAuthenticated || !token) return
-
-    let es: EventSource | null = null
-    let fallbackIntervalId: number | undefined
-    let visibilityHandler: (() => void) | null = null
-
-    const connect = () => {
-      es?.close()
-      es = new EventSource(getNotificationStreamUrl(token))
-
-      es.addEventListener('unread-count', (e) => {
-        try {
-          const data = JSON.parse(e.data) as { count: number }
-          setUnreadCount(data.count)
-        } catch {
-          // 파싱 실패 시 무시
-        }
-      })
-
-      es.onerror = () => {
-        es?.close()
-        es = null
-        // SSE 연결 실패 시 30초 폴링으로 대체
-        if (fallbackIntervalId === undefined) {
-          void refreshUnreadCount()
-          fallbackIntervalId = window.setInterval(() => {
-            void refreshUnreadCount()
-          }, 30_000)
-        }
-      }
-
-      // SSE 연결 성공 시 폴백 폴링 정리
-      es.onopen = () => {
-        if (fallbackIntervalId !== undefined) {
-          window.clearInterval(fallbackIntervalId)
-          fallbackIntervalId = undefined
-        }
-      }
-    }
-
-    connect()
-
-    // 탭이 포커스를 되찾을 때 SSE 연결 상태를 확인해 재연결
-    visibilityHandler = () => {
-      if (document.visibilityState === 'visible' && (es === null || es.readyState === EventSource.CLOSED)) {
-        connect()
-      }
-    }
-    document.addEventListener('visibilitychange', visibilityHandler)
-
-    return () => {
-      es?.close()
-      if (fallbackIntervalId !== undefined) window.clearInterval(fallbackIntervalId)
-      if (visibilityHandler) document.removeEventListener('visibilitychange', visibilityHandler)
-    }
-  }, [isAuthenticated, token, refreshUnreadCount])
-
-  // 비로그인 상태에서는 배지를 노출하지 않는다.
-  const visibleUnreadCount = useMemo(
-    () => (isAuthenticated ? unreadCount : 0),
-    [isAuthenticated, unreadCount],
-  )
+  // unreadCount는 NotificationCountContext에서 전역으로 관리된다.
+  // 비로그인 상태에서도 Context가 0을 반환하므로 별도 처리 불필요.
+  const visibleUnreadCount = useMemo(() => unreadCount, [unreadCount])
 
   const togglePanel = useCallback((panel: SidePanelType) => {
     setActivePanel((prev) => (prev === panel ? null : panel))
@@ -452,7 +378,6 @@ export function Navbar({ role, onLogout }: NavbarProps) {
     <SidePanel
       type={activePanel}
       onClose={closePanel}
-      onNotificationsChange={() => { void refreshUnreadCount() }}
     />
     </>
   )
