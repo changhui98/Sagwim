@@ -1,0 +1,158 @@
+/* NotificationsContent — SidePanel / NotificationsPage 공용 */
+
+.body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-4) var(--sp-8) var(--sp-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+/* ── 툴바 ──────────────────────────────────────────────────── */
+.notificationToolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.markAllButton {
+  font-size: 0.8125rem;
+  color: var(--clr-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-sm);
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.markAllButton:hover:not(:disabled) {
+  background: var(--clr-accent-muted);
+}
+
+.markAllButton:disabled {
+  color: var(--clr-text-muted);
+  cursor: not-allowed;
+}
+
+/* ── 빈 상태 / 에러 ────────────────────────────────────────── */
+.emptyMessage {
+  font-size: 0.9375rem;
+  color: var(--clr-text-muted);
+  margin: var(--sp-6) 0 0;
+  text-align: center;
+}
+
+/* ── 로딩 ──────────────────────────────────────────────────── */
+.loadingWrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-8) 0;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2.5px solid var(--clr-border);
+  border-top-color: var(--clr-accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── 알림 목록 ─────────────────────────────────────────────── */
+.resultList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.notificationItem {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-2);
+  background: transparent;
+  border: none;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--t-fast);
+  position: relative;
+}
+
+.notificationItem:hover {
+  background: var(--clr-accent-muted);
+}
+
+.notificationItemUnread {
+  background: var(--clr-accent-muted);
+}
+
+/* ── 아바타 ─────────────────────────────────────────────────── */
+.avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-full);
+  overflow: hidden;
+  background: var(--clr-accent-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--clr-accent);
+  text-transform: uppercase;
+}
+
+/* ── 알림 텍스트 ────────────────────────────────────────────── */
+.notificationMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.notificationMessage {
+  font-size: 0.9375rem;
+  color: var(--clr-text);
+  margin: 0;
+  line-height: 1.4;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.notificationMessage strong {
+  font-weight: 600;
+}
+
+.notificationTime {
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+}
+
+.unreadDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent);
+}
