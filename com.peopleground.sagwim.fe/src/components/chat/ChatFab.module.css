@@ -48,3 +48,9 @@
   justify-content: center;
   line-height: 1;
 }
+
+@media (max-width: 640px) {
+  .fab {
+    display: none;
+  }
+}
