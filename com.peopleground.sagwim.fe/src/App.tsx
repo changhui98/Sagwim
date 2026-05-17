@@ -37,6 +37,8 @@ import { MessagesPage } from './pages/MessagesPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { WithdrawPage } from './pages/WithdrawPage'
 import { ChangePasswordPage } from './pages/ChangePasswordPage'
+import { SearchPage } from './pages/SearchPage'
+import { NotificationsPage } from './pages/NotificationsPage'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -73,6 +75,8 @@ function App() {
         <Route path="/app/settings" element={<SettingsPage />} />
         <Route path="/app/settings/change-password" element={<ChangePasswordPage />} />
         <Route path="/app/settings/withdraw" element={<WithdrawPage />} />
+        <Route path="/app/search" element={<SearchPage />} />
+        <Route path="/app/notifications" element={<NotificationsPage />} />
         <Route path="/app/profile/edit/nickname" element={<ProfileEditNicknamePage />} />
         <Route path="/app/profile/edit/gender" element={<ProfileEditGenderPage />} />
         <Route path="/app/profile/edit/birthdate" element={<ProfileEditBirthDatePage />} />

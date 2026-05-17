@@ -1,0 +1,85 @@
+/* ── NotificationsPage — 풀스크린 단독 화면 (Navbar/BottomNav 없음) ── */
+.main {
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: var(--sp-8) var(--sp-6);
+}
+
+.container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  background: var(--clr-surface);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--clr-border);
+  overflow: hidden;
+}
+
+/* ── 페이지 헤더 (모바일 전용 back 버튼 포함) ── */
+.pageHeader {
+  display: none;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: var(--r-md);
+  color: var(--clr-text);
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+
+.backButton:hover {
+  background: var(--clr-surface-3);
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  margin: 0;
+}
+
+.headerSpacer {
+  width: 40px;
+}
+
+.contentWrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── 모바일 — BottomNav 없으므로 100dvh 풀스크린 ── */
+@media (max-width: 640px) {
+  .main {
+    padding: 0;
+    padding-left: 0;
+    padding-bottom: 0;
+    align-items: flex-start;
+  }
+
+  .container {
+    max-width: none;
+    border-radius: 0;
+    border: none;
+    min-height: 100dvh;
+  }
+
+  .pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-3) var(--sp-3);
+    border-bottom: 1px solid var(--clr-border);
+    flex-shrink: 0;
+  }
+}

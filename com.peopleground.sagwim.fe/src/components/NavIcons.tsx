@@ -103,12 +103,8 @@ export function HeartIcon(props: IconProps) {
 
 export function PlusSquareIcon(props: IconProps) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
-        <rect x="68" y="68" width="120" height="120" rx="18" />
-        <line x1="128" y1="98" x2="128" y2="158" />
-        <line x1="98" y1="128" x2="158" y2="128" />
-      </g>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden focusable={false} {...props}>
+      <path d="M4 12H20M12 4V20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -227,6 +223,14 @@ export function LogoutIcon(props: IconProps) {
       <path d="M10 17l-5-5 5-5" />
       <path d="M5 12h12" />
       <path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4" />
+    </svg>
+  )
+}
+
+export function ChatIcon(props: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden focusable={false} {...props}>
+      <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

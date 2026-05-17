@@ -59,6 +59,11 @@
   opacity: 0.8;
 }
 
+.brandLogoWrap {
+  display: flex;
+  align-items: center;
+}
+
 .brandLogo {
   width: 30px;
   height: 30px;
@@ -180,7 +185,7 @@
   padding-right: 16px;
 }
 
-/* ── Footer (Profile + More) ───────────────────────────────── */
+/* ── Footer (더 보기) ──────────────────────────────────────── */
 .footer {
   position: relative;
   display: flex;
@@ -197,181 +202,32 @@
   background: var(--clr-accent-muted);
 }
 
-/* ── Popover Menu ──────────────────────────────────────────── */
-.menuPopover {
-  position: absolute;
-  bottom: calc(100% + var(--sp-2));
-  left: var(--sp-2);
-  width: 266px;
-  background: var(--clr-surface);
-  border: 1px solid var(--clr-border);
-  border-radius: var(--r-xl);
-  box-shadow: var(--shadow-lg);
-  padding: var(--sp-2);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  z-index: 60;
-  animation: menuFadeIn var(--t-base);
+/* 데스크톱(>640px)에서 숨겨야 하는 탭 */
+.navList > li.desktopHiddenNavItem {
+  display: none;
 }
-
-@keyframes menuFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.menuItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding: 12px 14px;
-  border: none;
-  background: transparent;
-  border-radius: var(--r-md);
-  color: var(--clr-text);
-  font-size: 0.9375rem;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: left;
-  transition: background var(--t-fast), color var(--t-fast);
-}
-
-.menuItem:hover {
-  background: var(--clr-accent-muted);
-}
-
-.menuItemLabel {
-  flex: 1;
-}
-
-.menuItemIcon {
-  width: 20px;
-  height: 20px;
-  color: var(--clr-text-secondary);
-  flex-shrink: 0;
-}
-
-.menuItemDanger {
-  color: var(--clr-text);
-}
-
-.menuItemDanger:hover {
-  background: var(--clr-error-soft);
-  color: var(--clr-error);
-}
-
-.menuDivider {
-  height: 1px;
-  background: var(--clr-border);
-  margin: var(--sp-1) var(--sp-2);
-}
-
-.menuHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: 10px 8px;
-}
-
-.menuHeaderTitle {
-  flex: 1;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--clr-text);
-}
-
-.menuHeaderIcon {
-  width: 24px;
-  height: 24px;
-  color: var(--clr-text-secondary);
-  display: inline-flex;
-}
-
-.menuBack {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border-radius: var(--r-full);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  color: var(--clr-text);
-  transition: background var(--t-fast);
-}
-
-.menuBack:hover {
-  background: var(--clr-accent-muted);
-}
-
-.menuToggleRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding: 12px 14px;
-  font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--clr-text);
-}
-
-/* ── Toggle Switch ─────────────────────────────────────────── */
-.toggleSwitch {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  border-radius: var(--r-full);
-  background: var(--clr-border-strong);
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: background var(--t-base);
-}
-
-.toggleSwitchOn {
-  background: var(--clr-accent);
-}
-
-.toggleKnob {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: var(--shadow-xs);
-  transition: transform var(--t-base);
-}
-
-.toggleSwitchOn .toggleKnob {
-  transform: translateX(20px);
-}
-
-/* ── Popover positioning while collapsed ───────────────────── */
-/* 팝업이 열리면 사이드바는 항상 expanded 상태(sidebarOpen)가 되므로
-   팝업은 기본 좌측 상단 앵커 위치로 충분합니다. */
 
 /* ============================================================
    Mobile (≤640px) — bottom bar style
    ============================================================ */
 @media (max-width: 640px) {
-  /* 관리자 전용 탭은 모바일 하단 바에서 숨김 — 화면이 좁아 아이콘이 넘침 */
-  .adminNavItem {
+  /* 관리자 전용 탭은 모바일 하단 바에서 숨김 */
+  .navList > li.adminNavItem {
     display: none;
   }
 
-  /* 모바일에서는 헤더 하트 버튼이 알림을 담당하므로 하단 바 알림 탭 숨김 */
-  .mobileHiddenNavItem {
+  /* 모바일에서는 헤더가 담당하므로 하단 바에서 숨김 */
+  .navList > li.mobileHiddenNavItem {
+    display: none;
+  }
+
+  /* 데스크톱에서 숨겨진 탭은 모바일에서 보임 */
+  .navList > li.desktopHiddenNavItem {
+    display: flex;
+  }
+
+  /* 더보기는 모바일 헤더로 이동 — 하단 바에서 숨김 */
+  .footer {
     display: none;
   }
 
@@ -390,14 +246,15 @@
   .sidebarInner {
     flex-direction: row;
     align-items: center;
-    padding: 0 var(--sp-2);
-    gap: var(--sp-1);
+    padding: 0;
+    gap: 0;
   }
 
   .brand {
     display: none;
   }
 
+  /* footer가 사라지므로 nav가 전체 너비 차지 */
   .nav {
     flex: 1;
     margin-top: 0;
@@ -408,12 +265,19 @@
     flex-direction: row;
     justify-content: space-around;
     gap: 0;
+    height: 100%;
+  }
+
+  .navList > li {
+    flex: 1;
+    display: flex;
   }
 
   .navItem,
   .sidebar:hover .navItem,
   .sidebar:focus-within .navItem,
   .sidebarOpen .navItem {
+    flex: 1;
     padding: 8px;
     border-radius: var(--r-md);
     justify-content: center;
@@ -424,18 +288,5 @@
   .sidebar:focus-within .navLabel,
   .sidebarOpen .navLabel {
     display: none;
-  }
-
-  .footer {
-    padding-top: 0;
-    border-top: none;
-  }
-
-  .menuPopover {
-    position: fixed;
-    left: 50%;
-    bottom: 66px;
-    transform: translateX(-50%);
-    width: min(92vw, 320px);
   }
 }
