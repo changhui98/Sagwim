@@ -1,0 +1,185 @@
+.popover {
+  position: absolute;
+  width: 266px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 60;
+  animation: popoverFadeIn var(--t-base);
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 사이드바 하단 트리거: 위로 펼침 */
+.popoverSidebar {
+  bottom: calc(100% + var(--sp-2));
+  left: var(--sp-2);
+}
+
+/* 헤더 우측 트리거: 아래로 펼침 */
+.popoverHeader {
+  top: calc(100% + var(--sp-2));
+  right: 0;
+}
+
+/* ── Items ──────────────────────────────────────────────────── */
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  border-radius: var(--r-md);
+  color: var(--clr-text);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.item:hover {
+  background: var(--clr-accent-muted);
+}
+
+.itemLabel {
+  flex: 1;
+}
+
+.itemIcon {
+  width: 20px;
+  height: 20px;
+  color: var(--clr-text-secondary);
+  flex-shrink: 0;
+}
+
+.itemDanger {
+  color: var(--clr-text);
+}
+
+.itemDanger:hover {
+  background: var(--clr-error-soft);
+  color: var(--clr-error);
+}
+
+.divider {
+  height: 1px;
+  background: var(--clr-border);
+  margin: var(--sp-1) var(--sp-2);
+}
+
+/* ── Header (뒤로 + 타이틀) ─────────────────────────────────── */
+.menuHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 10px 8px;
+}
+
+.headerTitle {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+.headerIcon {
+  width: 24px;
+  height: 24px;
+  color: var(--clr-text-secondary);
+  display: inline-flex;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: var(--r-full);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--clr-text);
+  transition: background var(--t-fast);
+}
+
+.back:hover {
+  background: var(--clr-accent-muted);
+}
+
+/* ── Toggle Switch ──────────────────────────────────────────── */
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 12px 14px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--clr-text);
+}
+
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: var(--r-full);
+  background: var(--clr-border-strong);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background var(--t-base);
+}
+
+.toggleOn {
+  background: var(--clr-accent);
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--t-base);
+}
+
+.toggleOn .toggleKnob {
+  transform: translateX(20px);
+}
+
+/* ── Mobile overrides ───────────────────────────────────────── */
+@media (max-width: 640px) {
+  .popoverSidebar {
+    position: fixed;
+    left: 50%;
+    bottom: 66px;
+    transform: translateX(-50%);
+    width: min(92vw, 320px);
+  }
+
+  .popoverHeader {
+    position: fixed;
+    top: calc(56px + env(safe-area-inset-top) + 8px);
+    right: var(--sp-3);
+    width: min(92vw, 320px);
+    left: auto;
+    transform: none;
+  }
+}
