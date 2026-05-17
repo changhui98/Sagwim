@@ -188,7 +188,7 @@ export function GroupListPage() {
   return (
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
-      <MobileHeader />
+      <MobileHeader onLogout={handleLogout} />
 
       <main className={styles.main}>
         {!profileLoading && myProfile?.address

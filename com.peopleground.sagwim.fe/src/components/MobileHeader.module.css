@@ -52,12 +52,17 @@
     letter-spacing: 0.01em;
   }
 
-  /* 우측 버튼 그룹: 검색 + 알림 버튼을 나란히 배치 */
+  /* 우측 버튼 그룹: 알림 + 더보기 버튼을 나란히 배치 */
   .rightButtons {
     justify-self: end;
     display: flex;
     align-items: center;
     gap: var(--sp-1);
+  }
+
+  /* 더보기 팝오버 앵커 */
+  .moreAnchor {
+    position: relative;
   }
 
   /* 검색/알림 공용 아이콘 버튼 */

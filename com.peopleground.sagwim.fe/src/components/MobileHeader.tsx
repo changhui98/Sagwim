@@ -1,16 +1,23 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { PlusSquareIcon, HeartIcon } from './NavIcons'
+import { PlusSquareIcon, HeartIcon, GridEvenMoreIcon } from './NavIcons'
 import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
+import { MoreMenuPopover } from './MoreMenuPopover'
 import { usePostCreateModal } from '../context/PostCreateModalContext'
 import { useNotificationCount } from '../context/NotificationCountContext'
 import styles from './MobileHeader.module.css'
 
-export function MobileHeader() {
+interface MobileHeaderProps {
+  onLogout: () => void
+}
+
+export function MobileHeader({ onLogout }: MobileHeaderProps) {
   const navigate = useNavigate()
   const { open: openPostCreateModal } = usePostCreateModal()
   const { unreadCount } = useNotificationCount()
   const [createFlow, setCreateFlow] = useState<'idle' | 'selecting'>('idle')
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreAnchorRef = useRef<HTMLDivElement>(null)
 
   const handleNotificationsClick = () => {
     navigate('/app/notifications')
@@ -32,7 +39,7 @@ export function MobileHeader() {
         {/* 가운데: 브랜드 로고 */}
         <div className={styles.brandName}>Sagwim</div>
 
-        {/* 우측: 알림 버튼 */}
+        {/* 우측: 알림 + 더보기 버튼 */}
         <div className={styles.rightButtons}>
           <button
             type="button"
@@ -52,6 +59,26 @@ export function MobileHeader() {
               )}
             </span>
           </button>
+
+          <div className={styles.moreAnchor} ref={moreAnchorRef}>
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={() => setMoreOpen((v) => !v)}
+              aria-label="더 보기"
+              aria-haspopup="menu"
+              aria-expanded={moreOpen}
+            >
+              <GridEvenMoreIcon width={22} height={22} />
+            </button>
+            <MoreMenuPopover
+              isOpen={moreOpen}
+              onClose={() => setMoreOpen(false)}
+              onLogout={onLogout}
+              anchorRef={moreAnchorRef}
+              placement="header"
+            />
+          </div>
         </div>
       </header>
 
