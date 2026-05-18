@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { fetchRooms } from '../api/chatApi'
+import { MobileHeader } from '../components/MobileHeader'
+import { Navbar } from '../components/Navbar'
 import { ChatRoomView } from '../components/chat/ChatRoomView'
 import { ChatSidebar } from '../components/chat/ChatSidebar'
 import { useAuth } from '../context/AuthContext'
@@ -10,8 +12,14 @@ import styles from './MessagesPage.module.css'
 
 export function MessagesPage() {
   const { roomId: roomIdParam } = useParams<{ roomId?: string }>()
-  const { token, meUsername } = useAuth()
+  const { token, meUsername, logout, meRole } = useAuth()
+  const navigate = useNavigate()
   const activeRoomId = roomIdParam ? Number(roomIdParam) : null
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
+  }
 
   const [rooms, setRooms] = useState<ChatRoomSummary[]>([])
 
@@ -49,16 +57,15 @@ export function MessagesPage() {
     ? rooms.find((r) => r.roomId === activeRoomId) ?? null
     : null
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
   const showRoom = activeRoomId !== null
-  const layoutClass = isMobile
-    ? showRoom
-      ? styles.showRoom
-      : styles.showList
-    : ''
+  const layoutClass = showRoom ? styles.showRoom : styles.showList
 
   return (
-    <div className={styles.pageWrapper}>
+    <div className={`${styles.pageWrapper} ${layoutClass}`}>
+      <div className={styles.mobileNavOnly}>
+        <Navbar role={meRole} onLogout={handleLogout} />
+      </div>
+      {!showRoom && <MobileHeader onLogout={handleLogout} />}
       <div className={`${styles.chatLayout} ${layoutClass}`}>
         <div className={styles.sidebarWrapper}>
           <ChatSidebar

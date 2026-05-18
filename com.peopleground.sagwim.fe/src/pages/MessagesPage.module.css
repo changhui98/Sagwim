@@ -5,6 +5,17 @@
   overflow: hidden;
 }
 
+/* 데스크탑에서는 Navbar 사이드바 숨김 — 메시지 페이지는 전체화면 레이아웃 */
+.mobileNavOnly {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobileNavOnly {
+    display: block;
+  }
+}
+
 .chatLayout {
   display: flex;
   flex: 1;
@@ -30,6 +41,34 @@
 
   .chatLayout.showList .roomViewWrapper {
     display: none;
+  }
+
+  .chatLayout.showList .sidebarWrapper {
+    width: 100%;
+    flex: 1;
+  }
+}
+
+/* 모바일 목록 뷰: 하단 탭바 공간 확보를 위해 스크롤 가능한 레이아웃으로 전환 */
+@media (max-width: 640px) {
+  .pageWrapper.showList {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .pageWrapper.showList .chatLayout {
+    overflow: visible;
+  }
+
+  .pageWrapper.showList .sidebarWrapper {
+    padding-bottom: calc(64px + var(--layout-bottom-bar-h, 56px));
+  }
+
+  /* 채팅방 뷰: 전체화면 유지 */
+  .pageWrapper.showRoom {
+    height: 100vh;
+    overflow: hidden;
   }
 }
 

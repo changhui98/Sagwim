@@ -155,3 +155,36 @@
     min-width: 0;
   }
 }
+
+@media (max-width: 640px) {
+  .sidebar {
+    padding-top: 0;
+  }
+
+  .header {
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: none;
+  }
+
+  .title {
+    font-size: 1.1rem;
+    margin-bottom: var(--sp-2);
+  }
+
+  .searchInput {
+    border-radius: var(--r-full);
+    background: var(--clr-surface-3, #f3f3f3);
+    border: none;
+    padding: var(--sp-2) var(--sp-4);
+    font-size: 0.9rem;
+  }
+
+  .searchInput:focus {
+    border-color: transparent;
+    outline: none;
+  }
+
+  .roomItem {
+    padding: var(--sp-3) var(--sp-4);
+  }
+}
