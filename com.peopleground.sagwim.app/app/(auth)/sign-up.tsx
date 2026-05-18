@@ -36,6 +36,7 @@ import {
   checkUsername,
   checkNickname,
 } from '../../src/api/authApi'
+import { useOAuth } from '../../src/hooks/useOAuth'
 import { TextField } from '../../src/components/TextField'
 import { PasswordChecklist } from '../../src/components/PasswordChecklist'
 import { PrimaryButton } from '../../src/components/PrimaryButton'
@@ -55,6 +56,7 @@ const mapMessageToField = (message: string): SignUpField | null => {
 }
 
 export default function SignUpScreen() {
+  const { loading: oauthLoading, handleKakaoLogin, handleGoogleLogin } = useOAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<SignUpField, string>>>({})
@@ -309,23 +311,24 @@ export default function SignUpScreen() {
               error={fieldErrors.password}
             />
 
-            {/* 비밀번호 확인 — 비밀번호 입력 시에만 노출 */}
-            {form.password.length > 0 && (
-              <TextField
-                label="비밀번호 확인"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                isPassword
-                autoCapitalize="none"
-                autoComplete="new-password"
-                textContentType="newPassword"
-                validationState={confirmValidationState}
-              />
-            )}
+            {/* 비밀번호 확인 — display:'none'으로 숨기기 (조건부 마운트 시 포커스 소실 방지) */}
+            <TextField
+              label="비밀번호 확인"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              isPassword
+              autoCapitalize="none"
+              autoComplete="new-password"
+              textContentType="newPassword"
+              validationState={confirmValidationState}
+              containerStyle={form.password.length === 0 ? { display: 'none' } : undefined}
+            />
 
-            {/* 비밀번호 체크리스트 */}
-            <PasswordChecklist password={form.password} confirmPassword={confirmPassword} />
+            {/* 비밀번호 체크리스트 — display:'none'으로 숨기기 */}
+            <View style={form.password.length === 0 ? { display: 'none' } : undefined}>
+              <PasswordChecklist password={form.password} confirmPassword={confirmPassword} />
+            </View>
 
             {/* ── 닉네임 + 중복확인 ── */}
             <View style={styles.mb4}>
@@ -448,15 +451,25 @@ export default function SignUpScreen() {
               <View style={styles.dividerLine} />
             </View>
 
-            {/* OAuth 버튼 — 비활성 */}
+            {/* OAuth 버튼 */}
             <View style={styles.oauthSection}>
-              <TouchableOpacity style={[styles.oauthBtn, styles.kakaoBtn]} disabled>
-                <Text style={styles.oauthBtnText}>카카오로 가입하기</Text>
-                <Text style={styles.comingSoon}>준비 중</Text>
+              <TouchableOpacity
+                style={[styles.oauthBtn, styles.kakaoBtn, oauthLoading && styles.oauthBtnDisabled]}
+                disabled={oauthLoading || loading}
+                onPress={handleKakaoLogin}
+              >
+                <Text style={styles.oauthBtnText}>
+                  {oauthLoading ? '처리 중…' : '카카오로 가입하기'}
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.oauthBtn, styles.googleBtn]} disabled>
-                <Text style={styles.oauthBtnText}>구글로 가입하기</Text>
-                <Text style={styles.comingSoon}>준비 중</Text>
+              <TouchableOpacity
+                style={[styles.oauthBtn, styles.googleBtn, oauthLoading && styles.oauthBtnDisabled]}
+                disabled={oauthLoading || loading}
+                onPress={handleGoogleLogin}
+              >
+                <Text style={styles.oauthBtnText}>
+                  {oauthLoading ? '처리 중…' : '구글로 가입하기'}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -598,8 +611,10 @@ const styles = StyleSheet.create({
     height: 48,
     borderWidth: 1,
     borderColor: colors.border,
-    opacity: 0.5,
     gap: spacing.sp3,
+  },
+  oauthBtnDisabled: {
+    opacity: 0.5,
   },
   kakaoBtn: {
     backgroundColor: '#FEE500',
@@ -612,14 +627,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
     fontWeight: '500',
     color: colors.text,
-  },
-  comingSoon: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    backgroundColor: colors.surface3,
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
   },
   footer: {
     flexDirection: 'row',
