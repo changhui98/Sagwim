@@ -75,8 +75,14 @@ export function Navbar({ role, onLogout }: NavbarProps) {
     {
       label: '검색',
       icon: <SearchIcon />,
-      onClick: () => navigate('/app/search'),
-      match: (p) => p.startsWith('/app/search'),
+      onClick: () => {
+        if (window.innerWidth > 640) {
+          togglePanel('search')
+        } else {
+          navigate('/app/search')
+        }
+      },
+      match: (p) => activePanel === 'search' || p.startsWith('/app/search'),
     },
     {
       to: '/app/posts',
