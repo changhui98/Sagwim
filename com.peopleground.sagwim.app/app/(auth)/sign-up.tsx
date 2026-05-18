@@ -12,19 +12,21 @@
  * isEmailVerified가 true여야 회원가입 버튼 활성화.
  *
  * OAuth: UI 자리만 잡고 비활성.
+ *
+ * [실기기 빌드 주의]
+ * 실기기 테스트 시 반드시 npx expo run:ios --device 사용.
+ * Xcode Cmd+R 단독 실행은 Metro 없이 임베디드 JS 번들을 사용하므로
+ * 코드 변경사항이 반영되지 않을 수 있음.
  */
 
-import React, { useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
-  Keyboard,
   KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -92,28 +94,41 @@ export default function SignUpScreen() {
   const [emailVerifyError, setEmailVerifyError] = useState('')
   const previousEmailRef = useRef(form.userEmail)
 
-  const setField = (key: SignUpField) => (value: string) => {
-    setForm((prev) => ({ ...prev, [key]: value }))
-    setFieldErrors((prev) => ({ ...prev, [key]: undefined }))
+  // 각 필드별 핸들러를 useCallback으로 고정.
+  // setField('username') 패턴은 렌더마다 새 클로저를 생성하므로
+  // 필드별로 명시적으로 분리해 참조 안정성을 확보.
+  const handleChangeUsername = useCallback((value: string) => {
+    setForm((prev) => ({ ...prev, username: value }))
+    setFieldErrors((prev) => ({ ...prev, username: undefined }))
+    setIsUsernameChecked(false)
+    setIsUsernameAvailable(false)
+    setUsernameCheckMsg('')
+  }, [])
 
-    if (key === 'username') {
-      setIsUsernameChecked(false)
-      setIsUsernameAvailable(false)
-      setUsernameCheckMsg('')
-    }
-    if (key === 'nickname') {
-      setIsNicknameChecked(false)
-      setIsNicknameAvailable(false)
-      setNicknameCheckMsg('')
-    }
-    if (key === 'userEmail' && value !== previousEmailRef.current) {
+  const handleChangePassword = useCallback((value: string) => {
+    setForm((prev) => ({ ...prev, password: value }))
+    setFieldErrors((prev) => ({ ...prev, password: undefined }))
+  }, [])
+
+  const handleChangeNickname = useCallback((value: string) => {
+    setForm((prev) => ({ ...prev, nickname: value }))
+    setFieldErrors((prev) => ({ ...prev, nickname: undefined }))
+    setIsNicknameChecked(false)
+    setIsNicknameAvailable(false)
+    setNicknameCheckMsg('')
+  }, [])
+
+  const handleChangeUserEmail = useCallback((value: string) => {
+    setForm((prev) => ({ ...prev, userEmail: value }))
+    setFieldErrors((prev) => ({ ...prev, userEmail: undefined }))
+    if (value !== previousEmailRef.current) {
       previousEmailRef.current = value
       setIsCodeSent(false)
       setIsEmailVerified(false)
       setVerificationCode('')
       setEmailVerifyError('')
     }
-  }
+  }, [])
 
   const handleCheckUsername = async () => {
     if (!form.username.trim()) {
@@ -228,35 +243,53 @@ export default function SignUpScreen() {
     }
   }
 
-  const pwValid = isPasswordValid(form.password)
-  const confirmValid = isConfirmPasswordValid(form.password, confirmPassword)
+  const pwValid = useMemo(() => isPasswordValid(form.password), [form.password])
+  const confirmValid = useMemo(
+    () => isConfirmPasswordValid(form.password, confirmPassword),
+    [form.password, confirmPassword],
+  )
 
-  const nicknameCheckPassed =
-    form.nickname.trim().length === 0 || (isNicknameChecked && isNicknameAvailable)
+  const nicknameCheckPassed = useMemo(
+    () => form.nickname.trim().length === 0 || (isNicknameChecked && isNicknameAvailable),
+    [form.nickname, isNicknameChecked, isNicknameAvailable],
+  )
 
-  const canSubmit =
-    form.password.length > 0 &&
-    pwValid &&
-    confirmValid &&
-    isUsernameChecked &&
-    isUsernameAvailable &&
-    nicknameCheckPassed &&
-    isEmailVerified
+  const canSubmit = useMemo(
+    () =>
+      form.password.length > 0 &&
+      pwValid &&
+      confirmValid &&
+      isUsernameChecked &&
+      isUsernameAvailable &&
+      nicknameCheckPassed &&
+      isEmailVerified,
+    [
+      form.password,
+      pwValid,
+      confirmValid,
+      isUsernameChecked,
+      isUsernameAvailable,
+      nicknameCheckPassed,
+      isEmailVerified,
+    ],
+  )
 
-  const passwordValidationState =
-    form.password.length === 0 ? undefined : pwValid ? 'success' : 'error'
+  // 비밀번호 필드에는 validationState를 쓰지 않음.
+  // iOS Fabric에서 secureTextEntry 필드의 validationState 변경(undefined↔success↔error)이
+  // 포커스를 빼앗는 버그가 있음. PasswordChecklist가 모든 규칙 피드백을 대신 제공.
 
-  const confirmValidationState =
-    confirmPassword.length === 0 ? undefined : confirmValid ? 'success' : 'error'
+  const confirmValidationState = useMemo(
+    () => (confirmPassword.length === 0 ? undefined : confirmValid ? 'success' : 'error'),
+    [confirmPassword.length, confirmValid],
+  ) as 'success' | 'error' | undefined
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        behavior="padding"
+        keyboardVerticalOffset={0}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <ScrollView
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
@@ -274,7 +307,7 @@ export default function SignUpScreen() {
                   containerStyle={styles.inlineInput}
                   placeholder="영문, 숫자 입력 가능"
                   value={form.username}
-                  onChangeText={setField('username')}
+                  onChangeText={handleChangeUsername}
                   autoCapitalize="none"
                   autoCorrect={false}
                   autoComplete="username"
@@ -302,16 +335,15 @@ export default function SignUpScreen() {
               label="비밀번호"
               placeholder="••••••••"
               value={form.password}
-              onChangeText={setField('password')}
+              onChangeText={handleChangePassword}
               isPassword
               autoCapitalize="none"
-              autoComplete="new-password"
-              textContentType="newPassword"
-              validationState={passwordValidationState}
+              autoComplete="off"
+              textContentType="oneTimeCode"
               error={fieldErrors.password}
             />
 
-            {/* 비밀번호 확인 — display:'none'으로 숨기기 (조건부 마운트 시 포커스 소실 방지) */}
+            {/* 비밀번호 확인 — 항상 렌더링 (display:none 레이아웃 변경으로 인한 포커스 소실 방지) */}
             <TextField
               label="비밀번호 확인"
               placeholder="••••••••"
@@ -319,16 +351,12 @@ export default function SignUpScreen() {
               onChangeText={setConfirmPassword}
               isPassword
               autoCapitalize="none"
-              autoComplete="new-password"
-              textContentType="newPassword"
-              validationState={confirmValidationState}
-              containerStyle={form.password.length === 0 ? { display: 'none' } : undefined}
+              autoComplete="off"
+              textContentType="oneTimeCode"
             />
 
-            {/* 비밀번호 체크리스트 — display:'none'으로 숨기기 */}
-            <View style={form.password.length === 0 ? { display: 'none' } : undefined}>
-              <PasswordChecklist password={form.password} confirmPassword={confirmPassword} />
-            </View>
+            {/* 비밀번호 체크리스트 — 항상 렌더링 */}
+            <PasswordChecklist password={form.password} confirmPassword={confirmPassword} />
 
             {/* ── 닉네임 + 중복확인 ── */}
             <View style={styles.mb4}>
@@ -341,21 +369,25 @@ export default function SignUpScreen() {
                   containerStyle={styles.inlineInput}
                   placeholder="2~10자 (선택)"
                   value={form.nickname}
-                  onChangeText={setField('nickname')}
+                  onChangeText={handleChangeNickname}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  autoComplete="off"
+                  textContentType="nickname"
                   editable={!(isNicknameChecked && isNicknameAvailable)}
                   error={fieldErrors.nickname}
                 />
-                {form.nickname.trim().length > 0 && (
-                  <SecondaryButton
-                    label={isCheckingNickname ? '확인 중...' : '중복확인'}
-                    loading={isCheckingNickname}
-                    disabled={isCheckingNickname || (isNicknameChecked && isNicknameAvailable) || !form.nickname.trim()}
-                    onPress={handleCheckNickname}
-                    style={styles.inlineBtn}
-                  />
-                )}
+                <SecondaryButton
+                  label={isCheckingNickname ? '확인 중...' : '중복확인'}
+                  loading={isCheckingNickname}
+                  disabled={
+                    isCheckingNickname ||
+                    form.nickname.trim().length === 0 ||
+                    (isNicknameChecked && isNicknameAvailable)
+                  }
+                  onPress={handleCheckNickname}
+                  style={styles.inlineBtn}
+                />
               </View>
               {form.nickname.trim().length === 0 && (
                 <Text style={styles.hintText}>닉네임을 입력하지 않으면 자동으로 랜덤 닉네임이 부여됩니다.</Text>
@@ -375,7 +407,7 @@ export default function SignUpScreen() {
                   containerStyle={styles.inlineInput}
                   placeholder="name@example.com"
                   value={form.userEmail}
-                  onChangeText={setField('userEmail')}
+                  onChangeText={handleChangeUserEmail}
                   autoCapitalize="none"
                   keyboardType="email-address"
                   autoComplete="email"
@@ -482,7 +514,6 @@ export default function SignUpScreen() {
             </View>
           </View>
         </ScrollView>
-        </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
     </SafeAreaView>
   )
