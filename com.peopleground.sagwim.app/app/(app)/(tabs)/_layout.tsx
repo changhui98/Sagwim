@@ -31,7 +31,7 @@ export default function TabsLayout() {
         headerTitle: 'Sagwim',
         headerTitleStyle: {
           fontSize: 19,
-          fontFamily: 'PlaywriteIE_300Light',
+          fontWeight: '300',
           color: colors.text,
         },
         headerTitleAlign: 'center',
