@@ -1,6 +1,24 @@
 import apiClient from '../lib/apiClient'
 import type { SignInRequest, SignUpRequest } from '../types/auth'
 
+// ── 소셜 로그인 타입 ──────────────────────────────────────────────────────────
+
+export interface SocialSignInResult {
+  jwtToken: string
+  isNewUser: boolean
+  nickname: string
+}
+
+export interface EmailConflictResult {
+  type: 'email_conflict'
+  accessToken: string
+  provider: string
+}
+
+export type SocialSignInOutcome =
+  | ({ type: 'success' } & SocialSignInResult)
+  | EmailConflictResult
+
 /**
  * 로그인 요청.
  * 서버는 토큰을 응답 본문이 아닌 Authorization 헤더로 반환합니다.
@@ -71,4 +89,76 @@ export const checkNickname = async (nickname: string): Promise<boolean> => {
     `/auth/check-nickname?nickname=${encodeURIComponent(nickname)}`,
   )
   return response.data.available
+}
+
+/**
+ * 소셜 로그인 (카카오 / 구글).
+ *
+ * 백엔드는 authorization code를 받아 직접 OAuth 토큰 교환을 수행하고 JWT를 발급합니다.
+ * 동일 이메일로 다른 provider가 이미 가입돼 있으면 409를 반환하며,
+ * 바디에 accessToken과 provider를 포함합니다.
+ *
+ * @returns SocialSignInOutcome — 성공 시 { type: 'success', ... }, 이메일 충돌 시 { type: 'email_conflict', ... }
+ */
+export const socialSignIn = async (
+  provider: 'KAKAO' | 'GOOGLE',
+  code: string,
+  redirectUri: string,
+): Promise<SocialSignInOutcome> => {
+  try {
+    const response = await apiClient.post('/auth/social/sign-in', {
+      provider,
+      code,
+      redirectUri,
+    })
+    const token: string | undefined = response.headers['authorization']
+    if (!token) {
+      throw new Error('소셜 로그인 성공 후 Authorization 토큰이 없습니다.')
+    }
+    return {
+      type: 'success',
+      jwtToken: token,
+      isNewUser: response.data.isNewUser ?? false,
+      nickname: response.data.nickname ?? '',
+    }
+  } catch (err: unknown) {
+    // axios는 4xx/5xx 응답을 자동으로 throw함
+    const axiosError = err as { response?: { status?: number; data?: { accessToken?: string; provider?: string } } }
+    if (axiosError?.response?.status === 409) {
+      const body = axiosError.response.data
+      if (body?.accessToken && body?.provider) {
+        return {
+          type: 'email_conflict',
+          accessToken: body.accessToken,
+          provider: body.provider,
+        }
+      }
+    }
+    throw err
+  }
+}
+
+/**
+ * 소셜 계정 연동.
+ *
+ * 409 응답 후 사용자 동의를 받아 기존 계정에 소셜 provider를 연결합니다.
+ * code 대신 409 바디의 accessToken을 그대로 전달합니다.
+ */
+export const linkSocialAccount = async (
+  provider: string,
+  accessToken: string,
+): Promise<SocialSignInResult> => {
+  const response = await apiClient.post('/auth/social/link', {
+    provider,
+    accessToken,
+  })
+  const token: string | undefined = response.headers['authorization']
+  if (!token) {
+    throw new Error('소셜 연동 후 Authorization 토큰이 없습니다.')
+  }
+  return {
+    jwtToken: token,
+    isNewUser: response.data.isNewUser ?? false,
+    nickname: response.data.nickname ?? '',
+  }
 }

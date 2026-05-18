@@ -26,6 +26,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
 import { useAuth } from '../../src/context/AuthContext'
 import { signIn } from '../../src/api/authApi'
+import { useOAuth } from '../../src/hooks/useOAuth'
 import { TextField } from '../../src/components/TextField'
 import { PrimaryButton } from '../../src/components/PrimaryButton'
 import { BrandLogo } from '../../src/components/BrandLogo'
@@ -33,6 +34,7 @@ import { colors, spacing, radius, fontSize } from '../../src/constants/theme'
 
 export default function LoginScreen() {
   const { login } = useAuth()
+  const { loading: oauthLoading, handleKakaoLogin, handleGoogleLogin } = useOAuth()
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -135,15 +137,25 @@ export default function LoginScreen() {
               <View style={styles.dividerLine} />
             </View>
 
-            {/* OAuth 버튼 — UI 자리만 (비활성) */}
+            {/* OAuth 버튼 */}
             <View style={styles.oauthSection}>
-              <TouchableOpacity style={[styles.oauthBtn, styles.kakaoBtn]} disabled>
-                <Text style={styles.oauthBtnText}>카카오로 계속하기</Text>
-                <Text style={styles.comingSoon}>준비 중</Text>
+              <TouchableOpacity
+                style={[styles.oauthBtn, styles.kakaoBtn, oauthLoading && styles.oauthBtnDisabled]}
+                disabled={oauthLoading || loading}
+                onPress={handleKakaoLogin}
+              >
+                <Text style={styles.oauthBtnText}>
+                  {oauthLoading ? '로그인 중…' : '카카오로 계속하기'}
+                </Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.oauthBtn, styles.googleBtn]} disabled>
-                <Text style={styles.oauthBtnText}>구글로 계속하기</Text>
-                <Text style={styles.comingSoon}>준비 중</Text>
+              <TouchableOpacity
+                style={[styles.oauthBtn, styles.googleBtn, oauthLoading && styles.oauthBtnDisabled]}
+                disabled={oauthLoading || loading}
+                onPress={handleGoogleLogin}
+              >
+                <Text style={styles.oauthBtnText}>
+                  {oauthLoading ? '로그인 중…' : '구글로 계속하기'}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -237,8 +249,10 @@ const styles = StyleSheet.create({
     height: 48,
     borderWidth: 1,
     borderColor: colors.border,
-    opacity: 0.5,
     gap: spacing.sp3,
+  },
+  oauthBtnDisabled: {
+    opacity: 0.5,
   },
   kakaoBtn: {
     backgroundColor: '#FEE500',
@@ -251,14 +265,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
     fontWeight: '500',
     color: colors.text,
-  },
-  comingSoon: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    backgroundColor: colors.surface3,
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
   },
   footer: {
     flexDirection: 'row',
