@@ -104,6 +104,15 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="messages"
+        options={{
+          title: '메시지',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="chatbubble-outline" size={ICON_SIZE} color={color} />
+          ),
+        }}
+      />
       {/* 만들기: 라우트는 유지, 탭바에서만 숨김 */}
       <Tabs.Screen
         name="create"
