@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { usePostCreatedSubscription } from '../context/PostCreateModalContext'
 import { Navbar } from '../components/Navbar'
+import { MobileHeader } from '../components/MobileHeader'
 import {
   MyPostsSection,
   type MyPostsSectionHandle,
@@ -125,6 +126,7 @@ export function ProfilePage() {
   return (
     <>
       <Navbar role={viewerProfile?.role ?? null} onLogout={handleLogout} />
+      <MobileHeader onLogout={handleLogout} />
 
       <main className={styles.main}>
         {profileError && (
