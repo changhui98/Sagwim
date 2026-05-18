@@ -4,6 +4,7 @@ import { Image } from 'expo-image'
 import type { GroupResponse } from '../../types/group'
 import { GROUP_CATEGORY_LABELS, GROUP_MEETING_TYPE_LABELS } from '../../types/group'
 import { colors, fontSize, radius, spacing } from '../../constants/theme'
+import { resolveImageUrl } from '../../lib/resolveImageUrl'
 
 /**
  * 가로 스크롤 섹션에서 한 화면에 3장씩 보이도록 너비를 계산한다.
@@ -28,9 +29,9 @@ export function GroupCard({ group, onPress }: GroupCardProps) {
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
     >
       <View style={styles.imageWrap}>
-        {group.imageUrl ? (
+        {resolveImageUrl(group.imageUrl) ? (
           <Image
-            source={group.imageUrl}
+            source={resolveImageUrl(group.imageUrl)!}
             style={styles.image}
             contentFit="cover"
             transition={200}
