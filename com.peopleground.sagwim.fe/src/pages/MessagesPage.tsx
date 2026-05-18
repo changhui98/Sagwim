@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { fetchRooms } from '../api/chatApi'
 import { MobileHeader } from '../components/MobileHeader'
 import { Navbar } from '../components/Navbar'
@@ -7,19 +7,15 @@ import { ChatRoomView } from '../components/chat/ChatRoomView'
 import { ChatSidebar } from '../components/chat/ChatSidebar'
 import { useAuth } from '../context/AuthContext'
 import { useChatSocket, useRoomsLiveUpdate } from '../hooks/useChatSocket'
+import { useLogout } from '../hooks/useLogout'
 import type { ChatRoomSummary } from '../types/chat'
 import styles from './MessagesPage.module.css'
 
 export function MessagesPage() {
   const { roomId: roomIdParam } = useParams<{ roomId?: string }>()
-  const { token, meUsername, logout, meRole } = useAuth()
-  const navigate = useNavigate()
+  const { token, meUsername, meRole } = useAuth()
+  const handleLogout = useLogout()
   const activeRoomId = roomIdParam ? Number(roomIdParam) : null
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
-  }
 
   const [rooms, setRooms] = useState<ChatRoomSummary[]>([])
 

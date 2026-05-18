@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useLogout } from '../hooks/useLogout'
 import { usePostCreatedSubscription } from '../context/PostCreateModalContext'
 import { useInfinitePostList } from '../hooks/useInfinitePostList'
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
@@ -17,8 +17,8 @@ import styles from './PostListPage.module.css'
 const SKELETON_COUNT = 8
 
 export function PostListPage() {
-  const navigate = useNavigate()
-  const { logout, meRole } = useAuth()
+  const { meRole } = useAuth()
+  const handleLogout = useLogout()
 
   const {
     posts,
@@ -49,11 +49,6 @@ export function PostListPage() {
       loadMore()
     }
   }, [isIntersecting, hasMore, isFetchingMore, loading, loadMore])
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
-  }
 
   const renderContent = () => {
     if (loading && posts.length === 0) {

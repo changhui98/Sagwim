@@ -5,6 +5,7 @@ import { uploadContentImage } from '../api/imageApi'
 import { getMyProfile } from '../api/userApi'
 import { ApiError } from '../api/ApiError'
 import { useAuth } from '../context/AuthContext'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { ImageBoxPicker } from '../components/post/ImageBoxPicker'
 import type { UserDetailResponse } from '../types/user'
@@ -13,6 +14,7 @@ import styles from './PostCreatePage.module.css'
 export function PostCreatePage() {
   const navigate = useNavigate()
   const { token, logout } = useAuth()
+  const handleLogout = useLogout()
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
 
   const handleUnauthorized = useCallback(
@@ -36,11 +38,6 @@ export function PostCreatePage() {
       cancelled = true
     }
   }, [token, handleUnauthorized])
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
-  }
 
   const [body, setBody] = useState('')
   const [images, setImages] = useState<File[]>([])

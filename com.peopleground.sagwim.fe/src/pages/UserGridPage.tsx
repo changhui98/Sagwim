@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getMyProfile, getUsers } from '../api/userApi'
 import { ApiError } from '../api/ApiError'
 import { useAuth } from '../context/AuthContext'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Skeleton } from '../components/common/Skeleton'
@@ -17,6 +18,7 @@ const MAX_VISIBLE_PAGES = 5
 export function UserGridPage() {
   const navigate = useNavigate()
   const { token, logout } = useAuth()
+  const handleLogout = useLogout()
 
   const [users, setUsers] = useState<UserResponse[]>([])
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
@@ -75,11 +77,6 @@ export function UserGridPage() {
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
     loadUsers(nextPage)
-  }
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
   }
 
   const getPageNumbers = (): number[] => {

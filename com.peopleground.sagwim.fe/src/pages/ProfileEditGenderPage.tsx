@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getMyProfile, updateMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { AlertDialog } from '../components/common/AlertDialog'
 import type { Gender, UserDetailResponse } from '../types/user'
@@ -17,8 +18,9 @@ const GENDER_OPTIONS: { value: Gender; label: string }[] = [
 
 export function ProfileEditGenderPage() {
   const navigate = useNavigate()
-  const { token, logout, setMeProfile } = useAuth()
+  const { token, setMeProfile } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [profile, setProfile] = useState<UserDetailResponse | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
@@ -27,11 +29,6 @@ export function ProfileEditGenderPage() {
 
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
-
-  const handleLogout = useCallback(() => {
-    logout()
-    navigate('/login', { replace: true })
-  }, [logout, navigate])
 
   useEffect(() => {
     let cancelled = false
