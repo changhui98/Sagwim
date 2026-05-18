@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import {
   StyleSheet,
   Text,
@@ -35,7 +35,20 @@ export function TextField({
   editable = true,
   ...rest
 }: Props) {
-  const [showPassword, setShowPassword] = useState(false)
+  // useRef로 관리: state 변경 시 컴포넌트 리렌더를 유발하지 않아
+  // iOS New Architecture에서 secureTextEntry 필드의 포커스 소실 방지.
+  // setNativeProps로 TextInput에 직접 주입.
+  const showPasswordRef = useRef(false)
+  const [showPasswordLabel, setShowPasswordLabel] = useState(false)
+  const inputRef = useRef<TextInput>(null)
+
+  const handleTogglePassword = () => {
+    const next = !showPasswordRef.current
+    showPasswordRef.current = next
+    setShowPasswordLabel(next)
+    // setNativeProps로 secureTextEntry를 직접 변경 — 리렌더 없이 네이티브에 전달
+    inputRef.current?.setNativeProps({ secureTextEntry: !next })
+  }
 
   const borderColor =
     validationState === 'success'
@@ -43,6 +56,12 @@ export function TextField({
       : validationState === 'error'
         ? colors.error
         : colors.borderStrong
+
+  // shadow style을 항상 포함하되 opacity로만 토글.
+  // style object의 추가/제거가 View 재렌더 → 포커스 소실을 유발하므로
+  // 항상 동일한 style 구조를 유지.
+  const successShadowOpacity = validationState === 'success' ? 0.25 : 0
+  const errorShadowOpacity = validationState === 'error' ? 0.25 : 0
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
@@ -53,26 +72,38 @@ export function TextField({
           styles.inputRow,
           { borderColor },
           !editable && styles.inputDisabled,
-          validationState === 'success' && styles.focusSuccess,
-          validationState === 'error' && styles.focusError,
+          {
+            shadowColor:
+              validationState === 'success'
+                ? colors.success
+                : validationState === 'error'
+                  ? colors.error
+                  : 'transparent',
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: successShadowOpacity || errorShadowOpacity,
+            shadowRadius: 4,
+          },
         ]}
       >
         <TextInput
+          ref={inputRef}
           style={[styles.input, style]}
           placeholderTextColor={colors.textMuted}
-          secureTextEntry={isPassword && !showPassword}
+          // 초기값만 secureTextEntry로 설정. 이후 토글은 setNativeProps로 처리.
+          secureTextEntry={isPassword}
           editable={editable}
           autoCorrect={false}
           spellCheck={false}
+          importantForAutofill="no"
           {...rest}
         />
         {isPassword ? (
           <TouchableOpacity
-            onPress={() => setShowPassword((v) => !v)}
+            onPress={handleTogglePassword}
             style={styles.eyeBtn}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={styles.eyeText}>{showPassword ? '숨기기' : '보기'}</Text>
+            <Text style={styles.eyeText}>{showPasswordLabel ? '숨기기' : '보기'}</Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -127,17 +158,5 @@ const styles = StyleSheet.create({
     color: colors.error,
     marginTop: spacing.sp1,
   },
-  focusSuccess: {
-    // 안드로이드 elevation 없이 iOS shadow만
-    shadowColor: colors.success,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-  },
-  focusError: {
-    shadowColor: colors.error,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-  },
+  // focusSuccess / focusError는 인라인 style로 이전됨 (항상 동일 구조 유지 목적)
 })

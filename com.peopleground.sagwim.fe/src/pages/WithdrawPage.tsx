@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { deleteMyAccount } from '../api/userApi'
 import styles from '../components/profile/ProfileEditModal.module.css'
@@ -21,16 +22,12 @@ export function WithdrawPage() {
   const navigate = useNavigate()
   const { logout, meRole, meNickname, token } = useAuth()
   useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [checked, setChecked] = useState<boolean[]>(() => NOTICES.map(() => false))
   const [agreed, setAgreed] = useState(false)
   const [reason, setReason] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleLogout = useCallback(() => {
-    logout()
-    navigate('/login', { replace: true })
-  }, [logout, navigate])
 
   // 순차 노출: index N 의 항목은 이전 항목까지 모두 체크돼야 표시.
   // 체크 해제 시 그 이후 항목도 cascade 로 해제하여 동의 체크박스가 남는 일이 없도록 한다.

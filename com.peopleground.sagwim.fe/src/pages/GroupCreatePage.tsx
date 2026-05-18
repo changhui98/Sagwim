@@ -5,6 +5,7 @@ import { uploadGroupImage } from '../api/imageApi'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { ImageBoxPicker } from '../components/post/ImageBoxPicker'
 import type { GroupCategory, GroupMeetingType } from '../types/group'
@@ -75,8 +76,9 @@ function StepIndicator({ visibleStep, completedStep }: StepIndicatorProps) {
 
 export function GroupCreatePage() {
   const navigate = useNavigate()
-  const { token, logout } = useAuth()
+  const { token } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   // 폼 데이터
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
@@ -131,11 +133,6 @@ export function GroupCreatePage() {
       setCompletedStep((prev) => Math.max(prev, 4))
     }
   }, [categorySelected, visibleStep])
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
-  }
 
   // Step 2 나타난 후 설명 textarea blur 또는 2초 후 → Step 3 표시
   const handleDescriptionBlur = () => {

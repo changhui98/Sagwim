@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import styles from './CreateTypeSelectorModal.module.css'
-import groupIcon from '../../assets/cel-rings-love-svgrepo-com.svg'
+import groupIcon from '../../assets/moim-icon-2-three-people.svg'
 import postIcon from '../../assets/clipboard-list-alt-svgrepo-com.svg'
 
 interface CreateTypeSelectorModalProps {

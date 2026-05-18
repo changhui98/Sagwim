@@ -4,6 +4,7 @@ import { getNewGroups, getPopularGroups, toggleGroupLike } from '../api/groupApi
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import type { GroupResponse } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
@@ -22,8 +23,9 @@ const PREVIEW_COUNT = 5
 
 export function GroupListPage() {
   const navigate = useNavigate()
-  const { token, logout, meRole } = useAuth()
+  const { token, meRole } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   // 신규 모임 상태
   const [groups, setGroups] = useState<GroupResponse[]>([])
@@ -116,11 +118,6 @@ export function GroupListPage() {
     } catch {
       // 조용히 실패
     }
-  }
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
   }
 
   const renderContent = () => (

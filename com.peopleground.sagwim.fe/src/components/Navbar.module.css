@@ -238,7 +238,8 @@
     width: 100%;
     top: auto;
     bottom: 0;
-    height: 56px;
+    height: calc(64px + env(safe-area-inset-bottom));
+    padding-bottom: calc(env(safe-area-inset-bottom) + 8px);
     border-right: none;
     border-top: none;
   }

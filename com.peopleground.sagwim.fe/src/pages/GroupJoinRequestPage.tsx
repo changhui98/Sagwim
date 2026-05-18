@@ -4,6 +4,7 @@ import { getGroup, joinGroup } from '../api/groupApi'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { extractErrorMessage } from '../utils/errorUtils'
 import { Navbar } from '../components/Navbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
@@ -15,8 +16,9 @@ import pageStyles from './ProfileEditPage.module.css'
 export function GroupJoinRequestPage() {
   const { groupId } = useParams<{ groupId: string }>()
   const navigate = useNavigate()
-  const { token, logout } = useAuth()
+  const { token } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [group, setGroup] = useState<GroupDetailResponse | null>(null)
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
@@ -24,11 +26,6 @@ export function GroupJoinRequestPage() {
   const [answers, setAnswers] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-
-  const handleLogout = useCallback(() => {
-    logout()
-    navigate('/login', { replace: true })
-  }, [logout, navigate])
 
   const loadData = useCallback(async () => {
     if (!groupId) return

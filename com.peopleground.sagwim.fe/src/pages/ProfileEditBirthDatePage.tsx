@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getMyProfile, updateMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { AlertDialog } from '../components/common/AlertDialog'
 import type { UserDetailResponse } from '../types/user'
@@ -108,8 +109,9 @@ function parseDateToIndices(dateStr: string): { yearIdx: number; monthIdx: numbe
 
 export function ProfileEditBirthDatePage() {
   const navigate = useNavigate()
-  const { token, logout, setMeProfile } = useAuth()
+  const { token, setMeProfile } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [profile, setProfile] = useState<UserDetailResponse | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
@@ -123,11 +125,6 @@ export function ProfileEditBirthDatePage() {
   const [yearIdx, setYearIdx] = useState(0)
   const [monthIdx, setMonthIdx] = useState(0)
   const [dayIdx, setDayIdx] = useState(0)
-
-  const handleLogout = useCallback(() => {
-    logout()
-    navigate('/login', { replace: true })
-  }, [logout, navigate])
 
   useEffect(() => {
     let cancelled = false

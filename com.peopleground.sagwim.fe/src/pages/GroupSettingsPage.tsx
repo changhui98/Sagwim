@@ -15,6 +15,7 @@ import { uploadGroupImage } from '../api/imageApi'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { extractErrorMessage } from '../utils/errorUtils'
 import { Navbar } from '../components/Navbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
@@ -32,8 +33,9 @@ type SubView = 'menu' | 'info' | 'description' | 'memberCount' | 'joinRequests' 
 export function GroupSettingsPage() {
   const { groupId } = useParams<{ groupId: string }>()
   const navigate = useNavigate()
-  const { token, logout } = useAuth()
+  const { token } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [group, setGroup] = useState<GroupDetailResponse | null>(null)
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
@@ -76,11 +78,6 @@ export function GroupSettingsPage() {
   const [joinTypeError, setJoinTypeError] = useState('')
   const [editJoinType, setEditJoinType] = useState<GroupJoinType>('OPEN')
   const [editJoinQuestions, setEditJoinQuestions] = useState<string[]>([''])
-
-  const handleLogout = useCallback(() => {
-    logout()
-    navigate('/login', { replace: true })
-  }, [logout, navigate])
 
   const loadData = useCallback(async () => {
     if (!groupId) return

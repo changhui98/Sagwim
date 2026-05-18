@@ -5,8 +5,10 @@ import { getMyProfile, getUserProfile, updateMyProfile } from '../api/userApi'
 import { uploadUserProfileImage } from '../api/imageApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { usePostCreatedSubscription } from '../context/PostCreateModalContext'
 import { Navbar } from '../components/Navbar'
+import { MobileHeader } from '../components/MobileHeader'
 import {
   MyPostsSection,
   type MyPostsSectionHandle,
@@ -19,7 +21,8 @@ import { ApiError } from '../api/ApiError'
 export function ProfilePage() {
   const navigate = useNavigate()
   const { username } = useParams<{ username?: string }>()
-  const { token, logout, setMeProfile } = useAuth()
+  const { token, setMeProfile } = useAuth()
+  const handleLogout = useLogout()
 
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
   const [viewerProfile, setViewerProfile] = useState<UserDetailResponse | null>(null)
@@ -59,11 +62,6 @@ export function ProfilePage() {
       setProfileLoading(false)
     }
   }, [token, handleUnauthorized, username, setMeProfile])
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
-  }
 
   const handleAvatarPick = useCallback(() => {
     if (!isOwner || avatarUploading || !myProfile) return
@@ -125,6 +123,7 @@ export function ProfilePage() {
   return (
     <>
       <Navbar role={viewerProfile?.role ?? null} onLogout={handleLogout} />
+      <MobileHeader onLogout={handleLogout} />
 
       <main className={styles.main}>
         {profileError && (

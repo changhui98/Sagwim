@@ -6,6 +6,7 @@ import {
 } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { deletePost, getPost, toggleContentLike, updatePost } from '../api/postApi'
 import { MeatballMenu } from '../components/common/MeatballMenu'
@@ -48,13 +49,9 @@ function formatCount(n: number): string {
 
 export function PostDetailPage() {
   const { postId } = useParams<{ postId: string }>()
-  const { token, meUsername, meNickname, meProfileImageUrl, meRole, logout } = useAuth()
+  const { token, meUsername, meNickname, meProfileImageUrl, meRole } = useAuth()
   const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
-  }
+  const handleLogout = useLogout()
   const location = useLocation()
 
   const contentId = Number(postId)

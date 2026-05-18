@@ -5,6 +5,7 @@ import { GroupLikersModal } from '../components/group/GroupLikersModal'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { extractErrorMessage } from '../utils/errorUtils'
 import { Navbar } from '../components/Navbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
@@ -25,8 +26,9 @@ import styles from './GroupDetailPage.module.css'
 export function GroupDetailPage() {
   const { groupId } = useParams<{ groupId: string }>()
   const navigate = useNavigate()
-  const { token, logout } = useAuth()
+  const { token } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [group, setGroup] = useState<GroupDetailResponse | null>(null)
   const [members, setMembers] = useState<GroupMemberResponse[]>([])
@@ -99,11 +101,6 @@ export function GroupDetailPage() {
     void loadData()
     void loadMembers()
   }, [loadData, loadMembers])
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
-  }
 
   const isMember = members.some((m) => m.username === myProfile?.username)
   const isLeader = myProfile?.username === group?.leaderUsername

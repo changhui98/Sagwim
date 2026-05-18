@@ -13,6 +13,7 @@
   --clr-accent-muted: rgba(240, 128, 128, 0.12);
   --clr-accent-glow: rgba(240, 128, 128, 0.25);
   --clr-accent-gradient: linear-gradient(135deg, #F08080 0%, #f5a0a0 100%);
+  --clr-primary: var(--clr-accent);
 
   /* Semantic */
   --clr-error: #ef4444;

@@ -31,7 +31,7 @@ export default function TabsLayout() {
         headerTitle: 'Sagwim',
         headerTitleStyle: {
           fontSize: 19,
-          fontFamily: 'PlaywriteIE_300Light',
+          fontWeight: '300',
           color: colors.text,
         },
         headerTitleAlign: 'center',
@@ -101,6 +101,15 @@ export default function TabsLayout() {
           title: '게시글',
           tabBarIcon: ({ color }) => (
             <Ionicons name="reader-outline" size={ICON_SIZE} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="messages"
+        options={{
+          title: '메시지',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="chatbubble-outline" size={ICON_SIZE} color={color} />
           ),
         }}
       />

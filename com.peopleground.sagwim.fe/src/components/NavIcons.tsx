@@ -68,13 +68,13 @@ export function SearchIcon(props: IconProps) {
 
 export function SavedIcon(props: IconProps) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
-        <rect x="64" y="56" width="128" height="144" rx="14" />
-        <line x1="88" y1="96" x2="168" y2="96" />
-        <line x1="88" y1="128" x2="168" y2="128" />
-        <line x1="88" y1="160" x2="140" y2="160" />
-      </g>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" aria-hidden focusable={false} {...props}>
+      <rect x="4" y="5" width="6" height="6" rx="1" />
+      <line x1="13" y1="7" x2="20" y2="7" />
+      <line x1="13" y1="10" x2="18" y2="10" />
+      <rect x="4" y="14" width="6" height="6" rx="1" />
+      <line x1="13" y1="16" x2="20" y2="16" />
+      <line x1="13" y1="19" x2="18" y2="19" />
     </svg>
   )
 }
@@ -143,16 +143,13 @@ export function MenuMeatballsIcon(props: IconProps) {
   )
 }
 
-/** 2×2 그리드(더 보기) */
+/** 햄버거 메뉴(더 보기) */
 export function GridEvenMoreIcon(props: IconProps) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
-        <rect x="76" y="76" width="46" height="46" rx="8" />
-        <rect x="134" y="76" width="46" height="46" rx="8" />
-        <rect x="76" y="134" width="46" height="46" rx="8" />
-        <rect x="134" y="134" width="46" height="46" rx="8" />
-      </g>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" aria-hidden focusable={false} {...props}>
+      <line x1="5" y1="8" x2="19" y2="8" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <line x1="5" y1="16" x2="19" y2="16" />
     </svg>
   )
 }

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { PasswordInput } from '../components/PasswordInput'
 import { PasswordChecklist } from '../components/PasswordChecklist'
@@ -15,8 +16,9 @@ import pageStyles from './ChangePasswordPage.module.css'
 
 export function ChangePasswordPage() {
   const navigate = useNavigate()
-  const { token, logout, meRole } = useAuth()
+  const { token, meRole } = useAuth()
   useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -26,11 +28,6 @@ export function ChangePasswordPage() {
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
   const [successOpen, setSuccessOpen] = useState(false)
-
-  const handleLogout = useCallback(() => {
-    logout()
-    navigate('/login', { replace: true })
-  }, [logout, navigate])
 
   const canSubmit = useMemo(
     () =>

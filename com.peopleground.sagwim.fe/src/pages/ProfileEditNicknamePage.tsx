@@ -4,6 +4,7 @@ import { getMyProfile, updateMyProfile } from '../api/userApi'
 import { checkNickname } from '../api/authApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { AlertDialog } from '../components/common/AlertDialog'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
@@ -13,8 +14,9 @@ import pageStyles from './ProfileEditPage.module.css'
 
 export function ProfileEditNicknamePage() {
   const navigate = useNavigate()
-  const { token, logout, setMeProfile } = useAuth()
+  const { token, setMeProfile } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [profile, setProfile] = useState<UserDetailResponse | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
@@ -29,11 +31,6 @@ export function ProfileEditNicknamePage() {
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertVariant, setAlertVariant] = useState<'success' | 'error'>('success')
   const [alertMessage, setAlertMessage] = useState('')
-
-  const handleLogout = useCallback(() => {
-    logout()
-    navigate('/login', { replace: true })
-  }, [logout, navigate])
 
   useEffect(() => {
     let cancelled = false

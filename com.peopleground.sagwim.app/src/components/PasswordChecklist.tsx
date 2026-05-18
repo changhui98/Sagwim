@@ -1,8 +1,13 @@
 /**
  * FE PasswordChecklist 컴포넌트 → RN 변환
  * StyleSheet.create 사용, CSS Modules 없음
+ *
+ * [성능]
+ * React.memo로 감싸서 password/confirmPassword prop이 실제로 변경될 때만
+ * re-render되도록 처리. 부모(sign-up.tsx)의 다른 state 변경으로 인한
+ * 불필요한 re-render(regex 재실행)를 차단.
  */
-import React from 'react'
+import React, { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { RULES } from '../utils/passwordRules'
 import { colors, spacing, fontSize } from '../constants/theme'
@@ -12,27 +17,28 @@ interface Props {
   confirmPassword?: string
 }
 
-export function PasswordChecklist({ password, confirmPassword }: Props) {
-  if (password.length === 0) return null
-
+function PasswordChecklistComponent({ password, confirmPassword }: Props) {
   const showConfirmRule = confirmPassword !== undefined && confirmPassword.length > 0
   const confirmMet = showConfirmRule && password === confirmPassword
 
+  // regex 4개를 매 렌더마다 재실행하지 않도록 메모이제이션
+  const ruleResults = useMemo(
+    () => RULES.map(({ label, test }) => ({ label, met: test(password) })),
+    [password],
+  )
+
   return (
-    <View style={styles.root} accessibilityLiveRegion="polite">
-      {RULES.map(({ label, test }) => {
-        const met = test(password)
-        return (
-          <View key={label} style={styles.ruleRow}>
-            <Text style={[styles.icon, met ? styles.iconMet : styles.iconUnmet]}>
-              {met ? '✓' : '·'}
-            </Text>
-            <Text style={[styles.ruleText, met ? styles.textMet : styles.textUnmet]}>
-              {label}
-            </Text>
-          </View>
-        )
-      })}
+    <View style={styles.root}>
+      {ruleResults.map(({ label, met }) => (
+        <View key={label} style={styles.ruleRow}>
+          <Text style={[styles.icon, met ? styles.iconMet : styles.iconUnmet]}>
+            {met ? '✓' : '·'}
+          </Text>
+          <Text style={[styles.ruleText, met ? styles.textMet : styles.textUnmet]}>
+            {label}
+          </Text>
+        </View>
+      ))}
 
       {showConfirmRule && (
         <View style={styles.ruleRow}>
@@ -48,6 +54,8 @@ export function PasswordChecklist({ password, confirmPassword }: Props) {
   )
 }
 
+export const PasswordChecklist = React.memo(PasswordChecklistComponent)
+
 const styles = StyleSheet.create({
   root: {
     marginBottom: spacing.sp4,
@@ -56,6 +64,8 @@ const styles = StyleSheet.create({
   ruleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    // minHeight 고정: ✓/· 전환 시 줄 높이 변화로 인한 레이아웃 재계산 방지
+    minHeight: 22,
     marginBottom: spacing.sp1,
   },
   icon: {

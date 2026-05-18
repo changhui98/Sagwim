@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getPopularGroups, toggleGroupLike } from '../api/groupApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { EmptyState } from '../components/common/EmptyState'
@@ -17,8 +18,9 @@ const PAGE_SIZE = 20
 
 export function PopularGroupsPage() {
   const navigate = useNavigate()
-  const { token, logout, meRole } = useAuth()
+  const { token, meRole } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [groups, setGroups] = useState<GroupResponse[]>([])
   const [page, setPage] = useState(0)
@@ -87,11 +89,6 @@ export function PopularGroupsPage() {
     } catch {
       // 조용히 실패
     }
-  }
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
   }
 
   const renderGroupCard = (group: GroupResponse) => {

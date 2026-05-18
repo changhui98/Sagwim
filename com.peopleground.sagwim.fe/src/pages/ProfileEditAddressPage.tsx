@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getMyProfile, searchAddress, updateMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { AlertDialog } from '../components/common/AlertDialog'
 import type { UserDetailResponse } from '../types/user'
@@ -63,8 +64,9 @@ function isTooDetailedAddress(addr: string): boolean {
 
 export function ProfileEditAddressPage() {
   const navigate = useNavigate()
-  const { token, logout } = useAuth()
+  const { token } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [profile, setProfile] = useState<UserDetailResponse | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
@@ -80,11 +82,6 @@ export function ProfileEditAddressPage() {
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertVariant, setAlertVariant] = useState<'success' | 'error'>('success')
   const [alertMessage, setAlertMessage] = useState('')
-
-  const handleLogout = useCallback(() => {
-    logout()
-    navigate('/login', { replace: true })
-  }, [logout, navigate])
 
   useEffect(() => {
     let cancelled = false

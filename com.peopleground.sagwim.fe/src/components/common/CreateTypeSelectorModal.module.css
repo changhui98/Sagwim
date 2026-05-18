@@ -100,11 +100,11 @@
 @media (max-width: 640px) {
   .overlay {
     padding: var(--sp-4);
-    align-items: flex-end;
+    align-items: center;
   }
 
   .modal {
-    max-width: none;
-    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    max-width: 360px;
+    border-radius: var(--r-xl);
   }
 }

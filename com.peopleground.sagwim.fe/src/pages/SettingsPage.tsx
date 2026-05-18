@@ -1,7 +1,7 @@
-import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import styles from '../components/profile/ProfileEditModal.module.css'
 import pageStyles from './SettingsPage.module.css'
@@ -9,13 +9,9 @@ import listStyles from './ProfileEditPage.module.css'
 
 export function SettingsPage() {
   const navigate = useNavigate()
-  const { logout, meRole } = useAuth()
+  const { meRole } = useAuth()
   useHandleUnauthorized()
-
-  const handleLogout = useCallback(() => {
-    logout()
-    navigate('/login', { replace: true })
-  }, [logout, navigate])
+  const handleLogout = useLogout()
 
   return (
     <>

@@ -4,6 +4,7 @@ import { getMyProfile, updateMyProfile } from '../api/userApi'
 import { uploadUserProfileImage } from '../api/imageApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
+import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import type { Gender, UserDetailResponse } from '../types/user'
 
@@ -17,8 +18,9 @@ import pageStyles from './ProfileEditPage.module.css'
 
 export function ProfileEditPage() {
   const navigate = useNavigate()
-  const { token, logout } = useAuth()
+  const { token } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
+  const handleLogout = useLogout()
 
   const [profile, setProfile] = useState<UserDetailResponse | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
@@ -46,11 +48,6 @@ export function ProfileEditPage() {
       }
     }
   }, [])
-
-  const handleLogout = useCallback(() => {
-    logout()
-    navigate('/login', { replace: true })
-  }, [logout, navigate])
 
   useEffect(() => {
     let cancelled = false
