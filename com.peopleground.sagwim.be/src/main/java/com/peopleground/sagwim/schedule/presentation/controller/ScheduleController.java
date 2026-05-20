@@ -3,6 +3,7 @@ package com.peopleground.sagwim.schedule.presentation.controller;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.schedule.application.service.ScheduleService;
 import com.peopleground.sagwim.schedule.presentation.dto.request.ScheduleCreateRequest;
+import com.peopleground.sagwim.schedule.presentation.dto.response.AttendanceToggleResponse;
 import com.peopleground.sagwim.schedule.presentation.dto.response.ScheduleResponse;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -39,9 +40,20 @@ public class ScheduleController {
     public ResponseEntity<List<ScheduleResponse>> getSchedulesByMonth(
         @PathVariable Long groupId,
         @RequestParam int year,
-        @RequestParam int month
+        @RequestParam int month,
+        @AuthenticationPrincipal CustomUser customUser
     ) {
-        List<ScheduleResponse> response = scheduleService.getSchedulesByMonth(groupId, year, month);
+        List<ScheduleResponse> response = scheduleService.getSchedulesByMonth(groupId, year, month, customUser);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{scheduleId}/attendance")
+    public ResponseEntity<AttendanceToggleResponse> toggleAttendance(
+        @PathVariable Long groupId,
+        @PathVariable Long scheduleId,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        AttendanceToggleResponse response = scheduleService.toggleAttendance(groupId, scheduleId, customUser);
         return ResponseEntity.ok(response);
     }
 }

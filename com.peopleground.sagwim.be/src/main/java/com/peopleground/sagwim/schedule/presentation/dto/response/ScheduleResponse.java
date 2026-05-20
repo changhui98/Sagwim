@@ -11,10 +11,12 @@ public record ScheduleResponse(
     String location,
     String description,
     String createdByUsername,
-    String createdByNickname
+    String createdByNickname,
+    int attendeeCount,
+    boolean attendingByMe
 ) {
 
-    public static ScheduleResponse from(Schedule schedule) {
+    public static ScheduleResponse from(Schedule schedule, int attendeeCount, boolean attendingByMe) {
         return new ScheduleResponse(
             schedule.getId(),
             schedule.getTitle(),
@@ -23,7 +25,9 @@ public record ScheduleResponse(
             schedule.getLocation(),
             schedule.getDescription(),
             schedule.getCreatedByUser().getUsername(),
-            schedule.getCreatedByUser().getNickname()
+            schedule.getCreatedByUser().getNickname(),
+            attendeeCount,
+            attendingByMe
         );
     }
 }

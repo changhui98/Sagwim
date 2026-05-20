@@ -11,13 +11,21 @@ import com.peopleground.sagwim.notification.application.service.NotificationServ
 import com.peopleground.sagwim.notification.domain.entity.NotificationType;
 import com.peopleground.sagwim.schedule.domain.ScheduleErrorCode;
 import com.peopleground.sagwim.schedule.domain.entity.Schedule;
+import com.peopleground.sagwim.schedule.domain.entity.ScheduleAttendance;
+import com.peopleground.sagwim.schedule.domain.repository.ScheduleAttendanceRepository;
 import com.peopleground.sagwim.schedule.domain.repository.ScheduleRepository;
 import com.peopleground.sagwim.schedule.presentation.dto.request.ScheduleCreateRequest;
+import com.peopleground.sagwim.schedule.presentation.dto.response.AttendanceToggleResponse;
 import com.peopleground.sagwim.schedule.presentation.dto.response.ScheduleResponse;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ScheduleService {
 
     private final ScheduleRepository scheduleRepository;
+    private final ScheduleAttendanceRepository scheduleAttendanceRepository;
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
@@ -76,16 +85,66 @@ public class ScheduleService {
             );
         }
 
-        return ScheduleResponse.from(saved);
+        // 방금 생성된 일정: 참석자 0명, 미참석
+        return ScheduleResponse.from(saved, 0, false);
     }
 
     @Transactional(readOnly = true)
-    public List<ScheduleResponse> getSchedulesByMonth(Long groupId, int year, int month) {
+    public List<ScheduleResponse> getSchedulesByMonth(Long groupId, int year, int month, CustomUser customUser) {
         findGroup(groupId);
-        return scheduleRepository.findByGroupIdAndYearMonth(groupId, year, month)
-            .stream()
-            .map(ScheduleResponse::from)
+
+        List<Schedule> schedules = scheduleRepository.findByGroupIdAndYearMonth(groupId, year, month);
+        if (schedules.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> scheduleIds = schedules.stream().map(Schedule::getId).toList();
+
+        // N+1 방지: 참석 수와 내 참석 여부를 배치 조회
+        Map<Long, Integer> attendeeCountMap = scheduleAttendanceRepository.countByScheduleIds(scheduleIds);
+
+        Set<Long> myAttendingIds;
+        if (customUser != null) {
+            myAttendingIds = scheduleAttendanceRepository.findAttendingScheduleIdsByUserIdAndScheduleIds(
+                customUser.getId(), scheduleIds
+            );
+        } else {
+            myAttendingIds = Set.of();
+        }
+
+        return schedules.stream()
+            .map(schedule -> ScheduleResponse.from(
+                schedule,
+                attendeeCountMap.getOrDefault(schedule.getId(), 0),
+                myAttendingIds.contains(schedule.getId())
+            ))
             .toList();
+    }
+
+    @Transactional
+    public AttendanceToggleResponse toggleAttendance(Long groupId, Long scheduleId, CustomUser customUser) {
+        if (!groupMemberRepository.existsByGroupIdAndUsername(groupId, customUser.getUsername())) {
+            throw new AppException(ScheduleErrorCode.SCHEDULE_NOT_MEMBER);
+        }
+
+        Schedule schedule = scheduleRepository.findById(scheduleId)
+            .orElseThrow(() -> new AppException(ScheduleErrorCode.SCHEDULE_NOT_FOUND));
+
+        UUID userId = customUser.getId();
+        Optional<ScheduleAttendance> existing = scheduleAttendanceRepository.findByScheduleIdAndUserId(scheduleId, userId);
+
+        boolean attending;
+        if (existing.isPresent()) {
+            scheduleAttendanceRepository.delete(existing.get());
+            attending = false;
+        } else {
+            User user = getUser(customUser.getUsername());
+            scheduleAttendanceRepository.save(ScheduleAttendance.of(schedule, user));
+            attending = true;
+        }
+
+        int attendeeCount = scheduleAttendanceRepository.countByScheduleId(scheduleId);
+        return new AttendanceToggleResponse(attending, attendeeCount);
     }
 
     private Group findGroup(Long groupId) {
