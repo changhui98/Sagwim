@@ -7,6 +7,8 @@ interface ScheduleEventListProps {
   schedules: ScheduleResponse[]
   canCreate?: boolean
   onCreateClick?: () => void
+  myUsername?: string | null
+  onAttendanceToggle?: (scheduleId: number) => Promise<void>
 }
 
 function formatDisplayDate(dateStr: string): string {
@@ -22,6 +24,8 @@ export function ScheduleEventList({
   schedules,
   canCreate = false,
   onCreateClick,
+  myUsername,
+  onAttendanceToggle,
 }: ScheduleEventListProps) {
   if (!selectedDate) {
     return (
@@ -72,7 +76,11 @@ export function ScheduleEventList({
         <ul className={styles.list}>
           {daySchedules.map((schedule) => (
             <li key={schedule.id}>
-              <ScheduleEventCard schedule={schedule} />
+              <ScheduleEventCard
+                schedule={schedule}
+                myUsername={myUsername}
+                onAttendanceToggle={onAttendanceToggle}
+              />
             </li>
           ))}
         </ul>

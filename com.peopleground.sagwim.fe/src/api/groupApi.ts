@@ -219,6 +219,17 @@ export const createGroupSchedule = (
   }).then((res) => parseResponse<ScheduleResponse>(res))
 }
 
+export const toggleScheduleAttendance = (
+  token: string,
+  groupId: number,
+  scheduleId: number,
+): Promise<{ attending: boolean; attendeeCount: number }> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/schedules/${scheduleId}/attendance`, {
+    method: 'POST',
+    headers: createAuthHeaders(token),
+  }).then((res) => parseResponse<{ attending: boolean; attendeeCount: number }>(res))
+}
+
 
 export const searchPlaceSuggestions = (
   token: string,

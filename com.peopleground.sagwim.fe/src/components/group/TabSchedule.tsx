@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { getGroupSchedules } from '../../api/groupApi'
+import { getGroupSchedules, toggleScheduleAttendance } from '../../api/groupApi'
 import { useAuth } from '../../context/AuthContext'
 import type { ScheduleResponse } from '../../types/group'
 import { ScheduleCalendar } from './ScheduleCalendar'
@@ -19,7 +19,7 @@ function toDateString(year: number, month: number, day: number): string {
 }
 
 export function TabSchedule({ groupId, isMember }: TabScheduleProps) {
-  const { token } = useAuth()
+  const { token, meUsername } = useAuth()
 
   const today = new Date()
   const [currentYear, setCurrentYear] = useState(today.getFullYear())
@@ -62,6 +62,21 @@ export function TabSchedule({ groupId, isMember }: TabScheduleProps) {
     fetchSchedules(currentYear, currentMonth)
   }
 
+  const handleAttendanceToggle = useCallback(
+    async (scheduleId: number) => {
+      const result = await toggleScheduleAttendance(token, groupId, scheduleId)
+      // 서버 응답값으로 해당 일정만 낙관적으로 갱신한다
+      setSchedules((prev) =>
+        prev.map((s) =>
+          s.id === scheduleId
+            ? { ...s, attendingByMe: result.attending, attendeeCount: result.attendeeCount }
+            : s,
+        ),
+      )
+    },
+    [token, groupId],
+  )
+
   return (
     <div className={styles.wrapper}>
       {/* 캘린더: 로딩 중에도 DOM을 유지해 스크롤 점프를 막는다 */}
@@ -85,6 +100,8 @@ export function TabSchedule({ groupId, isMember }: TabScheduleProps) {
         schedules={schedules}
         canCreate={isMember}
         onCreateClick={() => setIsCreateModalOpen(true)}
+        myUsername={isMember ? meUsername : null}
+        onAttendanceToggle={isMember ? handleAttendanceToggle : undefined}
       />
 
       {/* 일정 등록 모달 */}
