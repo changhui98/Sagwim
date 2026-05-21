@@ -62,3 +62,38 @@ export const GROUP_STATUS_LABELS: Record<GroupStatus, string> = {
   ACTIVE: '활성',
   REJECTED: '거절됨',
 }
+
+export interface GroupDetailResponse extends GroupResponse {
+  status: GroupStatus
+  joinType: GroupJoinType
+  joinQuestions?: string[]
+}
+
+export interface GroupMemberResponse {
+  userId: string
+  nickname: string
+  username: string
+  role: 'LEADER' | 'MEMBER'
+  joinedAt: string
+}
+
+export interface ScheduleResponse {
+  id: number
+  title: string
+  startAt: string
+  endAt: string
+  location: string | null
+  description: string | null
+  createdByUsername: string
+  createdByNickname: string
+  attendeeCount: number
+  attendingByMe: boolean
+}
+
+export interface ScheduleCreateRequest {
+  title: string
+  startAt: string
+  endAt: string
+  location?: string
+  description?: string
+}

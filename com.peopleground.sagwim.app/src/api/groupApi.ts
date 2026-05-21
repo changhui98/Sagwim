@@ -1,5 +1,11 @@
 import apiClient from '../lib/apiClient'
-import type { GroupResponse } from '../types/group'
+import type {
+  GroupDetailResponse,
+  GroupMemberResponse,
+  GroupResponse,
+  ScheduleCreateRequest,
+  ScheduleResponse,
+} from '../types/group'
 import type { PageResponse } from '../types/page'
 
 /**
@@ -26,5 +32,128 @@ export const getPopularGroups = async (
   const response = await apiClient.get<PageResponse<GroupResponse>>('/groups/popular', {
     params: { page, size },
   })
+  return response.data
+}
+
+/**
+ * 사용자 노출 범위 내 모든 모임 목록 조회.
+ */
+export const getGroups = async (
+  page = 0,
+  size = 20,
+): Promise<PageResponse<GroupResponse>> => {
+  const response = await apiClient.get<PageResponse<GroupResponse>>('/groups', {
+    params: { page, size },
+  })
+  return response.data
+}
+
+export const getGroup = async (groupId: number): Promise<GroupDetailResponse> => {
+  const response = await apiClient.get<GroupDetailResponse>(`/groups/${groupId}`)
+  return response.data
+}
+
+export const getGroupMembers = async (
+  groupId: number,
+  page = 0,
+  size = 100,
+): Promise<PageResponse<GroupMemberResponse>> => {
+  const response = await apiClient.get<PageResponse<GroupMemberResponse>>(
+    `/groups/${groupId}/members`,
+    { params: { page, size } },
+  )
+  return response.data
+}
+
+export const joinGroup = async (groupId: number, answer?: string): Promise<void> => {
+  try {
+    await apiClient.post(`/groups/${groupId}/join`, { answer: answer ?? null })
+  } catch (err) {
+    if (err instanceof Error) throw err
+    throw new Error('모임 가입에 실패했습니다.')
+  }
+}
+
+export const leaveGroup = async (groupId: number): Promise<void> => {
+  await apiClient.delete(`/groups/${groupId}/leave`)
+}
+
+export const toggleGroupLike = async (
+  groupId: number,
+): Promise<{ liked: boolean; likeCount: number }> => {
+  const response = await apiClient.post<{ liked: boolean; likeCount: number }>(
+    `/groups/${groupId}/likes`,
+  )
+  return response.data
+}
+
+export const getGroupLikeStatus = async (groupId: number): Promise<{ liked: boolean }> => {
+  const response = await apiClient.get<{ liked: boolean }>(`/groups/${groupId}/likes/me`)
+  return response.data
+}
+
+export const getMyJoinRequestStatus = async (groupId: number): Promise<{ pending: boolean }> => {
+  const response = await apiClient.get<{ pending: boolean }>(
+    `/groups/${groupId}/join-requests/me`,
+  )
+  return response.data
+}
+
+export const cancelMyJoinRequest = async (groupId: number): Promise<void> => {
+  await apiClient.delete(`/groups/${groupId}/join-requests/me`)
+}
+
+export const createGroup = async (data: {
+  name: string
+  description?: string
+  category: string
+  meetingType: string
+  maxMemberCount: number
+  subCategories?: string[]
+}): Promise<GroupResponse> => {
+  const response = await apiClient.post<GroupResponse>('/groups', data)
+  return response.data
+}
+
+export const uploadGroupImage = async (groupId: number, imageUri: string): Promise<void> => {
+  const formData = new FormData()
+  const filename = imageUri.split('/').pop() ?? 'image.jpg'
+  const match = /\.(\w+)$/.exec(filename)
+  const type = match ? `image/${match[1]}` : 'image/jpeg'
+  formData.append('image', { uri: imageUri, name: filename, type } as any)
+  await apiClient.post(`/groups/${groupId}/image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
+export const getGroupSchedules = async (
+  groupId: number,
+  year: number,
+  month: number,
+): Promise<ScheduleResponse[]> => {
+  const response = await apiClient.get<ScheduleResponse[]>(`/groups/${groupId}/schedules`, {
+    params: { year, month },
+  })
+  return response.data
+}
+
+export const createGroupSchedule = async (
+  groupId: number,
+  data: ScheduleCreateRequest,
+): Promise<ScheduleResponse> => {
+  const response = await apiClient.post<ScheduleResponse>(
+    `/groups/${groupId}/schedules`,
+    data,
+  )
+  return response.data
+}
+
+export const toggleScheduleAttendance = async (
+  groupId: number,
+  scheduleId: number,
+): Promise<{ attending: boolean; attendeeCount: number }> => {
+  const response = await apiClient.post<{ attending: boolean; attendeeCount: number }>(
+    `/groups/${groupId}/schedules/${scheduleId}/attendance`,
+  )
   return response.data
 }
