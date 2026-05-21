@@ -135,16 +135,16 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   category: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.textSecondary,
   },
   name: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '700',
     color: colors.text,
   },
   member: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
     marginTop: 2,
   },

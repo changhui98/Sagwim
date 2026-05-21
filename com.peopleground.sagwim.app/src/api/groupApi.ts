@@ -1,4 +1,5 @@
 import apiClient from '../lib/apiClient'
+import { getToken } from '../lib/secureStore'
 import type {
   GroupDetailResponse,
   GroupMemberResponse,
@@ -110,6 +111,8 @@ export const createGroup = async (data: {
   meetingType: string
   maxMemberCount: number
   subCategories?: string[]
+  joinType?: string
+  joinQuestions?: string[]
 }): Promise<GroupResponse> => {
   const response = await apiClient.post<GroupResponse>('/groups', data)
   return response.data
@@ -118,10 +121,26 @@ export const createGroup = async (data: {
 export const uploadGroupImage = async (groupId: number, imageUri: string): Promise<void> => {
   const formData = new FormData()
   const filename = imageUri.split('/').pop() ?? 'image.jpg'
-  const match = /\.(\w+)$/.exec(filename)
-  const type = match ? `image/${match[1]}` : 'image/jpeg'
-  formData.append('image', { uri: imageUri, name: filename, type } as any)
-  await apiClient.post(`/groups/${groupId}/image`, formData)
+  const ext = /\.(\w+)$/.exec(filename)?.[1]?.toLowerCase() ?? 'jpeg'
+  const normalizedExt = ext === 'heic' || ext === 'heif' ? 'jpeg' : ext
+  const type = `image/${normalizedExt === 'jpg' ? 'jpeg' : normalizedExt}`
+  const safeFilename = filename.includes('.') ? filename : `${filename}.jpg`
+  formData.append('file', { uri: imageUri, name: safeFilename, type } as any)
+
+  const token = await getToken()
+  const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL ?? ''
+
+  const response = await fetch(`${baseUrl}/groups/${groupId}/image`, {
+    method: 'PATCH',
+    headers: token ? { Authorization: token } : {},
+    // Content-Type 헤더 미설정 — fetch가 FormData 감지 후 multipart/form-data; boundary=... 자동 설정
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error((data as { message?: string }).message ?? `그룹 이미지 업로드 실패 (${response.status})`)
+  }
 }
 
 export const getGroupSchedules = async (
@@ -144,6 +163,10 @@ export const createGroupSchedule = async (
     data,
   )
   return response.data
+}
+
+export const deleteGroup = async (groupId: number): Promise<void> => {
+  await apiClient.delete(`/groups/${groupId}`)
 }
 
 export const toggleScheduleAttendance = async (

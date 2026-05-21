@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { PostCreateModalProvider } from './context/PostCreateModalContext'
+import { PostListProvider } from './context/PostListContext'
 import { NotificationCountProvider } from './context/NotificationCountContext'
 import './styles/variables.css'
 import './styles/base.css'
@@ -20,7 +21,9 @@ createRoot(document.getElementById('root')!).render(
         <AuthProvider>
           <NotificationCountProvider>
             <PostCreateModalProvider>
-              <App />
+              <PostListProvider>
+                <App />
+              </PostListProvider>
             </PostCreateModalProvider>
           </NotificationCountProvider>
         </AuthProvider>

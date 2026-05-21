@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useLogout } from '../hooks/useLogout'
 import { usePostCreatedSubscription } from '../context/PostCreateModalContext'
-import { useInfinitePostList } from '../hooks/useInfinitePostList'
+import { usePostList } from '../context/PostListContext'
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
 import { Navbar } from '../components/Navbar'
 import { MobileHeader } from '../components/MobileHeader'
@@ -31,7 +31,7 @@ export function PostListPage() {
     loadMore,
     resetAndRefresh,
     removePost,
-  } = useInfinitePostList()
+  } = usePostList()
 
   usePostCreatedSubscription(
     useCallback(() => {
@@ -39,6 +39,21 @@ export function PostListPage() {
       resetAndRefresh()
     }, [resetAndRefresh]),
   )
+
+  // 게시글 상세에서 돌아올 때 이전 스크롤 위치 복원
+  useEffect(() => {
+    if (loading || posts.length === 0) return
+    const saved = sessionStorage.getItem('postList_scrollY')
+    if (!saved) return
+    const y = Number(saved)
+    if (!y) return
+    sessionStorage.removeItem('postList_scrollY')
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: y, behavior: 'instant' })
+      })
+    })
+  }, [loading, posts])
 
   const { ref: sentinelRef, isIntersecting } = useIntersectionObserver({
     rootMargin: '0px 0px 200px 0px',

@@ -288,7 +288,21 @@ export default function GroupDetailScreen() {
             <Ionicons name="chevron-back" size={24} color={colors.text} />
           </Pressable>
           <Text style={styles.headerTitle}>모임</Text>
-          <View style={styles.headerBack} />
+          {isLeader ? (
+            <Pressable
+              style={styles.headerBack}
+              onPress={() =>
+                router.push({ pathname: '/(app)/group-settings', params: { id: String(groupId) } })
+              }
+              hitSlop={8}
+              accessibilityLabel="모임 설정"
+              accessibilityRole="button"
+            >
+              <Ionicons name="settings-outline" size={22} color={colors.text} />
+            </Pressable>
+          ) : (
+            <View style={styles.headerBack} />
+          )}
         </View>
 
         <ScrollView
@@ -1029,7 +1043,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: 'center',
-    fontSize: fontSize.md,
+    fontSize: fontSize.lg,
     fontWeight: '600',
     color: colors.text,
   },
@@ -1040,7 +1054,7 @@ const styles = StyleSheet.create({
     padding: spacing.sp6,
   },
   errorText: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     color: colors.error,
     textAlign: 'center',
     marginBottom: spacing.sp4,
@@ -1052,7 +1066,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
   },
   errorBackText: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '600',
     color: '#fff',
   },
@@ -1093,7 +1107,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   categoryBadgeText: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.accent,
     fontWeight: '600',
   },
@@ -1104,7 +1118,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   meetingBadgeText: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.textSecondary,
     fontWeight: '500',
   },
@@ -1116,7 +1130,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   pendingBadgeText: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: '#fff',
     fontWeight: '700',
   },
@@ -1131,7 +1145,7 @@ const styles = StyleSheet.create({
     gap: spacing.sp1,
   },
   memberCount: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     color: colors.textMuted,
   },
   likeRow: {
@@ -1141,16 +1155,16 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   likeCount: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     color: colors.textMuted,
   },
   likeCountActive: {
     color: colors.error,
   },
   description: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     color: colors.textSecondary,
-    lineHeight: fontSize.base * 1.6,
+    lineHeight: fontSize.md * 1.6,
   },
   actionArea: {
     marginTop: spacing.sp2,
@@ -1164,7 +1178,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   actionButtonPrimaryText: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '700',
     color: '#fff',
   },
@@ -1172,7 +1186,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.errorSoft,
   },
   actionButtonDangerText: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '600',
     color: colors.error,
   },
@@ -1181,7 +1195,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   actionButtonOutlineText: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '600',
     color: colors.textSecondary,
   },
@@ -1189,7 +1203,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface3,
   },
   actionButtonDisabledText: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '600',
     color: colors.textMuted,
   },
@@ -1214,7 +1228,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.accent,
   },
   tabLabel: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '500',
     color: colors.textMuted,
   },
@@ -1235,7 +1249,7 @@ const placeholderStyles = StyleSheet.create({
     paddingVertical: spacing.sp8,
   },
   text: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     color: colors.textMuted,
   },
 })
@@ -1251,7 +1265,7 @@ const scheduleStyles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   monthLabel: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '700',
     color: colors.text,
   },
@@ -1272,20 +1286,20 @@ const scheduleStyles = StyleSheet.create({
     gap: 3,
   },
   itemTitle: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '600',
     color: colors.text,
   },
   itemDate: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     color: colors.textSecondary,
   },
   itemLocation: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
   },
   itemAttendee: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
   },
   attendBtn: {
@@ -1301,7 +1315,7 @@ const scheduleStyles = StyleSheet.create({
     backgroundColor: colors.accentMuted,
   },
   attendBtnText: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     fontWeight: '600',
     color: colors.textSecondary,
   },
@@ -1322,7 +1336,7 @@ const scheduleStyles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   addBtnText: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     fontWeight: '600',
     color: colors.accent,
   },
@@ -1342,7 +1356,7 @@ const postsStyles = StyleSheet.create({
     borderRadius: radius.md,
   },
   writeBtnText: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     fontWeight: '600',
     color: colors.accent,
   },
@@ -1362,18 +1376,18 @@ const postsStyles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   nickname: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     fontWeight: '600',
     color: colors.text,
   },
   date: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
   },
   body: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     color: colors.textSecondary,
-    lineHeight: fontSize.base * 1.5,
+    lineHeight: fontSize.md * 1.5,
   },
   itemFooter: {
     flexDirection: 'row',
@@ -1381,7 +1395,7 @@ const postsStyles = StyleSheet.create({
     gap: spacing.sp1,
   },
   footerCount: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
   },
   moreBtn: {
@@ -1390,7 +1404,7 @@ const postsStyles = StyleSheet.create({
     marginTop: spacing.sp2,
   },
   moreBtnText: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     color: colors.accent,
     fontWeight: '600',
   },
@@ -1418,7 +1432,7 @@ const modalStyles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   sheetTitle: {
-    fontSize: fontSize.md,
+    fontSize: fontSize.lg,
     fontWeight: '700',
     color: colors.text,
   },
@@ -1426,7 +1440,7 @@ const modalStyles = StyleSheet.create({
     padding: spacing.sp4,
   },
   label: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     fontWeight: '600',
     color: colors.textSecondary,
     marginBottom: spacing.sp2,
@@ -1441,7 +1455,7 @@ const modalStyles = StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: spacing.sp3,
     paddingVertical: spacing.sp3,
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     color: colors.text,
     backgroundColor: colors.surface2,
   },
@@ -1462,7 +1476,7 @@ const modalStyles = StyleSheet.create({
     opacity: 0.5,
   },
   submitBtnText: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '700',
     color: '#fff',
   },
@@ -1490,13 +1504,13 @@ const memberStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: fontSize.md,
+    fontSize: fontSize.lg,
     fontWeight: '700',
     color: colors.accent,
   },
   nickname: {
     flex: 1,
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '500',
     color: colors.text,
   },
@@ -1507,7 +1521,7 @@ const memberStyles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   leaderBadgeText: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.accent,
     fontWeight: '700',
   },
@@ -1518,7 +1532,7 @@ const memberStyles = StyleSheet.create({
     borderRadius: radius.sm,
   },
   memberBadgeText: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
     fontWeight: '500',
   },

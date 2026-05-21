@@ -1,4 +1,5 @@
 import apiClient from '../lib/apiClient'
+import { getToken } from '../lib/secureStore'
 import type { ContentResponse, LikeToggleResponse } from '../types/post'
 import type { PageResponse } from '../types/page'
 
@@ -29,12 +30,26 @@ export const uploadContentImage = async (
 ): Promise<void> => {
   const formData = new FormData()
   const filename = imageUri.split('/').pop() ?? 'image.jpg'
-  const match = /\.(\w+)$/.exec(filename)
-  const type = match ? `image/${match[1]}` : 'image/jpeg'
+  const ext = /\.(\w+)$/.exec(filename)?.[1]?.toLowerCase() ?? 'jpeg'
+  const type = `image/${ext === 'jpg' ? 'jpeg' : ext}`
   formData.append('file', { uri: imageUri, name: filename, type } as any)
-  formData.append('contentId', String(contentId))
-  formData.append('type', 'CONTENT')
-  await apiClient.post('/images', formData)
+  formData.append('targetId', String(contentId))
+  formData.append('targetType', 'CONTENT')
+
+  const token = await getToken()
+  const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL ?? ''
+
+  const response = await fetch(`${baseUrl}/images`, {
+    method: 'POST',
+    headers: token ? { Authorization: token } : {},
+    // Content-Type 헤더 미설정 — fetch가 FormData 감지 후 multipart/form-data; boundary=... 자동 설정
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error((data as { message?: string }).message ?? `이미지 업로드 실패 (${response.status})`)
+  }
 }
 
 export const getPosts = async (
