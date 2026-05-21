@@ -28,6 +28,7 @@ export function AdminImageListPage() {
   const [images, setImages] = useState<AdminImageResponse[]>([])
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
   const [loading, setLoading] = useState(true)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
@@ -45,6 +46,7 @@ export function AdminImageListPage() {
         const response = await getAdminImages(token, targetPage, PAGE_SIZE)
         setImages(response.content)
         setTotalPages(response.totalPages)
+        setTotalElements(response.totalElements)
       } catch (err) {
         const message = err instanceof Error ? err.message : '이미지 목록 조회 실패'
         setError(message)
@@ -95,6 +97,7 @@ export function AdminImageListPage() {
           </div>
         ) : (
           <>
+            <div className={tableStyles.totalCount}>총 {totalElements.toLocaleString()}건</div>
             <div className={tableStyles.tableWrap} style={{ position: 'relative' }}>
               {loading && <LoadingSpinner overlay />}
               <table className={tableStyles.table}>
@@ -102,7 +105,6 @@ export function AdminImageListPage() {
                   <tr>
                     <th>이미지 코드</th>
                     <th>미리보기</th>
-                    <th>원본 파일명</th>
                     <th>출처</th>
                     <th>업로드한 사람</th>
                     <th>파일 크기</th>
@@ -115,12 +117,12 @@ export function AdminImageListPage() {
                 <tbody>
                   {images.length === 0 ? (
                     <tr className={tableStyles.emptyRow}>
-                      <td colSpan={10}>등록된 이미지가 없습니다.</td>
+                      <td colSpan={9}>등록된 이미지가 없습니다.</td>
                     </tr>
                   ) : (
                     images.map((image) => (
                       <tr key={image.id}>
-                        <td className={tableStyles.tableSecondary} style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                        <td className={tableStyles.tableSecondary} style={{ fontFamily: 'monospace', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>
                           {image.imageCode}
                         </td>
                         <td>
@@ -129,9 +131,6 @@ export function AdminImageListPage() {
                             alt={image.originalFilename}
                             style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }}
                           />
-                        </td>
-                        <td className={tableStyles.tableUsername}>
-                          {image.originalFilename}
                         </td>
                         <td className={tableStyles.tableSecondary}>
                           {image.targetLabel}
