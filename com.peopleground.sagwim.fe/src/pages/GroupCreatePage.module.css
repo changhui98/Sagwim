@@ -639,9 +639,11 @@ aside.desktopOnlyField {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--sp-2);
+  width: 100%;
 }
 
 .mobileCategoryBtn {
+  width: 100%;
   padding: var(--sp-3) var(--sp-2);
   font-size: 0.875rem;
   font-weight: 500;
@@ -656,6 +658,7 @@ aside.desktopOnlyField {
     border-color var(--t-fast),
     color var(--t-fast);
   line-height: 1.35;
+  box-sizing: border-box;
 }
 
 .mobileCategoryBtn:hover:not(:disabled) {
@@ -698,6 +701,8 @@ aside.desktopOnlyField {
     border: none;
     box-shadow: none;
     background: transparent;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   /* 모바일에서는 스텝 인디케이터 숨김 */
@@ -821,5 +826,30 @@ aside.desktopOnlyField {
   .mobileSubmitBtn:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+  }
+
+  /* ── 모바일 입력 요소 너비 보정 ─ */
+  .input,
+  .textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .coverImagePicker {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* ── 모바일 토글 버튼 행 너비 보정 ─ */
+  .meetingTypeToggle {
+    width: 100%;
+    display: flex;
+  }
+
+  .meetingTypeBtn {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+    white-space: nowrap;
   }
 }
