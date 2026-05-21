@@ -4,6 +4,7 @@ import com.peopleground.sagwim.schedule.domain.entity.Schedule;
 import com.peopleground.sagwim.schedule.domain.repository.ScheduleRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +17,11 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
     @Override
     public Schedule save(Schedule schedule) {
         return scheduleJpaRepository.save(schedule);
+    }
+
+    @Override
+    public Optional<Schedule> findById(Long id) {
+        return scheduleJpaRepository.findByIdAndNotDeleted(id);
     }
 
     @Override

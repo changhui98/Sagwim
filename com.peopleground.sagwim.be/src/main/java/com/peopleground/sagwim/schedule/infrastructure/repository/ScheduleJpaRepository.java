@@ -3,6 +3,7 @@ package com.peopleground.sagwim.schedule.infrastructure.repository;
 import com.peopleground.sagwim.schedule.domain.entity.Schedule;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,4 +16,7 @@ public interface ScheduleJpaRepository extends JpaRepository<Schedule, Long> {
         @Param("start") LocalDateTime start,
         @Param("end") LocalDateTime end
     );
+
+    @Query("SELECT s FROM p_schedule s WHERE s.id = :id AND s.deletedDate IS NULL")
+    Optional<Schedule> findByIdAndNotDeleted(@Param("id") Long id);
 }

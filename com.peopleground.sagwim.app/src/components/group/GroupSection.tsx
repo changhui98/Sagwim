@@ -6,6 +6,7 @@ import { colors, fontSize, spacing } from '../../constants/theme'
 
 interface GroupSectionProps {
   title: string
+  subtitle?: string
   groups: GroupResponse[]
   loading?: boolean
   emptyMessage?: string
@@ -15,6 +16,7 @@ interface GroupSectionProps {
 
 export function GroupSection({
   title,
+  subtitle,
   groups,
   loading = false,
   emptyMessage = '아직 표시할 모임이 없어요.',
@@ -24,7 +26,12 @@ export function GroupSection({
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
+        <View style={styles.titleBlock}>
+          <Text style={styles.title}>{title}</Text>
+          {subtitle !== undefined && (
+            <Text style={styles.subtitle}>{subtitle}</Text>
+          )}
+        </View>
         {onPressMore && (
           <Pressable
             onPress={onPressMore}
@@ -71,10 +78,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  titleBlock: {
+    flex: 1,
+    gap: 2,
+  },
   title: {
     fontSize: fontSize.lg,
     fontWeight: '700',
     color: colors.text,
+  },
+  subtitle: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
   },
   more: {
     fontSize: fontSize.sm,

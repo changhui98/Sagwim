@@ -1,30 +1,168 @@
-/**
- * 하단 탭 네비게이션 (홈 / 검색 / 게시글 / 프로필).
- *
- * - 웹의 사이드바 네비게이션을 모바일 하단 탭으로 이식.
- * - 탭바: useSafeAreaInsets.bottom 으로 home indicator 영역 확보.
- * - 상단 공통 헤더:
- *   · 가운데: "Sagwim" 타이틀
- *   · 왼쪽: 만들기 아이콘 → /(app)/(tabs)/create
- *   · 오른쪽: 알림 아이콘 (placeholder)
- * - 만들기 탭: 라우트는 유지하되 href: null 로 탭바에서 숨김.
- */
-
+import React, { useState } from 'react'
 import { Tabs, router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { Pressable } from 'react-native'
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { colors } from '../../../src/constants/theme'
+import { colors, fontSize, radius, spacing } from '../../../src/constants/theme'
 
 const ICON_SIZE = 24
-const TAB_CONTENT_HEIGHT = 44 // 아이콘 전용 영역 고정 높이 (라벨 제거 후 축소)
+const TAB_CONTENT_HEIGHT = 44
+
+function CreateBottomSheet({
+  visible,
+  onClose,
+  bottomInset,
+}: {
+  visible: boolean
+  onClose: () => void
+  bottomInset: number
+}) {
+  const handleSelect = (path: '/(app)/post-create' | '/(app)/group-create') => {
+    onClose()
+    setTimeout(() => router.push(path), 50)
+  }
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <Pressable style={sheet.overlay} onPress={onClose}>
+        <Pressable
+          style={[sheet.card, { paddingBottom: bottomInset + spacing.sp2 }]}
+          onPress={(e) => e.stopPropagation()}
+        >
+          <View style={sheet.handle} />
+
+          <Pressable
+            style={({ pressed }) => [sheet.item, pressed && sheet.itemPressed]}
+            onPress={() => handleSelect('/(app)/post-create')}
+            accessibilityRole="button"
+          >
+            <View style={sheet.iconWrap}>
+              <Ionicons name="document-text-outline" size={24} color={colors.accent} />
+            </View>
+            <View style={sheet.textWrap}>
+              <Text style={sheet.itemTitle}>게시글 작성</Text>
+              <Text style={sheet.itemSubtitle}>내 이야기를 나눠보세요</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </Pressable>
+
+          <View style={sheet.divider} />
+
+          <Pressable
+            style={({ pressed }) => [sheet.item, pressed && sheet.itemPressed]}
+            onPress={() => handleSelect('/(app)/group-create')}
+            accessibilityRole="button"
+          >
+            <View style={sheet.iconWrap}>
+              <Ionicons name="people-outline" size={24} color={colors.accent} />
+            </View>
+            <View style={sheet.textWrap}>
+              <Text style={sheet.itemTitle}>모임 만들기</Text>
+              <Text style={sheet.itemSubtitle}>새로운 모임을 시작해보세요</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [sheet.cancelBtn, pressed && sheet.cancelBtnPressed]}
+            onPress={onClose}
+            accessibilityRole="button"
+          >
+            <Text style={sheet.cancelText}>취소</Text>
+          </Pressable>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  )
+}
+
+const sheet = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  card: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingTop: spacing.sp3,
+    paddingHorizontal: spacing.sp4,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.border,
+    alignSelf: 'center',
+    marginBottom: spacing.sp4,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.sp4,
+    gap: spacing.sp3,
+    borderRadius: radius.md,
+  },
+  itemPressed: {
+    backgroundColor: colors.surface3,
+  },
+  iconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
+    backgroundColor: colors.accentMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textWrap: {
+    flex: 1,
+    gap: 2,
+  },
+  itemTitle: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  itemSubtitle: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: spacing.sp2,
+  },
+  cancelBtn: {
+    marginTop: spacing.sp3,
+    paddingVertical: spacing.sp4,
+    alignItems: 'center',
+    borderRadius: radius.md,
+  },
+  cancelBtnPressed: {
+    backgroundColor: colors.surface3,
+  },
+  cancelText: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+})
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets()
   const tabBarHeight = TAB_CONTENT_HEIGHT + insets.bottom
+  const [createVisible, setCreateVisible] = useState(false)
 
   return (
-    <Tabs
+    <>
+      <CreateBottomSheet visible={createVisible} onClose={() => setCreateVisible(false)} bottomInset={insets.bottom} />
+      <Tabs
       screenOptions={{
         // ─── 상단 공통 헤더 ───────────────────────────────────────
         headerShown: true,
@@ -41,7 +179,7 @@ export default function TabsLayout() {
         headerShadowVisible: false,
         headerLeft: () => (
           <Pressable
-            onPress={() => router.push('/(app)/(tabs)/create')}
+            onPress={() => setCreateVisible(true)}
             style={{ paddingLeft: 16, paddingVertical: 8 }}
             accessibilityLabel="만들기"
             accessibilityRole="button"
@@ -130,5 +268,6 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    </>
   )
 }

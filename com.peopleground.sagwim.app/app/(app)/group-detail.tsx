@@ -1,0 +1,1525 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native'
+import { Image } from 'expo-image'
+import { router, Stack, useLocalSearchParams } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
+import {
+  cancelMyJoinRequest,
+  createGroupSchedule,
+  getGroup,
+  getGroupLikeStatus,
+  getGroupMembers,
+  getGroupSchedules,
+  getMyJoinRequestStatus,
+  joinGroup,
+  leaveGroup,
+  toggleGroupLike,
+  toggleScheduleAttendance,
+} from '../../src/api/groupApi'
+import { createPost, getGroupPosts } from '../../src/api/postApi'
+import { getMe } from '../../src/api/userApi'
+import type {
+  GroupDetailResponse,
+  GroupMemberResponse,
+  ScheduleCreateRequest,
+  ScheduleResponse,
+} from '../../src/types/group'
+import { GROUP_CATEGORY_LABELS } from '../../src/types/group'
+import type { ContentResponse } from '../../src/types/post'
+import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
+import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+
+type TabKey = 'schedule' | 'posts' | 'members'
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'schedule', label: '일정' },
+  { key: 'posts', label: '게시글' },
+  { key: 'members', label: '멤버' },
+]
+
+export default function GroupDetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>()
+  const insets = useSafeAreaInsets()
+
+  const [group, setGroup] = useState<GroupDetailResponse | null>(null)
+  const [members, setMembers] = useState<GroupMemberResponse[]>([])
+  const [myUsername, setMyUsername] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [liked, setLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(0)
+  const isLikeInFlight = useRef(false)
+
+  const [hasPendingRequest, setHasPendingRequest] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
+
+  const [activeTab, setActiveTab] = useState<TabKey>('schedule')
+
+  const groupId = Number(id)
+
+  const loadData = useCallback(async () => {
+    if (!id || Number.isNaN(groupId)) {
+      setError('잘못된 모임 주소입니다.')
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+      setError(null)
+
+      const [groupRes, membersRes, likeRes, joinReqRes, meRes] = await Promise.allSettled([
+        getGroup(groupId),
+        getGroupMembers(groupId),
+        getGroupLikeStatus(groupId).catch(() => ({ liked: false })),
+        getMyJoinRequestStatus(groupId).catch(() => ({ pending: false })),
+        getMe(),
+      ])
+
+      if (groupRes.status === 'fulfilled') {
+        setGroup(groupRes.value)
+        setLikeCount(groupRes.value.likeCount)
+      } else {
+        setError('모임 정보를 불러오지 못했어요.')
+        return
+      }
+
+      if (membersRes.status === 'fulfilled') {
+        setMembers(membersRes.value.content)
+      }
+
+      if (likeRes.status === 'fulfilled') {
+        setLiked(likeRes.value.liked)
+      }
+
+      if (joinReqRes.status === 'fulfilled') {
+        setHasPendingRequest(joinReqRes.value.pending)
+      }
+
+      if (meRes.status === 'fulfilled') {
+        setMyUsername(meRes.value.username ?? null)
+      }
+    } catch (e) {
+      console.error('[GroupDetail] loadData 실패:', e)
+      setError('모임 정보를 불러오지 못했어요.')
+    } finally {
+      setLoading(false)
+    }
+  }, [id, groupId])
+
+  useEffect(() => {
+    void loadData()
+  }, [loadData])
+
+  const isMember = myUsername != null && members.some((m) => m.username === myUsername)
+  const isLeader = myUsername != null && group?.leaderUsername === myUsername
+  const isFull = group != null && group.currentMemberCount >= group.maxMemberCount
+
+  const handleLike = useCallback(async () => {
+    if (!group || isLikeInFlight.current) return
+    isLikeInFlight.current = true
+
+    const prevLiked = liked
+    const prevCount = likeCount
+    setLiked(!liked)
+    setLikeCount(liked ? likeCount - 1 : likeCount + 1)
+
+    try {
+      const res = await toggleGroupLike(groupId)
+      setLiked(res.liked)
+      setLikeCount(res.likeCount)
+    } catch (e) {
+      console.error('[GroupDetail] toggleGroupLike 실패:', e)
+      setLiked(prevLiked)
+      setLikeCount(prevCount)
+    } finally {
+      isLikeInFlight.current = false
+    }
+  }, [group, liked, likeCount, groupId])
+
+  const handleJoin = useCallback(async () => {
+    if (!group) return
+    setActionLoading(true)
+    try {
+      await joinGroup(groupId)
+      await loadData()
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '모임 가입에 실패했습니다.'
+      Alert.alert('가입 실패', msg)
+    } finally {
+      setActionLoading(false)
+    }
+  }, [group, groupId, loadData])
+
+  const handleLeave = useCallback(() => {
+    Alert.alert('모임 탈퇴', '모임에서 탈퇴하시겠습니까?', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '탈퇴',
+        style: 'destructive',
+        onPress: async () => {
+          setActionLoading(true)
+          try {
+            await leaveGroup(groupId)
+            await loadData()
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : '모임 탈퇴에 실패했습니다.'
+            Alert.alert('탈퇴 실패', msg)
+          } finally {
+            setActionLoading(false)
+          }
+        },
+      },
+    ])
+  }, [groupId, loadData])
+
+  const handleCancelRequest = useCallback(() => {
+    Alert.alert('신청 취소', '가입 신청을 취소하시겠습니까?', [
+      { text: '닫기', style: 'cancel' },
+      {
+        text: '취소하기',
+        style: 'destructive',
+        onPress: async () => {
+          setActionLoading(true)
+          try {
+            await cancelMyJoinRequest(groupId)
+            setHasPendingRequest(false)
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : '신청 취소에 실패했습니다.'
+            Alert.alert('취소 실패', msg)
+          } finally {
+            setActionLoading(false)
+          }
+        },
+      },
+    ])
+  }, [groupId])
+
+  const meetingLabel =
+    group?.meetingType === 'OFFLINE' && group.region
+      ? `오프라인 · ${group.region}`
+      : group?.meetingType === 'OFFLINE'
+        ? '오프라인'
+        : '온라인'
+
+  if (loading) {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: false, gestureEnabled: true }} />
+        <View style={[styles.container, { paddingTop: insets.top }]}>
+          <View style={styles.header}>
+            <Pressable
+              style={styles.headerBack}
+              onPress={() => router.back()}
+              hitSlop={8}
+              accessibilityLabel="뒤로가기"
+              accessibilityRole="button"
+            >
+              <Ionicons name="chevron-back" size={24} color={colors.text} />
+            </Pressable>
+            <Text style={styles.headerTitle}>모임</Text>
+            <View style={styles.headerBack} />
+          </View>
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={colors.accent} />
+          </View>
+        </View>
+      </>
+    )
+  }
+
+  if (error || !group) {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: false, gestureEnabled: true }} />
+        <View style={[styles.container, { paddingTop: insets.top }]}>
+          <View style={styles.header}>
+            <Pressable
+              style={styles.headerBack}
+              onPress={() => router.back()}
+              hitSlop={8}
+              accessibilityLabel="뒤로가기"
+              accessibilityRole="button"
+            >
+              <Ionicons name="chevron-back" size={24} color={colors.text} />
+            </Pressable>
+            <Text style={styles.headerTitle}>모임</Text>
+            <View style={styles.headerBack} />
+          </View>
+          <View style={styles.center}>
+            <Text style={styles.errorText}>{error ?? '모임을 찾을 수 없어요.'}</Text>
+            <Pressable style={styles.errorBack} onPress={() => router.back()}>
+              <Text style={styles.errorBackText}>돌아가기</Text>
+            </Pressable>
+          </View>
+        </View>
+      </>
+    )
+  }
+
+  const heroImageUrl = resolveImageUrl(group.imageUrl)
+
+  return (
+    <>
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: true }} />
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        {/* 헤더 */}
+        <View style={styles.header}>
+          <Pressable
+            style={styles.headerBack}
+            onPress={() => router.back()}
+            hitSlop={8}
+            accessibilityLabel="뒤로가기"
+            accessibilityRole="button"
+          >
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+          </Pressable>
+          <Text style={styles.headerTitle}>모임</Text>
+          <View style={styles.headerBack} />
+        </View>
+
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={{ paddingBottom: insets.bottom + spacing.sp8 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* 히어로 이미지 */}
+          <View style={styles.hero}>
+            {heroImageUrl ? (
+              <Image
+                source={heroImageUrl}
+                style={styles.heroImage}
+                contentFit="cover"
+                transition={200}
+                accessibilityLabel={`${group.name} 대표 이미지`}
+              />
+            ) : (
+              <View style={styles.heroPlaceholder}>
+                <Text style={styles.heroPlaceholderEmoji}>🏠</Text>
+              </View>
+            )}
+          </View>
+
+          {/* 모임 정보 */}
+          <View style={styles.info}>
+            {/* 배지 행 */}
+            <View style={styles.badgeRow}>
+              <View style={styles.categoryBadge}>
+                <Text style={styles.categoryBadgeText}>
+                  {GROUP_CATEGORY_LABELS[group.category]}
+                </Text>
+              </View>
+              <View style={styles.meetingBadge}>
+                <Text style={styles.meetingBadgeText}>{meetingLabel}</Text>
+              </View>
+            </View>
+
+            {/* PENDING 상태 배지 */}
+            {group.status === 'PENDING' && (
+              <View style={styles.pendingBadge}>
+                <Text style={styles.pendingBadgeText}>승인 대기중</Text>
+              </View>
+            )}
+
+            {/* 모임명 */}
+            <Text style={styles.groupName}>{group.name}</Text>
+
+            {/* 멤버 수 */}
+            <View style={styles.memberRow}>
+              <Ionicons name="people-outline" size={16} color={colors.textMuted} />
+              <Text style={styles.memberCount}>
+                {group.currentMemberCount}/{group.maxMemberCount}명
+              </Text>
+            </View>
+
+            {/* 좋아요 */}
+            <Pressable
+              style={styles.likeRow}
+              onPress={() => void handleLike()}
+              hitSlop={8}
+              accessibilityLabel={liked ? '좋아요 취소' : '좋아요'}
+              accessibilityRole="button"
+            >
+              <Ionicons
+                name={liked ? 'heart' : 'heart-outline'}
+                size={20}
+                color={liked ? colors.error : colors.textMuted}
+              />
+              <Text style={[styles.likeCount, liked && styles.likeCountActive]}>
+                {likeCount}
+              </Text>
+            </Pressable>
+
+            {/* 설명 */}
+            {group.description ? (
+              <Text style={styles.description}>{group.description}</Text>
+            ) : null}
+
+            {/* 액션 버튼 */}
+            {!isLeader && (
+              <View style={styles.actionArea}>
+                {isMember ? (
+                  <Pressable
+                    style={[styles.actionButton, styles.actionButtonDanger]}
+                    onPress={handleLeave}
+                    disabled={actionLoading}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.actionButtonDangerText}>
+                      {actionLoading ? '처리 중...' : '모임 탈퇴'}
+                    </Text>
+                  </Pressable>
+                ) : hasPendingRequest ? (
+                  <Pressable
+                    style={[styles.actionButton, styles.actionButtonOutline]}
+                    onPress={handleCancelRequest}
+                    disabled={actionLoading}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.actionButtonOutlineText}>
+                      {actionLoading ? '처리 중...' : '신청 취소'}
+                    </Text>
+                  </Pressable>
+                ) : isFull ? (
+                  <View style={[styles.actionButton, styles.actionButtonDisabled]}>
+                    <Text style={styles.actionButtonDisabledText}>정원 초과</Text>
+                  </View>
+                ) : (
+                  <Pressable
+                    style={[styles.actionButton, styles.actionButtonPrimary]}
+                    onPress={() => void handleJoin()}
+                    disabled={actionLoading}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.actionButtonPrimaryText}>
+                      {actionLoading
+                        ? '처리 중...'
+                        : group.joinType === 'APPROVAL_REQUIRED'
+                          ? '가입 신청'
+                          : '모임 가입'}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
+          </View>
+
+          {/* 구분선 */}
+          <View style={styles.divider} />
+
+          {/* 탭 */}
+          <View style={styles.tabBar}>
+            {TABS.map((tab) => (
+              <Pressable
+                key={tab.key}
+                style={[styles.tabItem, activeTab === tab.key && styles.tabItemActive]}
+                onPress={() => setActiveTab(tab.key)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: activeTab === tab.key }}
+              >
+                <Text
+                  style={[styles.tabLabel, activeTab === tab.key && styles.tabLabelActive]}
+                >
+                  {tab.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {/* 탭 콘텐츠 */}
+          <View style={styles.tabContent}>
+            {activeTab === 'schedule' && (
+              <ScheduleTab groupId={groupId} isMember={isMember} myUsername={myUsername} />
+            )}
+            {activeTab === 'posts' && (
+              <PostsTab groupId={groupId} isMember={isMember} />
+            )}
+            {activeTab === 'members' && (
+              <MemberList members={members} leaderUsername={group.leaderUsername} />
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// ScheduleTab
+// ---------------------------------------------------------------------------
+
+interface ScheduleTabProps {
+  groupId: number
+  isMember: boolean
+  myUsername: string | null
+}
+
+function formatScheduleDate(isoString: string): string {
+  const d = new Date(isoString)
+  const month = d.getMonth() + 1
+  const day = d.getDate()
+  const hour = String(d.getHours()).padStart(2, '0')
+  const min = String(d.getMinutes()).padStart(2, '0')
+  return `${month}월 ${day}일 ${hour}:${min}`
+}
+
+function ScheduleTab({ groupId, isMember }: ScheduleTabProps) {
+  const now = new Date()
+  const [year, setYear] = useState(now.getFullYear())
+  const [month, setMonth] = useState(now.getMonth() + 1)
+  const [schedules, setSchedules] = useState<ScheduleResponse[]>([])
+  const [loading, setLoading] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false)
+
+  // 일정 추가 폼 상태
+  const [formTitle, setFormTitle] = useState('')
+  const [formStartAt, setFormStartAt] = useState('')
+  const [formEndAt, setFormEndAt] = useState('')
+  const [formLocation, setFormLocation] = useState('')
+  const [formDescription, setFormDescription] = useState('')
+  const [formSubmitting, setFormSubmitting] = useState(false)
+
+  const fetchSchedules = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await getGroupSchedules(groupId, year, month)
+      setSchedules(data)
+    } catch (e) {
+      console.error('[ScheduleTab] fetchSchedules 실패:', e)
+    } finally {
+      setLoading(false)
+    }
+  }, [groupId, year, month])
+
+  useEffect(() => {
+    void fetchSchedules()
+  }, [fetchSchedules])
+
+  const prevMonth = () => {
+    if (month === 1) {
+      setYear((y) => y - 1)
+      setMonth(12)
+    } else {
+      setMonth((m) => m - 1)
+    }
+  }
+
+  const nextMonth = () => {
+    if (month === 12) {
+      setYear((y) => y + 1)
+      setMonth(1)
+    } else {
+      setMonth((m) => m + 1)
+    }
+  }
+
+  const handleToggleAttendance = async (schedule: ScheduleResponse) => {
+    try {
+      const res = await toggleScheduleAttendance(groupId, schedule.id)
+      setSchedules((prev) =>
+        prev.map((s) =>
+          s.id === schedule.id
+            ? { ...s, attendingByMe: res.attending, attendeeCount: res.attendeeCount }
+            : s,
+        ),
+      )
+    } catch (e) {
+      Alert.alert('오류', '참석 상태 변경에 실패했습니다.')
+    }
+  }
+
+  const resetForm = () => {
+    setFormTitle('')
+    setFormStartAt('')
+    setFormEndAt('')
+    setFormLocation('')
+    setFormDescription('')
+  }
+
+  const handleCreateSchedule = async () => {
+    if (formTitle.trim().length === 0) {
+      Alert.alert('입력 오류', '제목을 입력해주세요.')
+      return
+    }
+    if (formStartAt.trim().length === 0 || formEndAt.trim().length === 0) {
+      Alert.alert('입력 오류', '시작 및 종료 일시를 입력해주세요.')
+      return
+    }
+    const req: ScheduleCreateRequest = {
+      title: formTitle.trim(),
+      startAt: formStartAt.trim(),
+      endAt: formEndAt.trim(),
+      location: formLocation.trim() || undefined,
+      description: formDescription.trim() || undefined,
+    }
+    setFormSubmitting(true)
+    try {
+      await createGroupSchedule(groupId, req)
+      setModalVisible(false)
+      resetForm()
+      void fetchSchedules()
+    } catch (e) {
+      Alert.alert('오류', '일정 생성에 실패했습니다.')
+    } finally {
+      setFormSubmitting(false)
+    }
+  }
+
+  return (
+    <View>
+      {/* 월 네비게이션 */}
+      <View style={scheduleStyles.monthNav}>
+        <Pressable onPress={prevMonth} hitSlop={8} accessibilityLabel="이전 달">
+          <Ionicons name="chevron-back" size={20} color={colors.text} />
+        </Pressable>
+        <Text style={scheduleStyles.monthLabel}>
+          {year}년 {month}월
+        </Text>
+        <Pressable onPress={nextMonth} hitSlop={8} accessibilityLabel="다음 달">
+          <Ionicons name="chevron-forward" size={20} color={colors.text} />
+        </Pressable>
+      </View>
+
+      {loading ? (
+        <View style={placeholderStyles.wrap}>
+          <ActivityIndicator color={colors.accent} />
+        </View>
+      ) : schedules.length === 0 ? (
+        <View style={placeholderStyles.wrap}>
+          <Ionicons name="calendar-outline" size={32} color={colors.border} />
+          <Text style={placeholderStyles.text}>이번 달 일정이 없어요.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={schedules}
+          keyExtractor={(item) => String(item.id)}
+          scrollEnabled={false}
+          ItemSeparatorComponent={() => <View style={scheduleStyles.separator} />}
+          renderItem={({ item }) => (
+            <View style={scheduleStyles.item}>
+              <View style={scheduleStyles.itemMain}>
+                <Text style={scheduleStyles.itemTitle} numberOfLines={1}>
+                  {item.title}
+                </Text>
+                <Text style={scheduleStyles.itemDate}>{formatScheduleDate(item.startAt)}</Text>
+                {item.location ? (
+                  <Text style={scheduleStyles.itemLocation} numberOfLines={1}>
+                    <Ionicons name="location-outline" size={12} color={colors.textMuted} />{' '}
+                    {item.location}
+                  </Text>
+                ) : null}
+                <Text style={scheduleStyles.itemAttendee}>
+                  참석자 {item.attendeeCount}명
+                </Text>
+              </View>
+              {isMember && (
+                <Pressable
+                  style={[
+                    scheduleStyles.attendBtn,
+                    item.attendingByMe && scheduleStyles.attendBtnActive,
+                  ]}
+                  onPress={() => void handleToggleAttendance(item)}
+                  accessibilityRole="button"
+                  accessibilityLabel={item.attendingByMe ? '참석 취소' : '참석'}
+                >
+                  <Text
+                    style={[
+                      scheduleStyles.attendBtnText,
+                      item.attendingByMe && scheduleStyles.attendBtnTextActive,
+                    ]}
+                  >
+                    {item.attendingByMe ? '참석 취소' : '참석'}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          )}
+        />
+      )}
+
+      {/* 멤버인 경우 일정 추가 버튼 */}
+      {isMember && (
+        <Pressable
+          style={scheduleStyles.addBtn}
+          onPress={() => setModalVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel="일정 추가"
+        >
+          <Ionicons name="add-circle-outline" size={18} color={colors.accent} />
+          <Text style={scheduleStyles.addBtnText}>일정 추가</Text>
+        </Pressable>
+      )}
+
+      {/* 일정 추가 모달 */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={modalStyles.overlay}>
+          <View style={modalStyles.sheet}>
+            <View style={modalStyles.sheetHeader}>
+              <Text style={modalStyles.sheetTitle}>일정 추가</Text>
+              <Pressable onPress={() => setModalVisible(false)} hitSlop={8}>
+                <Ionicons name="close" size={24} color={colors.text} />
+              </Pressable>
+            </View>
+            <ScrollView
+              style={modalStyles.body}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={modalStyles.label}>
+                제목 <Text style={modalStyles.required}>*</Text>
+              </Text>
+              <TextInput
+                style={modalStyles.input}
+                placeholder="일정 제목"
+                placeholderTextColor={colors.textMuted}
+                value={formTitle}
+                onChangeText={setFormTitle}
+              />
+              <Text style={modalStyles.label}>
+                시작 일시 <Text style={modalStyles.required}>*</Text>
+              </Text>
+              <TextInput
+                style={modalStyles.input}
+                placeholder="2025-06-01T14:00"
+                placeholderTextColor={colors.textMuted}
+                value={formStartAt}
+                onChangeText={setFormStartAt}
+              />
+              <Text style={modalStyles.label}>
+                종료 일시 <Text style={modalStyles.required}>*</Text>
+              </Text>
+              <TextInput
+                style={modalStyles.input}
+                placeholder="2025-06-01T16:00"
+                placeholderTextColor={colors.textMuted}
+                value={formEndAt}
+                onChangeText={setFormEndAt}
+              />
+              <Text style={modalStyles.label}>장소 (선택)</Text>
+              <TextInput
+                style={modalStyles.input}
+                placeholder="장소를 입력해주세요"
+                placeholderTextColor={colors.textMuted}
+                value={formLocation}
+                onChangeText={setFormLocation}
+              />
+              <Text style={modalStyles.label}>설명 (선택)</Text>
+              <TextInput
+                style={[modalStyles.input, modalStyles.inputMultiline]}
+                placeholder="일정 설명"
+                placeholderTextColor={colors.textMuted}
+                value={formDescription}
+                onChangeText={setFormDescription}
+                multiline
+                textAlignVertical="top"
+              />
+              <Pressable
+                style={[modalStyles.submitBtn, formSubmitting && modalStyles.submitBtnDisabled]}
+                onPress={() => void handleCreateSchedule()}
+                disabled={formSubmitting}
+                accessibilityRole="button"
+              >
+                <Text style={modalStyles.submitBtnText}>
+                  {formSubmitting ? '생성 중...' : '일정 추가'}
+                </Text>
+              </Pressable>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// PostsTab
+// ---------------------------------------------------------------------------
+
+interface PostsTabProps {
+  groupId: number
+  isMember: boolean
+}
+
+function formatPostDate(isoString: string): string {
+  const d = new Date(isoString)
+  const year = d.getFullYear()
+  const month = d.getMonth() + 1
+  const day = d.getDate()
+  return `${year}.${String(month).padStart(2, '0')}.${String(day).padStart(2, '0')}`
+}
+
+function PostsTab({ groupId, isMember }: PostsTabProps) {
+  const [posts, setPosts] = useState<ContentResponse[]>([])
+  const [page, setPage] = useState(0)
+  const [hasNext, setHasNext] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+
+  const [modalVisible, setModalVisible] = useState(false)
+  const [postBody, setPostBody] = useState('')
+  const [postSubmitting, setPostSubmitting] = useState(false)
+
+  const fetchPosts = useCallback(
+    async (targetPage: number, append: boolean) => {
+      if (append) {
+        setLoadingMore(true)
+      } else {
+        setLoading(true)
+      }
+      try {
+        const res = await getGroupPosts(groupId, targetPage, 10)
+        setPosts((prev) => (append ? [...prev, ...res.content] : res.content))
+        setPage(res.page)
+        setHasNext(res.hasNext)
+      } catch (e) {
+        console.error('[PostsTab] fetchPosts 실패:', e)
+      } finally {
+        setLoading(false)
+        setLoadingMore(false)
+      }
+    },
+    [groupId],
+  )
+
+  useEffect(() => {
+    void fetchPosts(0, false)
+  }, [fetchPosts])
+
+  const handleLoadMore = () => {
+    if (!hasNext || loadingMore) return
+    void fetchPosts(page + 1, true)
+  }
+
+  const handleCreatePost = async () => {
+    if (postBody.trim().length === 0) {
+      Alert.alert('입력 오류', '내용을 입력해주세요.')
+      return
+    }
+    setPostSubmitting(true)
+    try {
+      await createPost({ body: postBody.trim(), groupId })
+      setModalVisible(false)
+      setPostBody('')
+      void fetchPosts(0, false)
+    } catch (e) {
+      Alert.alert('오류', '게시글 작성에 실패했습니다.')
+    } finally {
+      setPostSubmitting(false)
+    }
+  }
+
+  return (
+    <View>
+      {/* 멤버인 경우 게시글 작성 버튼 */}
+      {isMember && (
+        <Pressable
+          style={postsStyles.writeBtn}
+          onPress={() => setModalVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel="게시글 작성"
+        >
+          <Ionicons name="pencil-outline" size={16} color={colors.accent} />
+          <Text style={postsStyles.writeBtnText}>게시글 작성</Text>
+        </Pressable>
+      )}
+
+      {loading ? (
+        <View style={placeholderStyles.wrap}>
+          <ActivityIndicator color={colors.accent} />
+        </View>
+      ) : posts.length === 0 ? (
+        <View style={placeholderStyles.wrap}>
+          <Ionicons name="document-text-outline" size={32} color={colors.border} />
+          <Text style={placeholderStyles.text}>아직 게시글이 없어요.</Text>
+        </View>
+      ) : (
+        <>
+          <FlatList
+            data={posts}
+            keyExtractor={(item) => String(item.id)}
+            scrollEnabled={false}
+            ItemSeparatorComponent={() => <View style={postsStyles.separator} />}
+            renderItem={({ item }) => (
+              <View style={postsStyles.item}>
+                <View style={postsStyles.itemHeader}>
+                  <Text style={postsStyles.nickname}>{item.nickname ?? item.createdBy}</Text>
+                  <Text style={postsStyles.date}>{formatPostDate(item.createdAt)}</Text>
+                </View>
+                <Text style={postsStyles.body} numberOfLines={2}>
+                  {item.body}
+                </Text>
+                <View style={postsStyles.itemFooter}>
+                  <Ionicons name="heart-outline" size={14} color={colors.textMuted} />
+                  <Text style={postsStyles.footerCount}>{item.likeCount ?? 0}</Text>
+                  <Ionicons
+                    name="chatbubble-outline"
+                    size={14}
+                    color={colors.textMuted}
+                    style={{ marginLeft: spacing.sp2 }}
+                  />
+                  <Text style={postsStyles.footerCount}>{item.commentCount ?? 0}</Text>
+                </View>
+              </View>
+            )}
+          />
+          {hasNext && (
+            <Pressable
+              style={postsStyles.moreBtn}
+              onPress={handleLoadMore}
+              disabled={loadingMore}
+              accessibilityRole="button"
+            >
+              <Text style={postsStyles.moreBtnText}>
+                {loadingMore ? '불러오는 중...' : '더 보기'}
+              </Text>
+            </Pressable>
+          )}
+        </>
+      )}
+
+      {/* 게시글 작성 모달 */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={modalStyles.overlay}>
+          <View style={modalStyles.sheet}>
+            <View style={modalStyles.sheetHeader}>
+              <Text style={modalStyles.sheetTitle}>게시글 작성</Text>
+              <Pressable onPress={() => setModalVisible(false)} hitSlop={8}>
+                <Ionicons name="close" size={24} color={colors.text} />
+              </Pressable>
+            </View>
+            <ScrollView
+              style={modalStyles.body}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <TextInput
+                style={[modalStyles.input, modalStyles.inputMultiline]}
+                placeholder="이웃들에게 이야기를 나눠보세요..."
+                placeholderTextColor={colors.textMuted}
+                value={postBody}
+                onChangeText={setPostBody}
+                multiline
+                textAlignVertical="top"
+                autoFocus
+              />
+              <Pressable
+                style={[
+                  modalStyles.submitBtn,
+                  (postSubmitting || postBody.trim().length === 0) && modalStyles.submitBtnDisabled,
+                ]}
+                onPress={() => void handleCreatePost()}
+                disabled={postSubmitting || postBody.trim().length === 0}
+                accessibilityRole="button"
+              >
+                <Text style={modalStyles.submitBtnText}>
+                  {postSubmitting ? '등록 중...' : '등록'}
+                </Text>
+              </Pressable>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  )
+}
+
+// ---------------------------------------------------------------------------
+
+function TabPlaceholder() {
+  return (
+    <View style={placeholderStyles.wrap}>
+      <Ionicons name="hourglass-outline" size={32} color={colors.border} />
+      <Text style={placeholderStyles.text}>준비 중이에요.</Text>
+    </View>
+  )
+}
+
+interface MemberListProps {
+  members: GroupMemberResponse[]
+  leaderUsername: string
+}
+
+function MemberList({ members, leaderUsername }: MemberListProps) {
+  if (members.length === 0) {
+    return (
+      <View style={placeholderStyles.wrap}>
+        <Ionicons name="people-outline" size={32} color={colors.border} />
+        <Text style={placeholderStyles.text}>멤버 정보가 없어요.</Text>
+      </View>
+    )
+  }
+
+  return (
+    <FlatList
+      data={members}
+      keyExtractor={(item) => item.userId}
+      scrollEnabled={false}
+      ItemSeparatorComponent={() => <View style={memberStyles.separator} />}
+      renderItem={({ item }) => {
+        const initial = item.nickname.slice(0, 1).toUpperCase()
+        const isLeaderItem = item.username === leaderUsername
+
+        return (
+          <View style={memberStyles.row}>
+            <View style={memberStyles.avatar}>
+              <Text style={memberStyles.avatarText}>{initial}</Text>
+            </View>
+            <Text style={memberStyles.nickname} numberOfLines={1}>
+              {item.nickname}
+            </Text>
+            {isLeaderItem && (
+              <View style={memberStyles.leaderBadge}>
+                <Text style={memberStyles.leaderBadgeText}>모임장</Text>
+              </View>
+            )}
+            {!isLeaderItem && (
+              <View style={memberStyles.memberBadge}>
+                <Text style={memberStyles.memberBadgeText}>멤버</Text>
+              </View>
+            )}
+          </View>
+        )
+      }}
+    />
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sp2,
+    paddingVertical: spacing.sp3,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  headerBack: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.sp6,
+  },
+  errorText: {
+    fontSize: fontSize.base,
+    color: colors.error,
+    textAlign: 'center',
+    marginBottom: spacing.sp4,
+  },
+  errorBack: {
+    backgroundColor: colors.accent,
+    paddingHorizontal: spacing.sp6,
+    paddingVertical: spacing.sp3,
+    borderRadius: radius.md,
+  },
+  errorBackText: {
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  scroll: {
+    flex: 1,
+  },
+  hero: {
+    width: '100%',
+    height: 200,
+    backgroundColor: colors.surface3,
+  },
+  heroImage: {
+    width: '100%',
+    height: 200,
+  },
+  heroPlaceholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroPlaceholderEmoji: {
+    fontSize: 48,
+  },
+  info: {
+    paddingHorizontal: spacing.sp4,
+    paddingTop: spacing.sp4,
+    gap: spacing.sp3,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sp2,
+  },
+  categoryBadge: {
+    backgroundColor: colors.accentMuted,
+    paddingHorizontal: spacing.sp2,
+    paddingVertical: 3,
+    borderRadius: radius.sm,
+  },
+  categoryBadgeText: {
+    fontSize: fontSize.xs,
+    color: colors.accent,
+    fontWeight: '600',
+  },
+  meetingBadge: {
+    backgroundColor: colors.surface3,
+    paddingHorizontal: spacing.sp2,
+    paddingVertical: 3,
+    borderRadius: radius.sm,
+  },
+  meetingBadgeText: {
+    fontSize: fontSize.xs,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  pendingBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.warning,
+    paddingHorizontal: spacing.sp2,
+    paddingVertical: 3,
+    borderRadius: radius.sm,
+  },
+  pendingBadgeText: {
+    fontSize: fontSize.xs,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  groupName: {
+    fontSize: fontSize.xl2,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  memberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sp1,
+  },
+  memberCount: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+  },
+  likeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sp1,
+    alignSelf: 'flex-start',
+  },
+  likeCount: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+  },
+  likeCountActive: {
+    color: colors.error,
+  },
+  description: {
+    fontSize: fontSize.base,
+    color: colors.textSecondary,
+    lineHeight: fontSize.base * 1.6,
+  },
+  actionArea: {
+    marginTop: spacing.sp2,
+  },
+  actionButton: {
+    paddingVertical: spacing.sp3,
+    borderRadius: radius.md,
+    alignItems: 'center',
+  },
+  actionButtonPrimary: {
+    backgroundColor: colors.accent,
+  },
+  actionButtonPrimaryText: {
+    fontSize: fontSize.base,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  actionButtonDanger: {
+    backgroundColor: colors.errorSoft,
+  },
+  actionButtonDangerText: {
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    color: colors.error,
+  },
+  actionButtonOutline: {
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  actionButtonOutlineText: {
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  actionButtonDisabled: {
+    backgroundColor: colors.surface3,
+  },
+  actionButtonDisabledText: {
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    color: colors.textMuted,
+  },
+  divider: {
+    height: 8,
+    backgroundColor: colors.surface3,
+    marginTop: spacing.sp4,
+  },
+  tabBar: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  tabItem: {
+    flex: 1,
+    paddingVertical: spacing.sp3,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabItemActive: {
+    borderBottomColor: colors.accent,
+  },
+  tabLabel: {
+    fontSize: fontSize.base,
+    fontWeight: '500',
+    color: colors.textMuted,
+  },
+  tabLabelActive: {
+    color: colors.accent,
+    fontWeight: '700',
+  },
+  tabContent: {
+    minHeight: 200,
+  },
+})
+
+const placeholderStyles = StyleSheet.create({
+  wrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sp3,
+    paddingVertical: spacing.sp8,
+  },
+  text: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+  },
+})
+
+const scheduleStyles = StyleSheet.create({
+  monthNav: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.sp4,
+    paddingVertical: spacing.sp3,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  monthLabel: {
+    fontSize: fontSize.base,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: spacing.sp4,
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sp4,
+    paddingVertical: spacing.sp3,
+    gap: spacing.sp3,
+  },
+  itemMain: {
+    flex: 1,
+    gap: 3,
+  },
+  itemTitle: {
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  itemDate: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+  },
+  itemLocation: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+  },
+  itemAttendee: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+  },
+  attendBtn: {
+    paddingHorizontal: spacing.sp3,
+    paddingVertical: spacing.sp2,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface2,
+  },
+  attendBtnActive: {
+    borderColor: colors.accent,
+    backgroundColor: colors.accentMuted,
+  },
+  attendBtnText: {
+    fontSize: fontSize.xs,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  attendBtnTextActive: {
+    color: colors.accent,
+  },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sp2,
+    paddingVertical: spacing.sp3,
+    marginHorizontal: spacing.sp4,
+    marginTop: spacing.sp3,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: radius.md,
+    borderStyle: 'dashed',
+  },
+  addBtnText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.accent,
+  },
+})
+
+const postsStyles = StyleSheet.create({
+  writeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sp2,
+    paddingVertical: spacing.sp3,
+    marginHorizontal: spacing.sp4,
+    marginBottom: spacing.sp2,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: radius.md,
+  },
+  writeBtnText: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.accent,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: spacing.sp4,
+  },
+  item: {
+    paddingHorizontal: spacing.sp4,
+    paddingVertical: spacing.sp3,
+    gap: spacing.sp2,
+  },
+  itemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  nickname: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  date: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+  },
+  body: {
+    fontSize: fontSize.base,
+    color: colors.textSecondary,
+    lineHeight: fontSize.base * 1.5,
+  },
+  itemFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sp1,
+  },
+  footerCount: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+  },
+  moreBtn: {
+    alignItems: 'center',
+    paddingVertical: spacing.sp3,
+    marginTop: spacing.sp2,
+  },
+  moreBtnText: {
+    fontSize: fontSize.sm,
+    color: colors.accent,
+    fontWeight: '600',
+  },
+})
+
+const modalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: colors.bg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    maxHeight: '85%',
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.sp4,
+    paddingVertical: spacing.sp4,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  sheetTitle: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  body: {
+    padding: spacing.sp4,
+  },
+  label: {
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: spacing.sp2,
+    marginTop: spacing.sp3,
+  },
+  required: {
+    color: colors.accent,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.sp3,
+    paddingVertical: spacing.sp3,
+    fontSize: fontSize.base,
+    color: colors.text,
+    backgroundColor: colors.surface2,
+  },
+  inputMultiline: {
+    minHeight: 100,
+    paddingTop: spacing.sp3,
+    textAlignVertical: 'top',
+  },
+  submitBtn: {
+    backgroundColor: colors.accent,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.sp4,
+    alignItems: 'center',
+    marginTop: spacing.sp5,
+    marginBottom: spacing.sp4,
+  },
+  submitBtnDisabled: {
+    opacity: 0.5,
+  },
+  submitBtnText: {
+    fontSize: fontSize.base,
+    fontWeight: '700',
+    color: '#fff',
+  },
+})
+
+const memberStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sp4,
+    paddingVertical: spacing.sp3,
+    gap: spacing.sp3,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: spacing.sp4,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.full,
+    backgroundColor: colors.accentMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: colors.accent,
+  },
+  nickname: {
+    flex: 1,
+    fontSize: fontSize.base,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  leaderBadge: {
+    backgroundColor: colors.accentMuted,
+    paddingHorizontal: spacing.sp2,
+    paddingVertical: 3,
+    borderRadius: radius.sm,
+  },
+  leaderBadgeText: {
+    fontSize: fontSize.xs,
+    color: colors.accent,
+    fontWeight: '700',
+  },
+  memberBadge: {
+    backgroundColor: colors.surface3,
+    paddingHorizontal: spacing.sp2,
+    paddingVertical: 3,
+    borderRadius: radius.sm,
+  },
+  memberBadgeText: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    fontWeight: '500',
+  },
+})

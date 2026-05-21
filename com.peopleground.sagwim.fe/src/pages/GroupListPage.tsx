@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getNewGroups, getPopularGroups, toggleGroupLike } from '../api/groupApi'
+import { getGroups, getNewGroups, getPopularGroups, toggleGroupLike } from '../api/groupApi'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
@@ -14,8 +14,10 @@ import sproutIcon from '../assets/sagwim-section-sprout.svg'
 import flameIcon from '../assets/sagwim-section-flame.svg'
 import deadlineIcon from '../assets/sagwim-section-deadline.svg'
 import thisweekIcon from '../assets/sagwim-section-thisweek.svg'
+import pinIcon from '../assets/sagwim-section-pin.svg'
 import { GroupSection } from '../components/group/GroupSection'
 import { MobileHeader } from '../components/MobileHeader'
+import { extractLastRegionToken } from '../utils/stringUtils'
 import styles from './GroupListPage.module.css'
 
 // 메인 화면에서 노출할 최대 개수
@@ -37,6 +39,11 @@ export function GroupListPage() {
   const [popularLoading, setPopularLoading] = useState(true)
   const [popularError, setPopularError] = useState('')
 
+  // 동네 모든 모임 상태
+  const [neighborhoodGroups, setNeighborhoodGroups] = useState<GroupResponse[]>([])
+  const [neighborhoodLoading, setNeighborhoodLoading] = useState(true)
+  const [neighborhoodError, setNeighborhoodError] = useState('')
+
   // 프로필 상태
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
@@ -49,13 +56,16 @@ export function GroupListPage() {
     async () => {
       setLoading(true)
       setPopularLoading(true)
+      setNeighborhoodLoading(true)
       setError('')
       setPopularError('')
+      setNeighborhoodError('')
 
-      // 신규 모임과 인기 모임을 병렬로 조회
-      const [newResult, popularResult] = await Promise.allSettled([
+      // 신규 모임·인기 모임·동네 모든 모임을 병렬로 조회
+      const [newResult, popularResult, neighborhoodResult] = await Promise.allSettled([
         getNewGroups(token),
         getPopularGroups(token, 0, PREVIEW_COUNT),
+        getGroups(token, 0, PREVIEW_COUNT),
       ])
 
       // 신규 모임 처리
@@ -94,6 +104,24 @@ export function GroupListPage() {
         setPopularError(message)
       }
       setPopularLoading(false)
+
+      // 동네 모든 모임 처리
+      if (neighborhoodResult.status === 'fulfilled') {
+        const incoming = neighborhoodResult.value.content
+        setNeighborhoodGroups(incoming)
+        const countMap: Record<number, number> = {}
+        const likedMapUpdate: Record<number, boolean> = {}
+        incoming.forEach((g) => {
+          countMap[g.id] = g.likeCount ?? 0
+          likedMapUpdate[g.id] = g.isLiked
+        })
+        setLikeCountMap((prev) => ({ ...prev, ...countMap }))
+        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
+      } else {
+        const message = neighborhoodResult.reason instanceof Error ? neighborhoodResult.reason.message : '동네 모임 목록 조회 실패'
+        setNeighborhoodError(message)
+      }
+      setNeighborhoodLoading(false)
     },
     [token, handleUnauthorized],
   )
@@ -122,6 +150,21 @@ export function GroupListPage() {
 
   const renderContent = () => (
     <>
+      <GroupSection
+        title={<><img src={pinIcon} alt="" width={22} height={22} />{extractLastRegionToken(myProfile?.address) ?? '우리 동네'} 모든 모임</>}
+        subtitle="우리 동네 모임, 여기 다 있어요"
+        groups={neighborhoodGroups}
+        loading={neighborhoodLoading}
+        error={neighborhoodError}
+        onRetry={loadGroups}
+        onViewAll={() => navigate('/app/groups')}
+        likedMap={likedMap}
+        likeCountMap={likeCountMap}
+        onLikeToggle={handleLikeToggle}
+        emptyTitle="노출 범위 내 모임이 아직 없어요."
+        emptyDescription="주변 모임이 생기면 여기에 표시됩니다."
+      />
+      <hr className={styles.divider} />
       <GroupSection
         title={<><img src={sproutIcon} alt="" width={22} height={22} />갓 피어난 모임</>}
         subtitle="당신이 첫 멤버가 될 수도 있어요"

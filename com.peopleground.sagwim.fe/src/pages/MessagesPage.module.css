@@ -65,9 +65,9 @@
     padding-bottom: calc(64px + var(--layout-bottom-bar-h, 56px));
   }
 
-  /* 채팅방 뷰: 전체화면 유지 */
+  /* 채팅방 뷰: 하단 탭바 높이만큼 제외해야 MessageInput이 가려지지 않음 */
   .pageWrapper.showRoom {
-    height: 100vh;
+    height: calc(100dvh - var(--layout-bottom-bar-h, 56px));
     overflow: hidden;
   }
 }

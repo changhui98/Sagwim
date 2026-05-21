@@ -6,6 +6,9 @@
   padding: var(--sp-4);
   box-shadow: none;
   border: none;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* 헤더 */
@@ -78,6 +81,7 @@
 /* 빈 셀 */
 .emptyCell {
   width: 100%;
+  min-width: 0;
   aspect-ratio: 1 / 1;
 }
 
@@ -90,12 +94,14 @@
   justify-content: flex-start;
   gap: 2px;
   width: 100%;
+  min-width: 0;
   aspect-ratio: 1 / 1;
   padding-top: var(--sp-2);
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--r-md);
   cursor: pointer;
+  overflow: hidden;
   transition:
     background var(--t-fast),
     border-color var(--t-fast);
@@ -187,16 +193,30 @@
   font-weight: 700;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 640px) {
   .calendar {
-    padding: var(--sp-3);
+    padding: var(--sp-2);
   }
 
-  .dayCell {
-    width: 100%;
+  .grid {
+    gap: 1px;
   }
 
   .dayNumber {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
+  }
+
+  .holidayName {
+    font-size: 0.5rem;
+  }
+
+  .navBtn {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+  }
+
+  .monthLabel {
+    font-size: 0.875rem;
   }
 }

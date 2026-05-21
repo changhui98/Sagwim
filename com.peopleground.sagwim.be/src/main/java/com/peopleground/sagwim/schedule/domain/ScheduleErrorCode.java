@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 public enum ScheduleErrorCode implements ErrorCode {
 
     SCHEDULE_NOT_MEMBER(HttpStatus.FORBIDDEN, "S001", "모임 멤버만 일정을 등록할 수 있습니다."),
-    SCHEDULE_INVALID_DATE(HttpStatus.BAD_REQUEST, "S002", "종료 시간은 시작 시간보다 이후여야 합니다.")
+    SCHEDULE_INVALID_DATE(HttpStatus.BAD_REQUEST, "S002", "종료 시간은 시작 시간보다 이후여야 합니다."),
+    SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND, "S003", "존재하지 않는 일정입니다.")
     ;
 
     private final HttpStatus status;

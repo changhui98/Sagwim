@@ -2,7 +2,6 @@
 
 .card {
   display: flex;
-  gap: var(--sp-3);
   background: var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--r-lg);
@@ -15,17 +14,11 @@
   box-shadow: var(--shadow-sm);
 }
 
-.accentBar {
-  width: 4px;
-  background: var(--clr-accent-gradient);
-  flex-shrink: 0;
-}
-
 .content {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  padding: var(--sp-3) var(--sp-3) var(--sp-3) 0;
+  padding: var(--sp-3);
   flex: 1;
 }
 
@@ -86,4 +79,75 @@
   justify-content: space-between;
   gap: var(--sp-2);
   margin-top: auto;
+}
+
+/* ── 참석 행 ── */
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--clr-border);
+  margin: var(--sp-1) 0 0;
+}
+
+.attendanceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.attendBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--clr-accent);
+  background: transparent;
+  border: 1.5px solid var(--clr-accent);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.attendBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--clr-accent) 8%, transparent);
+}
+
+.attendBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.attendBtnActive {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-1) var(--sp-3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--clr-accent);
+  background: color-mix(in srgb, var(--clr-accent) 12%, transparent);
+  border: 1.5px solid var(--clr-accent);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.attendBtnActive:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--clr-accent) 20%, transparent);
+}
+
+.attendBtnActive:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.attendeeCount {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: 0.8125rem;
+  color: var(--clr-text-secondary);
 }

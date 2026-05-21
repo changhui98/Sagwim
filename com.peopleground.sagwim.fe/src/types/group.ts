@@ -184,6 +184,8 @@ export interface ScheduleResponse {
   description: string | null
   createdByUsername: string
   createdByNickname: string
+  attendeeCount: number
+  attendingByMe: boolean
 }
 
 export interface ScheduleCreateRequest {
