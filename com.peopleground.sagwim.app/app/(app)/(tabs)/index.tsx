@@ -4,17 +4,19 @@
  * 구성:
  *  - 상단 헤더: 비움 (Step 1 결정)
  *  - 주소 분기: meAddress 없으면 AddressOnboarding 노출
- *  - 4개 섹션 (가로 스크롤 3장 미리보기):
+ *  - 5개 섹션 (가로 스크롤 3장 미리보기):
  *    · 갓 피어난 모임 (GET /groups/recent)
  *    · 요즘 북적이는 모임 (GET /groups/popular)
  *    · 마감 임박 모임 (Step 1: 빈 상태 UI)
  *    · 이번 주에 만나요 (Step 1: 빈 상태 UI)
+ *    · {동 이름} 모든 모임 (GET /groups)
  *  - Pull-to-refresh 지원
  */
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native'
-import { getNewGroups, getPopularGroups } from '../../../src/api/groupApi'
+import { router } from 'expo-router'
+import { getNewGroups, getPopularGroups, getGroups } from '../../../src/api/groupApi'
 import { getMe } from '../../../src/api/userApi'
 import { useAuth } from '../../../src/context/AuthContext'
 import { GroupSection } from '../../../src/components/group/GroupSection'
@@ -24,21 +26,30 @@ import { colors, spacing } from '../../../src/constants/theme'
 
 const PREVIEW_COUNT = 3
 
+function extractDong(address: string | null | undefined): string {
+  if (!address) return '우리 동네'
+  const parts = address.trim().split(/\s+/)
+  return parts[parts.length - 1] || '우리 동네'
+}
+
 export default function HomeScreen() {
   const { isAuthenticated } = useAuth()
 
   const [address, setAddress] = useState<string | null | undefined>(undefined)
   const [newGroups, setNewGroups] = useState<GroupResponse[]>([])
   const [popularGroups, setPopularGroups] = useState<GroupResponse[]>([])
+  const [neighborhoodGroups, setNeighborhoodGroups] = useState<GroupResponse[]>([])
   const [loading, setLoading] = useState(true)
+  const [neighborhoodLoading, setNeighborhoodLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
   const loadAll = useCallback(async () => {
     try {
-      const [meRes, newRes, popularRes] = await Promise.allSettled([
+      const [meRes, newRes, popularRes, neighborhoodRes] = await Promise.allSettled([
         getMe(),
         getNewGroups(0, 20),
         getPopularGroups(0, 20),
+        getGroups(0, 20),
       ])
 
       if (meRes.status === 'fulfilled') {
@@ -53,8 +64,12 @@ export default function HomeScreen() {
       setPopularGroups(
         popularRes.status === 'fulfilled' ? popularRes.value.content.slice(0, PREVIEW_COUNT) : [],
       )
+      setNeighborhoodGroups(
+        neighborhoodRes.status === 'fulfilled' ? neighborhoodRes.value.content : [],
+      )
     } finally {
       setLoading(false)
+      setNeighborhoodLoading(false)
       setRefreshing(false)
     }
   }, [])
@@ -62,7 +77,9 @@ export default function HomeScreen() {
   useEffect(() => {
     if (!isAuthenticated) return
     void loadAll()
-  }, [isAuthenticated, loadAll])
+  // loadAll은 [] deps라 안정적 — React Compiler가 unstable하게 처리할 경우를 방지
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated])
 
   const onRefresh = useCallback(() => {
     setRefreshing(true)
@@ -70,9 +87,7 @@ export default function HomeScreen() {
   }, [loadAll])
 
   const handlePressGroup = (groupId: number) => {
-    // 모임 상세 화면은 Step 3 에서 구현 예정.
-    // 지금은 console 로 의도만 표시.
-    console.log('[Home] group press:', groupId)
+    router.push({ pathname: '/(app)/group-detail', params: { id: String(groupId) } })
   }
 
   // 주소 분기: meAddress 없으면 온보딩만 노출
@@ -99,6 +114,16 @@ export default function HomeScreen() {
         }
       >
         <GroupSection
+          title={`${extractDong(address)} 모든 모임`}
+          subtitle="우리 동네 모임, 여기 다 있어요"
+          groups={neighborhoodGroups.slice(0, PREVIEW_COUNT)}
+          loading={neighborhoodLoading}
+          emptyMessage="노출 범위 내 모임이 아직 없어요."
+          onPressGroup={handlePressGroup}
+          onPressMore={() => console.log('[Home] more neighborhood — pending')}
+        />
+
+        <GroupSection
           title="갓 피어난 모임"
           groups={newGroups}
           loading={loading}
@@ -111,7 +136,7 @@ export default function HomeScreen() {
           title="요즘 북적이는 모임"
           groups={popularGroups}
           loading={loading}
-          emptyMessage="인기 모임 데이터를 불러오는 중이에요."
+          emptyMessage="아직 인기 모임이 없어요."
           onPressGroup={handlePressGroup}
           onPressMore={() => console.log('[Home] more popular — pending')}
         />

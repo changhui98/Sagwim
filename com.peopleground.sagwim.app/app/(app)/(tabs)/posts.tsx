@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -9,8 +10,10 @@ import {
   View,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
-import { getPosts } from '../../../src/api/postApi'
+import { useRouter } from 'expo-router'
+import { getPosts, togglePostLike } from '../../../src/api/postApi'
 import type { ContentResponse } from '../../../src/types/post'
+import { resolveImageUrl } from '../../../src/lib/resolveImageUrl'
 import { colors, fontSize, radius, spacing } from '../../../src/constants/theme'
 
 function formatRelativeTime(isoString: string): string {
@@ -30,13 +33,54 @@ function formatRelativeTime(isoString: string): string {
 
 interface PostCardProps {
   post: ContentResponse
+  onLikeToggle: (id: number, liked: boolean, likeCount: number) => void
 }
 
-function PostCard({ post }: PostCardProps) {
+function PostCard({ post, onLikeToggle }: PostCardProps) {
+  const router = useRouter()
   const author = post.nickname ?? post.createdBy
 
+  const [liked, setLiked] = useState(post.likedByMe ?? false)
+  const [likeCount, setLikeCount] = useState(post.likeCount ?? 0)
+  const isLikeInFlight = useRef(false)
+
+  const handleLike = useCallback(async () => {
+    if (isLikeInFlight.current) return
+    isLikeInFlight.current = true
+
+    const prevLiked = liked
+    const prevCount = likeCount
+    const nextLiked = !liked
+    const nextCount = nextLiked ? likeCount + 1 : likeCount - 1
+
+    setLiked(nextLiked)
+    setLikeCount(nextCount)
+
+    try {
+      const res = await togglePostLike(post.id)
+      setLiked(res.liked)
+      setLikeCount(res.likeCount)
+      onLikeToggle(post.id, res.liked, res.likeCount)
+    } catch (e) {
+      console.error('[PostCard] togglePostLike 실패:', e)
+      setLiked(prevLiked)
+      setLikeCount(prevCount)
+    } finally {
+      isLikeInFlight.current = false
+    }
+  }, [liked, likeCount, post.id, onLikeToggle])
+
+  const goToDetail = useCallback(() => {
+    router.push({ pathname: '/(app)/post-detail', params: { id: String(post.id) } })
+  }, [router, post.id])
+
   return (
-    <View style={styles.card}>
+    <Pressable
+      onPress={goToDetail}
+      style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+      accessibilityRole="button"
+      accessibilityLabel={`${author}의 게시글`}
+    >
       <View style={styles.cardHeader}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{author.slice(0, 1).toUpperCase()}</Text>
@@ -60,6 +104,18 @@ function PostCard({ post }: PostCardProps) {
         {post.body}
       </Text>
 
+      {post.imageUrls && post.imageUrls.length > 0 && (() => {
+        const uri = resolveImageUrl(post.imageUrls![0])
+        return uri ? (
+          <Image
+            source={{ uri }}
+            style={styles.postImage}
+            resizeMode="cover"
+            accessibilityLabel="게시글 이미지"
+          />
+        ) : null
+      })()}
+
       {post.tags && post.tags.length > 0 && (
         <View style={styles.tags}>
           {post.tags.map((tag, i) => (
@@ -71,10 +127,35 @@ function PostCard({ post }: PostCardProps) {
       )}
 
       <View style={styles.footer}>
-        <Text style={styles.footerItem}>♥ {post.likeCount ?? 0}</Text>
-        <Text style={styles.footerItem}>💬 {post.commentCount ?? 0}</Text>
+        <Pressable
+          style={styles.footerButton}
+          onPress={handleLike}
+          hitSlop={8}
+          accessibilityLabel={liked ? '좋아요 취소' : '좋아요'}
+          accessibilityRole="button"
+        >
+          <Ionicons
+            name={liked ? 'heart' : 'heart-outline'}
+            size={17}
+            color={liked ? colors.error : colors.textMuted}
+          />
+          <Text style={[styles.footerCount, liked && styles.footerCountActive]}>
+            {likeCount}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={styles.footerButton}
+          onPress={goToDetail}
+          hitSlop={8}
+          accessibilityLabel="댓글 보기"
+          accessibilityRole="button"
+        >
+          <Ionicons name="chatbubble-outline" size={16} color={colors.textMuted} />
+          <Text style={styles.footerCount}>{post.commentCount ?? 0}</Text>
+        </Pressable>
       </View>
-    </View>
+    </Pressable>
   )
 }
 
@@ -85,18 +166,24 @@ export default function PostsScreen() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasNext, setHasNext] = useState(false)
+  const hasNextRef = useRef(false)
   const nextPage = useRef(0)
 
-  const loadPage = useCallback(async (page: number) => {
-    const res = await getPosts(page, 12)
-    return res
-  }, [])
+  const handleLikeToggle = useCallback(
+    (id: number, liked: boolean, likeCount: number) => {
+      setPosts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, likedByMe: liked, likeCount } : p)),
+      )
+    },
+    [],
+  )
 
   const loadInitial = useCallback(async () => {
     setError(null)
     try {
-      const res = await loadPage(0)
+      const res = await getPosts(0, 12)
       setPosts(res.content)
+      hasNextRef.current = res.hasNext
       setHasNext(res.hasNext)
       nextPage.current = 1
     } catch {
@@ -105,11 +192,11 @@ export default function PostsScreen() {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [loadPage])
+  }, [])
 
   useEffect(() => {
     void loadInitial()
-  }, [loadInitial])
+  }, [])
 
   const onRefresh = useCallback(() => {
     setRefreshing(true)
@@ -117,20 +204,25 @@ export default function PostsScreen() {
     void loadInitial()
   }, [loadInitial])
 
+  const loadingMoreRef = useRef(false)
+
   const onEndReached = useCallback(async () => {
-    if (!hasNext || loadingMore) return
+    if (!hasNextRef.current || loadingMoreRef.current) return
+    loadingMoreRef.current = true
     setLoadingMore(true)
     try {
-      const res = await loadPage(nextPage.current)
+      const res = await getPosts(nextPage.current, 12)
       setPosts((prev) => [...prev, ...res.content])
+      hasNextRef.current = res.hasNext
       setHasNext(res.hasNext)
       nextPage.current += 1
     } catch {
-      // 추가 로드 실패는 조용히 무시 — 다음 스크롤 시 재시도
+      // silent fail — retry on next scroll
     } finally {
+      loadingMoreRef.current = false
       setLoadingMore(false)
     }
-  }, [hasNext, loadingMore, loadPage])
+  }, [])
 
   if (loading) {
     return (
@@ -162,7 +254,7 @@ export default function PostsScreen() {
       <FlatList
         data={posts}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => <PostCard post={item} />}
+        renderItem={({ item }) => <PostCard post={item} onLikeToggle={handleLikeToggle} />}
         contentContainerStyle={posts.length === 0 ? styles.emptyContainer : styles.listContent}
         refreshControl={
           <RefreshControl
@@ -222,6 +314,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sp4,
     paddingVertical: spacing.sp4,
     gap: spacing.sp3,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  cardPressed: {
+    backgroundColor: colors.surface2,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -275,6 +372,12 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: radius.sm,
   },
+  postImage: {
+    width: '100%',
+    height: 180,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface3,
+  },
   tagText: {
     fontSize: fontSize.xs,
     color: colors.accent,
@@ -284,9 +387,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sp4,
   },
-  footerItem: {
+  footerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sp1,
+  },
+  footerCount: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
+  },
+  footerCountActive: {
+    color: colors.error,
   },
   emptyText: {
     fontSize: fontSize.base,
