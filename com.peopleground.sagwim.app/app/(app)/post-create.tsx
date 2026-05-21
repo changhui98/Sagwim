@@ -15,6 +15,7 @@ import * as ImagePicker from 'expo-image-picker'
 import { router, Stack } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
+import axios from 'axios'
 import { createPost, uploadContentImage } from '../../src/api/postApi'
 import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
 
@@ -82,7 +83,11 @@ export default function PostCreateScreen() {
       }
       router.back()
     } catch (e) {
-      const msg = e instanceof Error ? e.message : '게시글 등록에 실패했습니다.'
+      const msg = axios.isAxiosError(e)
+        ? (e.response?.data?.message ?? e.message)
+        : e instanceof Error
+          ? e.message
+          : '게시글 등록에 실패했습니다.'
       Alert.alert('등록 실패', msg)
     } finally {
       setSubmitting(false)

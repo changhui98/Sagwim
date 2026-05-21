@@ -121,9 +121,7 @@ export const uploadGroupImage = async (groupId: number, imageUri: string): Promi
   const match = /\.(\w+)$/.exec(filename)
   const type = match ? `image/${match[1]}` : 'image/jpeg'
   formData.append('image', { uri: imageUri, name: filename, type } as any)
-  await apiClient.post(`/groups/${groupId}/image`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  await apiClient.post(`/groups/${groupId}/image`, formData)
 }
 
 export const getGroupSchedules = async (
