@@ -66,7 +66,7 @@ export default function GroupCreateScreen() {
 
   const pickCoverImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [16, 9],
       quality: 0.8,
@@ -97,6 +97,7 @@ export default function GroupCreateScreen() {
         name: name.trim(),
         description: description.trim() || undefined,
         category,
+        subCategories: subCategories.length > 0 ? subCategories : undefined,
         meetingType,
         joinType,
         maxMemberCount: maxCount,
@@ -107,8 +108,8 @@ export default function GroupCreateScreen() {
       if (coverImage) {
         try {
           await uploadGroupImage(created.id, coverImage)
-        } catch {
-          // 이미지 업로드 실패 시 모임은 생성된 상태이므로 silent하게 진행
+        } catch (e) {
+          console.error('[GroupCreate] 이미지 업로드 실패:', e)
         }
       }
       router.replace({

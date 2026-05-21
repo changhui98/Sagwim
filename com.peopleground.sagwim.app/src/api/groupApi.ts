@@ -122,8 +122,10 @@ export const uploadGroupImage = async (groupId: number, imageUri: string): Promi
   const formData = new FormData()
   const filename = imageUri.split('/').pop() ?? 'image.jpg'
   const ext = /\.(\w+)$/.exec(filename)?.[1]?.toLowerCase() ?? 'jpeg'
-  const type = `image/${ext === 'jpg' ? 'jpeg' : ext}`
-  formData.append('image', { uri: imageUri, name: filename, type } as any)
+  const normalizedExt = ext === 'heic' || ext === 'heif' ? 'jpeg' : ext
+  const type = `image/${normalizedExt === 'jpg' ? 'jpeg' : normalizedExt}`
+  const safeFilename = filename.includes('.') ? filename : `${filename}.jpg`
+  formData.append('image', { uri: imageUri, name: safeFilename, type } as any)
 
   const token = await getToken()
   const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL ?? ''
