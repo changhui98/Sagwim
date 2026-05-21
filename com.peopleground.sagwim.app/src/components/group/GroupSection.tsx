@@ -83,16 +83,16 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   title: {
-    fontSize: fontSize.lg,
+    fontSize: fontSize.xl,
     fontWeight: '700',
     color: colors.text,
   },
   subtitle: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     color: colors.textMuted,
   },
   more: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     color: colors.textSecondary,
   },
   listContent: {
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyText: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     color: colors.textMuted,
   },
 })
