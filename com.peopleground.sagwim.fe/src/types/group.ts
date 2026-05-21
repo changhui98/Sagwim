@@ -152,6 +152,8 @@ export interface GroupCreateRequest {
   subCategories?: string[]
   meetingType: GroupMeetingType
   maxMemberCount: number
+  joinType?: GroupJoinType
+  joinQuestions?: string[]
 }
 
 export const GROUP_CATEGORY_LABELS: Record<GroupCategory, string> = {
