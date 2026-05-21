@@ -111,6 +111,8 @@ export const createGroup = async (data: {
   meetingType: string
   maxMemberCount: number
   subCategories?: string[]
+  joinType?: string
+  joinQuestions?: string[]
 }): Promise<GroupResponse> => {
   const response = await apiClient.post<GroupResponse>('/groups', data)
   return response.data
