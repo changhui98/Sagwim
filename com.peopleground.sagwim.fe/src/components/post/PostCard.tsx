@@ -65,7 +65,10 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
   const [reportModalOpen, setReportModalOpen] = useState(false)
 
   const handleCardClick = useCallback(() => {
-    navigate(`/app/posts/${post.id}`, { state: { post } })
+    sessionStorage.setItem('postList_scrollY', String(window.scrollY))
+    navigate(`/app/posts/${post.id}`, {
+      state: { post: { ...post, likedByMe: likedRef.current, likeCount: likeCountRef.current } },
+    })
   }, [navigate, post])
 
   // 좋아요 상태의 단일 소스는 로컬 state. 초기값만 prop 에서 가져오고, 이후
@@ -308,7 +311,7 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
           type="button"
           className={styles.actionBtn}
           aria-label="댓글 보기"
-          onClick={(e) => { e.stopPropagation(); navigate(`/app/posts/${post.id}`, { state: { post } }) }}
+          onClick={(e) => { e.stopPropagation(); sessionStorage.setItem('postList_scrollY', String(window.scrollY)); navigate(`/app/posts/${post.id}`, { state: { post: { ...post, likedByMe: likedRef.current, likeCount: likeCountRef.current } } }) }}
         >
           <CommentIcon className={styles.icon} />
           <span className={styles.count}>{formatCount(commentCount)}</span>
