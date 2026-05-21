@@ -34,9 +34,7 @@ export const uploadContentImage = async (
   formData.append('file', { uri: imageUri, name: filename, type } as any)
   formData.append('contentId', String(contentId))
   formData.append('type', 'CONTENT')
-  await apiClient.post('/images', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  })
+  await apiClient.post('/images', formData)
 }
 
 export const getPosts = async (

@@ -38,7 +38,7 @@ class ScheduleControllerTest {
     }
 
     private ScheduleResponse mockSchedule() {
-        return new ScheduleResponse(1L, "회의", LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, null, "testuser", "닉네임");
+        return new ScheduleResponse(1L, "회의", LocalDateTime.now(), LocalDateTime.now().plusHours(1), null, null, "testuser", "닉네임", 0, false);
     }
 
     @Test
@@ -66,9 +66,9 @@ class ScheduleControllerTest {
     @Test
     @DisplayName("월별 일정 조회 성공")
     void getSchedulesByMonth_success() {
-        given(scheduleService.getSchedulesByMonth(1L, 2026, 5)).willReturn(List.of(mockSchedule()));
+        given(scheduleService.getSchedulesByMonth(1L, 2026, 5, user)).willReturn(List.of(mockSchedule()));
 
-        ResponseEntity<List<ScheduleResponse>> res = controller.getSchedulesByMonth(1L, 2026, 5);
+        ResponseEntity<List<ScheduleResponse>> res = controller.getSchedulesByMonth(1L, 2026, 5, user);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(res.getBody()).hasSize(1);
@@ -77,9 +77,9 @@ class ScheduleControllerTest {
     @Test
     @DisplayName("월별 일정 조회 - 빈 목록 반환")
     void getSchedulesByMonth_empty() {
-        given(scheduleService.getSchedulesByMonth(1L, 2026, 1)).willReturn(List.of());
+        given(scheduleService.getSchedulesByMonth(1L, 2026, 1, user)).willReturn(List.of());
 
-        ResponseEntity<List<ScheduleResponse>> res = controller.getSchedulesByMonth(1L, 2026, 1);
+        ResponseEntity<List<ScheduleResponse>> res = controller.getSchedulesByMonth(1L, 2026, 1, user);
 
         assertThat(res.getBody()).isEmpty();
     }
