@@ -41,7 +41,13 @@
         }
       ],
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "사진 라이브러리에 접근하여 게시글에 사진을 첨부합니다."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
