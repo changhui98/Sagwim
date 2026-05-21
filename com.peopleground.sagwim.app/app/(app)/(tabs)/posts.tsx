@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
+  Dimensions,
   FlatList,
   Image,
   Pressable,
@@ -29,6 +30,35 @@ function formatRelativeTime(isoString: string): string {
     month: 'long',
     day: 'numeric',
   })
+}
+
+const SCREEN_WIDTH = Dimensions.get('window').width
+const IMAGE_MAX_HEIGHT = 360
+
+function DynamicPostImage({ uri }: { uri: string }) {
+  const [height, setHeight] = useState(240)
+
+  useEffect(() => {
+    Image.getSize(
+      uri,
+      (w, h) => {
+        if (w > 0 && h > 0) {
+          const natural = (h / w) * SCREEN_WIDTH
+          setHeight(Math.min(natural, IMAGE_MAX_HEIGHT))
+        }
+      },
+      () => setHeight(240),
+    )
+  }, [uri])
+
+  return (
+    <Image
+      source={{ uri }}
+      style={[styles.postImage, { height }]}
+      resizeMode="cover"
+      accessibilityLabel="게시글 이미지"
+    />
+  )
 }
 
 interface PostCardProps {
@@ -106,14 +136,7 @@ function PostCard({ post, onLikeToggle }: PostCardProps) {
 
       {post.imageUrls && post.imageUrls.length > 0 && (() => {
         const uri = resolveImageUrl(post.imageUrls![0])
-        return uri ? (
-          <Image
-            source={{ uri }}
-            style={styles.postImage}
-            resizeMode="cover"
-            accessibilityLabel="게시글 이미지"
-          />
-        ) : null
+        return uri ? <DynamicPostImage uri={uri} /> : null
       })()}
 
       {post.tags && post.tags.length > 0 && (
@@ -314,8 +337,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sp4,
     paddingVertical: spacing.sp4,
     gap: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   cardPressed: {
     backgroundColor: colors.surface2,
@@ -330,15 +351,15 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   avatar: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     borderRadius: radius.full,
     backgroundColor: colors.accentMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     fontWeight: '700',
     color: colors.accent,
   },
@@ -347,18 +368,18 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   author: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     fontWeight: '600',
     color: colors.text,
   },
   time: {
-    fontSize: fontSize.xs,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
   },
   body: {
-    fontSize: fontSize.base,
+    fontSize: fontSize.md,
     color: colors.text,
-    lineHeight: fontSize.base * 1.55,
+    lineHeight: fontSize.md * 1.55,
     marginVertical: spacing.sp3,
   },
   tags: {
@@ -374,7 +395,6 @@ const styles = StyleSheet.create({
   },
   postImage: {
     width: '100%',
-    height: 180,
     borderRadius: radius.md,
     backgroundColor: colors.surface3,
   },
@@ -393,7 +413,7 @@ const styles = StyleSheet.create({
     gap: spacing.sp1,
   },
   footerCount: {
-    fontSize: fontSize.sm,
+    fontSize: fontSize.base,
     color: colors.textMuted,
   },
   footerCountActive: {
