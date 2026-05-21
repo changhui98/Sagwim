@@ -30,10 +30,11 @@ export const uploadContentImage = async (
   const formData = new FormData()
   const filename = imageUri.split('/').pop() ?? 'image.jpg'
   const match = /\.(\w+)$/.exec(filename)
-  const type = match ? `image/${match[1]}` : 'image/jpeg'
+  const ext = match ? match[1].toLowerCase() : 'jpeg'
+  const type = `image/${ext === 'jpg' ? 'jpeg' : ext}`
   formData.append('file', { uri: imageUri, name: filename, type } as any)
-  formData.append('contentId', String(contentId))
-  formData.append('type', 'CONTENT')
+  formData.append('targetId', String(contentId))
+  formData.append('targetType', 'CONTENT')
   await apiClient.post('/images', formData)
 }
 

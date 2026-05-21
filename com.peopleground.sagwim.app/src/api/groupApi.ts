@@ -119,7 +119,8 @@ export const uploadGroupImage = async (groupId: number, imageUri: string): Promi
   const formData = new FormData()
   const filename = imageUri.split('/').pop() ?? 'image.jpg'
   const match = /\.(\w+)$/.exec(filename)
-  const type = match ? `image/${match[1]}` : 'image/jpeg'
+  const ext = match ? match[1].toLowerCase() : 'jpeg'
+  const type = `image/${ext === 'jpg' ? 'jpeg' : ext}`
   formData.append('image', { uri: imageUri, name: filename, type } as any)
   await apiClient.post(`/groups/${groupId}/image`, formData)
 }
