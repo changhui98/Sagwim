@@ -142,8 +142,15 @@ export default function GroupCreateScreen() {
           >
             <Ionicons name="chevron-back" size={24} color={colors.text} />
           </Pressable>
-          <Text style={styles.headerTitle}>모임 만들기</Text>
-          <View style={styles.headerBack} />
+          <View style={styles.stepDots}>
+            {[1, 2, 3].map((dot) => (
+              <View
+                key={dot}
+                style={[styles.stepDot, dot <= step && styles.stepDotActive]}
+              />
+            ))}
+          </View>
+          <Text style={styles.stepCount}>{step} / 3</Text>
         </View>
 
         <KeyboardAvoidingView
@@ -517,6 +524,28 @@ const styles = StyleSheet.create({
     fontSize: fontSize.lg,
     fontWeight: '600',
     color: colors.text,
+  },
+  stepDots: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sp2,
+  },
+  stepDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.border,
+  },
+  stepDotActive: {
+    backgroundColor: colors.accent,
+  },
+  stepCount: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    width: 40,
+    textAlign: 'right',
   },
   scroll: {
     flex: 1,
