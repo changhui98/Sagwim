@@ -1,4 +1,5 @@
 import apiClient from '../lib/apiClient'
+import { getToken } from '../lib/secureStore'
 import type {
   GroupDetailResponse,
   GroupMemberResponse,
@@ -118,11 +119,24 @@ export const createGroup = async (data: {
 export const uploadGroupImage = async (groupId: number, imageUri: string): Promise<void> => {
   const formData = new FormData()
   const filename = imageUri.split('/').pop() ?? 'image.jpg'
-  const match = /\.(\w+)$/.exec(filename)
-  const ext = match ? match[1].toLowerCase() : 'jpeg'
+  const ext = /\.(\w+)$/.exec(filename)?.[1]?.toLowerCase() ?? 'jpeg'
   const type = `image/${ext === 'jpg' ? 'jpeg' : ext}`
   formData.append('image', { uri: imageUri, name: filename, type } as any)
-  await apiClient.post(`/groups/${groupId}/image`, formData)
+
+  const token = await getToken()
+  const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL ?? ''
+
+  const response = await fetch(`${baseUrl}/groups/${groupId}/image`, {
+    method: 'POST',
+    headers: token ? { Authorization: token } : {},
+    // Content-Type 헤더 미설정 — fetch가 FormData 감지 후 multipart/form-data; boundary=... 자동 설정
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error((data as { message?: string }).message ?? `그룹 이미지 업로드 실패 (${response.status})`)
+  }
 }
 
 export const getGroupSchedules = async (
