@@ -163,6 +163,10 @@ export const createGroupSchedule = async (
   return response.data
 }
 
+export const deleteGroup = async (groupId: number): Promise<void> => {
+  await apiClient.delete(`/groups/${groupId}`)
+}
+
 export const toggleScheduleAttendance = async (
   groupId: number,
   scheduleId: number,
