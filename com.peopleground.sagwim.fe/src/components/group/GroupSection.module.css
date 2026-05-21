@@ -74,11 +74,25 @@
   .grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* 모바일: 1열 레이아웃 */
+/* 모바일: 가로 스크롤, 3개 카드 한 줄 */
 @media (max-width: 767px) {
   .grid {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
     gap: var(--sp-3);
+  }
+
+  .grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .grid > * {
+    flex: 0 0 calc((100% - var(--sp-3) * 2) / 3);
+    min-width: 0;
   }
 
   /* 섹션 헤더 축소 */
