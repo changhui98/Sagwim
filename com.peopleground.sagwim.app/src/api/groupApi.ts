@@ -125,13 +125,13 @@ export const uploadGroupImage = async (groupId: number, imageUri: string): Promi
   const normalizedExt = ext === 'heic' || ext === 'heif' ? 'jpeg' : ext
   const type = `image/${normalizedExt === 'jpg' ? 'jpeg' : normalizedExt}`
   const safeFilename = filename.includes('.') ? filename : `${filename}.jpg`
-  formData.append('image', { uri: imageUri, name: safeFilename, type } as any)
+  formData.append('file', { uri: imageUri, name: safeFilename, type } as any)
 
   const token = await getToken()
   const baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL ?? ''
 
   const response = await fetch(`${baseUrl}/groups/${groupId}/image`, {
-    method: 'POST',
+    method: 'PATCH',
     headers: token ? { Authorization: token } : {},
     // Content-Type 헤더 미설정 — fetch가 FormData 감지 후 multipart/form-data; boundary=... 자동 설정
     body: formData,
