@@ -1,5 +1,6 @@
 package com.peopleground.sagwim.like.domain.repository;
 
+import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.like.domain.entity.GroupLike;
 import java.util.List;
 import java.util.Optional;
@@ -23,4 +24,10 @@ public interface GroupLikeRepository {
     int insertIfNotExists(Long groupId, UUID userId);
 
     List<GroupLike> findByGroupId(Long groupId);
+
+    /**
+     * 내 활동: 특정 사용자가 좋아요를 누른 모임 목록을 최신순으로 페이지 조회한다.
+     * COUNT 쿼리 없이 size+1 방식으로 hasNext 를 판단한다.
+     */
+    List<Group> findLikedGroupsByUserId(UUID userId, int page, int size);
 }

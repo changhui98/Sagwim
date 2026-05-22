@@ -2,9 +2,11 @@ package com.peopleground.sagwim.comment.infrastructure.repository;
 
 import com.peopleground.sagwim.comment.domain.entity.Comment;
 import com.peopleground.sagwim.comment.domain.entity.QComment;
+import com.peopleground.sagwim.content.domain.entity.Content;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -99,5 +101,31 @@ public class CommentQueryRepository {
             .fetchOne();
 
         return count != null ? count.intValue() : 0;
+    }
+
+    /**
+     * 내 활동: 특정 사용자가 댓글을 작성한 게시글 목록을 최신 댓글 기준으로 페이지 조회한다.
+     *
+     * <p>동일 게시글에 여러 댓글을 작성한 경우 게시글을 중복 없이 단 1건만 반환한다.
+     * QueryDSL 은 SELECT DISTINCT + GROUP BY 없이 중복 제거가 어려우므로,
+     * 서브쿼리 없이 content 기준으로 groupBy 후 max(createdDate) 로 정렬한다.</p>
+     */
+    public List<Content> findCommentedContentsByAuthorId(UUID authorId, int page, int size) {
+        QComment comment = QComment.comment;
+
+        return queryFactory
+            .select(comment.content)
+            .from(comment)
+            .where(
+                comment.author.id.eq(authorId),
+                comment.deletedDate.isNull(),
+                comment.content.deletedDate.isNull(),
+                comment.parent.isNull()
+            )
+            .groupBy(comment.content.id)
+            .orderBy(comment.createdDate.max().desc())
+            .offset((long) page * size)
+            .limit(size + 1L)
+            .fetch();
     }
 }

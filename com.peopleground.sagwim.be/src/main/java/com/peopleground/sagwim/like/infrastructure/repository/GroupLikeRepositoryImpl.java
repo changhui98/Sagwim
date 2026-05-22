@@ -1,11 +1,13 @@
 package com.peopleground.sagwim.like.infrastructure.repository;
 
+import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.like.domain.entity.GroupLike;
 import com.peopleground.sagwim.like.domain.repository.GroupLikeRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -42,5 +44,11 @@ public class GroupLikeRepositoryImpl implements GroupLikeRepository {
     @Override
     public List<GroupLike> findByGroupId(Long groupId) {
         return groupLikeJpaRepository.findByGroupId(groupId);
+    }
+
+    @Override
+    public List<Group> findLikedGroupsByUserId(UUID userId, int page, int size) {
+        return groupLikeJpaRepository.findLikedGroupsByUserId(
+            userId, PageRequest.of(page, size + 1));
     }
 }

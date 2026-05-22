@@ -1,8 +1,10 @@
 package com.peopleground.sagwim.comment.domain.repository;
 
 import com.peopleground.sagwim.comment.domain.entity.Comment;
+import com.peopleground.sagwim.content.domain.entity.Content;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface CommentRepository {
 
@@ -45,4 +47,11 @@ public interface CommentRepository {
      * 원자 UPDATE 직후 최신 likeCount 만 가볍게 재조회한다.
      */
     Integer findLikeCountById(Long id);
+
+    /**
+     * 내 활동: 특정 사용자가 댓글을 작성한 게시글 목록을 최신순으로 페이지 조회한다.
+     * 중복(동일 게시글에 여러 댓글)은 제거하고 게시글 단위로 반환한다.
+     * COUNT 쿼리 없이 size+1 방식으로 hasNext 를 판단한다.
+     */
+    List<Content> findCommentedContentsByAuthorId(UUID authorId, int page, int size);
 }
