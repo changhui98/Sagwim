@@ -74,7 +74,7 @@ export function MoreMenuPopover({ isOpen, onClose, onLogout, anchorRef, placemen
             <span className={styles.itemLabel}>설정</span>
             <SettingsIcon className={styles.itemIcon} />
           </button>
-          <button type="button" className={styles.item} onClick={() => placeholder('내 활동')} role="menuitem">
+          <button type="button" className={styles.item} onClick={() => go('/app/activity')} role="menuitem">
             <span className={styles.itemLabel}>내 활동</span>
             <ActivityIcon className={styles.itemIcon} />
           </button>
