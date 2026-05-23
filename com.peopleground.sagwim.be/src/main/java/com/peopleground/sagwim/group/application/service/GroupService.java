@@ -31,17 +31,23 @@ import com.peopleground.sagwim.image.domain.entity.ImageTargetType;
 import com.peopleground.sagwim.image.presentation.dto.response.ImageResponse;
 import com.peopleground.sagwim.notification.application.service.NotificationService;
 import com.peopleground.sagwim.notification.domain.entity.NotificationType;
+import com.peopleground.sagwim.schedule.domain.repository.ScheduleRepository;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
 import com.peopleground.sagwim.user.infrastructure.GeocodingClient;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import java.util.ArrayList;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -63,6 +69,7 @@ public class GroupService {
     private final NotificationService notificationService;
     private final GeocodingClient geocodingClient;
     private final GeometryFactory geometryFactory;
+    private final ScheduleRepository scheduleRepository;
 
     @Transactional
     public GroupResponse createGroup(GroupCreateRequest request, CustomUser customUser) {
@@ -368,6 +375,27 @@ public class GroupService {
             .findByGroupIdAndUsernameAndStatus(groupId, customUser.getUsername(), GroupJoinRequestStatus.PENDING)
             .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_JOIN_REQUEST_NOT_FOUND));
         joinRequestRepository.delete(request);
+    }
+
+    /**
+     * 이번 주(월요일 00:00 ~ 다음 주 월요일 00:00)에 일정이 있는 모임 목록을 조회합니다.
+     * N+1 없이 schedule group_id IN 쿼리 → group IN 쿼리 두 번으로 처리합니다.
+     */
+    @Transactional(readOnly = true)
+    public List<GroupResponse> getGroupsWithThisWeekSchedule(UUID userId) {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        LocalDateTime weekStart = today.with(DayOfWeek.MONDAY).atStartOfDay();
+        LocalDateTime weekEnd = weekStart.plusWeeks(1);
+
+        List<Long> groupIds = scheduleRepository.findDistinctGroupIdsByStartAtBetween(weekStart, weekEnd);
+        if (groupIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<GroupWithLiked> raw = groupRepository.findAllByIds(groupIds, userId);
+        return raw.stream()
+            .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
+            .toList();
     }
 
     @Transactional(readOnly = true)

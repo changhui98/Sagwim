@@ -30,4 +30,9 @@ public class ScheduleRepositoryImpl implements ScheduleRepository {
         LocalDateTime end = start.plusMonths(1);
         return scheduleJpaRepository.findByGroupIdAndStartAtBetween(groupId, start, end);
     }
+
+    @Override
+    public List<Long> findDistinctGroupIdsByStartAtBetween(LocalDateTime weekStart, LocalDateTime weekEnd) {
+        return scheduleJpaRepository.findDistinctGroupIdsByStartAtBetween(weekStart, weekEnd);
+    }
 }

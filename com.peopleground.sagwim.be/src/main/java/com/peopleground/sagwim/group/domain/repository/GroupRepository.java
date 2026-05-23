@@ -55,4 +55,9 @@ public interface GroupRepository {
     Integer findLikeCountById(Long groupId);
 
     Map<String, Long> countMonthlyCreations(LocalDateTime windowStart);
+
+    /**
+     * id 목록으로 모임 일괄 조회. 이번 주 일정 모임 등 IN 쿼리용.
+     */
+    List<GroupWithLiked> findAllByIds(List<Long> ids, UUID userId);
 }

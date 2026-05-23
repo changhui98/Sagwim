@@ -15,11 +15,13 @@ import com.peopleground.sagwim.group.presentation.dto.response.GroupResponse;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -57,6 +59,21 @@ public class GroupController {
         @AuthenticationPrincipal CustomUser customUser
     ) {
         PageResponse<GroupResponse> response = groupService.getGroups(page, size, keyword, category, customUser);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 이번 주(월~일)에 일정이 있는 모임 목록을 조회합니다.
+     * 비로그인도 조회 가능합니다.
+     */
+    @GetMapping("/thisweek")
+    public ResponseEntity<List<GroupResponse>> getGroupsWithThisWeekSchedule() {
+        UUID userId = null;
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUser customUser) {
+            userId = customUser.getId();
+        }
+        List<GroupResponse> response = groupService.getGroupsWithThisWeekSchedule(userId);
         return ResponseEntity.ok(response);
     }
 

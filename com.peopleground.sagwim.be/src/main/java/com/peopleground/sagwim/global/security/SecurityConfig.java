@@ -114,6 +114,8 @@ public class SecurityConfig {
                     .requestMatchers("/images/**").permitAll()
                     // 모임 일정 목록 조회 공개 API (비로그인 사용자도 조회 가능, attendingByMe는 false 반환)
                     .requestMatchers(HttpMethod.GET, "/api/v1/groups/*/schedules").permitAll()
+                    // 이번 주 일정 모임 조회 공개 API (비로그인 사용자도 조회 가능, isLiked는 false 반환)
+                    .requestMatchers(HttpMethod.GET, "/api/v1/groups/thisweek").permitAll()
                     // WebSocket 핸드셰이크는 HTTP 레벨에서 인증 없이 허용
                     // 실제 인증은 STOMP CONNECT 단계의 StompHandlerInterceptor에서 처리한다.
                     .requestMatchers("/ws-chat/**").permitAll()
