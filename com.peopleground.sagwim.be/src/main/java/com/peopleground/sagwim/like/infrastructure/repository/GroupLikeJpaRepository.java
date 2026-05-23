@@ -1,9 +1,11 @@
 package com.peopleground.sagwim.like.infrastructure.repository;
 
+import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.like.domain.entity.GroupLike;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -37,4 +39,15 @@ public interface GroupLikeJpaRepository extends JpaRepository<GroupLike, Long> {
     )
     int insertIfNotExists(@Param("groupId") Long groupId, @Param("userId") UUID userId);
 
+    /**
+     * 특정 사용자가 좋아요를 누른 모임을 좋아요 등록 최신순으로 조회한다.
+     * 삭제된 모임(deletedDate != null)은 제외한다.
+     * leader 를 fetchJoin 하여 GroupResponse 변환 시 LAZY N+1 을 방지한다.
+     */
+    @Query("SELECT gl.group FROM p_group_like gl "
+        + "JOIN FETCH gl.group.leader "
+        + "WHERE gl.user.id = :userId "
+        + "AND gl.group.deletedDate IS NULL "
+        + "ORDER BY gl.createdDate DESC")
+    List<Group> findLikedGroupsByUserId(@Param("userId") UUID userId, Pageable pageable);
 }

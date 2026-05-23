@@ -325,6 +325,16 @@ export const getGroupLikers = (
   }).then((res) => parseResponse<GroupLikerResponse[]>(res))
 }
 
+/**
+ * 이번 주(월~일)에 일정이 있는 모임 목록을 조회합니다.
+ * 비로그인 시 token을 빈 문자열로 전달하면 isLiked=false로 반환됩니다.
+ */
+export const getThisWeekGroups = (token: string): Promise<GroupResponse[]> => {
+  return fetch(`${API_BASE_URL}/groups/thisweek`, {
+    headers: createAuthHeaders(token),
+  }).then((res) => parseResponse<GroupResponse[]>(res))
+}
+
 export const getMyJoinRequestStatus = (
   token: string,
   groupId: number,

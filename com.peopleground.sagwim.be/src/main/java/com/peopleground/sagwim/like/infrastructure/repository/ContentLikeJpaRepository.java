@@ -1,10 +1,12 @@
 package com.peopleground.sagwim.like.infrastructure.repository;
 
+import com.peopleground.sagwim.content.domain.entity.Content;
 import com.peopleground.sagwim.like.domain.entity.ContentLike;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -48,4 +50,14 @@ public interface ContentLikeJpaRepository extends JpaRepository<ContentLike, Lon
         nativeQuery = true
     )
     int insertIfNotExists(@Param("contentId") Long contentId, @Param("userId") UUID userId);
+
+    /**
+     * 특정 사용자가 좋아요를 누른 게시글을 좋아요 등록 최신순으로 조회한다.
+     * 삭제된 게시글(deletedDate != null)은 제외한다.
+     */
+    @Query("SELECT cl.content FROM p_content_like cl "
+        + "WHERE cl.user.id = :userId "
+        + "AND cl.content.deletedDate IS NULL "
+        + "ORDER BY cl.createdDate DESC")
+    List<Content> findLikedContentsByUserId(@Param("userId") UUID userId, Pageable pageable);
 }

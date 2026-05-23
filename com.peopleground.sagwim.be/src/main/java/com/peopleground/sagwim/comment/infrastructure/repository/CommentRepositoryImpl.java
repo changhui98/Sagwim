@@ -2,9 +2,11 @@ package com.peopleground.sagwim.comment.infrastructure.repository;
 
 import com.peopleground.sagwim.comment.domain.entity.Comment;
 import com.peopleground.sagwim.comment.domain.repository.CommentRepository;
+import com.peopleground.sagwim.content.domain.entity.Content;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -63,5 +65,10 @@ public class CommentRepositoryImpl implements CommentRepository {
     @Override
     public Optional<Comment> findByImageUrl(String imageUrl) {
         return commentJpaRepository.findByImageUrl(imageUrl);
+    }
+
+    @Override
+    public List<Content> findCommentedContentsByAuthorId(UUID authorId, int page, int size) {
+        return commentQueryRepository.findCommentedContentsByAuthorId(authorId, page, size);
     }
 }

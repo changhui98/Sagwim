@@ -19,4 +19,10 @@ public interface ScheduleJpaRepository extends JpaRepository<Schedule, Long> {
 
     @Query("SELECT s FROM p_schedule s WHERE s.id = :id AND s.deletedDate IS NULL")
     Optional<Schedule> findByIdAndNotDeleted(@Param("id") Long id);
+
+    @Query("SELECT DISTINCT s.group.id FROM p_schedule s WHERE s.startAt >= :weekStart AND s.startAt < :weekEnd AND s.deletedDate IS NULL")
+    List<Long> findDistinctGroupIdsByStartAtBetween(
+        @Param("weekStart") LocalDateTime weekStart,
+        @Param("weekEnd") LocalDateTime weekEnd
+    );
 }

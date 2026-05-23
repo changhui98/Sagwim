@@ -91,4 +91,9 @@ public class GroupRepositoryImpl implements GroupRepository {
     public Map<String, Long> countMonthlyCreations(LocalDateTime windowStart) {
         return groupQueryRepository.countMonthlyCreations(windowStart);
     }
+
+    @Override
+    public List<GroupWithLiked> findAllByIds(List<Long> ids, UUID userId) {
+        return groupQueryRepository.findAllByIds(ids, userId);
+    }
 }

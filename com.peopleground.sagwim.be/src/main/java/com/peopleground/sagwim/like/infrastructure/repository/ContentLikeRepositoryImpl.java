@@ -1,13 +1,16 @@
 package com.peopleground.sagwim.like.infrastructure.repository;
 
+import com.peopleground.sagwim.content.domain.entity.Content;
 import com.peopleground.sagwim.like.domain.entity.ContentLike;
 import com.peopleground.sagwim.like.domain.repository.ContentLikeRepository;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -47,5 +50,11 @@ public class ContentLikeRepositoryImpl implements ContentLikeRepository {
             return Set.of();
         }
         return new HashSet<>(contentLikeJpaRepository.findLikedContentIds(userId, contentIds));
+    }
+
+    @Override
+    public List<Content> findLikedContentsByUserId(UUID userId, int page, int size) {
+        return contentLikeJpaRepository.findLikedContentsByUserId(
+            userId, PageRequest.of(page, size + 1));
     }
 }

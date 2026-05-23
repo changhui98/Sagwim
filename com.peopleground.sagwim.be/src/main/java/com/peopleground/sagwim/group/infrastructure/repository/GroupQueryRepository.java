@@ -240,6 +240,47 @@ public class GroupQueryRepository {
         return new PageImpl<>(groups, pageable, total != null ? total : 0);
     }
 
+    /**
+     * id 목록으로 모임 일괄 조회. N+1 없이 IN 쿼리 한 번으로 처리.
+     * userId가 null이면 isLiked=false 로 반환합니다.
+     */
+    public List<GroupWithLiked> findAllByIds(List<Long> ids, UUID userId) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        QGroup group = QGroup.group;
+        QUser leader = new QUser("leader");
+        QGroupLike groupLike = new QGroupLike("groupLikeForStatus");
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(group.id.in(ids));
+        builder.and(group.deletedDate.isNull());
+        builder.and(group.status.eq(GroupStatus.ACTIVE));
+
+        BooleanExpression likedExpr = groupLike.id.isNotNull();
+
+        var query = queryFactory
+            .select(group, likedExpr)
+            .from(group)
+            .join(group.leader, leader).fetchJoin();
+
+        if (userId != null) {
+            query = query.leftJoin(groupLike).on(
+                groupLike.group.eq(group),
+                groupLike.user.id.eq(userId)
+            );
+        }
+
+        List<Tuple> tuples = query
+            .where(builder)
+            .orderBy(group.id.asc())
+            .fetch();
+
+        return tuples.stream()
+            .map(t -> new GroupWithLiked(t.get(group), Boolean.TRUE.equals(t.get(likedExpr))))
+            .toList();
+    }
+
     public Map<String, Long> countMonthlyCreations(LocalDateTime windowStart) {
 
         QGroup group = QGroup.group;

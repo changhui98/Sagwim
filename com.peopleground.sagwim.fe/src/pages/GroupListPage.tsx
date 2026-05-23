@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getGroups, getNewGroups, getPopularGroups, toggleGroupLike } from '../api/groupApi'
+import { getGroups, getNewGroups, getPopularGroups, getThisWeekGroups, toggleGroupLike } from '../api/groupApi'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
@@ -44,6 +44,11 @@ export function GroupListPage() {
   const [neighborhoodLoading, setNeighborhoodLoading] = useState(true)
   const [neighborhoodError, setNeighborhoodError] = useState('')
 
+  // 이번 주에 만나요 상태
+  const [thisWeekGroups, setThisWeekGroups] = useState<GroupResponse[]>([])
+  const [thisWeekLoading, setThisWeekLoading] = useState(true)
+  const [thisWeekError, setThisWeekError] = useState('')
+
   // 프로필 상태
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
@@ -57,15 +62,18 @@ export function GroupListPage() {
       setLoading(true)
       setPopularLoading(true)
       setNeighborhoodLoading(true)
+      setThisWeekLoading(true)
       setError('')
       setPopularError('')
       setNeighborhoodError('')
+      setThisWeekError('')
 
-      // 신규 모임·인기 모임·동네 모든 모임을 병렬로 조회
-      const [newResult, popularResult, neighborhoodResult] = await Promise.allSettled([
+      // 신규 모임·인기 모임·동네 모든 모임·이번 주 모임을 병렬로 조회
+      const [newResult, popularResult, neighborhoodResult, thisWeekResult] = await Promise.allSettled([
         getNewGroups(token),
         getPopularGroups(token, 0, PREVIEW_COUNT),
         getGroups(token, 0, PREVIEW_COUNT),
+        getThisWeekGroups(token),
       ])
 
       // 신규 모임 처리
@@ -122,6 +130,24 @@ export function GroupListPage() {
         setNeighborhoodError(message)
       }
       setNeighborhoodLoading(false)
+
+      // 이번 주 모임 처리
+      if (thisWeekResult.status === 'fulfilled') {
+        const incoming = thisWeekResult.value
+        setThisWeekGroups(incoming)
+        const countMap: Record<number, number> = {}
+        const likedMapUpdate: Record<number, boolean> = {}
+        incoming.forEach((g) => {
+          countMap[g.id] = g.likeCount ?? 0
+          likedMapUpdate[g.id] = g.isLiked
+        })
+        setLikeCountMap((prev) => ({ ...prev, ...countMap }))
+        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
+      } else {
+        const message = thisWeekResult.reason instanceof Error ? thisWeekResult.reason.message : '이번 주 모임 목록 조회 실패'
+        setThisWeekError(message)
+      }
+      setThisWeekLoading(false)
     },
     [token, handleUnauthorized],
   )
@@ -212,9 +238,10 @@ export function GroupListPage() {
       <GroupSection
         title={<><img src={thisweekIcon} alt="" width={22} height={22} />이번 주에 만나요</>}
         subtitle="가까운 약속이 기다리고 있어요"
-        groups={[]}
-        loading={false}
-        error=""
+        groups={thisWeekGroups}
+        loading={thisWeekLoading}
+        error={thisWeekError}
+        onRetry={loadGroups}
         onViewAll={() => navigate('/app/groups/thisweek')}
         likedMap={likedMap}
         likeCountMap={likeCountMap}

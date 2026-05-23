@@ -1,7 +1,9 @@
 package com.peopleground.sagwim.like.domain.repository;
 
+import com.peopleground.sagwim.content.domain.entity.Content;
 import com.peopleground.sagwim.like.domain.entity.ContentLike;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -32,4 +34,10 @@ public interface ContentLikeRepository {
      * @return 입력 contentIds 중 해당 사용자가 좋아요 누른 것들의 id 집합 (없으면 빈 집합)
      */
     Set<Long> findLikedContentIds(UUID userId, Collection<Long> contentIds);
+
+    /**
+     * 내 활동: 특정 사용자가 좋아요를 누른 게시글 목록을 최신순으로 페이지 조회한다.
+     * COUNT 쿼리 없이 size+1 방식으로 hasNext 를 판단한다.
+     */
+    List<Content> findLikedContentsByUserId(UUID userId, int page, int size);
 }
