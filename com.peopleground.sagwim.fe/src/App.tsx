@@ -2,7 +2,6 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { AdminRoute } from './components/AdminRoute'
 import { AdminLayout } from './components/admin/AdminLayout'
-import { ChatFab } from './components/chat/ChatFab'
 import { useAuth } from './context/AuthContext'
 import { useDevToolsProtection } from './hooks/useDevToolsProtection'
 import { HomePage } from './pages/HomePage'
@@ -48,7 +47,6 @@ function App() {
 
   return (
     <div key={location.key} className="page-transition">
-    {isAuthenticated && <ChatFab />}
     <Routes location={location}>
       <Route path="/" element={<HomePage />} />
       <Route

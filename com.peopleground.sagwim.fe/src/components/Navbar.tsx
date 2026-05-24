@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useRef,
   useState,
   type ReactNode,
@@ -23,6 +24,7 @@ import {
   ShieldIcon,
   UserCircleIcon,
 } from './NavIcons'
+import { fetchRooms } from '../api/chatApi'
 
 const ADMIN_ROLES = new Set(['ADMIN', 'MANAGER'])
 
@@ -43,13 +45,40 @@ interface NavItem {
 }
 
 export function Navbar({ role, onLogout }: NavbarProps) {
-  const { meRole, meProfileImageUrl } = useAuth()
+  const { meRole, meProfileImageUrl, token } = useAuth()
   const { unreadCount } = useNotificationCount()
   const effectiveRole = role ?? meRole ?? null
   const isAdmin = effectiveRole !== null && ADMIN_ROLES.has(effectiveRole)
   const location = useLocation()
   const navigate = useNavigate()
   const { open: openPostCreateModal, isOpen: isPostCreateModalOpen } = usePostCreateModal()
+
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
+  const isOnMessagesPage = location.pathname.startsWith('/app/messages')
+
+  useEffect(() => {
+    if (isOnMessagesPage || !token) return
+
+    let cancelled = false
+
+    const load = async () => {
+      try {
+        const res = await fetchRooms(token, undefined, 50)
+        if (!cancelled) {
+          const total = res.content.reduce((sum, r) => sum + r.unreadCount, 0)
+          setUnreadMessageCount(total)
+        }
+      } catch {
+        // 배지 로딩 실패는 무시
+      }
+    }
+
+    void load()
+
+    return () => {
+      cancelled = true
+    }
+  }, [token, isOnMessagesPage])
 
   const [moreOpen, setMoreOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -100,9 +129,20 @@ export function Navbar({ role, onLogout }: NavbarProps) {
     {
       to: '/app/messages',
       label: '메시지',
-      icon: <ChatIcon />,
+      icon: (
+        <span className={styles.navIconWrap}>
+          <ChatIcon />
+          {unreadMessageCount > 0 && (
+            <span
+              className={styles.unreadBadge}
+              aria-label={`읽지 않은 메시지 ${unreadMessageCount}건`}
+            >
+              {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+            </span>
+          )}
+        </span>
+      ),
       match: (p) => p.startsWith('/app/messages'),
-      desktopHidden: true,
     },
     {
       to: '/app/profile',
