@@ -2,10 +2,12 @@
 .main {
   display: flex;
   justify-content: center;
-  min-height: 100dvh;
+  align-items: stretch;
+  height: 100dvh;
   padding: var(--sp-8) var(--sp-6);
   padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
   padding-bottom: calc(var(--sp-8) + var(--layout-bottom-bar-h));
+  box-sizing: border-box;
 }
 
 .container {
@@ -19,9 +21,11 @@
   overflow: hidden;
 }
 
-/* ── 활동 목록 패널 ── */
+/* ── 스크롤 영역 ── */
 .panel {
-  padding: var(--sp-2) 0;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 /* ── 공통 행 아이템 ── */
@@ -34,70 +38,34 @@
   transition: background var(--t-fast);
 }
 
-.item:last-child {
-  border-bottom: none;
-}
-
 .item:hover {
   background: var(--clr-surface-hover);
-}
-
-.itemContent {
-  flex: 1;
-  min-width: 0;
 }
 
 .itemTitle {
   font-size: 0.9375rem;
   line-height: 1.45;
   color: var(--clr-text);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin: 0 0 var(--sp-1);
+  margin: 0;
 }
 
-.itemMeta {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  font-size: 0.8125rem;
+/* ── 무한 스크롤 센티넬 ── */
+.sentinel {
+  height: 1px;
+}
+
+/* ── 추가 로딩 표시 ── */
+.loadingMore {
+  padding: var(--sp-3) var(--sp-4);
+  text-align: center;
   color: var(--clr-text-muted);
-}
-
-.itemType {
-  display: inline-block;
-  padding: 1px var(--sp-2);
-  border-radius: var(--r-sm);
-  background: var(--clr-accent-muted);
-  color: var(--clr-accent);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-/* ── 더 불러오기 버튼 ── */
-.loadMoreBtn {
-  display: block;
-  width: calc(100% - var(--sp-8));
-  margin: var(--sp-3) var(--sp-4);
-  padding: var(--sp-2) 0;
-  background: transparent;
-  border: 1px solid var(--clr-border);
-  border-radius: var(--r-md);
   font-size: 0.875rem;
-  color: var(--clr-text-muted);
-  cursor: pointer;
-  transition: background var(--t-fast), color var(--t-fast);
-}
-
-.loadMoreBtn:hover {
-  background: var(--clr-surface-raised);
-  color: var(--clr-text);
+  margin: 0;
 }
 
 /* ── 상태 메시지 ── */
-.emptyMsg {
+.emptyMsg,
+.loadingMsg {
   padding: var(--sp-10) var(--sp-4);
   text-align: center;
   color: var(--clr-text-muted);
@@ -111,25 +79,17 @@
   font-size: 0.9375rem;
 }
 
-.loadingMsg {
-  padding: var(--sp-10) var(--sp-4);
-  text-align: center;
-  color: var(--clr-text-muted);
-  font-size: 0.9375rem;
-}
-
 @media (max-width: 767px) {
   .main {
     padding: 0;
     padding-left: var(--layout-sidebar-w);
     padding-bottom: var(--layout-bottom-bar-h);
-    align-items: flex-start;
+    height: 100dvh;
   }
 
   .container {
     max-width: none;
     border-radius: 0;
     border: none;
-    min-height: calc(100dvh - var(--layout-bottom-bar-h));
   }
 }
