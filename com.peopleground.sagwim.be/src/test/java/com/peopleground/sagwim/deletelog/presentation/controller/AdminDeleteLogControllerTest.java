@@ -49,7 +49,7 @@ class AdminDeleteLogControllerTest {
         PageResponse<Object> page = new PageResponse<>(List.of(), 0, 20, 0L, 0, false);
         given(deleteLogService.findAll(0, 20)).willReturn((PageResponse) page);
 
-        ResponseEntity<?> res = controller.getDeleteLogs(0, 20);
+        ResponseEntity<?> res = controller.getDeleteLogs(0, 20, null, null);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
