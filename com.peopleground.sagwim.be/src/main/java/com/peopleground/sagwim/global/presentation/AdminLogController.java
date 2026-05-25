@@ -1,9 +1,11 @@
 package com.peopleground.sagwim.global.presentation;
 
 import com.peopleground.sagwim.global.log.LogFileService;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,10 +28,21 @@ public class AdminLogController {
     @GetMapping("/error")
     public ResponseEntity<Map<String, Object>> getErrorLogs(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "50") int size
+        @RequestParam(defaultValue = "50") int size,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(defaultValue = "all") String statusGroup
     ) {
-        List<String> raw = logFileService.getErrorLogs(page, size);
-        long total = logFileService.countErrorLogs();
+        LocalDate effectiveFrom = from != null ? from : LocalDate.now();
+        LocalDate effectiveTo = to != null ? to : LocalDate.now();
+
+        // from이 to보다 늦으면 교정
+        if (effectiveFrom.isAfter(effectiveTo)) {
+            effectiveFrom = effectiveTo;
+        }
+
+        List<String> raw = logFileService.getErrorLogs(effectiveFrom, effectiveTo, statusGroup, page, size);
+        long total = logFileService.countErrorLogs(effectiveFrom, effectiveTo, statusGroup);
         return ResponseEntity.ok(Map.of(
             "content", parseLines(raw),
             "page", page,
@@ -43,10 +56,18 @@ public class AdminLogController {
     @GetMapping("/registration")
     public ResponseEntity<Map<String, Object>> getRegistrationLogs(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "50") int size
+        @RequestParam(defaultValue = "50") int size,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
-        List<String> raw = logFileService.getRegistrationLogs(page, size);
-        long total = logFileService.countRegistrationLogs();
+        LocalDate effectiveFrom = from != null ? from : LocalDate.now();
+        LocalDate effectiveTo = to != null ? to : LocalDate.now();
+        if (effectiveFrom.isAfter(effectiveTo)) {
+            effectiveFrom = effectiveTo;
+        }
+
+        List<String> raw = logFileService.getRegistrationLogs(effectiveFrom, effectiveTo, page, size);
+        long total = logFileService.countRegistrationLogs(effectiveFrom, effectiveTo);
         return ResponseEntity.ok(Map.of(
             "content", parseLines(raw),
             "page", page,
