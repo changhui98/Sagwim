@@ -79,36 +79,36 @@
 /* ── 탭 ── */
 .tabs {
   display: flex;
-  gap: var(--sp-1);
-  background: var(--clr-surface-2);
-  border-radius: var(--r-lg);
-  padding: var(--sp-1);
+  gap: 0;
+  border-bottom: 2px solid var(--clr-border);
 }
 
 .tab,
 .tabActive {
   padding: var(--sp-2) var(--sp-4);
-  border-radius: var(--r-md);
   border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: transparent;
   cursor: pointer;
   font-size: 0.875rem;
-  font-weight: 600;
-  transition: background var(--t-fast), color var(--t-fast);
+  font-weight: 500;
+  transition: color var(--t-fast), border-color var(--t-fast);
+  white-space: nowrap;
 }
 
 .tab {
-  background: transparent;
   color: var(--clr-text-secondary);
 }
 
 .tab:hover {
-  background: var(--clr-surface-3);
+  color: var(--clr-text-primary);
 }
 
 .tabActive {
-  background: var(--clr-accent-muted);
-  color: var(--clr-accent);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  color: var(--clr-primary, #6366f1);
+  font-weight: 700;
+  border-bottom-color: var(--clr-primary, #6366f1);
 }
 
 /* ── 상태/프로바이더 뱃지 ── */

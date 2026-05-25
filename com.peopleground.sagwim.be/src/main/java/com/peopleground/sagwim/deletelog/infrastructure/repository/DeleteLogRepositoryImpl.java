@@ -2,6 +2,7 @@ package com.peopleground.sagwim.deletelog.infrastructure.repository;
 
 import com.peopleground.sagwim.deletelog.domain.entity.DeleteLog;
 import com.peopleground.sagwim.deletelog.domain.repository.DeleteLogRepository;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,12 @@ public class DeleteLogRepositoryImpl implements DeleteLogRepository {
     @Override
     public Page<DeleteLog> findAllOrderByDeletedAtDesc(Pageable pageable) {
         return deleteLogJpaRepository.findAllByOrderByDeletedAtDesc(pageable);
+    }
+
+    @Override
+    public Page<DeleteLog> findAllByDeletedAtBetweenOrderByDeletedAtDesc(
+        LocalDateTime from, LocalDateTime to, Pageable pageable) {
+        return deleteLogJpaRepository.findAllByDeletedAtBetweenOrderByDeletedAtDesc(from, to, pageable);
     }
 
     @Override

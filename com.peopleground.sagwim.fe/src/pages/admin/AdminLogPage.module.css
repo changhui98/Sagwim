@@ -1,5 +1,104 @@
 /* ── AdminLogPage 고유 스타일 ── */
 
+/* ── 필터바 ── */
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: var(--sp-2) 0;
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.filterLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--clr-text-secondary);
+  white-space: nowrap;
+}
+
+/* 토글 버튼 그룹 */
+.toggleGroup {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--clr-border-strong);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.toggleBtn,
+.toggleBtnActive {
+  padding: var(--sp-1) var(--sp-3);
+  border: none;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+}
+
+.toggleBtn {
+  color: var(--clr-text-secondary);
+}
+
+.toggleBtn:hover {
+  background: var(--clr-surface-1);
+}
+
+.toggleBtnActive {
+  background: var(--clr-primary, #6366f1);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 날짜 input */
+.dateInput {
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--clr-border-strong);
+  border-radius: var(--r-md);
+  background: var(--clr-surface-1);
+  color: var(--clr-text-primary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: var(--clr-primary, #6366f1);
+}
+
+.dateSep {
+  font-size: 0.8125rem;
+  color: var(--clr-text-muted);
+}
+
+/* 조회 버튼 */
+.btnSearch {
+  padding: var(--sp-1) var(--sp-4);
+  border-radius: var(--r-md);
+  border: none;
+  background: var(--clr-primary, #6366f1);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--t-fast);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.btnSearch:hover {
+  opacity: 0.88;
+}
+
+
+
 .container {
   display: flex;
   flex-direction: column;

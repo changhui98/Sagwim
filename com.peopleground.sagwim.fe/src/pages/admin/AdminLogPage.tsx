@@ -1,5 +1,6 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { getErrorLogs, getRegistrationLogs } from '../../api/logApi'
+import type { StatusGroup } from '../../api/logApi'
 import { getDeleteLogs, restoreDeleteLog } from '../../api/adminApi'
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
@@ -17,6 +18,22 @@ type Tab = 'error' | 'registration' | 'delete'
 const PAGE_SIZE = 50
 const DELETE_LOG_PAGE_SIZE = 20
 const POLL_INTERVAL_MS = 10_000
+
+function toDateString(d: Date): string {
+  return d.toISOString().slice(0, 10)
+}
+
+function todayStr(): string {
+  return toDateString(new Date())
+}
+
+function nMonthsAgoStr(n: number): string {
+  const d = new Date()
+  d.setMonth(d.getMonth() - n)
+  return toDateString(d)
+}
+
+type QuickRange = 'today' | '1m' | '3m' | 'custom'
 
 function statusBadgeClass(status: number): string {
   if (status >= 500) return pageStyles.badgeRed
@@ -37,18 +54,53 @@ export function AdminLogPage() {
   const [deleteLogs, setDeleteLogs] = useState<PageResponse<DeleteLogEntry> | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  // ─── 에러 로그 필터 상태 ───────────────────────────────────────────────────
+  const [quickRange, setQuickRange] = useState<QuickRange>('today')
+  const [fromDate, setFromDate] = useState<string>(todayStr())
+  const [toDate, setToDate] = useState<string>(todayStr())
+  const [statusGroup, setStatusGroup] = useState<StatusGroup>('all')
+
+  // 빠른 기간 버튼 클릭 시 날짜 input 자동 세팅
+  const applyQuickRange = (range: QuickRange) => {
+    setQuickRange(range)
+    const today = todayStr()
+    if (range === 'today') {
+      setFromDate(today)
+      setToDate(today)
+    } else if (range === '1m') {
+      setFromDate(nMonthsAgoStr(1))
+      setToDate(today)
+    } else if (range === '3m') {
+      setFromDate(nMonthsAgoStr(3))
+      setToDate(today)
+    }
+    // 'custom'은 input에서 직접 변경하므로 여기서 날짜는 건드리지 않는다
+  }
+
+  const handleFromDateChange = (val: string) => {
+    setFromDate(val)
+    setQuickRange('custom')
+  }
+
+  const handleToDateChange = (val: string) => {
+    setToDate(val)
+    setQuickRange('custom')
+  }
+
+  // ─── 데이터 로딩 ──────────────────────────────────────────────────────────
+
   const load = useCallback(
-    async (currentPage: number) => {
+    async (currentPage: number, from = fromDate, to = toDate, sg = statusGroup) => {
       setLoading(true)
       try {
         if (tab === 'error') {
-          const data = await getErrorLogs(token, currentPage, PAGE_SIZE)
+          const data = await getErrorLogs(token, currentPage, PAGE_SIZE, from, to, sg)
           setErrorLogs(data)
         } else if (tab === 'registration') {
-          const data = await getRegistrationLogs(token, currentPage, PAGE_SIZE)
+          const data = await getRegistrationLogs(token, currentPage, PAGE_SIZE, from, to)
           setRegLogs(data)
         } else {
-          const data = await getDeleteLogs(token, currentPage, DELETE_LOG_PAGE_SIZE)
+          const data = await getDeleteLogs(token, currentPage, DELETE_LOG_PAGE_SIZE, from, to)
           setDeleteLogs(data)
         }
       } catch (err) {
@@ -57,28 +109,39 @@ export function AdminLogPage() {
         setLoading(false)
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [token, tab, handleUnauthorized],
   )
 
   useEffect(() => {
     setPage(0)
-    load(0)
+    // 탭 전환 시 에러 탭은 현재 필터 그대로 재조회
+    load(0, fromDate, toDate, statusGroup)
+    // load 자체가 tab을 의존하므로 fromDate/toDate/statusGroup은 여기서 dep에 넣지 않음
+    // (필터 변경은 조회 버튼으로 수동 트리거)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, load])
 
   useEffect(() => {
     if (autoRefresh) {
-      pollRef.current = setInterval(() => load(page), POLL_INTERVAL_MS)
+      pollRef.current = setInterval(() => load(page, fromDate, toDate, statusGroup), POLL_INTERVAL_MS)
     } else {
       if (pollRef.current) clearInterval(pollRef.current)
     }
     return () => {
       if (pollRef.current) clearInterval(pollRef.current)
     }
-  }, [autoRefresh, load, page])
+  }, [autoRefresh, load, page, fromDate, toDate, statusGroup])
 
   const handlePageChange = (next: number) => {
     setPage(next)
-    load(next)
+    load(next, fromDate, toDate, statusGroup)
+  }
+
+  // 조회 버튼 클릭 — 명시적 조회 트리거
+  const handleSearch = () => {
+    setPage(0)
+    load(0, fromDate, toDate, statusGroup)
   }
 
   const handleRestore = useCallback(
@@ -143,10 +206,78 @@ export function AdminLogPage() {
               {autoRefresh ? '● 자동 새로고침 중' : '자동 새로고침'}
             </button>
           )}
-          <button type="button" className={pageStyles.btnRefresh} onClick={() => load(page)}>
+          <button type="button" className={pageStyles.btnRefresh} onClick={() => load(page, fromDate, toDate, statusGroup)}>
             새로고침
           </button>
         </div>
+      </div>
+
+      {/* ── 날짜 필터 (전 탭 공통, 상태코드는 에러 탭 전용) ── */}
+      <div className={pageStyles.filterBar}>
+        {/* 빠른 기간 */}
+        <div className={pageStyles.filterGroup}>
+          <span className={pageStyles.filterLabel}>기간</span>
+          <div className={pageStyles.toggleGroup}>
+            {(['today', '1m', '3m'] as const).map((range) => (
+              <button
+                key={range}
+                type="button"
+                className={quickRange === range ? pageStyles.toggleBtnActive : pageStyles.toggleBtn}
+                onClick={() => applyQuickRange(range)}
+              >
+                {range === 'today' ? '오늘' : range === '1m' ? '1개월' : '3개월'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 직접 날짜 입력 */}
+        <div className={pageStyles.filterGroup}>
+          <input
+            type="date"
+            className={pageStyles.dateInput}
+            value={fromDate}
+            max={toDate}
+            onChange={(e) => handleFromDateChange(e.target.value)}
+          />
+          <span className={pageStyles.dateSep}>~</span>
+          <input
+            type="date"
+            className={pageStyles.dateInput}
+            value={toDate}
+            min={fromDate}
+            max={todayStr()}
+            onChange={(e) => handleToDateChange(e.target.value)}
+          />
+        </div>
+
+        {/* 상태코드 필터 — 에러 탭 전용 */}
+        {tab === 'error' && (
+          <div className={pageStyles.filterGroup}>
+            <span className={pageStyles.filterLabel}>상태코드</span>
+            <div className={pageStyles.toggleGroup}>
+              {(['all', '4xx', '5xx'] as const).map((sg) => (
+                <button
+                  key={sg}
+                  type="button"
+                  className={statusGroup === sg ? pageStyles.toggleBtnActive : pageStyles.toggleBtn}
+                  onClick={() => setStatusGroup(sg)}
+                >
+                  {sg === 'all' ? '전체' : sg}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 조회 버튼 */}
+        <button
+          type="button"
+          className={pageStyles.btnSearch}
+          onClick={handleSearch}
+        >
+          조회
+        </button>
       </div>
 
       {loading ? (
