@@ -13,6 +13,9 @@ import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.repository.GroupRepository;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +45,17 @@ public class DeleteLogService {
         Pageable pageable = PageRequest.of(page, size);
         return PageResponse.from(
             deleteLogRepository.findAllOrderByDeletedAtDesc(pageable)
+                .map(DeleteLogResponse::from)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<DeleteLogResponse> findAll(LocalDate from, LocalDate to, int page, int size) {
+        LocalDateTime fromDt = from.atStartOfDay();
+        LocalDateTime toDt = to.atTime(LocalTime.MAX);
+        Pageable pageable = PageRequest.of(page, size);
+        return PageResponse.from(
+            deleteLogRepository.findAllByDeletedAtBetweenOrderByDeletedAtDesc(fromDt, toDt, pageable)
                 .map(DeleteLogResponse::from)
         );
     }

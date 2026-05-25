@@ -1,6 +1,7 @@
 package com.peopleground.sagwim.deletelog.domain.repository;
 
 import com.peopleground.sagwim.deletelog.domain.entity.DeleteLog;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,9 @@ public interface DeleteLogRepository {
     Optional<DeleteLog> findById(Long id);
 
     Page<DeleteLog> findAllOrderByDeletedAtDesc(Pageable pageable);
+
+    Page<DeleteLog> findAllByDeletedAtBetweenOrderByDeletedAtDesc(
+        LocalDateTime from, LocalDateTime to, Pageable pageable);
 
     Optional<DeleteLog> findTopByTargetTypeAndTargetIdAndRestoredFalse(String targetType, String targetId);
 }

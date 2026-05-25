@@ -4,7 +4,9 @@ import com.peopleground.sagwim.deletelog.application.service.DeleteLogService;
 import com.peopleground.sagwim.deletelog.presentation.dto.response.DeleteLogResponse;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,8 +29,18 @@ public class AdminDeleteLogController {
     @GetMapping
     public ResponseEntity<PageResponse<DeleteLogResponse>> getDeleteLogs(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
+        if (from != null || to != null) {
+            LocalDate effectiveFrom = from != null ? from : LocalDate.now();
+            LocalDate effectiveTo = to != null ? to : LocalDate.now();
+            if (effectiveFrom.isAfter(effectiveTo)) {
+                effectiveFrom = effectiveTo;
+            }
+            return ResponseEntity.ok(deleteLogService.findAll(effectiveFrom, effectiveTo, page, size));
+        }
         return ResponseEntity.ok(deleteLogService.findAll(page, size));
     }
 
