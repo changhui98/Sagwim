@@ -190,8 +190,13 @@ export const getDeleteLogs = (
   token: string,
   page = 0,
   size = 20,
+  from?: string,
+  to?: string,
 ): Promise<PageResponse<DeleteLogEntry>> => {
-  return fetch(`${API_BASE_URL}/admin/delete-logs?page=${page}&size=${size}`, {
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  if (from) params.set('from', from)
+  if (to) params.set('to', to)
+  return fetch(`${API_BASE_URL}/admin/delete-logs?${params.toString()}`, {
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<PageResponse<DeleteLogEntry>>(response))
 }
