@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useAuth } from '../../../src/context/AuthContext'
 import { getUserPosts } from '../../../src/api/postApi'
+import { PostCard } from '../../../src/components/PostCard'
 import type { ContentResponse } from '../../../src/types/post'
 import { resolveImageUrl } from '../../../src/lib/resolveImageUrl'
 import { colors, fontSize, radius, spacing } from '../../../src/constants/theme'
@@ -138,29 +139,10 @@ export default function ProfileScreen() {
     )
   }
 
-  // ── 텍스트 행 (글 탭) ──
-  const renderTextRow = ({ item }: { item: ContentResponse }) => {
-    const date = new Date(item.createdAt)
-    const dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
-    return (
-      <Pressable
-        style={styles.textRow}
-        onPress={() => router.push({ pathname: '/(app)/post-detail', params: { id: String(item.id) } })}
-        accessibilityRole="button"
-      >
-        <Text style={styles.textRowBody} numberOfLines={2}>{item.body}</Text>
-        <View style={styles.textRowMeta}>
-          <Text style={styles.textRowDate}>{dateStr}</Text>
-          <View style={styles.textRowStats}>
-            <Ionicons name="heart-outline" size={13} color={colors.textMuted} />
-            <Text style={styles.textRowStat}>{item.likeCount ?? 0}</Text>
-            <Ionicons name="chatbubble-outline" size={12} color={colors.textMuted} />
-            <Text style={styles.textRowStat}>{item.commentCount ?? 0}</Text>
-          </View>
-        </View>
-      </Pressable>
-    )
-  }
+  // ── 텍스트 행 (글 탭) — 공통 PostCard 재사용 ──
+  const renderTextRow = ({ item }: { item: ContentResponse }) => (
+    <PostCard post={item} />
+  )
 
   const renderEmpty = () => {
     if (isLoading) return null
@@ -401,10 +383,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sp3,
   },
-  tabItemActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.text,
-  },
+  tabItemActive: {},
 
   // FlatList
   flatList: {
@@ -426,39 +405,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.45)',
     borderRadius: 4,
     padding: 2,
-  },
-
-  // 텍스트 목록 행
-  textRow: {
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: spacing.sp2,
-  },
-  textRowBody: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    lineHeight: fontSize.md * 1.5,
-  },
-  textRowMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  textRowDate: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-  },
-  textRowStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  textRowStat: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginRight: 4,
   },
 
   // Empty state
