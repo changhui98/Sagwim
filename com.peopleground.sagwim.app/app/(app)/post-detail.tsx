@@ -510,6 +510,11 @@ export default function PostDetailScreen() {
                   {/* 본문 */}
                   <Text style={styles.body}>{post.body}</Text>
 
+                  {/* 이미지 */}
+                  {(post.imageUrls?.length ?? 0) > 0 && (
+                    <ImageSlider urls={post.imageUrls!} />
+                  )}
+
                   {/* 태그 */}
                   {(post.tags?.length ?? 0) > 0 && (
                     <View style={styles.tags}>
@@ -519,11 +524,6 @@ export default function PostDetailScreen() {
                         </View>
                       ))}
                     </View>
-                  )}
-
-                  {/* 이미지 */}
-                  {(post.imageUrls?.length ?? 0) > 0 && (
-                    <ImageSlider urls={post.imageUrls!} />
                   )}
 
                   {/* 액션 바 */}
