@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  Alert,
   Dimensions,
   Image,
   Pressable,
@@ -9,7 +10,8 @@ import {
 } from 'react-native'
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
-import { togglePostLike } from '../api/postApi'
+import { deletePost, togglePostLike } from '../api/postApi'
+import { createReport } from '../api/reportApi'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import { useAuth } from '../context/AuthContext'
 import { colors, fontSize, radius, spacing } from '../constants/theme'
@@ -59,9 +61,10 @@ function DynamicPostImage({ uri }: { uri: string }) {
 interface PostCardProps {
   post: ContentResponse
   onLikeToggle?: (id: number, liked: boolean, likeCount: number) => void
+  onDelete?: (id: number) => void
 }
 
-export function PostCard({ post, onLikeToggle }: PostCardProps) {
+export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
   const { meUsername, meProfileImageUrl } = useAuth()
   const author = post.nickname ?? post.createdBy
   const isMine = !!meUsername && post.createdBy === meUsername
@@ -100,6 +103,62 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
     router.push({ pathname: '/(app)/post-detail', params: { id: String(post.id) } })
   }, [post.id])
 
+  const handleMorePress = useCallback(() => {
+    if (isMine) {
+      Alert.alert('게시글 옵션', undefined, [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '수정',
+          onPress: () => router.push({
+            pathname: '/(app)/post-edit',
+            params: {
+              contentId: String(post.id),
+              initialBody: post.body,
+              initialTags: JSON.stringify(post.tags ?? []),
+            },
+          }),
+        },
+        {
+          text: '삭제',
+          style: 'destructive',
+          onPress: () => {
+            Alert.alert('게시글 삭제', '삭제하면 복구할 수 없습니다. 삭제하시겠습니까?', [
+              { text: '취소', style: 'cancel' },
+              {
+                text: '삭제',
+                style: 'destructive',
+                onPress: async () => {
+                  try {
+                    await deletePost(post.id)
+                    onDelete?.(post.id)
+                  } catch {
+                    Alert.alert('오류', '삭제에 실패했습니다.')
+                  }
+                },
+              },
+            ])
+          },
+        },
+      ])
+    } else {
+      Alert.alert('신고 사유를 선택하세요', undefined, [
+        { text: '취소', style: 'cancel' },
+        { text: '스팸입니다', onPress: () => submitReport('스팸입니다') },
+        { text: '부적절한 콘텐츠', onPress: () => submitReport('부적절한 콘텐츠') },
+        { text: '허위정보', onPress: () => submitReport('허위정보') },
+      ])
+    }
+  }, [isMine, post, onDelete])
+
+  const submitReport = useCallback(async (reason: string) => {
+    try {
+      await createReport('POST', post.id, reason)
+      Alert.alert('신고 완료', '신고가 접수되었습니다.')
+    } catch {
+      Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.')
+    }
+  }, [post.id])
+
   return (
     <Pressable
       onPress={goToDetail}
@@ -123,6 +182,9 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
           <Text style={styles.author}>{author}</Text>
           <Text style={styles.time}>{formatRelativeTime(post.createdAt)}</Text>
         </View>
+        <Pressable onPress={handleMorePress} hitSlop={8} style={styles.moreBtn}>
+          <Ionicons name="ellipsis-horizontal" size={18} color={colors.textMuted} />
+        </Pressable>
       </View>
 
       <Text style={styles.body} numberOfLines={3}>{post.body}</Text>
@@ -216,6 +278,9 @@ const styles = StyleSheet.create({
   time: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
+  },
+  moreBtn: {
+    padding: 4,
   },
   body: {
     fontSize: fontSize.md,

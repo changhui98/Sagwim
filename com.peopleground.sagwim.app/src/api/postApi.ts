@@ -72,6 +72,19 @@ export const togglePostLike = async (contentId: number): Promise<LikeToggleRespo
   return response.data
 }
 
+export const deletePost = async (contentId: number): Promise<void> => {
+  await apiClient.delete(`/contents/${contentId}`)
+}
+
+export const updatePost = async (
+  contentId: number,
+  body: string,
+  tags?: string[],
+): Promise<ContentResponse> => {
+  const response = await apiClient.patch<ContentResponse>(`/contents/${contentId}`, { body, tags })
+  return response.data
+}
+
 export const getUserPosts = async (
   username: string,
   page = 0,

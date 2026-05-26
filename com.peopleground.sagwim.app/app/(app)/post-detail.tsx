@@ -16,7 +16,8 @@ import {
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
-import { getPost, togglePostLike } from '../../src/api/postApi'
+import { deletePost, getPost, togglePostLike } from '../../src/api/postApi'
+import { createReport } from '../../src/api/reportApi'
 import {
   createComment,
   createReply,
@@ -500,7 +501,75 @@ export default function PostDetailScreen() {
             <Ionicons name="chevron-back" size={24} color={colors.text} />
           </Pressable>
           <Text style={styles.headerTitle}>게시글</Text>
-          <View style={styles.headerBack} />
+          <Pressable
+            style={styles.headerBack}
+            hitSlop={8}
+            onPress={() => {
+              if (!post) return
+              if (isPostMine) {
+                Alert.alert('게시글 옵션', undefined, [
+                  { text: '취소', style: 'cancel' },
+                  {
+                    text: '수정',
+                    onPress: () => router.push({
+                      pathname: '/(app)/post-edit',
+                      params: {
+                        contentId: String(post.id),
+                        initialBody: post.body,
+                        initialTags: JSON.stringify(post.tags ?? []),
+                      },
+                    }),
+                  },
+                  {
+                    text: '삭제',
+                    style: 'destructive',
+                    onPress: () => Alert.alert('게시글 삭제', '삭제하면 복구할 수 없습니다. 삭제하시겠습니까?', [
+                      { text: '취소', style: 'cancel' },
+                      {
+                        text: '삭제',
+                        style: 'destructive',
+                        onPress: async () => {
+                          try {
+                            await deletePost(post.id)
+                            goBack()
+                          } catch {
+                            Alert.alert('오류', '삭제에 실패했습니다.')
+                          }
+                        },
+                      },
+                    ]),
+                  },
+                ])
+              } else {
+                Alert.alert('신고 사유를 선택하세요', undefined, [
+                  { text: '취소', style: 'cancel' },
+                  {
+                    text: '스팸입니다',
+                    onPress: async () => {
+                      try { await createReport('POST', post.id, '스팸입니다'); Alert.alert('신고 완료', '신고가 접수되었습니다.') }
+                      catch { Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.') }
+                    },
+                  },
+                  {
+                    text: '부적절한 콘텐츠',
+                    onPress: async () => {
+                      try { await createReport('POST', post.id, '부적절한 콘텐츠'); Alert.alert('신고 완료', '신고가 접수되었습니다.') }
+                      catch { Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.') }
+                    },
+                  },
+                  {
+                    text: '허위정보',
+                    onPress: async () => {
+                      try { await createReport('POST', post.id, '허위정보'); Alert.alert('신고 완료', '신고가 접수되었습니다.') }
+                      catch { Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.') }
+                    },
+                  },
+                ])
+              }
+            }}
+          >
+            <Ionicons name="ellipsis-horizontal" size={22} color={colors.text} />
+          </Pressable>
         </View>
 
         {/* 콘텐츠 + 댓글 목록 */}
