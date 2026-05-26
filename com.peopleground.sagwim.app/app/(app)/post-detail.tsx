@@ -139,9 +139,17 @@ function CommentItem({
         {/* 아바타 컬럼: 아바타 + 답글 있을 때 아래 연결선 */}
         <View style={commentStyles.avatarCol}>
           <View style={commentStyles.avatar}>
-            <Text style={commentStyles.avatarText}>
-              {author.charAt(0).toUpperCase()}
-            </Text>
+            {comment.authorProfileImageUrl ? (
+              <Image
+                source={{ uri: resolveImageUrl(comment.authorProfileImageUrl) ?? undefined }}
+                style={StyleSheet.absoluteFill}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={commentStyles.avatarText}>
+                {author.charAt(0).toUpperCase()}
+              </Text>
+            )}
           </View>
           {hasReplies && <View style={commentStyles.connector} />}
         </View>
@@ -696,6 +704,7 @@ const commentStyles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+    alignItems: 'stretch',
     paddingHorizontal: spacing.sp4,
     paddingTop: spacing.sp3,
     paddingBottom: spacing.sp3,
@@ -704,6 +713,7 @@ const commentStyles = StyleSheet.create({
   // 아바타 컬럼: 아바타 + 연결선을 세로로 담는 컬럼
   avatarCol: {
     width: 36,
+    alignSelf: 'stretch',
     alignItems: 'center',
     marginRight: spacing.sp3,
   },
@@ -711,6 +721,8 @@ const commentStyles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: colors.accentMuted,
     alignItems: 'center', justifyContent: 'center',
+    overflow: 'hidden',
+    flexShrink: 0,
   },
   avatarText: { fontSize: fontSize.sm, fontWeight: '700', color: colors.accent },
   // 아바타 아래 → 자식 아바타까지 이어지는 세로 연결선
