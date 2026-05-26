@@ -71,3 +71,15 @@ export const togglePostLike = async (contentId: number): Promise<LikeToggleRespo
   const response = await apiClient.post<LikeToggleResponse>(`/contents/${contentId}/likes`)
   return response.data
 }
+
+export const getUserPosts = async (
+  username: string,
+  page = 0,
+  size = 12,
+): Promise<PageResponse<ContentResponse>> => {
+  const response = await apiClient.get<PageResponse<ContentResponse>>(
+    `/contents/users/${encodeURIComponent(username)}`,
+    { params: { page, size } },
+  )
+  return response.data
+}
