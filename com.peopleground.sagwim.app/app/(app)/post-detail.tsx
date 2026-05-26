@@ -572,9 +572,6 @@ export default function PostDetailScreen() {
 
                   {/* 댓글 구분선 */}
                   <View style={styles.divider} />
-                  <Text style={styles.commentSectionTitle}>
-                    댓글 {post.commentCount ?? 0}개
-                  </Text>
                 </View>
               )
             }
