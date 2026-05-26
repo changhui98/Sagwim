@@ -2,6 +2,7 @@ import apiClient from '../lib/apiClient'
 import { getToken } from '../lib/secureStore'
 import type {
   GroupDetailResponse,
+  GroupJoinRequestResponse,
   GroupMemberResponse,
   GroupResponse,
   ScheduleCreateRequest,
@@ -167,6 +168,55 @@ export const createGroupSchedule = async (
 
 export const deleteGroup = async (groupId: number): Promise<void> => {
   await apiClient.delete(`/groups/${groupId}`)
+}
+
+export const updateGroup = async (
+  groupId: number,
+  data: {
+    name?: string
+    description?: string
+    category?: string
+    meetingType?: string
+    maxMemberCount?: number
+    joinType?: string
+  },
+): Promise<void> => {
+  await apiClient.patch(`/groups/${groupId}`, data)
+}
+
+export const getGroupJoinQuestions = async (groupId: number): Promise<string[]> => {
+  const response = await apiClient.get<string[]>(`/groups/${groupId}/join-questions`)
+  return response.data
+}
+
+export const updateGroupJoinQuestions = async (
+  groupId: number,
+  questions: string[],
+): Promise<void> => {
+  await apiClient.put(`/groups/${groupId}/join-questions`, { questions })
+}
+
+export const getPendingJoinRequests = async (
+  groupId: number,
+): Promise<GroupJoinRequestResponse[]> => {
+  const response = await apiClient.get<GroupJoinRequestResponse[]>(
+    `/groups/${groupId}/join-requests`,
+  )
+  return response.data
+}
+
+export const approveJoinRequest = async (
+  groupId: number,
+  requestId: number,
+): Promise<void> => {
+  await apiClient.post(`/groups/${groupId}/join-requests/${requestId}/approve`)
+}
+
+export const rejectJoinRequest = async (
+  groupId: number,
+  requestId: number,
+): Promise<void> => {
+  await apiClient.post(`/groups/${groupId}/join-requests/${requestId}/reject`)
 }
 
 export const toggleScheduleAttendance = async (

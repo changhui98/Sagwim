@@ -1,0 +1,185 @@
+import React, { useCallback, useState } from 'react'
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
+import { Stack, router, useLocalSearchParams } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+
+import { useAuth } from '../../src/context/AuthContext'
+import { updateMyProfile } from '../../src/api/userApi'
+import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
+import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import type { Gender, UserDetailResponse } from '../../src/types/user'
+
+const GENDER_OPTIONS: { value: Gender; label: string }[] = [
+  { value: 'MALE', label: '남성' },
+  { value: 'FEMALE', label: '여성' },
+  { value: 'NONE', label: '선택 안 함' },
+]
+
+export default function ProfileEditGenderScreen() {
+  const insets = useSafeAreaInsets()
+  const { setMeProfile } = useAuth()
+  const { profile: profileJson } = useLocalSearchParams<{ profile: string }>()
+  const profile: UserDetailResponse = JSON.parse(profileJson ?? '{}')
+
+  const [selected, setSelected] = useState<Gender>(profile.gender ?? 'NONE')
+  const [saving, setSaving] = useState(false)
+  const [showDiscard, setShowDiscard] = useState(false)
+
+  const isChanged = selected !== (profile.gender ?? 'NONE')
+  const canSave = isChanged
+
+  const handleBack = useCallback(() => {
+    if (isChanged) {
+      setShowDiscard(true)
+      return
+    }
+    router.back()
+  }, [isChanged])
+
+  const handleSave = async () => {
+    if (!canSave) return
+    setSaving(true)
+    try {
+      const updated = await updateMyProfile({
+        nickname: profile.nickname,
+        address: profile.address ?? '',
+        currentPassword: '',
+        newPassword: '',
+        profileImageUrl: profile.profileImageUrl ?? null,
+        bio: profile.bio,
+        gender: selected,
+        birthDate: profile.birthDate,
+        isSearchable: profile.isSearchable,
+      })
+      setMeProfile(updated)
+      router.back()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '성별 저장에 실패했습니다.'
+      Alert.alert('오류', message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        {/* 헤더 */}
+        <View style={styles.header}>
+          <Pressable
+            onPress={handleBack}
+            hitSlop={8}
+            style={styles.headerSide}
+            disabled={saving}
+          >
+            <Text style={styles.headerBack}>돌아가기</Text>
+          </Pressable>
+          <Text style={styles.headerTitle}>성별</Text>
+          <View style={styles.headerSide} />
+        </View>
+
+        {/* 성별 선택 목록 */}
+        <View style={styles.optionList}>
+          {GENDER_OPTIONS.map((option) => (
+            <Pressable
+              key={option.value}
+              style={({ pressed }) => [
+                styles.optionRow,
+                pressed && !saving && styles.rowPressed,
+              ]}
+              onPress={() => setSelected(option.value)}
+              disabled={saving}
+            >
+              <Text style={styles.optionLabel}>{option.label}</Text>
+              {selected === option.value && (
+                <Ionicons name="checkmark" size={20} color={colors.accent} />
+              )}
+            </Pressable>
+          ))}
+        </View>
+
+        {/* 저장 버튼 */}
+        <View style={styles.footer}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.saveBtn,
+              !canSave && styles.saveBtnDisabled,
+              pressed && canSave && styles.saveBtnPressed,
+            ]}
+            onPress={handleSave}
+            disabled={!canSave || saving}
+          >
+            {saving
+              ? <ActivityIndicator size="small" color="#fff" />
+              : <Text style={styles.saveBtnText}>저장</Text>
+            }
+          </Pressable>
+        </View>
+      </View>
+
+      <ConfirmDialog
+        isOpen={showDiscard}
+        title="변경 취소"
+        message="변경 사항이 사라집니다. 계속하시겠습니까?"
+        confirmLabel="나가기"
+        cancelLabel="계속 편집"
+        confirmVariant="danger"
+        onConfirm={() => { setShowDiscard(false); router.back() }}
+        onCancel={() => setShowDiscard(false)}
+      />
+    </>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.bg },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.sp4,
+    paddingVertical: spacing.sp3,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  headerSide: { width: 72 },
+  headerBack: { fontSize: fontSize.sm, color: colors.text },
+  headerTitle: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
+
+  optionList: {},
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.sp4,
+    paddingVertical: spacing.sp4,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  rowPressed: { backgroundColor: colors.surface2 },
+  optionLabel: { fontSize: fontSize.base, color: colors.text },
+
+  footer: {
+    padding: spacing.sp4,
+  },
+  saveBtn: {
+    height: 48,
+    borderRadius: radius.xl,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveBtnDisabled: { backgroundColor: colors.border },
+  saveBtnPressed: { opacity: 0.85 },
+  saveBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
+})

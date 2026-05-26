@@ -24,3 +24,12 @@
     align-items: flex-start;
   }
 }
+
+.sectionTitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--clr-text-muted);
+  text-transform: lowercase;
+  margin: var(--sp-6) 0 var(--sp-2) 0;
+  padding: 0 var(--sp-5);
+}
