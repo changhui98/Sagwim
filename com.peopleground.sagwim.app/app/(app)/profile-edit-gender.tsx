@@ -31,16 +31,11 @@ export default function ProfileEditGenderScreen() {
   const [selected, setSelected] = useState<Gender>(profile.gender ?? 'NONE')
   const [saving, setSaving] = useState(false)
 
-  const handleSelectGender = async (value: Gender) => {
-    if (saving) return
-    setSelected(value)
+  const isChanged = selected !== (profile.gender ?? 'NONE')
+  const canSave = isChanged
 
-    const hasChange = value !== (profile.gender ?? 'NONE')
-    if (!hasChange) {
-      router.back()
-      return
-    }
-
+  const handleSave = async () => {
+    if (!canSave) return
     setSaving(true)
     try {
       const updated = await updateMyProfile({
@@ -50,7 +45,7 @@ export default function ProfileEditGenderScreen() {
         newPassword: '',
         profileImageUrl: profile.profileImageUrl ?? null,
         bio: profile.bio,
-        gender: value,
+        gender: selected,
         birthDate: profile.birthDate,
         isSearchable: profile.isSearchable,
       })
@@ -91,17 +86,33 @@ export default function ProfileEditGenderScreen() {
                 styles.optionRow,
                 pressed && !saving && styles.rowPressed,
               ]}
-              onPress={() => handleSelectGender(option.value)}
+              onPress={() => setSelected(option.value)}
               disabled={saving}
             >
               <Text style={styles.optionLabel}>{option.label}</Text>
               {selected === option.value && (
-                saving
-                  ? <ActivityIndicator size="small" color={colors.accent} />
-                  : <Ionicons name="checkmark" size={20} color={colors.accent} />
+                <Ionicons name="checkmark" size={20} color={colors.accent} />
               )}
             </Pressable>
           ))}
+        </View>
+
+        {/* 저장 버튼 */}
+        <View style={styles.footer}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.saveBtn,
+              !canSave && styles.saveBtnDisabled,
+              pressed && canSave && styles.saveBtnPressed,
+            ]}
+            onPress={handleSave}
+            disabled={!canSave || saving}
+          >
+            {saving
+              ? <ActivityIndicator size="small" color="#fff" />
+              : <Text style={styles.saveBtnText}>저장</Text>
+            }
+          </Pressable>
         </View>
       </View>
     </>
@@ -136,4 +147,18 @@ const styles = StyleSheet.create({
   },
   rowPressed: { backgroundColor: colors.surface2 },
   optionLabel: { fontSize: fontSize.base, color: colors.text },
+
+  footer: {
+    padding: spacing.sp4,
+  },
+  saveBtn: {
+    height: 48,
+    borderRadius: radius.xl,
+    backgroundColor: colors.accent,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveBtnDisabled: { backgroundColor: colors.border },
+  saveBtnPressed: { opacity: 0.85 },
+  saveBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
 })

@@ -46,13 +46,12 @@ export default function ProfileEditBirthDateScreen() {
   const { profile: profileJson } = useLocalSearchParams<{ profile: string }>()
   const profile: UserDetailResponse = JSON.parse(profileJson ?? '{}')
 
-  const alreadySet = Boolean(profile.birthDate)
   const [birthDate, setBirthDate] = useState(profile.birthDate ?? '')
   const [saving, setSaving] = useState(false)
 
   const isChanged = birthDate.trim() !== (profile.birthDate ?? '').trim()
   const isValid = isValidDate(birthDate.trim())
-  const canSave = !alreadySet && isChanged && isValid
+  const canSave = isChanged && isValid
 
   const handleChangeText = useCallback((text: string) => {
     setBirthDate((prev) => formatBirthDateInput(prev, text))
@@ -107,8 +106,7 @@ export default function ProfileEditBirthDateScreen() {
           <TextInput
             style={[
               styles.input,
-              alreadySet && styles.inputDisabled,
-              !alreadySet && birthDate.length > 0 && !isValid && styles.inputError,
+              birthDate.length > 0 && !isValid && styles.inputError,
             ]}
             value={birthDate}
             onChangeText={handleChangeText}
@@ -116,44 +114,34 @@ export default function ProfileEditBirthDateScreen() {
             placeholderTextColor={colors.textMuted}
             keyboardType="number-pad"
             maxLength={10}
-            editable={!alreadySet && !saving}
-            autoFocus={!alreadySet}
+            editable={!saving}
+            autoFocus
           />
 
-          {alreadySet && (
-            <Text style={styles.notice}>
-              생년월일은 한 번 설정하면 변경할 수 없습니다.
-            </Text>
-          )}
+          <Text style={styles.notice}>
+            생년월일은 신중하게 입력해 주세요.
+          </Text>
 
-          {!alreadySet && (
-            <Text style={styles.notice}>
-              생년월일은 한 번 설정하면 변경할 수 없으니 신중하게 입력해 주세요.
-            </Text>
-          )}
-
-          {!alreadySet && birthDate.length > 0 && !isValid && (
+          {birthDate.length > 0 && !isValid && (
             <Text style={styles.errorText}>
               올바른 날짜를 입력해 주세요. (예: 1995-03-15)
             </Text>
           )}
 
-          {!alreadySet && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.saveBtn,
-                !canSave && styles.saveBtnDisabled,
-                pressed && canSave && styles.saveBtnPressed,
-              ]}
-              onPress={handleSave}
-              disabled={!canSave || saving}
-            >
-              {saving
-                ? <ActivityIndicator size="small" color="#fff" />
-                : <Text style={styles.saveBtnText}>저장</Text>
-              }
-            </Pressable>
-          )}
+          <Pressable
+            style={({ pressed }) => [
+              styles.saveBtn,
+              !canSave && styles.saveBtnDisabled,
+              pressed && canSave && styles.saveBtnPressed,
+            ]}
+            onPress={handleSave}
+            disabled={!canSave || saving}
+          >
+            {saving
+              ? <ActivityIndicator size="small" color="#fff" />
+              : <Text style={styles.saveBtnText}>저장</Text>
+            }
+          </Pressable>
         </View>
       </View>
     </>
@@ -188,10 +176,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.base,
     color: colors.text,
     backgroundColor: colors.bg,
-  },
-  inputDisabled: {
-    opacity: 0.6,
-    backgroundColor: colors.surface2,
   },
   inputError: {
     borderColor: '#ef4444',

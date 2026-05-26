@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from 'react-native'
-import { Stack, router } from 'expo-router'
+import { Stack, router, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { Ionicons } from '@expo/vector-icons'
@@ -37,22 +37,24 @@ export default function ProfileEditScreen() {
   const [isSearchable, setIsSearchable] = useState(true)
   const [searchableLoading, setSearchableLoading] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
-    getMe()
-      .then((res) => {
-        if (cancelled) return
-        setProfile(res)
-        setIsSearchable(res.isSearchable ?? true)
-      })
-      .catch(() => {
-        if (!cancelled) Alert.alert('오류', '프로필을 불러오지 못했어요.')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => { cancelled = true }
-  }, [])
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false
+      getMe()
+        .then((res) => {
+          if (cancelled) return
+          setProfile(res)
+          setIsSearchable(res.isSearchable ?? true)
+        })
+        .catch(() => {
+          if (!cancelled) Alert.alert('오류', '프로필을 불러오지 못했어요.')
+        })
+        .finally(() => {
+          if (!cancelled) setLoading(false)
+        })
+      return () => { cancelled = true }
+    }, []),
+  )
 
   const handleImageChange = useCallback(async () => {
     if (!profile) return
