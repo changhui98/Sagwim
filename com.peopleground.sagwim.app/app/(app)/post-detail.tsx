@@ -103,6 +103,11 @@ interface CommentItemProps {
   onLikeToggle: (commentId: number, liked: boolean, likeCount: number) => void
 }
 
+const AVATAR_SIZE = 36
+const ROW_H_PAD = spacing.sp4   // row paddingHorizontal
+const ROW_V_PAD = spacing.sp3   // row paddingTop / paddingBottom
+const CONNECTOR_MARGIN_TOP = 4  // gap between avatar bottom and connector start
+
 function CommentItem({
   comment,
   contentId,
@@ -113,6 +118,8 @@ function CommentItem({
   onLikeToggle,
 }: CommentItemProps) {
   const isMine = myUsername != null && comment.authorUsername === myUsername
+  const hasReplies = !isReply && comment.replies.length > 0
+  const [parentRowHeight, setParentRowHeight] = useState(0)
 
   const handleMorePress = () => {
     if (!isMine) return
@@ -131,12 +138,40 @@ function CommentItem({
   }
 
   const author = comment.authorNickname ?? comment.authorUsername ?? '알 수 없음'
-  const hasReplies = !isReply && comment.replies.length > 0
+
+  // 커넥터 절대 좌표 계산
+  // 시작: paddingTop + avatar 높이 + marginTop = 52
+  // 끝:   parentRowHeight(padding 포함) + 첫 답글 paddingTop + avatar 중심
+  //       = parentRowHeight + ROW_V_PAD + AVATAR_SIZE/2
+  const connectorLeft = ROW_H_PAD + AVATAR_SIZE / 2 - 1
+  const connectorTop = ROW_V_PAD + AVATAR_SIZE + CONNECTOR_MARGIN_TOP
+  const connectorHeight =
+    parentRowHeight > 0
+      ? parentRowHeight + ROW_V_PAD + AVATAR_SIZE / 2 - connectorTop
+      : 0
 
   return (
     <View style={!isReply ? commentStyles.commentGroup : undefined}>
-      <View style={[commentStyles.row, isReply && commentStyles.replyRow]}>
-        {/* 아바타 컬럼: 아바타 + 답글 있을 때 아래 연결선 */}
+      {/* 부모 아바타 → 첫 번째 답글 아바타 중심을 잇는 연결선 (절대 배치) */}
+      {hasReplies && connectorHeight > 0 && (
+        <View
+          style={[
+            commentStyles.connector,
+            {
+              position: 'absolute',
+              left: connectorLeft,
+              top: connectorTop,
+              height: connectorHeight,
+            },
+          ]}
+        />
+      )}
+
+      <View
+        style={[commentStyles.row, isReply && commentStyles.replyRow]}
+        onLayout={hasReplies ? (e) => setParentRowHeight(e.nativeEvent.layout.height) : undefined}
+      >
+        {/* 아바타 컬럼 */}
         <View style={commentStyles.avatarCol}>
           <View style={commentStyles.avatar}>
             {comment.authorProfileImageUrl ? (
@@ -151,7 +186,6 @@ function CommentItem({
               </Text>
             )}
           </View>
-          {hasReplies && <View style={commentStyles.connector} />}
         </View>
 
         {/* 내용 */}
@@ -197,7 +231,7 @@ function CommentItem({
         )}
       </View>
 
-      {/* 답글 목록 - 들여쓰기 없이 동일 좌표 */}
+      {/* 답글 목록 */}
       {hasReplies && (
         <View>
           {comment.replies.map((reply) => (
@@ -704,16 +738,14 @@ const commentStyles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'stretch',
+    alignItems: 'flex-start',
     paddingHorizontal: spacing.sp4,
     paddingTop: spacing.sp3,
     paddingBottom: spacing.sp3,
   },
   replyRow: {},
-  // 아바타 컬럼: 아바타 + 연결선을 세로로 담는 컬럼
   avatarCol: {
     width: 36,
-    alignSelf: 'stretch',
     alignItems: 'center',
     marginRight: spacing.sp3,
   },
@@ -725,13 +757,10 @@ const commentStyles = StyleSheet.create({
     flexShrink: 0,
   },
   avatarText: { fontSize: fontSize.sm, fontWeight: '700', color: colors.accent },
-  // 아바타 아래 → 자식 아바타까지 이어지는 세로 연결선
+  // 부모 아바타 → 첫 답글 아바타 중심을 잇는 선 (absolute 배치로 사용)
   connector: {
     width: 2,
-    flex: 1,
-    minHeight: 12,
     backgroundColor: colors.border,
-    marginTop: 4,
     borderRadius: 1,
   },
   content: { flex: 1, gap: 4 },
