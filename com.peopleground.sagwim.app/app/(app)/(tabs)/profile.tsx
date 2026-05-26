@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -38,6 +38,7 @@ export default function ProfileScreen() {
   const [page, setPage] = useState(0)
   const [hasNext, setHasNext] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
+  const isLoadingRef = useRef(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   // 웹과 동일하게 이미지 유무로 분리
@@ -53,16 +54,22 @@ export default function ProfileScreen() {
 
   const fetchPosts = useCallback(
     async (nextPage: number, refresh = false) => {
-      if (!meUsername || isLoading) return
+      if (!meUsername || isLoadingRef.current) return
+      isLoadingRef.current = true
       setIsLoading(true)
       try {
         const result = await getUserPosts(meUsername, nextPage, 12)
-        setPosts((prev) => (refresh ? result.content : [...prev, ...result.content]))
+        setPosts((prev) => {
+          if (refresh) return result.content
+          const existingIds = new Set(prev.map((p) => p.id))
+          return [...prev, ...result.content.filter((p) => !existingIds.has(p.id))]
+        })
         setPage(result.page)
         setHasNext(result.hasNext)
       } catch {
         // 조용히 실패
       } finally {
+        isLoadingRef.current = false
         setIsLoading(false)
       }
     },
@@ -252,7 +259,7 @@ export default function ProfileScreen() {
         <FlatList
           key={viewMode}
           data={visiblePosts}
-          keyExtractor={(item) => String(item.id)}
+          keyExtractor={(item) => `post-${item.id}`}
           renderItem={viewMode === 'photo' ? renderPhotoCell : renderTextRow}
           numColumns={viewMode === 'photo' ? GRID_COLUMNS : 1}
           ListHeaderComponent={renderHeader}
