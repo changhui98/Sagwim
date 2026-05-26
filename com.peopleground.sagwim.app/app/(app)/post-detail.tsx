@@ -131,16 +131,19 @@ function CommentItem({
   }
 
   const author = comment.authorNickname ?? comment.authorUsername ?? '알 수 없음'
+  const hasReplies = !isReply && comment.replies.length > 0
 
   return (
     <View>
-      {/* 댓글 본행 */}
       <View style={[commentStyles.row, isReply && commentStyles.replyRow]}>
-        {/* 아바타 */}
-        <View style={[commentStyles.avatar, isReply && commentStyles.avatarSm]}>
-          <Text style={[commentStyles.avatarText, isReply && commentStyles.avatarTextSm]}>
-            {author.charAt(0).toUpperCase()}
-          </Text>
+        {/* 아바타 컬럼: 아바타 + 답글 있을 때 아래 연결선 */}
+        <View style={[commentStyles.avatarCol, isReply && commentStyles.avatarColSm]}>
+          <View style={[commentStyles.avatar, isReply && commentStyles.avatarSm]}>
+            <Text style={[commentStyles.avatarText, isReply && commentStyles.avatarTextSm]}>
+              {author.charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          {hasReplies && <View style={commentStyles.connector} />}
         </View>
 
         {/* 내용 */}
@@ -186,9 +189,9 @@ function CommentItem({
         )}
       </View>
 
-      {/* 답글 목록 - 부모 row 밖으로 분리, 세로선 + 들여쓰기 */}
-      {!isReply && comment.replies.length > 0 && (
-        <View style={commentStyles.repliesWrapper}>
+      {/* 답글 목록 - 들여쓰기 없이 동일 좌표 */}
+      {hasReplies && (
+        <View>
           {comment.replies.map((reply) => (
             <CommentItem
               key={reply.id}
@@ -688,29 +691,43 @@ const styles = StyleSheet.create({
 const commentStyles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sp3,
     paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
+    paddingTop: spacing.sp3,
+    paddingBottom: spacing.sp3,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   replyRow: {
-    paddingLeft: spacing.sp3,
-    paddingRight: spacing.sp4,
+    borderBottomWidth: 0,
     paddingTop: spacing.sp2,
     paddingBottom: spacing.sp2,
-    borderBottomWidth: 0,
+  },
+  // 아바타 컬럼: 아바타 + 연결선을 세로로 담는 컬럼
+  avatarCol: {
+    width: 36,
+    alignItems: 'center',
+    marginRight: spacing.sp3,
+  },
+  avatarColSm: {
+    width: 28,
   },
   avatar: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: colors.accentMuted,
     alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
   },
   avatarSm: { width: 28, height: 28, borderRadius: 14 },
   avatarText: { fontSize: fontSize.sm, fontWeight: '700', color: colors.accent },
   avatarTextSm: { fontSize: fontSize.xs },
+  // 아바타 아래 → 자식 아바타까지 이어지는 세로 연결선
+  connector: {
+    width: 2,
+    flex: 1,
+    minHeight: 12,
+    backgroundColor: colors.border,
+    marginTop: 4,
+    borderRadius: 1,
+  },
   content: { flex: 1, gap: 4 },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp2, flexWrap: 'wrap' },
   author: { fontSize: fontSize.sm, fontWeight: '700', color: colors.text },
@@ -722,16 +739,7 @@ const commentStyles = StyleSheet.create({
   actionCount: { fontSize: fontSize.xs, color: colors.textMuted },
   actionCountActive: { color: colors.error },
   replyBtn: { fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '600' },
-  repliesWrapper: {
-    marginLeft: spacing.sp4 + 18,
-    borderLeftWidth: 2,
-    borderLeftColor: colors.border,
-    marginBottom: spacing.sp1,
-  },
-  moreDots: {
-    paddingTop: 2,
-    paddingLeft: spacing.sp1,
-  },
+  moreDots: { paddingTop: 2, paddingLeft: spacing.sp1 },
 })
 
 const sliderStyles = StyleSheet.create({
