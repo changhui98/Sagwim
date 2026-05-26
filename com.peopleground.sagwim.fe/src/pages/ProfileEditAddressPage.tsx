@@ -6,6 +6,7 @@ import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { AlertDialog } from '../components/common/AlertDialog'
+import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import type { UserDetailResponse } from '../types/user'
 import styles from '../components/profile/ProfileEditModal.module.css'
 import pageStyles from './ProfileEditPage.module.css'
@@ -73,6 +74,7 @@ export function ProfileEditAddressPage() {
 
   const [address, setAddress] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isUserTyping, setIsUserTyping] = useState(false)
@@ -123,12 +125,23 @@ export function ProfileEditAddressPage() {
   const isAddressChanged = profile !== null && address.trim() !== (profile.address ?? '').trim()
   const savedExposureRange = String(profile?.exposureRangeKm ?? 1)
   const isExposureRangeChanged = profile !== null && exposureRange !== savedExposureRange
-  const handleCancel = useCallback(async () => {
-    const hasChanges = (isAddressChanged && address.trim().length > 0 && !isTooDetailed) || isExposureRangeChanged
-    if (!hasChanges || !profile) {
-      navigate('/app/profile/edit', { replace: true })
+  const hasChanges = (isAddressChanged && address.trim().length > 0 && !isTooDetailed) || isExposureRangeChanged
+
+  const handleCancel = useCallback(() => {
+    if (hasChanges) {
+      setShowConfirm(true)
       return
     }
+    navigate('/app/profile/edit', { replace: true })
+  }, [hasChanges, navigate])
+
+  const handleConfirmDiscard = () => {
+    setShowConfirm(false)
+    navigate('/app/profile/edit', { replace: true })
+  }
+
+  const handleSave = useCallback(async () => {
+    if (!profile || !hasChanges) return
     setIsSaving(true)
     try {
       await updateMyProfile(token, {
@@ -152,7 +165,7 @@ export function ProfileEditAddressPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [navigate, isAddressChanged, isExposureRangeChanged, address, profile, token, handleUnauthorized, exposureRange])
+  }, [navigate, hasChanges, address, profile, token, handleUnauthorized, exposureRange])
 
   if (profileLoading) {
     return (
@@ -180,10 +193,17 @@ export function ProfileEditAddressPage() {
               onClick={handleCancel}
               disabled={isSaving}
             >
-              {isSaving ? '저장 중...' : '돌아가기'}
+              돌아가기
             </button>
             <h1 className={styles.title}>주소</h1>
-            <span style={{ width: '4rem' }} />
+            <button
+              type="button"
+              className={`${styles.headerBtn} ${styles.headerBtnPrimary}`}
+              onClick={handleSave}
+              disabled={!hasChanges || isSaving}
+            >
+              {isSaving ? '저장 중...' : '저장하기'}
+            </button>
           </header>
 
           <div className="input-group" style={{ padding: 'var(--sp-5)' }}>
@@ -332,6 +352,17 @@ export function ProfileEditAddressPage() {
         variant={alertVariant}
         message={alertMessage}
         onClose={() => setAlertOpen(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        title="변경 취소"
+        message="변경 사항이 사라집니다. 계속하시겠습니까?"
+        confirmLabel="나가기"
+        cancelLabel="계속 편집"
+        confirmVariant="danger"
+        onConfirm={handleConfirmDiscard}
+        onCancel={() => setShowConfirm(false)}
       />
     </>
   )

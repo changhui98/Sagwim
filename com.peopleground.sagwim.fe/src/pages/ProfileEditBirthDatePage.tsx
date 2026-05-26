@@ -6,6 +6,7 @@ import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { AlertDialog } from '../components/common/AlertDialog'
+import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import type { UserDetailResponse } from '../types/user'
 import styles from '../components/profile/ProfileEditModal.module.css'
 import pageStyles from './ProfileEditPage.module.css'
@@ -117,6 +118,7 @@ export function ProfileEditBirthDatePage() {
   const [profileLoading, setProfileLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertMessage, setAlertMessage] = useState('')
@@ -171,11 +173,21 @@ export function ProfileEditBirthDatePage() {
   const originalDate = profile?.birthDate ?? ''
   const isChanged = profile !== null && selectedDate !== originalDate
 
-  const handleCancel = useCallback(async () => {
-    if (!profile || !isChanged || !isPickerOpen) {
-      navigate('/app/profile/edit', { replace: true })
+  const handleCancel = useCallback(() => {
+    if (isChanged && isPickerOpen) {
+      setShowConfirm(true)
       return
     }
+    navigate('/app/profile/edit', { replace: true })
+  }, [isChanged, isPickerOpen, navigate])
+
+  const handleConfirmDiscard = () => {
+    setShowConfirm(false)
+    navigate('/app/profile/edit', { replace: true })
+  }
+
+  const handleSave = useCallback(async () => {
+    if (!profile || !isChanged || !isPickerOpen) return
     setIsSaving(true)
     try {
       const updated = await updateMyProfile(token, {
@@ -225,10 +237,17 @@ export function ProfileEditBirthDatePage() {
               onClick={handleCancel}
               disabled={isSaving}
             >
-              {isSaving ? '저장 중...' : '돌아가기'}
+              돌아가기
             </button>
             <h1 className={styles.title}>생년월일</h1>
-            <span style={{ width: '4rem' }} />
+            <button
+              type="button"
+              className={`${styles.headerBtn} ${styles.headerBtnPrimary}`}
+              onClick={handleSave}
+              disabled={!isChanged || !isPickerOpen || isSaving}
+            >
+              {isSaving ? '저장 중...' : '저장하기'}
+            </button>
           </header>
 
           <div style={{ padding: 'var(--sp-5)' }}>
@@ -334,6 +353,17 @@ export function ProfileEditBirthDatePage() {
         variant="error"
         message={alertMessage}
         onClose={() => setAlertOpen(false)}
+      />
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        title="변경 취소"
+        message="변경 사항이 사라집니다. 계속하시겠습니까?"
+        confirmLabel="나가기"
+        cancelLabel="계속 편집"
+        confirmVariant="danger"
+        onConfirm={handleConfirmDiscard}
+        onCancel={() => setShowConfirm(false)}
       />
     </>
   )

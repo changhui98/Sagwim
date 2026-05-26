@@ -81,18 +81,21 @@ export function ProfileEditNicknamePage() {
     }
   }
 
-  const handleCancel = useCallback(async () => {
-    const canSave = isSaveEnabled
-    if (!canSave || !profile) {
-      navigate('/app/profile/edit', { replace: true })
+  const handleCancel = useCallback(() => {
+    if (isNicknameChanged) {
+      setShowConfirm(true)
       return
     }
-    setShowConfirm(true)
-  }, [isSaveEnabled, profile, navigate])
+    navigate('/app/profile/edit', { replace: true })
+  }, [isNicknameChanged, navigate])
 
-  const handleConfirmSave = async () => {
-    if (!profile) return
+  const handleConfirmDiscard = () => {
     setShowConfirm(false)
+    navigate('/app/profile/edit', { replace: true })
+  }
+
+  const handleSave = async () => {
+    if (!profile || !isSaveEnabled) return
     setIsSaving(true)
 
     try {
@@ -142,10 +145,17 @@ export function ProfileEditNicknamePage() {
             onClick={handleCancel}
             disabled={isSaving}
           >
-            {isSaving ? '저장 중...' : '돌아가기'}
+            돌아가기
           </button>
           <h1 className={styles.title}>닉네임</h1>
-          <span style={{ width: '4rem' }} />
+          <button
+            type="button"
+            className={`${styles.headerBtn} ${styles.headerBtnPrimary}`}
+            onClick={handleSave}
+            disabled={!isSaveEnabled || isSaving}
+          >
+            {isSaving ? '저장 중...' : '저장하기'}
+          </button>
         </header>
 
         <div className="input-group" style={{ padding: 'var(--sp-5)' }}>
@@ -195,10 +205,12 @@ export function ProfileEditNicknamePage() {
 
       <ConfirmDialog
         isOpen={showConfirm}
-        title="닉네임 변경"
-        message={`닉네임을 "${nickname.trim()}"으로 변경하시겠습니까?`}
-        confirmLabel="변경"
-        onConfirm={handleConfirmSave}
+        title="변경 취소"
+        message="변경 사항이 사라집니다. 계속하시겠습니까?"
+        confirmLabel="나가기"
+        cancelLabel="계속 편집"
+        confirmVariant="danger"
+        onConfirm={handleConfirmDiscard}
         onCancel={() => setShowConfirm(false)}
       />
     </>
