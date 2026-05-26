@@ -97,3 +97,11 @@ export interface ScheduleCreateRequest {
   location?: string
   description?: string
 }
+
+export interface GroupJoinRequestResponse {
+  requestId: number
+  username: string
+  nickname: string
+  answer: string | null
+  createdDate: string
+}
