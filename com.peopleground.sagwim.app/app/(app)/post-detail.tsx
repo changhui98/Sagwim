@@ -703,7 +703,7 @@ const styles = StyleSheet.create({
   tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sp2 },
   tag: { backgroundColor: colors.accentMuted, paddingHorizontal: spacing.sp2, paddingVertical: 3, borderRadius: radius.sm },
   tagText: { fontSize: fontSize.xs, color: colors.accent, fontWeight: '500' },
-  actionBar: { flexDirection: 'row', gap: spacing.sp4, paddingVertical: spacing.sp2 },
+  actionBar: { flexDirection: 'row', gap: spacing.sp4, paddingVertical: spacing.sp2, marginBottom: spacing.sp4 },
   actionButton: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp1 },
   actionCount: { fontSize: fontSize.sm, color: colors.textMuted },
   actionCountActive: { color: colors.error },
