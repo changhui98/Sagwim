@@ -137,9 +137,9 @@ function CommentItem({
     <View>
       <View style={[commentStyles.row, isReply && commentStyles.replyRow]}>
         {/* 아바타 컬럼: 아바타 + 답글 있을 때 아래 연결선 */}
-        <View style={[commentStyles.avatarCol, isReply && commentStyles.avatarColSm]}>
-          <View style={[commentStyles.avatar, isReply && commentStyles.avatarSm]}>
-            <Text style={[commentStyles.avatarText, isReply && commentStyles.avatarTextSm]}>
+        <View style={commentStyles.avatarCol}>
+          <View style={commentStyles.avatar}>
+            <Text style={commentStyles.avatarText}>
               {author.charAt(0).toUpperCase()}
             </Text>
           </View>
@@ -699,8 +699,6 @@ const commentStyles = StyleSheet.create({
   },
   replyRow: {
     borderBottomWidth: 0,
-    paddingTop: spacing.sp2,
-    paddingBottom: spacing.sp2,
   },
   // 아바타 컬럼: 아바타 + 연결선을 세로로 담는 컬럼
   avatarCol: {
@@ -708,17 +706,12 @@ const commentStyles = StyleSheet.create({
     alignItems: 'center',
     marginRight: spacing.sp3,
   },
-  avatarColSm: {
-    width: 28,
-  },
   avatar: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: colors.accentMuted,
     alignItems: 'center', justifyContent: 'center',
   },
-  avatarSm: { width: 28, height: 28, borderRadius: 14 },
   avatarText: { fontSize: fontSize.sm, fontWeight: '700', color: colors.accent },
-  avatarTextSm: { fontSize: fontSize.xs },
   // 아바타 아래 → 자식 아바타까지 이어지는 세로 연결선
   connector: {
     width: 2,
