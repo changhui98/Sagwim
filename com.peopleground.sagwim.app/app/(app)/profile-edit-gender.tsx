@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -34,6 +34,21 @@ export default function ProfileEditGenderScreen() {
   const isChanged = selected !== (profile.gender ?? 'NONE')
   const canSave = isChanged
 
+  const handleBack = useCallback(() => {
+    if (isChanged) {
+      Alert.alert(
+        '변경 취소',
+        '변경 사항이 사라집니다. 계속하시겠습니까?',
+        [
+          { text: '계속 편집', style: 'cancel' },
+          { text: '나가기', style: 'destructive', onPress: () => router.back() },
+        ],
+      )
+      return
+    }
+    router.back()
+  }, [isChanged])
+
   const handleSave = async () => {
     if (!canSave) return
     setSaving(true)
@@ -66,7 +81,7 @@ export default function ProfileEditGenderScreen() {
         {/* 헤더 */}
         <View style={styles.header}>
           <Pressable
-            onPress={() => { if (!saving) router.back() }}
+            onPress={handleBack}
             hitSlop={8}
             style={styles.headerSide}
             disabled={saving}

@@ -32,6 +32,21 @@ export default function ProfileEditNicknameScreen() {
   const isChanged = nickname.trim() !== (profile.nickname ?? '').trim()
   const canSave = isChanged && checked && available
 
+  const handleBack = useCallback(() => {
+    if (isChanged) {
+      Alert.alert(
+        '변경 취소',
+        '변경 사항이 사라집니다. 계속하시겠습니까?',
+        [
+          { text: '계속 편집', style: 'cancel' },
+          { text: '나가기', style: 'destructive', onPress: () => router.back() },
+        ],
+      )
+      return
+    }
+    router.back()
+  }, [isChanged])
+
   const handleCheckNickname = useCallback(async () => {
     const trimmed = nickname.trim()
     if (!trimmed) return
@@ -93,8 +108,8 @@ export default function ProfileEditNicknameScreen() {
       <View style={[styles.container, { paddingTop: insets.top }]}>
         {/* 헤더 */}
         <View style={styles.header}>
-          <Pressable onPress={() => router.back()} hitSlop={8} style={styles.headerSide}>
-            <Text style={styles.headerBack}>{saving ? '저장 중...' : '돌아가기'}</Text>
+          <Pressable onPress={handleBack} hitSlop={8} style={styles.headerSide} disabled={saving}>
+            <Text style={styles.headerBack}>돌아가기</Text>
           </Pressable>
           <Text style={styles.headerTitle}>닉네임</Text>
           <View style={styles.headerSide} />

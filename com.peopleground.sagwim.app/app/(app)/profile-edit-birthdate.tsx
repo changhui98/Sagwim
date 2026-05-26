@@ -53,6 +53,21 @@ export default function ProfileEditBirthDateScreen() {
   const isValid = isValidDate(birthDate.trim())
   const canSave = isChanged && isValid
 
+  const handleBack = useCallback(() => {
+    if (isChanged) {
+      Alert.alert(
+        '변경 취소',
+        '변경 사항이 사라집니다. 계속하시겠습니까?',
+        [
+          { text: '계속 편집', style: 'cancel' },
+          { text: '나가기', style: 'destructive', onPress: () => router.back() },
+        ],
+      )
+      return
+    }
+    router.back()
+  }, [isChanged])
+
   const handleChangeText = useCallback((text: string) => {
     setBirthDate((prev) => formatBirthDateInput(prev, text))
   }, [])
@@ -89,12 +104,12 @@ export default function ProfileEditBirthDateScreen() {
         {/* 헤더 */}
         <View style={styles.header}>
           <Pressable
-            onPress={() => { if (!saving) router.back() }}
+            onPress={handleBack}
             hitSlop={8}
             style={styles.headerSide}
             disabled={saving}
           >
-            <Text style={styles.headerBack}>{saving ? '저장 중...' : '돌아가기'}</Text>
+            <Text style={styles.headerBack}>돌아가기</Text>
           </Pressable>
           <Text style={styles.headerTitle}>생년월일</Text>
           <View style={styles.headerSide} />

@@ -47,6 +47,21 @@ export default function ProfileEditAddressScreen() {
   const isChanged = selectedAddress.trim() !== (profile.address ?? '').trim()
   const canSave = isChanged && selectedAddress.trim().length > 0
 
+  const handleBack = useCallback(() => {
+    if (isChanged) {
+      Alert.alert(
+        '변경 취소',
+        '변경 사항이 사라집니다. 계속하시겠습니까?',
+        [
+          { text: '계속 편집', style: 'cancel' },
+          { text: '나가기', style: 'destructive', onPress: () => router.back() },
+        ],
+      )
+      return
+    }
+    router.back()
+  }, [isChanged])
+
   // 검색어 변경 시 debounce 검색
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
@@ -104,12 +119,12 @@ export default function ProfileEditAddressScreen() {
         {/* 헤더 */}
         <View style={styles.header}>
           <Pressable
-            onPress={() => { if (!saving) router.back() }}
+            onPress={handleBack}
             hitSlop={8}
             style={styles.headerSide}
             disabled={saving}
           >
-            <Text style={styles.headerBack}>{saving ? '저장 중...' : '돌아가기'}</Text>
+            <Text style={styles.headerBack}>돌아가기</Text>
           </Pressable>
           <Text style={styles.headerTitle}>주소</Text>
           <View style={styles.headerSide} />
