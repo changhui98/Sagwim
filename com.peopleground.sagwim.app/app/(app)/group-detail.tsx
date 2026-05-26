@@ -435,9 +435,6 @@ export default function GroupDetailScreen() {
             )}
           </View>
 
-          {/* 구분선 */}
-          <View style={styles.divider} />
-
           {/* 탭 */}
           <View style={styles.tabBar}>
             {TABS.map((tab) => (
@@ -1442,6 +1439,7 @@ const styles = StyleSheet.create({
   info: {
     paddingHorizontal: spacing.sp4,
     paddingTop: spacing.sp4,
+    paddingBottom: spacing.sp4,
     gap: spacing.sp3,
   },
   badgeRow: {
@@ -1555,11 +1553,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.md,
     fontWeight: '600',
     color: colors.textMuted,
-  },
-  divider: {
-    height: 8,
-    backgroundColor: colors.surface3,
-    marginTop: spacing.sp4,
   },
   tabBar: {
     flexDirection: 'row',
