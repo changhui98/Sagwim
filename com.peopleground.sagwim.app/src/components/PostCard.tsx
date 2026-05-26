@@ -12,6 +12,8 @@ import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { deletePost, togglePostLike } from '../api/postApi'
 import { createReport } from '../api/reportApi'
+import { ActionSheet, type ActionSheetOption } from './common/ActionSheet'
+import { ConfirmDialog } from './common/ConfirmDialog'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import { useAuth } from '../context/AuthContext'
 import { colors, fontSize, radius, spacing } from '../constants/theme'
@@ -73,6 +75,8 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
   const [liked, setLiked] = useState(post.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(post.likeCount ?? 0)
   const isLikeInFlight = useRef(false)
+  const [showMenu, setShowMenu] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const handleLike = useCallback(async () => {
     if (isLikeInFlight.current) return
@@ -103,12 +107,19 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
     router.push({ pathname: '/(app)/post-detail', params: { id: String(post.id) } })
   }, [post.id])
 
-  const handleMorePress = useCallback(() => {
-    if (isMine) {
-      Alert.alert('게시글 옵션', undefined, [
-        { text: '취소', style: 'cancel' },
+  const submitReport = useCallback(async (reason: string) => {
+    try {
+      await createReport('POST', post.id, reason)
+      Alert.alert('신고 완료', '신고가 접수되었습니다.')
+    } catch {
+      Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.')
+    }
+  }, [post.id])
+
+  const menuOptions: ActionSheetOption[] = isMine
+    ? [
         {
-          text: '수정',
+          label: '수정',
           onPress: () => router.push({
             pathname: '/(app)/post-edit',
             params: {
@@ -119,45 +130,16 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
           }),
         },
         {
-          text: '삭제',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert('게시글 삭제', '삭제하면 복구할 수 없습니다. 삭제하시겠습니까?', [
-              { text: '취소', style: 'cancel' },
-              {
-                text: '삭제',
-                style: 'destructive',
-                onPress: async () => {
-                  try {
-                    await deletePost(post.id)
-                    onDelete?.(post.id)
-                  } catch {
-                    Alert.alert('오류', '삭제에 실패했습니다.')
-                  }
-                },
-              },
-            ])
-          },
+          label: '삭제',
+          variant: 'destructive',
+          onPress: () => setShowDeleteConfirm(true),
         },
-      ])
-    } else {
-      Alert.alert('신고 사유를 선택하세요', undefined, [
-        { text: '취소', style: 'cancel' },
-        { text: '스팸입니다', onPress: () => submitReport('스팸입니다') },
-        { text: '부적절한 콘텐츠', onPress: () => submitReport('부적절한 콘텐츠') },
-        { text: '허위정보', onPress: () => submitReport('허위정보') },
-      ])
-    }
-  }, [isMine, post, onDelete])
-
-  const submitReport = useCallback(async (reason: string) => {
-    try {
-      await createReport('POST', post.id, reason)
-      Alert.alert('신고 완료', '신고가 접수되었습니다.')
-    } catch {
-      Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.')
-    }
-  }, [post.id])
+      ]
+    : [
+        { label: '스팸입니다', onPress: () => submitReport('스팸입니다') },
+        { label: '부적절한 콘텐츠', onPress: () => submitReport('부적절한 콘텐츠') },
+        { label: '허위정보', onPress: () => submitReport('허위정보') },
+      ]
 
   return (
     <Pressable
@@ -182,7 +164,7 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
           <Text style={styles.author}>{author}</Text>
           <Text style={styles.time}>{formatRelativeTime(post.createdAt)}</Text>
         </View>
-        <Pressable onPress={handleMorePress} hitSlop={8} style={styles.moreBtn}>
+        <Pressable onPress={() => setShowMenu(true)} hitSlop={8} style={styles.moreBtn}>
           <Ionicons name="ellipsis-horizontal" size={18} color={colors.textMuted} />
         </Pressable>
       </View>
@@ -234,6 +216,31 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
         </Pressable>
       </View>
     </Pressable>
+
+    <ActionSheet
+      isOpen={showMenu}
+      options={menuOptions}
+      onClose={() => setShowMenu(false)}
+    />
+
+    <ConfirmDialog
+      isOpen={showDeleteConfirm}
+      title="게시글 삭제"
+      message="삭제하면 복구할 수 없습니다. 삭제하시겠습니까?"
+      confirmLabel="삭제"
+      cancelLabel="취소"
+      confirmVariant="danger"
+      onConfirm={async () => {
+        setShowDeleteConfirm(false)
+        try {
+          await deletePost(post.id)
+          onDelete?.(post.id)
+        } catch {
+          Alert.alert('오류', '삭제에 실패했습니다.')
+        }
+      }}
+      onCancel={() => setShowDeleteConfirm(false)}
+    />
   )
 }
 

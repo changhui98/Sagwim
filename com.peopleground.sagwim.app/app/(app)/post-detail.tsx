@@ -29,6 +29,8 @@ import type { ContentResponse } from '../../src/types/post'
 import type { CommentResponse } from '../../src/types/comment'
 import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
 import { useAuth } from '../../src/context/AuthContext'
+import { ActionSheet, type ActionSheetOption } from '../../src/components/common/ActionSheet'
+import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
 import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
 
 function formatRelativeTime(isoString: string): string {
@@ -309,6 +311,8 @@ export default function PostDetailScreen() {
   const [inputText, setInputText] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [replyTarget, setReplyTarget] = useState<CommentResponse | null>(null)
+  const [showPostMenu, setShowPostMenu] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const contentId = Number(id)
 
@@ -412,6 +416,16 @@ export default function PostDetailScreen() {
     }
   }, [contentId])
 
+  const submitReport = useCallback(async (reason: string) => {
+    if (!post) return
+    try {
+      await createReport('POST', post.id, reason)
+      Alert.alert('신고 완료', '신고가 접수되었습니다.')
+    } catch {
+      Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.')
+    }
+  }, [post])
+
   // 댓글 / 답글 제출
   const handleSubmit = useCallback(async () => {
     const body = inputText.trim()
@@ -504,69 +518,7 @@ export default function PostDetailScreen() {
           <Pressable
             style={styles.headerBack}
             hitSlop={8}
-            onPress={() => {
-              if (!post) return
-              if (isPostMine) {
-                Alert.alert('게시글 옵션', undefined, [
-                  { text: '취소', style: 'cancel' },
-                  {
-                    text: '수정',
-                    onPress: () => router.push({
-                      pathname: '/(app)/post-edit',
-                      params: {
-                        contentId: String(post.id),
-                        initialBody: post.body,
-                        initialTags: JSON.stringify(post.tags ?? []),
-                      },
-                    }),
-                  },
-                  {
-                    text: '삭제',
-                    style: 'destructive',
-                    onPress: () => Alert.alert('게시글 삭제', '삭제하면 복구할 수 없습니다. 삭제하시겠습니까?', [
-                      { text: '취소', style: 'cancel' },
-                      {
-                        text: '삭제',
-                        style: 'destructive',
-                        onPress: async () => {
-                          try {
-                            await deletePost(post.id)
-                            goBack()
-                          } catch {
-                            Alert.alert('오류', '삭제에 실패했습니다.')
-                          }
-                        },
-                      },
-                    ]),
-                  },
-                ])
-              } else {
-                Alert.alert('신고 사유를 선택하세요', undefined, [
-                  { text: '취소', style: 'cancel' },
-                  {
-                    text: '스팸입니다',
-                    onPress: async () => {
-                      try { await createReport('POST', post.id, '스팸입니다'); Alert.alert('신고 완료', '신고가 접수되었습니다.') }
-                      catch { Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.') }
-                    },
-                  },
-                  {
-                    text: '부적절한 콘텐츠',
-                    onPress: async () => {
-                      try { await createReport('POST', post.id, '부적절한 콘텐츠'); Alert.alert('신고 완료', '신고가 접수되었습니다.') }
-                      catch { Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.') }
-                    },
-                  },
-                  {
-                    text: '허위정보',
-                    onPress: async () => {
-                      try { await createReport('POST', post.id, '허위정보'); Alert.alert('신고 완료', '신고가 접수되었습니다.') }
-                      catch { Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.') }
-                    },
-                  },
-                ])
-              }
-            }}
+            onPress={() => post && setShowPostMenu(true)}
           >
             <Ionicons name="ellipsis-horizontal" size={22} color={colors.text} />
           </Pressable>
@@ -740,6 +692,59 @@ export default function PostDetailScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      {post && (
+        <>
+          <ActionSheet
+            isOpen={showPostMenu}
+            options={
+              isPostMine
+                ? [
+                    {
+                      label: '수정',
+                      onPress: () => router.push({
+                        pathname: '/(app)/post-edit',
+                        params: {
+                          contentId: String(post.id),
+                          initialBody: post.body,
+                          initialTags: JSON.stringify(post.tags ?? []),
+                        },
+                      }),
+                    },
+                    {
+                      label: '삭제',
+                      variant: 'destructive',
+                      onPress: () => setShowDeleteConfirm(true),
+                    },
+                  ]
+                : [
+                    { label: '스팸입니다', onPress: () => submitReport('스팸입니다') },
+                    { label: '부적절한 콘텐츠', onPress: () => submitReport('부적절한 콘텐츠') },
+                    { label: '허위정보', onPress: () => submitReport('허위정보') },
+                  ]
+            }
+            onClose={() => setShowPostMenu(false)}
+          />
+          <ConfirmDialog
+            isOpen={showDeleteConfirm}
+            title="게시글 삭제"
+            message="삭제하면 복구할 수 없습니다. 삭제하시겠습니까?"
+            confirmLabel="삭제"
+            cancelLabel="취소"
+            confirmVariant="danger"
+            onConfirm={async () => {
+              setShowDeleteConfirm(false)
+              try {
+                await deletePost(post.id)
+                goBack()
+              } catch {
+                Alert.alert('오류', '삭제에 실패했습니다.')
+              }
+            }}
+            onCancel={() => setShowDeleteConfirm(false)}
+          />
+        </>
+      )}
     </>
   )
 }
