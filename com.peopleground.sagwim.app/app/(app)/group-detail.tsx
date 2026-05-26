@@ -1,14 +1,17 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Modal,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native'
 import { Image } from 'expo-image'
@@ -40,6 +43,7 @@ import { GROUP_CATEGORY_LABELS } from '../../src/types/group'
 import type { ContentResponse } from '../../src/types/post'
 import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
 import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import Holidays from 'date-holidays'
 
 type TabKey = 'schedule' | 'posts' | 'members'
 
@@ -490,13 +494,87 @@ function formatScheduleDate(isoString: string): string {
   return `${month}월 ${day}일 ${hour}:${min}`
 }
 
+function buildCalendarGrid(year: number, month: number) {
+  // month는 1-indexed
+  const firstDay = new Date(year, month - 1, 1).getDay() // 0=일, 6=토
+  const daysInMonth = new Date(year, month, 0).getDate()
+  return { firstDay, daysInMonth }
+}
+
+interface HolidayInfo {
+  name: string
+  isSubstitute: boolean
+}
+
+function buildKoreanHolidayMap(year: number): Map<string, HolidayInfo> {
+  const hd = new Holidays('KR')
+  const base = hd
+    .getHolidays(year)
+    .filter((holiday) => holiday.type === 'public')
+    .map((holiday) => ({
+      date: holiday.date.slice(0, 10),
+      name: holiday.name,
+      isSubstitute:
+        Boolean((holiday as { substitute?: boolean }).substitute) ||
+        holiday.name.includes('대체공휴일'),
+    }))
+
+  // 근로자의 날(5/1) 별도 추가
+  const laborDay = `${year}-05-01`
+  if (!base.some((h) => h.date === laborDay)) {
+    base.push({ date: laborDay, name: '근로자의 날', isSubstitute: false })
+  }
+
+  const byDate = new Map<string, HolidayInfo>()
+  base.forEach((holiday) => {
+    byDate.set(holiday.date, { name: holiday.name, isSubstitute: holiday.isSubstitute })
+  })
+
+  // 대체공휴일 보강 계산 (어린이날, 석가탄신일이 주말이면 다음 평일)
+  const substituteEligible = new Set(['어린이날', '석가탄신일'])
+  base.forEach((holiday) => {
+    if (!substituteEligible.has(holiday.name)) return
+    const dt = new Date(`${holiday.date}T00:00:00`)
+    const day = dt.getDay()
+    if (day !== 0 && day !== 6) return
+    const cursor = new Date(dt)
+    while (true) {
+      cursor.setDate(cursor.getDate() + 1)
+      const dd = cursor.getDay()
+      const dateStr = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`
+      if (dd === 0 || dd === 6 || byDate.has(dateStr)) continue
+      byDate.set(dateStr, { name: `${holiday.name} 대체공휴일`, isSubstitute: true })
+      break
+    }
+  })
+
+  return byDate
+}
+
+const PICKER_ITEM_H = 48
+const PICKER_SIDE = 2 // 중앙 기준 위아래 보이는 아이템 수
+const PICKER_YEARS = Array.from({ length: 41 }, (_, i) => 2000 + i)
+const PICKER_MONTHS = Array.from({ length: 12 }, (_, i) => i + 1)
+
 function ScheduleTab({ groupId, isMember }: ScheduleTabProps) {
   const now = new Date()
+  const { width: screenWidth } = useWindowDimensions()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [schedules, setSchedules] = useState<ScheduleResponse[]>([])
   const [loading, setLoading] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string | null>(() => {
+    const today = new Date()
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  })
+
+  // 년/월 피커
+  const [pickerVisible, setPickerVisible] = useState(false)
+  const [pickerYear, setPickerYear] = useState(now.getFullYear())
+  const [pickerMonth, setPickerMonth] = useState(now.getMonth() + 1)
+  const yearScrollRef = useRef<ScrollView>(null)
+  const monthScrollRef = useRef<ScrollView>(null)
 
   // 일정 추가 폼 상태
   const [formTitle, setFormTitle] = useState('')
@@ -523,6 +601,7 @@ function ScheduleTab({ groupId, isMember }: ScheduleTabProps) {
   }, [fetchSchedules])
 
   const prevMonth = () => {
+    setSelectedDate(null)
     if (month === 1) {
       setYear((y) => y - 1)
       setMonth(12)
@@ -532,12 +611,44 @@ function ScheduleTab({ groupId, isMember }: ScheduleTabProps) {
   }
 
   const nextMonth = () => {
+    setSelectedDate(null)
     if (month === 12) {
       setYear((y) => y + 1)
       setMonth(1)
     } else {
       setMonth((m) => m + 1)
     }
+  }
+
+  const openYearMonthPicker = () => {
+    setPickerYear(year)
+    setPickerMonth(month)
+    setPickerVisible(true)
+    setTimeout(() => {
+      const yi = PICKER_YEARS.indexOf(year)
+      const mi = month - 1
+      yearScrollRef.current?.scrollTo({ y: yi * PICKER_ITEM_H, animated: false })
+      monthScrollRef.current?.scrollTo({ y: mi * PICKER_ITEM_H, animated: false })
+    }, 50)
+  }
+
+  const handleYearScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.y / PICKER_ITEM_H)
+    const clamped = Math.max(0, Math.min(PICKER_YEARS.length - 1, idx))
+    setPickerYear(PICKER_YEARS[clamped])
+  }
+
+  const handleMonthScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.y / PICKER_ITEM_H)
+    const clamped = Math.max(0, Math.min(PICKER_MONTHS.length - 1, idx))
+    setPickerMonth(PICKER_MONTHS[clamped])
+  }
+
+  const confirmYearMonth = () => {
+    setSelectedDate(null)
+    setYear(pickerYear)
+    setMonth(pickerMonth)
+    setPickerVisible(false)
   }
 
   const handleToggleAttendance = async (schedule: ScheduleResponse) => {
@@ -592,6 +703,45 @@ function ScheduleTab({ groupId, isMember }: ScheduleTabProps) {
     }
   }
 
+  const holidayMap = useMemo(() => buildKoreanHolidayMap(year), [year])
+
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+  const { firstDay, daysInMonth } = buildCalendarGrid(year, month)
+  const CALENDAR_PADDING = spacing.sp4 * 2
+  const cellSize = (screenWidth - CALENDAR_PADDING) / 7
+  const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
+
+  // 달력에서 일정이 있는 날짜 집합
+  const scheduleDateSet = new Set(
+    schedules.map((s) => {
+      const d = new Date(s.startAt)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    }),
+  )
+
+  // selectedDate 기준 필터링
+  const visibleSchedules = selectedDate
+    ? schedules.filter((s) => {
+        const d = new Date(s.startAt)
+        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        return dateStr === selectedDate
+      })
+    : schedules
+
+  // 날짜 행 배열 구성
+  const totalCells = firstDay + daysInMonth
+  const rowCount = Math.ceil(totalCells / 7)
+  const calendarRows = Array.from({ length: rowCount }, (_, rowIdx) =>
+    Array.from({ length: 7 }, (__, colIdx) => {
+      const cellIndex = rowIdx * 7 + colIdx
+      const day = cellIndex - firstDay + 1
+      return day >= 1 && day <= daysInMonth ? day : null
+    }),
+  )
+
+  const pickerContainerH = PICKER_ITEM_H * (PICKER_SIDE * 2 + 1)
+  const pickerPad = PICKER_ITEM_H * PICKER_SIDE
+
   return (
     <View>
       {/* 월 네비게이션 */}
@@ -599,26 +749,214 @@ function ScheduleTab({ groupId, isMember }: ScheduleTabProps) {
         <Pressable onPress={prevMonth} hitSlop={8} accessibilityLabel="이전 달">
           <Ionicons name="chevron-back" size={20} color={colors.text} />
         </Pressable>
-        <Text style={scheduleStyles.monthLabel}>
-          {year}년 {month}월
-        </Text>
+        <Pressable
+          style={scheduleStyles.monthLabelBtn}
+          onPress={openYearMonthPicker}
+          accessibilityRole="button"
+          accessibilityLabel="년월 선택"
+        >
+          <Text style={scheduleStyles.monthLabel}>{year}년 {month}월</Text>
+          <Ionicons name="chevron-down" size={14} color={colors.accent} />
+        </Pressable>
         <Pressable onPress={nextMonth} hitSlop={8} accessibilityLabel="다음 달">
           <Ionicons name="chevron-forward" size={20} color={colors.text} />
         </Pressable>
       </View>
 
+      {/* 년/월 피커 모달 */}
+      <Modal
+        visible={pickerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPickerVisible(false)}
+      >
+        <Pressable style={scheduleStyles.pickerOverlay} onPress={() => setPickerVisible(false)}>
+          <Pressable style={scheduleStyles.pickerSheet} onPress={(e) => e.stopPropagation()}>
+            <View style={scheduleStyles.pickerColumns}>
+              {/* 선택 하이라이트 */}
+              <View
+                pointerEvents="none"
+                style={[
+                  scheduleStyles.pickerHighlight,
+                  { top: pickerPad },
+                ]}
+              />
+
+              {/* 년도 컬럼 */}
+              <ScrollView
+                ref={yearScrollRef}
+                style={{ flex: 1, height: pickerContainerH }}
+                contentContainerStyle={{ paddingVertical: pickerPad }}
+                showsVerticalScrollIndicator={false}
+                snapToInterval={PICKER_ITEM_H}
+                decelerationRate="fast"
+                onMomentumScrollEnd={handleYearScroll}
+                onScrollEndDrag={handleYearScroll}
+              >
+                {PICKER_YEARS.map((y) => (
+                  <Pressable
+                    key={y}
+                    style={scheduleStyles.pickerItem}
+                    onPress={() => {
+                      setPickerYear(y)
+                      const idx = PICKER_YEARS.indexOf(y)
+                      yearScrollRef.current?.scrollTo({ y: idx * PICKER_ITEM_H, animated: true })
+                    }}
+                  >
+                    <Text
+                      style={[
+                        scheduleStyles.pickerItemText,
+                        y === pickerYear && scheduleStyles.pickerItemTextSelected,
+                      ]}
+                    >
+                      {y}년
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+
+              {/* 월 컬럼 */}
+              <ScrollView
+                ref={monthScrollRef}
+                style={{ flex: 1, height: pickerContainerH }}
+                contentContainerStyle={{ paddingVertical: pickerPad }}
+                showsVerticalScrollIndicator={false}
+                snapToInterval={PICKER_ITEM_H}
+                decelerationRate="fast"
+                onMomentumScrollEnd={handleMonthScroll}
+                onScrollEndDrag={handleMonthScroll}
+              >
+                {PICKER_MONTHS.map((m) => (
+                  <Pressable
+                    key={m}
+                    style={scheduleStyles.pickerItem}
+                    onPress={() => {
+                      setPickerMonth(m)
+                      const idx = m - 1
+                      monthScrollRef.current?.scrollTo({ y: idx * PICKER_ITEM_H, animated: true })
+                    }}
+                  >
+                    <Text
+                      style={[
+                        scheduleStyles.pickerItemText,
+                        m === pickerMonth && scheduleStyles.pickerItemTextSelected,
+                      ]}
+                    >
+                      {m}월
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* 확인 버튼 */}
+            <Pressable style={scheduleStyles.pickerConfirmBtn} onPress={confirmYearMonth}>
+              <Text style={scheduleStyles.pickerConfirmText}>
+                {pickerYear}년 {pickerMonth}월 선택
+              </Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* 달력 그리드 */}
+      <View style={scheduleStyles.calendarGrid}>
+        {/* 요일 헤더 */}
+        <View style={scheduleStyles.weekdayRow}>
+          {WEEKDAYS.map((day, idx) => (
+            <Text
+              key={day}
+              style={[
+                scheduleStyles.weekdayCell,
+                idx === 0 && { color: colors.error },
+                idx === 6 && { color: '#4a90d9' },
+              ]}
+            >
+              {day}
+            </Text>
+          ))}
+        </View>
+
+        {/* 날짜 행 */}
+        {calendarRows.map((row, rowIdx) => (
+          <View key={rowIdx} style={scheduleStyles.weekRow}>
+            {row.map((day, colIdx) => {
+              if (day === null) {
+                return <View key={colIdx} style={[scheduleStyles.dayCell, { width: cellSize, height: cellSize }]} />
+              }
+              const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+              const isToday = dateStr === todayStr
+              const isSelected = dateStr === selectedDate
+              const hasDot = scheduleDateSet.has(dateStr)
+              const isSunday = colIdx === 0
+              const isSaturday = colIdx === 6
+              const holidayInfo = holidayMap.get(dateStr)
+              const holidayName = holidayInfo?.name ?? null
+              const isSubstitute = holidayInfo?.isSubstitute ?? false
+              const isHoliday = holidayName !== null
+              const shortHolidayName = holidayName
+                ? holidayName.length > 4
+                  ? holidayName.slice(0, 4) + '…'
+                  : holidayName
+                : null
+
+              let textColor: string = colors.text
+              if (isHoliday && isSubstitute) textColor = '#e07c00'
+              else if (isHoliday) textColor = colors.error
+              else if (isSunday) textColor = colors.error
+              else if (isSaturday) textColor = '#4a90d9'
+
+              return (
+                <Pressable
+                  key={colIdx}
+                  style={[
+                    scheduleStyles.dayCell,
+                    { width: cellSize, height: cellSize },
+                    isToday && !isSelected && scheduleStyles.dayCellToday,
+                    isSelected && !isToday && scheduleStyles.dayCellSelected,
+                    isSelected && isToday && scheduleStyles.dayCellTodaySelected,
+                  ]}
+                  onPress={() => setSelectedDate(isSelected ? null : dateStr)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${month}월 ${day}일`}
+                >
+                  <Text style={[scheduleStyles.dayCellText, { color: textColor }, (isToday || isSelected) && { fontWeight: '700' }]}>{day}</Text>
+                  {shortHolidayName && (
+                    <Text
+                      style={[
+                        scheduleStyles.dayHolidayName,
+                        isSubstitute && scheduleStyles.dayHolidayNameSub,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {shortHolidayName}
+                    </Text>
+                  )}
+                  {hasDot && !isSelected && <View style={scheduleStyles.dayCellDot} />}
+                </Pressable>
+              )
+            })}
+          </View>
+        ))}
+      </View>
+
+      {/* 달력-일정 구분선 */}
+      <View style={scheduleStyles.calendarDivider} />
+
       {loading ? (
         <View style={placeholderStyles.wrap}>
           <ActivityIndicator color={colors.accent} />
         </View>
-      ) : schedules.length === 0 ? (
+      ) : visibleSchedules.length === 0 ? (
         <View style={placeholderStyles.wrap}>
           <Ionicons name="calendar-outline" size={32} color={colors.border} />
-          <Text style={placeholderStyles.text}>이번 달 일정이 없어요.</Text>
+          <Text style={placeholderStyles.text}>
+            {selectedDate ? '이 날 일정이 없어요.' : '이번 달 일정이 없어요.'}
+          </Text>
         </View>
       ) : (
         <FlatList
-          data={schedules}
+          data={visibleSchedules}
           keyExtractor={(item) => String(item.id)}
           scrollEnabled={false}
           ItemSeparatorComponent={() => <View style={scheduleStyles.separator} />}
@@ -842,30 +1180,41 @@ function PostsTab({ groupId, isMember }: PostsTabProps) {
 
   return (
     <View>
-      {/* 멤버인 경우 게시글 작성 버튼 */}
-      {isMember && (
-        <Pressable
-          style={postsStyles.writeBtn}
-          onPress={() => setModalVisible(true)}
-          accessibilityRole="button"
-          accessibilityLabel="게시글 작성"
-        >
-          <Ionicons name="pencil-outline" size={16} color={colors.accent} />
-          <Text style={postsStyles.writeBtnText}>게시글 작성</Text>
-        </Pressable>
-      )}
-
       {loading ? (
         <View style={placeholderStyles.wrap}>
           <ActivityIndicator color={colors.accent} />
         </View>
       ) : posts.length === 0 ? (
-        <View style={placeholderStyles.wrap}>
-          <Ionicons name="document-text-outline" size={32} color={colors.border} />
-          <Text style={placeholderStyles.text}>아직 게시글이 없어요.</Text>
-        </View>
+        <>
+          <View style={placeholderStyles.wrap}>
+            <Ionicons name="document-text-outline" size={32} color={colors.border} />
+            <Text style={placeholderStyles.text}>아직 게시글이 없어요.</Text>
+          </View>
+          {isMember && (
+            <Pressable
+              style={postsStyles.addBtn}
+              onPress={() => setModalVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel="게시글 작성"
+            >
+              <Ionicons name="pencil-outline" size={18} color={colors.accent} />
+              <Text style={postsStyles.addBtnText}>게시글 작성</Text>
+            </Pressable>
+          )}
+        </>
       ) : (
         <>
+          {isMember && (
+            <Pressable
+              style={postsStyles.writeBtn}
+              onPress={() => setModalVisible(true)}
+              accessibilityRole="button"
+              accessibilityLabel="게시글 작성"
+            >
+              <Ionicons name="pencil-outline" size={16} color={colors.accent} />
+              <Text style={postsStyles.writeBtnText}>게시글 작성</Text>
+            </Pressable>
+          )}
           <FlatList
             data={posts}
             keyExtractor={(item) => String(item.id)}
@@ -1264,10 +1613,136 @@ const scheduleStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  monthLabelBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sp1,
+  },
   monthLabel: {
     fontSize: fontSize.md,
     fontWeight: '700',
     color: colors.text,
+  },
+  pickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  pickerSheet: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingTop: spacing.sp4,
+    overflow: 'hidden',
+  },
+  pickerColumns: {
+    flexDirection: 'row',
+    position: 'relative',
+  },
+  pickerHighlight: {
+    position: 'absolute',
+    left: spacing.sp4,
+    right: spacing.sp4,
+    height: PICKER_ITEM_H,
+    backgroundColor: colors.surface2,
+    borderRadius: radius.md,
+    zIndex: 0,
+  },
+  pickerItem: {
+    height: PICKER_ITEM_H,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pickerItemText: {
+    fontSize: fontSize.md,
+    color: colors.textMuted,
+  },
+  pickerItemTextSelected: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  pickerConfirmBtn: {
+    margin: spacing.sp4,
+    paddingVertical: spacing.sp4,
+    backgroundColor: colors.accent,
+    borderRadius: radius.md,
+    alignItems: 'center',
+  },
+  pickerConfirmText: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  calendarGrid: {
+    paddingHorizontal: spacing.sp4,
+    paddingTop: spacing.sp2,
+    paddingBottom: spacing.sp2,
+  },
+  weekdayRow: {
+    flexDirection: 'row',
+    marginBottom: spacing.sp1,
+  },
+  weekdayCell: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    paddingVertical: spacing.sp1,
+  },
+  weekRow: {
+    flexDirection: 'row',
+  },
+  dayCell: {
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: spacing.sp1,
+  },
+  dayCellToday: {
+    backgroundColor: colors.accentMuted,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: radius.md,
+  },
+  dayCellSelected: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: colors.accent,
+    borderRadius: radius.md,
+  },
+  dayCellTodaySelected: {
+    backgroundColor: colors.accentMuted,
+    borderWidth: 2,
+    borderColor: colors.accent,
+    borderRadius: radius.md,
+  },
+  dayCellText: {
+    fontSize: fontSize.sm,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  dayCellDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.accent,
+    marginTop: 2,
+  },
+  dayHolidayName: {
+    fontSize: 8,
+    color: colors.error,
+    textAlign: 'center',
+    lineHeight: 10,
+  },
+  dayHolidayNameSub: {
+    color: '#e07c00',
+  },
+  calendarDivider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginHorizontal: spacing.sp4,
+    marginBottom: spacing.sp1,
   },
   separator: {
     height: 1,
@@ -1356,6 +1831,24 @@ const postsStyles = StyleSheet.create({
     borderRadius: radius.md,
   },
   writeBtnText: {
+    fontSize: fontSize.base,
+    fontWeight: '600',
+    color: colors.accent,
+  },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sp2,
+    paddingVertical: spacing.sp3,
+    marginHorizontal: spacing.sp4,
+    marginTop: spacing.sp3,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    borderRadius: radius.md,
+    borderStyle: 'dashed',
+  },
+  addBtnText: {
     fontSize: fontSize.base,
     fontWeight: '600',
     color: colors.accent,
