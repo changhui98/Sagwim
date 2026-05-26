@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useAuth } from '../../src/context/AuthContext'
 import { updateMyProfile } from '../../src/api/userApi'
+import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
 import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
 import type { Gender, UserDetailResponse } from '../../src/types/user'
 
@@ -30,20 +31,14 @@ export default function ProfileEditGenderScreen() {
 
   const [selected, setSelected] = useState<Gender>(profile.gender ?? 'NONE')
   const [saving, setSaving] = useState(false)
+  const [showDiscard, setShowDiscard] = useState(false)
 
   const isChanged = selected !== (profile.gender ?? 'NONE')
   const canSave = isChanged
 
   const handleBack = useCallback(() => {
     if (isChanged) {
-      Alert.alert(
-        '변경 취소',
-        '변경 사항이 사라집니다. 계속하시겠습니까?',
-        [
-          { text: '계속 편집', style: 'cancel' },
-          { text: '나가기', style: 'destructive', onPress: () => router.back() },
-        ],
-      )
+      setShowDiscard(true)
       return
     }
     router.back()
@@ -130,6 +125,17 @@ export default function ProfileEditGenderScreen() {
           </Pressable>
         </View>
       </View>
+
+      <ConfirmDialog
+        isOpen={showDiscard}
+        title="변경 취소"
+        message="변경 사항이 사라집니다. 계속하시겠습니까?"
+        confirmLabel="나가기"
+        cancelLabel="계속 편집"
+        confirmVariant="danger"
+        onConfirm={() => { setShowDiscard(false); router.back() }}
+        onCancel={() => setShowDiscard(false)}
+      />
     </>
   )
 }

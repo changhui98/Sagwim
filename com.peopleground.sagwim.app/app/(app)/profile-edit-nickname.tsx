@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuth } from '../../src/context/AuthContext'
 import { updateMyProfile } from '../../src/api/userApi'
 import { checkNickname } from '../../src/api/authApi'
+import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
 import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
 import type { UserDetailResponse } from '../../src/types/user'
 
@@ -28,20 +29,14 @@ export default function ProfileEditNicknameScreen() {
   const [available, setAvailable] = useState(false)
   const [checking, setChecking] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [showDiscard, setShowDiscard] = useState(false)
 
   const isChanged = nickname.trim() !== (profile.nickname ?? '').trim()
   const canSave = isChanged && checked && available
 
   const handleBack = useCallback(() => {
     if (isChanged) {
-      Alert.alert(
-        '변경 취소',
-        '변경 사항이 사라집니다. 계속하시겠습니까?',
-        [
-          { text: '계속 편집', style: 'cancel' },
-          { text: '나가기', style: 'destructive', onPress: () => router.back() },
-        ],
-      )
+      setShowDiscard(true)
       return
     }
     router.back()
@@ -68,38 +63,26 @@ export default function ProfileEditNicknameScreen() {
 
   const handleSave = useCallback(async () => {
     if (!canSave) return
-    Alert.alert(
-      '닉네임 변경',
-      `닉네임을 "${nickname.trim()}"으로 변경하시겠습니까?`,
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '변경',
-          onPress: async () => {
-            setSaving(true)
-            try {
-              const updated = await updateMyProfile({
-                nickname: nickname.trim(),
-                address: profile.address ?? '',
-                currentPassword: '',
-                newPassword: '',
-                profileImageUrl: profile.profileImageUrl ?? null,
-                bio: profile.bio,
-                gender: profile.gender,
-                birthDate: profile.birthDate,
-                isSearchable: profile.isSearchable,
-              })
-              setMeProfile(updated)
-              router.back()
-            } catch {
-              Alert.alert('오류', '닉네임 저장에 실패했습니다.')
-            } finally {
-              setSaving(false)
-            }
-          },
-        },
-      ],
-    )
+    setSaving(true)
+    try {
+      const updated = await updateMyProfile({
+        nickname: nickname.trim(),
+        address: profile.address ?? '',
+        currentPassword: '',
+        newPassword: '',
+        profileImageUrl: profile.profileImageUrl ?? null,
+        bio: profile.bio,
+        gender: profile.gender,
+        birthDate: profile.birthDate,
+        isSearchable: profile.isSearchable,
+      })
+      setMeProfile(updated)
+      router.back()
+    } catch {
+      Alert.alert('오류', '닉네임 저장에 실패했습니다.')
+    } finally {
+      setSaving(false)
+    }
   }, [canSave, nickname, profile, setMeProfile])
 
   return (
@@ -165,6 +148,17 @@ export default function ProfileEditNicknameScreen() {
           </Pressable>
         </View>
       </View>
+
+      <ConfirmDialog
+        isOpen={showDiscard}
+        title="변경 취소"
+        message="변경 사항이 사라집니다. 계속하시겠습니까?"
+        confirmLabel="나가기"
+        cancelLabel="계속 편집"
+        confirmVariant="danger"
+        onConfirm={() => { setShowDiscard(false); router.back() }}
+        onCancel={() => setShowDiscard(false)}
+      />
     </>
   )
 }
