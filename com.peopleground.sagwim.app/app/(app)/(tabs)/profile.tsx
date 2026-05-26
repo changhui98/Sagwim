@@ -242,7 +242,7 @@ export default function ProfileScreen() {
       {/* 프로필 편집 버튼 */}
       <Pressable
         style={({ pressed }) => [styles.editButton, pressed && styles.editButtonPressed]}
-        onPress={() => Alert.alert('준비 중', '프로필 편집 기능을 준비 중이에요.')}
+        onPress={() => router.push('/(app)/profile-edit')}
       >
         <Text style={styles.editButtonText}>프로필 편집</Text>
       </Pressable>
