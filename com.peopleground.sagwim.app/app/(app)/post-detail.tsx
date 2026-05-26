@@ -256,6 +256,10 @@ function CommentItem({
 export default function PostDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
+  const goBack = () => {
+    if (router.canGoBack()) router.back()
+    else router.replace('/(app)/(tabs)')
+  }
   const insets = useSafeAreaInsets()
   const { meUsername, meProfileImageUrl } = useAuth()
   const inputRef = useRef<TextInput>(null)
@@ -430,7 +434,7 @@ export default function PostDetailScreen() {
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.center}>
           <Text style={styles.errorText}>{error ?? '게시글을 찾을 수 없어요.'}</Text>
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Pressable style={styles.backButton} onPress={() => goBack()}>
             <Text style={styles.backButtonText}>돌아가기</Text>
           </Pressable>
         </View>
@@ -466,7 +470,7 @@ export default function PostDetailScreen() {
       >
         {/* 헤더 */}
         <View style={styles.header}>
-          <Pressable style={styles.headerBack} onPress={() => router.back()} hitSlop={8} accessibilityLabel="뒤로가기">
+          <Pressable style={styles.headerBack} onPress={() => goBack()} hitSlop={8} accessibilityLabel="뒤로가기">
             <Ionicons name="chevron-back" size={24} color={colors.text} />
           </Pressable>
           <Text style={styles.headerTitle}>게시글</Text>

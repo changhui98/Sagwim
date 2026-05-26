@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native'
-import { Stack, router } from 'expo-router'
+import { Stack, router, useFocusEffect } from 'expo-router'
 import { Image } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -44,6 +44,9 @@ export default function ProfileScreen() {
   const [isLoading, setIsLoading] = useState(false)
   const isLoadingRef = useRef(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const flatListHeightRef = useRef(0)
+  const hasNextRef = useRef(true)
+  const pageRef = useRef(0)
 
   const photoPosts = useMemo(
     () => posts.filter((p) => (p.imageUrls?.length ?? 0) > 0),
@@ -79,6 +82,8 @@ export default function ProfileScreen() {
         })
         setPage(result.page)
         setHasNext(result.hasNext)
+        pageRef.current = result.page
+        hasNextRef.current = result.hasNext
       } catch {
         // 조용히 실패
       } finally {
@@ -90,9 +95,11 @@ export default function ProfileScreen() {
     [meUsername],
   )
 
-  useEffect(() => {
-    if (meUsername) void fetchPosts(0, true)
-  }, [meUsername]) // eslint-disable-line react-hooks/exhaustive-deps
+  useFocusEffect(
+    useCallback(() => {
+      if (meUsername) void fetchPosts(0, true)
+    }, [meUsername]) // eslint-disable-line react-hooks/exhaustive-deps
+  )
 
   const handleRefresh = async () => {
     if (!meUsername) return
@@ -173,7 +180,7 @@ export default function ProfileScreen() {
                 key={`filler-${i}`}
                 style={[
                   styles.cell,
-                  { width: cellSize, height: cellSize },
+                  { width: cellSize, height: cellSize, backgroundColor: colors.bg },
                   i < GRID_COLUMNS - item.items.length - 1 && { marginRight: GRID_GAP },
                 ]}
               />
@@ -306,6 +313,12 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={listData.length === 0 ? styles.flatListContentEmpty : undefined}
           style={styles.flatList}
+          onLayout={(e) => { flatListHeightRef.current = e.nativeEvent.layout.height }}
+          onContentSizeChange={(_, contentHeight) => {
+            if (contentHeight < flatListHeightRef.current && hasNextRef.current && !isLoadingRef.current) {
+              void fetchPosts(pageRef.current + 1)
+            }
+          }}
         />
       </View>
     </>
