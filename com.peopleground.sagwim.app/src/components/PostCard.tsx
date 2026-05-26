@@ -11,6 +11,7 @@ import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { togglePostLike } from '../api/postApi'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
+import { useAuth } from '../context/AuthContext'
 import { colors, fontSize, radius, spacing } from '../constants/theme'
 import type { ContentResponse } from '../types/post'
 
@@ -61,7 +62,10 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onLikeToggle }: PostCardProps) {
+  const { meUsername, meProfileImageUrl } = useAuth()
   const author = post.nickname ?? post.createdBy
+  const isMine = !!meUsername && post.createdBy === meUsername
+  const avatarUrl = isMine ? resolveImageUrl(meProfileImageUrl) : null
 
   const [liked, setLiked] = useState(post.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(post.likeCount ?? 0)
@@ -105,7 +109,15 @@ export function PostCard({ post, onLikeToggle }: PostCardProps) {
     >
       <View style={styles.cardHeader}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{author.slice(0, 1).toUpperCase()}</Text>
+          {avatarUrl ? (
+            <Image
+              source={{ uri: avatarUrl }}
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={styles.avatarText}>{author.slice(0, 1).toUpperCase()}</Text>
+          )}
         </View>
         <View style={styles.authorWrap}>
           <Text style={styles.author}>{author}</Text>
@@ -187,6 +199,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentMuted,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   avatarText: {
     fontSize: fontSize.md,

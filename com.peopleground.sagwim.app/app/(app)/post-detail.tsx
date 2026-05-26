@@ -257,7 +257,7 @@ export default function PostDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const insets = useSafeAreaInsets()
-  const { meUsername } = useAuth()
+  const { meUsername, meProfileImageUrl } = useAuth()
   const inputRef = useRef<TextInput>(null)
 
   const [post, setPost] = useState<ContentResponse | null>(null)
@@ -439,6 +439,8 @@ export default function PostDetailScreen() {
   }
 
   const author = post.nickname ?? post.createdBy
+  const isPostMine = !!meUsername && post.createdBy === meUsername
+  const postAvatarUrl = isPostMine ? resolveImageUrl(meProfileImageUrl) : null
 
   // FlatList에 넘길 데이터: 게시글 헤더 + 댓글 목록
   type ListItem =
@@ -485,7 +487,15 @@ export default function PostDetailScreen() {
                   {/* 작성자 */}
                   <View style={styles.authorRow}>
                     <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>{author.slice(0, 1).toUpperCase()}</Text>
+                      {postAvatarUrl ? (
+                        <Image
+                          source={{ uri: postAvatarUrl }}
+                          style={StyleSheet.absoluteFill}
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <Text style={styles.avatarText}>{author.slice(0, 1).toUpperCase()}</Text>
+                      )}
                     </View>
                     <View style={styles.authorMeta}>
                       <Text style={styles.authorName}>{author}</Text>
@@ -659,7 +669,7 @@ const styles = StyleSheet.create({
   // 게시글 섹션
   postSection: { paddingHorizontal: spacing.sp4, paddingTop: spacing.sp4, gap: spacing.sp3 },
   authorRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp3 },
-  avatar: { width: 40, height: 40, borderRadius: radius.full, backgroundColor: colors.accentMuted, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 40, height: 40, borderRadius: radius.full, backgroundColor: colors.accentMuted, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarText: { fontSize: fontSize.md, fontWeight: '700', color: colors.accent },
   authorMeta: { gap: 2 },
   authorName: { fontSize: fontSize.base, fontWeight: '600', color: colors.text },
