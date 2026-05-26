@@ -114,14 +114,11 @@ function CommentItem({
 }: CommentItemProps) {
   const isMine = myUsername != null && comment.authorUsername === myUsername
 
-  const handleDelete = () => {
-    Alert.alert('댓글 삭제', '이 댓글을 삭제할까요?', [
+  const handleMorePress = () => {
+    if (!isMine) return
+    Alert.alert('댓글 옵션', undefined, [
       { text: '취소', style: 'cancel' },
-      {
-        text: '삭제',
-        style: 'destructive',
-        onPress: () => onDelete(comment.id),
-      },
+      { text: '삭제', style: 'destructive', onPress: () => onDelete(comment.id) },
     ])
   }
 
@@ -136,73 +133,76 @@ function CommentItem({
   const author = comment.authorNickname ?? comment.authorUsername ?? '알 수 없음'
 
   return (
-    <View style={[commentStyles.row, isReply && commentStyles.replyRow]}>
-      {/* 아바타 */}
-      <View style={[commentStyles.avatar, isReply && commentStyles.avatarSm]}>
-        <Text style={[commentStyles.avatarText, isReply && commentStyles.avatarTextSm]}>
-          {author.charAt(0).toUpperCase()}
-        </Text>
-      </View>
-
-      <View style={commentStyles.content}>
-        {/* 헤더 */}
-        <View style={commentStyles.header}>
-          <Text style={commentStyles.author}>{author}</Text>
-          <Text style={commentStyles.time}>{formatRelativeTime(comment.createdAt)}</Text>
-          {isMine && (
-            <Pressable onPress={handleDelete} hitSlop={8} accessibilityLabel="댓글 삭제">
-              <Ionicons name="trash-outline" size={14} color={colors.textMuted} />
-            </Pressable>
-          )}
+    <View>
+      {/* 댓글 본행 */}
+      <View style={[commentStyles.row, isReply && commentStyles.replyRow]}>
+        {/* 아바타 */}
+        <View style={[commentStyles.avatar, isReply && commentStyles.avatarSm]}>
+          <Text style={[commentStyles.avatarText, isReply && commentStyles.avatarTextSm]}>
+            {author.charAt(0).toUpperCase()}
+          </Text>
         </View>
 
-        {/* 본문 */}
-        <Text style={commentStyles.body}>{comment.body}</Text>
-
-        {/* 액션 */}
-        <View style={commentStyles.actions}>
-          <Pressable
-            style={commentStyles.actionBtn}
-            onPress={() => onLikeToggle(comment.id, comment.likedByMe, comment.likeCount)}
-            hitSlop={8}
-          >
-            <Ionicons
-              name={comment.likedByMe ? 'heart' : 'heart-outline'}
-              size={13}
-              color={comment.likedByMe ? colors.error : colors.textMuted}
-            />
-            {comment.likeCount > 0 && (
-              <Text style={[commentStyles.actionCount, comment.likedByMe && commentStyles.actionCountActive]}>
-                {comment.likeCount}
-              </Text>
-            )}
-          </Pressable>
-
-          {!isReply && (
-            <Pressable style={commentStyles.actionBtn} onPress={() => onReply(comment)} hitSlop={8}>
-              <Text style={commentStyles.replyBtn}>답글</Text>
-            </Pressable>
-          )}
-        </View>
-
-        {/* 답글 목록 */}
-        {!isReply && comment.replies.length > 0 && (
-          <View style={commentStyles.replies}>
-            {comment.replies.map((reply) => (
-              <CommentItem
-                key={reply.id}
-                comment={reply}
-                contentId={contentId}
-                myUsername={myUsername}
-                isReply
-                onReply={onReply}
-                onDelete={onDelete}
-                onLikeToggle={onLikeToggle}
-              />
-            ))}
+        {/* 내용 */}
+        <View style={commentStyles.content}>
+          <View style={commentStyles.header}>
+            <Text style={commentStyles.author}>{author}</Text>
+            <Text style={commentStyles.time}>{formatRelativeTime(comment.createdAt)}</Text>
           </View>
+
+          <Text style={commentStyles.body}>{comment.body}</Text>
+
+          <View style={commentStyles.actions}>
+            <Pressable
+              style={commentStyles.actionBtn}
+              onPress={() => onLikeToggle(comment.id, comment.likedByMe, comment.likeCount)}
+              hitSlop={8}
+            >
+              <Ionicons
+                name={comment.likedByMe ? 'heart' : 'heart-outline'}
+                size={13}
+                color={comment.likedByMe ? colors.error : colors.textMuted}
+              />
+              {comment.likeCount > 0 && (
+                <Text style={[commentStyles.actionCount, comment.likedByMe && commentStyles.actionCountActive]}>
+                  {comment.likeCount}
+                </Text>
+              )}
+            </Pressable>
+
+            {!isReply && (
+              <Pressable style={commentStyles.actionBtn} onPress={() => onReply(comment)} hitSlop={8}>
+                <Text style={commentStyles.replyBtn}>답글</Text>
+              </Pressable>
+            )}
+          </View>
+        </View>
+
+        {/* ... 도트 버튼 (오른쪽 끝) */}
+        {isMine && (
+          <Pressable onPress={handleMorePress} hitSlop={8} style={commentStyles.moreDots}>
+            <Ionicons name="ellipsis-horizontal" size={16} color={colors.textMuted} />
+          </Pressable>
         )}
       </View>
+
+      {/* 답글 목록 - 부모 row 밖으로 분리, 세로선 + 들여쓰기 */}
+      {!isReply && comment.replies.length > 0 && (
+        <View style={commentStyles.repliesWrapper}>
+          {comment.replies.map((reply) => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              contentId={contentId}
+              myUsername={myUsername}
+              isReply
+              onReply={onReply}
+              onDelete={onDelete}
+              onLikeToggle={onLikeToggle}
+            />
+          ))}
+        </View>
+      )}
     </View>
   )
 }
@@ -557,16 +557,26 @@ export default function PostDetailScreen() {
             </View>
           )}
           <View style={styles.inputRow}>
-            <TextInput
-              ref={inputRef}
-              style={styles.input}
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder={replyTarget ? '답글을 입력하세요...' : '댓글을 입력하세요...'}
-              placeholderTextColor={colors.textMuted}
-              multiline
-              returnKeyType="default"
-            />
+            <View style={styles.inputContainer}>
+              <TextInput
+                ref={inputRef}
+                style={styles.input}
+                value={inputText}
+                onChangeText={setInputText}
+                placeholder={replyTarget ? '답글을 입력하세요...' : '댓글을 입력하세요...'}
+                placeholderTextColor={colors.textMuted}
+                multiline
+                returnKeyType="default"
+              />
+              <Pressable
+                style={styles.photoBtn}
+                onPress={() => {/* 추후 사진 첨부 구현 */}}
+                hitSlop={8}
+                accessibilityLabel="사진 첨부"
+              >
+                <Ionicons name="image-outline" size={20} color={colors.textMuted} />
+              </Pressable>
+            </View>
             <Pressable
               style={[styles.sendBtn, (!inputText.trim() || submitting) && styles.sendBtnDisabled]}
               onPress={() => void handleSubmit()}
@@ -645,14 +655,26 @@ const styles = StyleSheet.create({
   inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.sp2 },
   input: {
     flex: 1,
-    minHeight: 38,
-    maxHeight: 100,
+    minHeight: 22,
+    maxHeight: 80,
+    fontSize: fontSize.base,
+    color: colors.text,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+  inputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     backgroundColor: colors.surface2,
     borderRadius: radius.xl,
     paddingHorizontal: spacing.sp4,
     paddingVertical: spacing.sp2,
-    fontSize: fontSize.base,
-    color: colors.text,
+    minHeight: 38,
+  },
+  photoBtn: {
+    paddingLeft: spacing.sp2,
+    paddingBottom: 2,
   },
   sendBtn: {
     width: 38, height: 38,
@@ -666,6 +688,7 @@ const styles = StyleSheet.create({
 const commentStyles = StyleSheet.create({
   row: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: spacing.sp3,
     paddingHorizontal: spacing.sp4,
     paddingVertical: spacing.sp3,
@@ -673,9 +696,10 @@ const commentStyles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   replyRow: {
-    paddingLeft: 0,
+    paddingLeft: spacing.sp3,
+    paddingRight: spacing.sp4,
     paddingTop: spacing.sp2,
-    paddingBottom: 0,
+    paddingBottom: spacing.sp2,
     borderBottomWidth: 0,
   },
   avatar: {
@@ -698,7 +722,16 @@ const commentStyles = StyleSheet.create({
   actionCount: { fontSize: fontSize.xs, color: colors.textMuted },
   actionCountActive: { color: colors.error },
   replyBtn: { fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '600' },
-  replies: { marginTop: spacing.sp2, gap: spacing.sp1, paddingLeft: spacing.sp2, borderLeftWidth: 2, borderLeftColor: colors.border },
+  repliesWrapper: {
+    marginLeft: spacing.sp4 + 18,
+    borderLeftWidth: 2,
+    borderLeftColor: colors.border,
+    marginBottom: spacing.sp1,
+  },
+  moreDots: {
+    paddingTop: 2,
+    paddingLeft: spacing.sp1,
+  },
 })
 
 const sliderStyles = StyleSheet.create({
