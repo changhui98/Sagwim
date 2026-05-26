@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -20,6 +20,8 @@ import type { ContentResponse } from '../../../src/types/post'
 import { resolveImageUrl } from '../../../src/lib/resolveImageUrl'
 import { colors, fontSize, radius, spacing } from '../../../src/constants/theme'
 
+type ViewMode = 'photo' | 'text'
+
 const GRID_COLUMNS = 3
 const GRID_GAP = 1
 
@@ -30,17 +32,27 @@ export default function ProfileScreen() {
 
   const cellSize = (screenWidth - GRID_GAP * (GRID_COLUMNS - 1)) / GRID_COLUMNS
 
+  const [viewMode, setViewMode] = useState<ViewMode>('photo')
   const [posts, setPosts] = useState<ContentResponse[]>([])
   const [page, setPage] = useState(0)
   const [hasNext, setHasNext] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
+  // 웹과 동일하게 이미지 유무로 분리
+  const photoPosts = useMemo(
+    () => posts.filter((p) => (p.imageUrls?.length ?? 0) > 0),
+    [posts],
+  )
+  const textPosts = useMemo(
+    () => posts.filter((p) => (p.imageUrls?.length ?? 0) === 0),
+    [posts],
+  )
+  const visiblePosts = viewMode === 'photo' ? photoPosts : textPosts
+
   const fetchPosts = useCallback(
     async (nextPage: number, refresh = false) => {
-      if (!meUsername) return
-      if (isLoading) return
-
+      if (!meUsername || isLoading) return
       setIsLoading(true)
       try {
         const result = await getUserPosts(meUsername, nextPage, 12)
@@ -48,21 +60,18 @@ export default function ProfileScreen() {
         setPage(result.page)
         setHasNext(result.hasNext)
       } catch {
-        // 조용히 실패 — 빈 상태 유지
+        // 조용히 실패
       } finally {
         setIsLoading(false)
       }
     },
-    [meUsername, isLoading],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [meUsername],
   )
 
   useEffect(() => {
-    if (meUsername) {
-      fetchPosts(0, true)
-    }
-    // fetchPosts 는 isLoading 의존성이 있어 무한 루프 방지를 위해 의도적으로 제외
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [meUsername])
+    if (meUsername) void fetchPosts(0, true)
+  }, [meUsername]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRefresh = async () => {
     if (!meUsername) return
@@ -81,7 +90,7 @@ export default function ProfileScreen() {
 
   const handleLoadMore = () => {
     if (!hasNext || isLoading) return
-    fetchPosts(page + 1)
+    void fetchPosts(page + 1)
   }
 
   const handleSettingsPress = () => {
@@ -98,105 +107,78 @@ export default function ProfileScreen() {
     ])
   }
 
-  const handleEditProfile = () => {
-    Alert.alert('준비 중', '프로필 편집 기능을 준비 중이에요.')
-  }
-
   const avatarUri = resolveImageUrl(meProfileImageUrl)
   const displayNickname = meNickname ?? meUsername ?? '사용자'
   const avatarInitial = displayNickname.charAt(0).toUpperCase()
 
-  const renderCell = ({ item, index }: { item: ContentResponse; index: number }) => {
-    const firstImage = item.imageUrls?.[0]
-    const imageUri = resolveImageUrl(firstImage)
+  // ── 그리드 셀 (사진 탭) ──
+  const renderPhotoCell = ({ item, index }: { item: ContentResponse; index: number }) => {
+    const imageUri = resolveImageUrl(item.imageUrls?.[0])
     const isLastInRow = (index + 1) % GRID_COLUMNS === 0
-
     return (
-      <View
+      <Pressable
         style={[
           styles.cell,
           { width: cellSize, height: cellSize },
           !isLastInRow && { marginRight: GRID_GAP },
           { marginBottom: GRID_GAP },
         ]}
+        onPress={() => router.push({ pathname: '/(app)/post-detail', params: { id: String(item.id) } })}
+        accessibilityRole="button"
       >
-        {imageUri ? (
-          <Image
-            source={{ uri: imageUri }}
-            style={StyleSheet.absoluteFill}
-            contentFit="cover"
-          />
-        ) : (
-          <View style={[styles.textCell, { width: cellSize, height: cellSize }]}>
-            <Text style={styles.textCellBody} numberOfLines={2}>
-              {item.body}
-            </Text>
+        {imageUri && (
+          <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} contentFit="cover" />
+        )}
+        {(item.imageUrls?.length ?? 0) > 1 && (
+          <View style={styles.multiImageBadge}>
+            <Ionicons name="copy-outline" size={12} color="#fff" />
           </View>
         )}
-      </View>
+      </Pressable>
+    )
+  }
+
+  // ── 텍스트 행 (글 탭) ──
+  const renderTextRow = ({ item }: { item: ContentResponse }) => {
+    const date = new Date(item.createdAt)
+    const dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
+    return (
+      <Pressable
+        style={styles.textRow}
+        onPress={() => router.push({ pathname: '/(app)/post-detail', params: { id: String(item.id) } })}
+        accessibilityRole="button"
+      >
+        <Text style={styles.textRowBody} numberOfLines={2}>{item.body}</Text>
+        <View style={styles.textRowMeta}>
+          <Text style={styles.textRowDate}>{dateStr}</Text>
+          <View style={styles.textRowStats}>
+            <Ionicons name="heart-outline" size={13} color={colors.textMuted} />
+            <Text style={styles.textRowStat}>{item.likeCount ?? 0}</Text>
+            <Ionicons name="chatbubble-outline" size={12} color={colors.textMuted} />
+            <Text style={styles.textRowStat}>{item.commentCount ?? 0}</Text>
+          </View>
+        </View>
+      </Pressable>
     )
   }
 
   const renderEmpty = () => {
     if (isLoading) return null
+    const msg =
+      viewMode === 'photo'
+        ? '첫 사진을 공유해 목록을 채워보세요.'
+        : '사진이 없는 글만 보여드려요. 아직 없어요.'
     return (
       <View style={styles.emptyContainer}>
-        <Ionicons name="image-outline" size={48} color={colors.textMuted} />
-        <Text style={styles.emptyText}>게시글이 없어요.</Text>
+        <Ionicons
+          name={viewMode === 'photo' ? 'image-outline' : 'document-text-outline'}
+          size={48}
+          color={colors.textMuted}
+        />
+        <Text style={styles.emptyText}>{msg}</Text>
       </View>
     )
   }
-
-  const renderHeader = () => (
-    <View>
-      {/* 프로필 섹션 */}
-      <View style={styles.profileSection}>
-        {/* 아바타 */}
-        <View style={styles.avatarWrapper}>
-          {avatarUri ? (
-            <Image
-              source={{ uri: avatarUri }}
-              style={styles.avatar}
-              contentFit="cover"
-            />
-          ) : (
-            <View style={[styles.avatar, styles.avatarFallback]}>
-              <Text style={styles.avatarInitial}>{avatarInitial}</Text>
-            </View>
-          )}
-        </View>
-
-        {/* 닉네임 + 소개 */}
-        <View style={styles.profileInfo}>
-          <Text style={styles.nickname}>{displayNickname}</Text>
-          <Text style={styles.bio} numberOfLines={2}>
-            {'한 줄 소개를 작성해보세요.'}
-          </Text>
-        </View>
-      </View>
-
-      {/* 프로필 편집 버튼 */}
-      <Pressable
-        style={({ pressed }) => [styles.editButton, pressed && styles.editButtonPressed]}
-        onPress={handleEditProfile}
-      >
-        <Text style={styles.editButtonText}>프로필 편집</Text>
-      </Pressable>
-
-      {/* 구분선 */}
-      <View style={styles.divider} />
-
-      {/* 탭 아이콘 (grid) */}
-      <View style={styles.tabRow}>
-        <View style={styles.tabItemActive}>
-          <Ionicons name="grid-outline" size={22} color={colors.text} />
-        </View>
-      </View>
-
-      {/* 탭 아래 구분선 */}
-      <View style={styles.divider} />
-    </View>
-  )
 
   const renderFooter = () => {
     if (!isLoading || isRefreshing) return null
@@ -207,35 +189,96 @@ export default function ProfileScreen() {
     )
   }
 
+  const renderHeader = () => (
+    <View>
+      {/* 프로필 섹션 */}
+      <View style={styles.profileSection}>
+        <View style={styles.avatarWrapper}>
+          {avatarUri ? (
+            <Image source={{ uri: avatarUri }} style={styles.avatar} contentFit="cover" />
+          ) : (
+            <View style={[styles.avatar, styles.avatarFallback]}>
+              <Text style={styles.avatarInitial}>{avatarInitial}</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.profileInfo}>
+          <Text style={styles.nickname}>{displayNickname}</Text>
+          <Text style={styles.bio} numberOfLines={2}>
+            한 줄 소개를 작성해보세요.
+          </Text>
+        </View>
+      </View>
+
+      {/* 프로필 편집 버튼 */}
+      <Pressable
+        style={({ pressed }) => [styles.editButton, pressed && styles.editButtonPressed]}
+        onPress={() => Alert.alert('준비 중', '프로필 편집 기능을 준비 중이에요.')}
+      >
+        <Text style={styles.editButtonText}>프로필 편집</Text>
+      </Pressable>
+
+      {/* 구분선 */}
+      <View style={styles.divider} />
+
+      {/* 탭 토글 (사진 / 글) */}
+      <View style={styles.tabRow}>
+        {/* 사진 탭 */}
+        <Pressable
+          style={[styles.tabItem, viewMode === 'photo' && styles.tabItemActive]}
+          onPress={() => setViewMode('photo')}
+          accessibilityRole="tab"
+          accessibilityLabel="사진 게시글 보기"
+        >
+          {/* 웹과 동일한 이미지+풍경 아이콘 (SVG 대신 Ionicons 근사치) */}
+          <Ionicons
+            name="image-outline"
+            size={22}
+            color={viewMode === 'photo' ? colors.text : colors.textMuted}
+          />
+        </Pressable>
+
+        {/* 글 탭 */}
+        <Pressable
+          style={[styles.tabItem, viewMode === 'text' && styles.tabItemActive]}
+          onPress={() => setViewMode('text')}
+          accessibilityRole="tab"
+          accessibilityLabel="글 보기"
+        >
+          <Ionicons
+            name="chatbubble-outline"
+            size={20}
+            color={viewMode === 'text' ? colors.text : colors.textMuted}
+          />
+        </Pressable>
+      </View>
+
+      <View style={styles.divider} />
+    </View>
+  )
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-
       <View style={[styles.container, { paddingTop: insets.top }]}>
         {/* 커스텀 헤더 */}
         <View style={styles.header}>
-          {/* 좌측 placeholder (레이아웃 균형) */}
           <View style={styles.headerSide} />
-
           <Text style={styles.headerTitle}>프로필</Text>
-
           <View style={styles.headerSide}>
-            <Pressable
-              onPress={handleSettingsPress}
-              hitSlop={8}
-              style={styles.headerIconBtn}
-            >
+            <Pressable onPress={handleSettingsPress} hitSlop={8} style={styles.headerIconBtn}>
               <Ionicons name="settings-outline" size={22} color={colors.text} />
             </Pressable>
           </View>
         </View>
 
-        {/* 게시글 FlatList (헤더에 프로필 섹션 포함) */}
+        {/* key={viewMode} → numColumns 변경 시 FlatList 재마운트 */}
         <FlatList
-          data={posts}
+          key={viewMode}
+          data={visiblePosts}
           keyExtractor={(item) => String(item.id)}
-          renderItem={renderCell}
-          numColumns={GRID_COLUMNS}
+          renderItem={viewMode === 'photo' ? renderPhotoCell : renderTextRow}
+          numColumns={viewMode === 'photo' ? GRID_COLUMNS : 1}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmpty}
           ListFooterComponent={renderFooter}
@@ -244,10 +287,7 @@ export default function ProfileScreen() {
           refreshing={isRefreshing}
           onRefresh={handleRefresh}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={
-            posts.length === 0 ? styles.flatListContentEmpty : undefined
-          }
-          // 갭 없이 딱 붙이기 위해 columnWrapperStyle 사용하지 않음 (renderItem에서 직접 처리)
+          contentContainerStyle={visiblePosts.length === 0 ? styles.flatListContentEmpty : undefined}
           style={styles.flatList}
         />
       </View>
@@ -346,19 +386,22 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
 
-  // 구분선 & 탭
+  // 구분선
   divider: {
     height: 1,
     backgroundColor: colors.border,
   },
+
+  // 탭 토글
   tabRow: {
     flexDirection: 'row',
+  },
+  tabItem: {
+    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: spacing.sp3,
   },
   tabItemActive: {
-    paddingVertical: spacing.sp2,
-    paddingHorizontal: spacing.sp6,
     borderBottomWidth: 2,
     borderBottomColor: colors.text,
   },
@@ -371,21 +414,51 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 
-  // 그리드 셀
+  // 사진 그리드 셀
   cell: {
     overflow: 'hidden',
     backgroundColor: colors.surface2,
   },
-  textCell: {
-    backgroundColor: colors.surface2,
-    padding: spacing.sp2,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
+  multiImageBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    borderRadius: 4,
+    padding: 2,
   },
-  textCellBody: {
+
+  // 텍스트 목록 행
+  textRow: {
+    paddingHorizontal: spacing.sp4,
+    paddingVertical: spacing.sp3,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    gap: spacing.sp2,
+  },
+  textRowBody: {
+    fontSize: fontSize.md,
+    color: colors.text,
+    lineHeight: fontSize.md * 1.5,
+  },
+  textRowMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  textRowDate: {
     fontSize: fontSize.xs,
-    color: colors.textSecondary,
-    lineHeight: 16,
+    color: colors.textMuted,
+  },
+  textRowStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  textRowStat: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    marginRight: 4,
   },
 
   // Empty state
@@ -398,6 +471,8 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
+    textAlign: 'center',
+    paddingHorizontal: spacing.sp8,
   },
 
   // Footer loader
