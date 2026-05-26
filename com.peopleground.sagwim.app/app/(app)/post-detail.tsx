@@ -95,7 +95,7 @@ function ImageSlider({ urls }: ImageSliderProps) {
           const uri = resolveImageUrl(url)
           const imgHeight = heights[i]
           return (
-            <View style={{ width: itemWidth, height: containerHeight, justifyContent: 'center', backgroundColor: colors.surface3 }}>
+            <View style={{ width: itemWidth, height: containerHeight, justifyContent: 'center' }}>
               <Image
                 source={uri ? { uri } : undefined}
                 style={{ width: itemWidth, height: imgHeight }}
