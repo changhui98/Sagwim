@@ -570,8 +570,6 @@ export default function PostDetailScreen() {
                     </View>
                   </View>
 
-                  {/* 댓글 구분선 */}
-                  <View style={styles.divider} />
                 </View>
               )
             }
@@ -769,10 +767,7 @@ const styles = StyleSheet.create({
 
 const commentStyles = StyleSheet.create({
   // 부모+대댓글 전체를 감싸는 그룹 - 구분선은 여기에
-  commentGroup: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
+  commentGroup: {},
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
