@@ -775,6 +775,7 @@ export function GroupSettingsPage() {
           </div>
           <hr className={modalStyles.imageDivider} />
 
+          <p className={styles.sectionTitle}>모임 관리</p>
           <ul className={profileStyles.settingList}>
             <li className={profileStyles.settingRow} onClick={() => setView('info')}>
               <span className={profileStyles.settingLabel}>모임 이름</span>
@@ -815,6 +816,10 @@ export function GroupSettingsPage() {
               <span className={profileStyles.settingValue} />
               <span className={profileStyles.chevron}>›</span>
             </li>
+          </ul>
+
+          <p className={styles.sectionTitle}>위험 구역</p>
+          <ul className={profileStyles.settingList}>
             <li
               className={profileStyles.settingRow}
               style={{ cursor: 'pointer' }}
