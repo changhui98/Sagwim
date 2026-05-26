@@ -200,9 +200,6 @@ export default function ProfileScreen() {
         <Text style={styles.editButtonText}>프로필 편집</Text>
       </Pressable>
 
-      {/* 구분선 */}
-      <View style={styles.divider} />
-
       {/* 탭 토글 (사진 / 글) */}
       <View style={styles.tabRow}>
         {/* 사진 탭 */}
@@ -212,7 +209,6 @@ export default function ProfileScreen() {
           accessibilityRole="tab"
           accessibilityLabel="사진 게시글 보기"
         >
-          {/* 웹과 동일한 이미지+풍경 아이콘 (SVG 대신 Ionicons 근사치) */}
           <Ionicons
             name="image-outline"
             size={22}
@@ -234,8 +230,6 @@ export default function ProfileScreen() {
           />
         </Pressable>
       </View>
-
-      <View style={styles.divider} />
     </View>
   )
 
