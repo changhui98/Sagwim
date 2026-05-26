@@ -45,10 +45,33 @@ function formatRelativeTime(isoString: string): string {
 // ── 이미지 슬라이더 ──────────────────────────────────────────
 interface ImageSliderProps { urls: string[] }
 
+const MAX_IMAGE_HEIGHT = 480
+
 function ImageSlider({ urls }: ImageSliderProps) {
-  const { width } = useWindowDimensions()
-  const itemWidth = width - spacing.sp4 * 2
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions()
+  const itemWidth = screenWidth - spacing.sp4 * 2
+  const maxHeight = Math.min(MAX_IMAGE_HEIGHT, Math.round(screenHeight * 0.65))
+
   const [index, setIndex] = useState(0)
+  const [heights, setHeights] = useState<number[]>(() => new Array(urls.length).fill(maxHeight))
+
+  useEffect(() => {
+    urls.forEach((url, i) => {
+      const uri = resolveImageUrl(url)
+      if (!uri) return
+      Image.getSize(uri, (w, h) => {
+        const ratio = h / w
+        const calculated = Math.min(Math.round(ratio * itemWidth), maxHeight)
+        setHeights((prev) => {
+          const next = [...prev]
+          next[i] = calculated
+          return next
+        })
+      })
+    })
+  }, [urls, itemWidth, maxHeight])
+
+  const containerHeight = Math.max(...heights)
 
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: Array<{ index: number | null }> }) => {
@@ -70,13 +93,16 @@ function ImageSlider({ urls }: ImageSliderProps) {
         viewabilityConfig={viewabilityConfig}
         renderItem={({ item: url, index: i }) => {
           const uri = resolveImageUrl(url)
+          const imgHeight = heights[i]
           return (
-            <Image
-              source={uri ? { uri } : undefined}
-              style={{ width: itemWidth, height: 240, backgroundColor: colors.surface3 }}
-              resizeMode="cover"
-              accessibilityLabel={`이미지 ${i + 1}`}
-            />
+            <View style={{ width: itemWidth, height: containerHeight, justifyContent: 'center', backgroundColor: colors.surface3 }}>
+              <Image
+                source={uri ? { uri } : undefined}
+                style={{ width: itemWidth, height: imgHeight }}
+                resizeMode="contain"
+                accessibilityLabel={`이미지 ${i + 1}`}
+              />
+            </View>
           )
         }}
         style={{ borderRadius: radius.lg, overflow: 'hidden' }}
