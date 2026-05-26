@@ -180,8 +180,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
     paddingHorizontal: spacing.sp4,
     paddingVertical: spacing.sp4,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
     gap: spacing.sp3,
   },
   cardPressed: {
