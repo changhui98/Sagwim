@@ -134,7 +134,7 @@ function CommentItem({
   const hasReplies = !isReply && comment.replies.length > 0
 
   return (
-    <View>
+    <View style={!isReply ? commentStyles.commentGroup : undefined}>
       <View style={[commentStyles.row, isReply && commentStyles.replyRow]}>
         {/* 아바타 컬럼: 아바타 + 답글 있을 때 아래 연결선 */}
         <View style={commentStyles.avatarCol}>
@@ -689,17 +689,18 @@ const styles = StyleSheet.create({
 })
 
 const commentStyles = StyleSheet.create({
+  // 부모+대댓글 전체를 감싸는 그룹 - 구분선은 여기에
+  commentGroup: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
   row: {
     flexDirection: 'row',
     paddingHorizontal: spacing.sp4,
     paddingTop: spacing.sp3,
     paddingBottom: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
-  replyRow: {
-    borderBottomWidth: 0,
-  },
+  replyRow: {},
   // 아바타 컬럼: 아바타 + 연결선을 세로로 담는 컬럼
   avatarCol: {
     width: 36,
