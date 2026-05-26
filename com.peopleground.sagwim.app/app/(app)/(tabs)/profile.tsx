@@ -23,6 +23,10 @@ import { colors, fontSize, radius, spacing } from '../../../src/constants/theme'
 
 type ViewMode = 'photo' | 'text'
 
+type PhotoRowItem = { type: 'photo-row'; items: ContentResponse[] }
+type TextPostItem = { type: 'text-post'; post: ContentResponse }
+type ListItemData = PhotoRowItem | TextPostItem
+
 const GRID_COLUMNS = 3
 const GRID_GAP = 1
 
@@ -41,7 +45,6 @@ export default function ProfileScreen() {
   const isLoadingRef = useRef(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
-  // 웹과 동일하게 이미지 유무로 분리
   const photoPosts = useMemo(
     () => posts.filter((p) => (p.imageUrls?.length ?? 0) > 0),
     [posts],
@@ -50,7 +53,17 @@ export default function ProfileScreen() {
     () => posts.filter((p) => (p.imageUrls?.length ?? 0) === 0),
     [posts],
   )
-  const visiblePosts = viewMode === 'photo' ? photoPosts : textPosts
+
+  const listData = useMemo((): ListItemData[] => {
+    if (viewMode === 'photo') {
+      const rows: ListItemData[] = []
+      for (let i = 0; i < photoPosts.length; i += GRID_COLUMNS) {
+        rows.push({ type: 'photo-row', items: photoPosts.slice(i, i + GRID_COLUMNS) })
+      }
+      return rows
+    }
+    return textPosts.map((post) => ({ type: 'text-post', post }))
+  }, [viewMode, photoPosts, textPosts])
 
   const fetchPosts = useCallback(
     async (nextPage: number, refresh = false) => {
@@ -119,37 +132,57 @@ export default function ProfileScreen() {
   const displayNickname = meNickname ?? meUsername ?? '사용자'
   const avatarInitial = displayNickname.charAt(0).toUpperCase()
 
-  // ── 그리드 셀 (사진 탭) ──
-  const renderPhotoCell = ({ item, index }: { item: ContentResponse; index: number }) => {
-    const imageUri = resolveImageUrl(item.imageUrls?.[0])
-    const isLastInRow = (index + 1) % GRID_COLUMNS === 0
-    return (
-      <Pressable
-        style={[
-          styles.cell,
-          { width: cellSize, height: cellSize },
-          !isLastInRow && { marginRight: GRID_GAP },
-          { marginBottom: GRID_GAP },
-        ]}
-        onPress={() => router.push({ pathname: '/(app)/post-detail', params: { id: String(item.id) } })}
-        accessibilityRole="button"
-      >
-        {imageUri && (
-          <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} contentFit="cover" />
-        )}
-        {(item.imageUrls?.length ?? 0) > 1 && (
-          <View style={styles.multiImageBadge}>
-            <Ionicons name="copy-outline" size={12} color="#fff" />
-          </View>
-        )}
-      </Pressable>
-    )
+  const renderListItem = ({ item }: { item: ListItemData }) => {
+    if (item.type === 'photo-row') {
+      return (
+        <View style={styles.gridRow}>
+          {item.items.map((post, colIndex) => {
+            const imageUri = resolveImageUrl(post.imageUrls?.[0])
+            return (
+              <Pressable
+                key={`photo-${post.id}`}
+                style={[
+                  styles.cell,
+                  { width: cellSize, height: cellSize },
+                  colIndex < GRID_COLUMNS - 1 && { marginRight: GRID_GAP },
+                  { marginBottom: GRID_GAP },
+                ]}
+                onPress={() =>
+                  router.push({ pathname: '/(app)/post-detail', params: { id: String(post.id) } })
+                }
+                accessibilityRole="button"
+              >
+                {imageUri && (
+                  <Image
+                    source={{ uri: imageUri }}
+                    style={StyleSheet.absoluteFill}
+                    contentFit="cover"
+                  />
+                )}
+                {(post.imageUrls?.length ?? 0) > 1 && (
+                  <View style={styles.multiImageBadge}>
+                    <Ionicons name="copy-outline" size={12} color="#fff" />
+                  </View>
+                )}
+              </Pressable>
+            )
+          })}
+          {item.items.length < GRID_COLUMNS &&
+            Array.from({ length: GRID_COLUMNS - item.items.length }).map((_, i) => (
+              <View
+                key={`filler-${i}`}
+                style={[
+                  styles.cell,
+                  { width: cellSize, height: cellSize },
+                  i < GRID_COLUMNS - item.items.length - 1 && { marginRight: GRID_GAP },
+                ]}
+              />
+            ))}
+        </View>
+      )
+    }
+    return <PostCard post={item.post} />
   }
-
-  // ── 텍스트 행 (글 탭) — 공통 PostCard 재사용 ──
-  const renderTextRow = ({ item }: { item: ContentResponse }) => (
-    <PostCard post={item} />
-  )
 
   const renderEmpty = () => {
     if (isLoading) return null
@@ -255,13 +288,14 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* key={viewMode} → numColumns 변경 시 FlatList 재마운트 */}
         <FlatList
           key={viewMode}
-          data={visiblePosts}
-          keyExtractor={(item) => `post-${item.id}`}
-          renderItem={viewMode === 'photo' ? renderPhotoCell : renderTextRow}
-          numColumns={viewMode === 'photo' ? GRID_COLUMNS : 1}
+          data={listData}
+          keyExtractor={(item, index) =>
+            item.type === 'photo-row' ? `row-${index}` : `post-${item.post.id}`
+          }
+          renderItem={renderListItem}
+          numColumns={1}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmpty}
           ListFooterComponent={renderFooter}
@@ -270,7 +304,7 @@ export default function ProfileScreen() {
           refreshing={isRefreshing}
           onRefresh={handleRefresh}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={visiblePosts.length === 0 ? styles.flatListContentEmpty : undefined}
+          contentContainerStyle={listData.length === 0 ? styles.flatListContentEmpty : undefined}
           style={styles.flatList}
         />
       </View>
@@ -395,6 +429,9 @@ const styles = StyleSheet.create({
   },
 
   // 사진 그리드 셀
+  gridRow: {
+    flexDirection: 'row',
+  },
   cell: {
     overflow: 'hidden',
     backgroundColor: colors.surface2,
