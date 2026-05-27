@@ -1,7 +1,7 @@
 import { Redirect, Stack } from 'expo-router'
 import { useAuth } from '../../src/context/AuthContext'
 import { ActivityIndicator, View } from 'react-native'
-import { colors } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 
 /**
  * 보호된 라우트 그룹 레이아웃
@@ -10,6 +10,7 @@ import { colors } from '../../src/constants/theme'
  */
 export default function AppLayout() {
   const { isAuthenticated, isBootstrapping } = useAuth()
+  const { colors } = useTheme()
 
   if (isBootstrapping) {
     return (
