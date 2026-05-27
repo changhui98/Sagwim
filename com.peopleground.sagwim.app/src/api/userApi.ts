@@ -12,6 +12,10 @@ export const updateMyProfile = async (body: UserUpdateRequest): Promise<UserDeta
   return response.data
 }
 
+export const deleteMyAccount = async (reason: string): Promise<void> => {
+  await apiClient.delete('/users/me', { data: { reason } })
+}
+
 export const uploadUserProfileImage = async (
   imageUri: string,
   userId: string,
