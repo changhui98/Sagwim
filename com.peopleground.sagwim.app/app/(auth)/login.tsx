@@ -9,7 +9,7 @@
  * OAuth(Kakao/Google): UI 자리만 잡고 비활성 처리 (이번 범위 아님)
  */
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
   KeyboardAvoidingView,
   Platform,
@@ -28,11 +28,13 @@ import { useOAuth } from '../../src/hooks/useOAuth'
 import { TextField } from '../../src/components/TextField'
 import { PrimaryButton } from '../../src/components/PrimaryButton'
 import { BrandLogo } from '../../src/components/BrandLogo'
-import { colors, spacing, radius, fontSize } from '../../src/constants/theme'
+import { spacing, radius, fontSize } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 
 export default function LoginScreen() {
   const { login } = useAuth()
   const { loading: oauthLoading, handleKakaoLogin, handleGoogleLogin } = useOAuth()
+  const { colors } = useTheme()
 
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -56,6 +58,64 @@ export default function LoginScreen() {
       setLoading(false)
     }
   }
+
+  const styles = useMemo(() => StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.bg },
+    flex: { flex: 1 },
+    scroll: {
+      flexGrow: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.sp8,
+      paddingVertical: spacing.sp8,
+    },
+    card: { width: '100%', maxWidth: 420 },
+    brand: { alignItems: 'center', marginBottom: spacing.sp8 },
+    brandName: {
+      fontSize: 36,
+      fontWeight: '300',
+      color: colors.accent,
+      letterSpacing: 0.5,
+      marginTop: 0,
+      marginBottom: 0,
+      lineHeight: 56,
+    },
+    tagline: { fontSize: fontSize.sm, color: colors.textMuted },
+    submitBtn: { marginTop: spacing.sp2 },
+    alertError: {
+      backgroundColor: colors.errorSoft,
+      borderRadius: radius.md,
+      padding: spacing.sp3,
+      marginBottom: spacing.sp4,
+    },
+    alertErrorText: { color: colors.error, fontSize: fontSize.sm },
+    dividerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: spacing.sp5,
+      gap: spacing.sp3,
+    },
+    dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
+    dividerText: { fontSize: fontSize.sm, color: colors.textMuted },
+    oauthSection: { gap: spacing.sp3 },
+    oauthBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: radius.md,
+      height: 48,
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: spacing.sp3,
+    },
+    oauthBtnDisabled: { opacity: 0.5 },
+    kakaoBtn: { backgroundColor: '#FEE500', borderColor: '#FEE500' },
+    googleBtn: { backgroundColor: colors.surface },
+    oauthBtnText: { fontSize: fontSize.base, fontWeight: '500', color: colors.text },
+    footer: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.sp5 },
+    footerText: { fontSize: fontSize.sm, color: colors.textMuted },
+    footerLink: { fontSize: fontSize.sm, color: colors.accent, fontWeight: '600' },
+  }), [colors])
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -170,110 +230,3 @@ export default function LoginScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  scroll: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.sp8,
-    paddingVertical: spacing.sp8,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-  },
-  brand: {
-    alignItems: 'center',
-    marginBottom: spacing.sp8,
-  },
-  brandName: {
-    fontSize: 36,
-    fontWeight: '300',
-    color: colors.accent,
-    letterSpacing: 0.5,
-    marginTop: 0,
-    marginBottom: 0,
-    lineHeight: 56,
-  },
-  tagline: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  submitBtn: {
-    marginTop: spacing.sp2,
-  },
-  alertError: {
-    backgroundColor: colors.errorSoft,
-    borderRadius: radius.md,
-    padding: spacing.sp3,
-    marginBottom: spacing.sp4,
-  },
-  alertErrorText: {
-    color: colors.error,
-    fontSize: fontSize.sm,
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: spacing.sp5,
-    gap: spacing.sp3,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.border,
-  },
-  dividerText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  oauthSection: {
-    gap: spacing.sp3,
-  },
-  oauthBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    height: 48,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.sp3,
-  },
-  oauthBtnDisabled: {
-    opacity: 0.5,
-  },
-  kakaoBtn: {
-    backgroundColor: '#FEE500',
-    borderColor: '#FEE500',
-  },
-  googleBtn: {
-    backgroundColor: colors.surface,
-  },
-  oauthBtnText: {
-    fontSize: fontSize.base,
-    fontWeight: '500',
-    color: colors.text,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: spacing.sp5,
-  },
-  footerText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  footerLink: {
-    fontSize: fontSize.sm,
-    color: colors.accent,
-    fontWeight: '600',
-  },
-})

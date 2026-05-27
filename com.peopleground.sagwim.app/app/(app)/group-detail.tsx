@@ -42,7 +42,8 @@ import type {
 import { GROUP_CATEGORY_LABELS } from '../../src/types/group'
 import type { ContentResponse } from '../../src/types/post'
 import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
-import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 import Holidays from 'date-holidays'
 
 type TabKey = 'schedule' | 'posts' | 'members'
@@ -56,6 +57,7 @@ const TABS: { key: TabKey; label: string }[] = [
 export default function GroupDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const insets = useSafeAreaInsets()
+  const { colors } = useTheme()
 
   const [group, setGroup] = useState<GroupDetailResponse | null>(null)
   const [members, setMembers] = useState<GroupMemberResponse[]>([])
@@ -218,6 +220,222 @@ export default function GroupDetailScreen() {
       : group?.meetingType === 'OFFLINE'
         ? '오프라인'
         : '온라인'
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerBack: {
+      width: 40,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerTitle: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: fontSize.lg,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: spacing.sp6,
+    },
+    errorText: {
+      fontSize: fontSize.md,
+      color: colors.error,
+      textAlign: 'center',
+      marginBottom: spacing.sp4,
+    },
+    errorBack: {
+      backgroundColor: colors.accent,
+      paddingHorizontal: spacing.sp6,
+      paddingVertical: spacing.sp3,
+      borderRadius: radius.md,
+    },
+    errorBackText: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: '#fff',
+    },
+    scroll: {
+      flex: 1,
+    },
+    hero: {
+      width: '100%',
+      height: 200,
+      backgroundColor: colors.surface3,
+    },
+    heroImage: {
+      width: '100%',
+      height: 200,
+    },
+    heroPlaceholder: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    heroPlaceholderEmoji: {
+      fontSize: 48,
+    },
+    info: {
+      paddingHorizontal: spacing.sp4,
+      paddingTop: spacing.sp4,
+      paddingBottom: spacing.sp4,
+      gap: spacing.sp3,
+    },
+    badgeRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sp2,
+    },
+    categoryBadge: {
+      backgroundColor: colors.accentMuted,
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: 3,
+      borderRadius: radius.sm,
+    },
+    categoryBadgeText: {
+      fontSize: fontSize.sm,
+      color: colors.accent,
+      fontWeight: '600',
+    },
+    meetingBadge: {
+      backgroundColor: colors.surface3,
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: 3,
+      borderRadius: radius.sm,
+    },
+    meetingBadgeText: {
+      fontSize: fontSize.sm,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    pendingBadge: {
+      alignSelf: 'flex-start',
+      backgroundColor: colors.warning,
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: 3,
+      borderRadius: radius.sm,
+    },
+    pendingBadgeText: {
+      fontSize: fontSize.sm,
+      color: '#fff',
+      fontWeight: '700',
+    },
+    groupName: {
+      fontSize: fontSize.xl2,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    memberRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp1,
+    },
+    memberCount: {
+      fontSize: fontSize.base,
+      color: colors.textMuted,
+    },
+    likeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp1,
+      alignSelf: 'flex-start',
+    },
+    likeCount: {
+      fontSize: fontSize.base,
+      color: colors.textMuted,
+    },
+    likeCountActive: {
+      color: colors.error,
+    },
+    description: {
+      fontSize: fontSize.md,
+      color: colors.textSecondary,
+      lineHeight: fontSize.md * 1.6,
+    },
+    actionArea: {
+      marginTop: spacing.sp2,
+    },
+    actionButton: {
+      paddingVertical: spacing.sp3,
+      borderRadius: radius.md,
+      alignItems: 'center',
+    },
+    actionButtonPrimary: {
+      backgroundColor: colors.accent,
+    },
+    actionButtonPrimaryText: {
+      fontSize: fontSize.md,
+      fontWeight: '700',
+      color: '#fff',
+    },
+    actionButtonDanger: {
+      backgroundColor: colors.errorSoft,
+    },
+    actionButtonDangerText: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.error,
+    },
+    actionButtonOutline: {
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    actionButtonOutlineText: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    actionButtonDisabled: {
+      backgroundColor: colors.surface3,
+    },
+    actionButtonDisabledText: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.textMuted,
+    },
+    tabBar: {
+      flexDirection: 'row',
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    tabItem: {
+      flex: 1,
+      paddingVertical: spacing.sp3,
+      alignItems: 'center',
+      borderBottomWidth: 2,
+      borderBottomColor: 'transparent',
+    },
+    tabItemActive: {
+      borderBottomColor: colors.accent,
+    },
+    tabLabel: {
+      fontSize: fontSize.md,
+      fontWeight: '500',
+      color: colors.textMuted,
+    },
+    tabLabelActive: {
+      color: colors.accent,
+      fontWeight: '700',
+    },
+    tabContent: {
+      minHeight: 200,
+    },
+  }), [colors])
 
   if (loading) {
     return (
@@ -556,6 +774,7 @@ const PICKER_MONTHS = Array.from({ length: 12 }, (_, i) => i + 1)
 function ScheduleTab({ groupId, isMember }: ScheduleTabProps) {
   const now = new Date()
   const { width: screenWidth } = useWindowDimensions()
+  const { colors } = useTheme()
   const [year, setYear] = useState(now.getFullYear())
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [schedules, setSchedules] = useState<ScheduleResponse[]>([])
@@ -738,6 +957,305 @@ function ScheduleTab({ groupId, isMember }: ScheduleTabProps) {
 
   const pickerContainerH = PICKER_ITEM_H * (PICKER_SIDE * 2 + 1)
   const pickerPad = PICKER_ITEM_H * PICKER_SIDE
+
+  const scheduleStyles = useMemo(() => StyleSheet.create({
+    monthNav: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    monthLabelBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp1,
+    },
+    monthLabel: {
+      fontSize: fontSize.md,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    pickerOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      justifyContent: 'flex-end',
+    },
+    pickerSheet: {
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: radius.xl,
+      borderTopRightRadius: radius.xl,
+      paddingTop: spacing.sp4,
+      overflow: 'hidden',
+    },
+    pickerColumns: {
+      flexDirection: 'row',
+      position: 'relative',
+    },
+    pickerHighlight: {
+      position: 'absolute',
+      left: spacing.sp4,
+      right: spacing.sp4,
+      height: PICKER_ITEM_H,
+      backgroundColor: colors.surface2,
+      borderRadius: radius.md,
+      zIndex: 0,
+    },
+    pickerItem: {
+      height: PICKER_ITEM_H,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    pickerItemText: {
+      fontSize: fontSize.md,
+      color: colors.textMuted,
+    },
+    pickerItemTextSelected: {
+      fontSize: fontSize.lg,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    pickerConfirmBtn: {
+      margin: spacing.sp4,
+      paddingVertical: spacing.sp4,
+      backgroundColor: colors.accent,
+      borderRadius: radius.md,
+      alignItems: 'center',
+    },
+    pickerConfirmText: {
+      fontSize: fontSize.md,
+      fontWeight: '700',
+      color: '#fff',
+    },
+    calendarGrid: {
+      paddingHorizontal: spacing.sp4,
+      paddingTop: spacing.sp2,
+      paddingBottom: spacing.sp2,
+    },
+    weekdayRow: {
+      flexDirection: 'row',
+      marginBottom: spacing.sp1,
+    },
+    weekdayCell: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: fontSize.sm,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      paddingVertical: spacing.sp1,
+    },
+    weekRow: {
+      flexDirection: 'row',
+    },
+    dayCell: {
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      paddingTop: spacing.sp1,
+    },
+    dayCellToday: {
+      backgroundColor: colors.accentMuted,
+      borderWidth: 1,
+      borderColor: colors.accent,
+      borderRadius: radius.md,
+    },
+    dayCellSelected: {
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderColor: colors.accent,
+      borderRadius: radius.md,
+    },
+    dayCellTodaySelected: {
+      backgroundColor: colors.accentMuted,
+      borderWidth: 2,
+      borderColor: colors.accent,
+      borderRadius: radius.md,
+    },
+    dayCellText: {
+      fontSize: fontSize.sm,
+      fontWeight: '500',
+      color: colors.text,
+    },
+    dayCellDot: {
+      width: 4,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.accent,
+      marginTop: 2,
+    },
+    dayHolidayName: {
+      fontSize: 8,
+      color: colors.error,
+      textAlign: 'center',
+      lineHeight: 10,
+    },
+    dayHolidayNameSub: {
+      color: '#e07c00',
+    },
+    calendarDivider: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: spacing.sp4,
+      marginBottom: spacing.sp1,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: spacing.sp4,
+    },
+    item: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp3,
+      gap: spacing.sp3,
+    },
+    itemMain: {
+      flex: 1,
+      gap: 3,
+    },
+    itemTitle: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    itemDate: {
+      fontSize: fontSize.base,
+      color: colors.textSecondary,
+    },
+    itemLocation: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+    },
+    itemAttendee: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+    },
+    attendBtn: {
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp2,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surface2,
+    },
+    attendBtnActive: {
+      borderColor: colors.accent,
+      backgroundColor: colors.accentMuted,
+    },
+    attendBtnText: {
+      fontSize: fontSize.sm,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    attendBtnTextActive: {
+      color: colors.accent,
+    },
+    addBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sp2,
+      paddingVertical: spacing.sp3,
+      marginHorizontal: spacing.sp4,
+      marginTop: spacing.sp3,
+      borderWidth: 1,
+      borderColor: colors.accent,
+      borderRadius: radius.md,
+      borderStyle: 'dashed',
+    },
+    addBtnText: {
+      fontSize: fontSize.base,
+      fontWeight: '600',
+      color: colors.accent,
+    },
+  }), [colors])
+
+  const placeholderStyles = useMemo(() => StyleSheet.create({
+    wrap: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sp3,
+      paddingVertical: spacing.sp8,
+    },
+    text: {
+      fontSize: fontSize.base,
+      color: colors.textMuted,
+    },
+  }), [colors])
+
+  const modalStyles = useMemo(() => StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      justifyContent: 'flex-end',
+    },
+    sheet: {
+      backgroundColor: colors.bg,
+      borderTopLeftRadius: radius.xl,
+      borderTopRightRadius: radius.xl,
+      maxHeight: '85%',
+    },
+    sheetHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp4,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    sheetTitle: {
+      fontSize: fontSize.lg,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    body: {
+      padding: spacing.sp4,
+    },
+    label: {
+      fontSize: fontSize.base,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      marginBottom: spacing.sp2,
+      marginTop: spacing.sp3,
+    },
+    required: {
+      color: colors.accent,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp3,
+      fontSize: fontSize.md,
+      color: colors.text,
+      backgroundColor: colors.surface2,
+    },
+    inputMultiline: {
+      minHeight: 100,
+      paddingTop: spacing.sp3,
+      textAlignVertical: 'top',
+    },
+    submitBtn: {
+      backgroundColor: colors.accent,
+      borderRadius: radius.lg,
+      paddingVertical: spacing.sp4,
+      alignItems: 'center',
+      marginTop: spacing.sp5,
+      marginBottom: spacing.sp4,
+    },
+    submitBtnDisabled: {
+      opacity: 0.5,
+    },
+    submitBtnText: {
+      fontSize: fontSize.md,
+      fontWeight: '700',
+      color: '#fff',
+    },
+  }), [colors])
 
   return (
     <View>
@@ -1116,6 +1634,7 @@ function formatPostDate(isoString: string): string {
 }
 
 function PostsTab({ groupId, isMember }: PostsTabProps) {
+  const { colors } = useTheme()
   const [posts, setPosts] = useState<ContentResponse[]>([])
   const [page, setPage] = useState(0)
   const [hasNext, setHasNext] = useState(false)
@@ -1174,6 +1693,177 @@ function PostsTab({ groupId, isMember }: PostsTabProps) {
       setPostSubmitting(false)
     }
   }
+
+  const postsStyles = useMemo(() => StyleSheet.create({
+    writeBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sp2,
+      paddingVertical: spacing.sp3,
+      marginHorizontal: spacing.sp4,
+      marginBottom: spacing.sp2,
+      borderWidth: 1,
+      borderColor: colors.accent,
+      borderRadius: radius.md,
+    },
+    writeBtnText: {
+      fontSize: fontSize.base,
+      fontWeight: '600',
+      color: colors.accent,
+    },
+    addBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sp2,
+      paddingVertical: spacing.sp3,
+      marginHorizontal: spacing.sp4,
+      marginTop: spacing.sp3,
+      borderWidth: 1,
+      borderColor: colors.accent,
+      borderRadius: radius.md,
+      borderStyle: 'dashed',
+    },
+    addBtnText: {
+      fontSize: fontSize.base,
+      fontWeight: '600',
+      color: colors.accent,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: spacing.sp4,
+    },
+    item: {
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp3,
+      gap: spacing.sp2,
+    },
+    itemHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    nickname: {
+      fontSize: fontSize.base,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    date: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+    },
+    body: {
+      fontSize: fontSize.md,
+      color: colors.textSecondary,
+      lineHeight: fontSize.md * 1.5,
+    },
+    itemFooter: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp1,
+    },
+    footerCount: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+    },
+    moreBtn: {
+      alignItems: 'center',
+      paddingVertical: spacing.sp3,
+      marginTop: spacing.sp2,
+    },
+    moreBtnText: {
+      fontSize: fontSize.base,
+      color: colors.accent,
+      fontWeight: '600',
+    },
+  }), [colors])
+
+  const placeholderStyles = useMemo(() => StyleSheet.create({
+    wrap: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sp3,
+      paddingVertical: spacing.sp8,
+    },
+    text: {
+      fontSize: fontSize.base,
+      color: colors.textMuted,
+    },
+  }), [colors])
+
+  const modalStyles = useMemo(() => StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      justifyContent: 'flex-end',
+    },
+    sheet: {
+      backgroundColor: colors.bg,
+      borderTopLeftRadius: radius.xl,
+      borderTopRightRadius: radius.xl,
+      maxHeight: '85%',
+    },
+    sheetHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp4,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    sheetTitle: {
+      fontSize: fontSize.lg,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    body: {
+      padding: spacing.sp4,
+    },
+    label: {
+      fontSize: fontSize.base,
+      fontWeight: '600',
+      color: colors.textSecondary,
+      marginBottom: spacing.sp2,
+      marginTop: spacing.sp3,
+    },
+    required: {
+      color: colors.accent,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp3,
+      fontSize: fontSize.md,
+      color: colors.text,
+      backgroundColor: colors.surface2,
+    },
+    inputMultiline: {
+      minHeight: 100,
+      paddingTop: spacing.sp3,
+      textAlignVertical: 'top',
+    },
+    submitBtn: {
+      backgroundColor: colors.accent,
+      borderRadius: radius.lg,
+      paddingVertical: spacing.sp4,
+      alignItems: 'center',
+      marginTop: spacing.sp5,
+      marginBottom: spacing.sp4,
+    },
+    submitBtnDisabled: {
+      opacity: 0.5,
+    },
+    submitBtnText: {
+      fontSize: fontSize.md,
+      fontWeight: '700',
+      color: '#fff',
+    },
+  }), [colors])
 
   return (
     <View>
@@ -1309,6 +1999,19 @@ function PostsTab({ groupId, isMember }: PostsTabProps) {
 // ---------------------------------------------------------------------------
 
 function TabPlaceholder() {
+  const { colors } = useTheme()
+  const placeholderStyles = useMemo(() => StyleSheet.create({
+    wrap: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sp3,
+      paddingVertical: spacing.sp8,
+    },
+    text: {
+      fontSize: fontSize.base,
+      color: colors.textMuted,
+    },
+  }), [colors])
   return (
     <View style={placeholderStyles.wrap}>
       <Ionicons name="hourglass-outline" size={32} color={colors.border} />
@@ -1323,6 +2026,77 @@ interface MemberListProps {
 }
 
 function MemberList({ members, leaderUsername }: MemberListProps) {
+  const { colors } = useTheme()
+
+  const memberStyles = useMemo(() => StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp3,
+      gap: spacing.sp3,
+    },
+    separator: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: spacing.sp4,
+    },
+    avatar: {
+      width: 40,
+      height: 40,
+      borderRadius: radius.full,
+      backgroundColor: colors.accentMuted,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    avatarText: {
+      fontSize: fontSize.lg,
+      fontWeight: '700',
+      color: colors.accent,
+    },
+    nickname: {
+      flex: 1,
+      fontSize: fontSize.md,
+      fontWeight: '500',
+      color: colors.text,
+    },
+    leaderBadge: {
+      backgroundColor: colors.accentMuted,
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: 3,
+      borderRadius: radius.sm,
+    },
+    leaderBadgeText: {
+      fontSize: fontSize.sm,
+      color: colors.accent,
+      fontWeight: '700',
+    },
+    memberBadge: {
+      backgroundColor: colors.surface3,
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: 3,
+      borderRadius: radius.sm,
+    },
+    memberBadgeText: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+      fontWeight: '500',
+    },
+  }), [colors])
+
+  const placeholderStyles = useMemo(() => StyleSheet.create({
+    wrap: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sp3,
+      paddingVertical: spacing.sp8,
+    },
+    text: {
+      fontSize: fontSize.base,
+      color: colors.textMuted,
+    },
+  }), [colors])
+
   if (members.length === 0) {
     return (
       <View style={placeholderStyles.wrap}>
@@ -1367,659 +2141,3 @@ function MemberList({ members, leaderUsername }: MemberListProps) {
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerBack: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.sp6,
-  },
-  errorText: {
-    fontSize: fontSize.md,
-    color: colors.error,
-    textAlign: 'center',
-    marginBottom: spacing.sp4,
-  },
-  errorBack: {
-    backgroundColor: colors.accent,
-    paddingHorizontal: spacing.sp6,
-    paddingVertical: spacing.sp3,
-    borderRadius: radius.md,
-  },
-  errorBackText: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  scroll: {
-    flex: 1,
-  },
-  hero: {
-    width: '100%',
-    height: 200,
-    backgroundColor: colors.surface3,
-  },
-  heroImage: {
-    width: '100%',
-    height: 200,
-  },
-  heroPlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  heroPlaceholderEmoji: {
-    fontSize: 48,
-  },
-  info: {
-    paddingHorizontal: spacing.sp4,
-    paddingTop: spacing.sp4,
-    paddingBottom: spacing.sp4,
-    gap: spacing.sp3,
-  },
-  badgeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sp2,
-  },
-  categoryBadge: {
-    backgroundColor: colors.accentMuted,
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 3,
-    borderRadius: radius.sm,
-  },
-  categoryBadgeText: {
-    fontSize: fontSize.sm,
-    color: colors.accent,
-    fontWeight: '600',
-  },
-  meetingBadge: {
-    backgroundColor: colors.surface3,
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 3,
-    borderRadius: radius.sm,
-  },
-  meetingBadgeText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  pendingBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.warning,
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 3,
-    borderRadius: radius.sm,
-  },
-  pendingBadgeText: {
-    fontSize: fontSize.sm,
-    color: '#fff',
-    fontWeight: '700',
-  },
-  groupName: {
-    fontSize: fontSize.xl2,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  memberRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp1,
-  },
-  memberCount: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-  },
-  likeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp1,
-    alignSelf: 'flex-start',
-  },
-  likeCount: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-  },
-  likeCountActive: {
-    color: colors.error,
-  },
-  description: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    lineHeight: fontSize.md * 1.6,
-  },
-  actionArea: {
-    marginTop: spacing.sp2,
-  },
-  actionButton: {
-    paddingVertical: spacing.sp3,
-    borderRadius: radius.md,
-    alignItems: 'center',
-  },
-  actionButtonPrimary: {
-    backgroundColor: colors.accent,
-  },
-  actionButtonPrimaryText: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  actionButtonDanger: {
-    backgroundColor: colors.errorSoft,
-  },
-  actionButtonDangerText: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.error,
-  },
-  actionButtonOutline: {
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  actionButtonOutlineText: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  actionButtonDisabled: {
-    backgroundColor: colors.surface3,
-  },
-  actionButtonDisabledText: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.textMuted,
-  },
-  tabBar: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  tabItem: {
-    flex: 1,
-    paddingVertical: spacing.sp3,
-    alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tabItemActive: {
-    borderBottomColor: colors.accent,
-  },
-  tabLabel: {
-    fontSize: fontSize.md,
-    fontWeight: '500',
-    color: colors.textMuted,
-  },
-  tabLabelActive: {
-    color: colors.accent,
-    fontWeight: '700',
-  },
-  tabContent: {
-    minHeight: 200,
-  },
-})
-
-const placeholderStyles = StyleSheet.create({
-  wrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sp3,
-    paddingVertical: spacing.sp8,
-  },
-  text: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-  },
-})
-
-const scheduleStyles = StyleSheet.create({
-  monthNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  monthLabelBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp1,
-  },
-  monthLabel: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  pickerOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-  pickerSheet: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    paddingTop: spacing.sp4,
-    overflow: 'hidden',
-  },
-  pickerColumns: {
-    flexDirection: 'row',
-    position: 'relative',
-  },
-  pickerHighlight: {
-    position: 'absolute',
-    left: spacing.sp4,
-    right: spacing.sp4,
-    height: PICKER_ITEM_H,
-    backgroundColor: colors.surface2,
-    borderRadius: radius.md,
-    zIndex: 0,
-  },
-  pickerItem: {
-    height: PICKER_ITEM_H,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pickerItemText: {
-    fontSize: fontSize.md,
-    color: colors.textMuted,
-  },
-  pickerItemTextSelected: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  pickerConfirmBtn: {
-    margin: spacing.sp4,
-    paddingVertical: spacing.sp4,
-    backgroundColor: colors.accent,
-    borderRadius: radius.md,
-    alignItems: 'center',
-  },
-  pickerConfirmText: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  calendarGrid: {
-    paddingHorizontal: spacing.sp4,
-    paddingTop: spacing.sp2,
-    paddingBottom: spacing.sp2,
-  },
-  weekdayRow: {
-    flexDirection: 'row',
-    marginBottom: spacing.sp1,
-  },
-  weekdayCell: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    paddingVertical: spacing.sp1,
-  },
-  weekRow: {
-    flexDirection: 'row',
-  },
-  dayCell: {
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: spacing.sp1,
-  },
-  dayCellToday: {
-    backgroundColor: colors.accentMuted,
-    borderWidth: 1,
-    borderColor: colors.accent,
-    borderRadius: radius.md,
-  },
-  dayCellSelected: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: colors.accent,
-    borderRadius: radius.md,
-  },
-  dayCellTodaySelected: {
-    backgroundColor: colors.accentMuted,
-    borderWidth: 2,
-    borderColor: colors.accent,
-    borderRadius: radius.md,
-  },
-  dayCellText: {
-    fontSize: fontSize.sm,
-    fontWeight: '500',
-    color: colors.text,
-  },
-  dayCellDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.accent,
-    marginTop: 2,
-  },
-  dayHolidayName: {
-    fontSize: 8,
-    color: colors.error,
-    textAlign: 'center',
-    lineHeight: 10,
-  },
-  dayHolidayNameSub: {
-    color: '#e07c00',
-  },
-  calendarDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: spacing.sp4,
-    marginBottom: spacing.sp1,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: spacing.sp4,
-  },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    gap: spacing.sp3,
-  },
-  itemMain: {
-    flex: 1,
-    gap: 3,
-  },
-  itemTitle: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  itemDate: {
-    fontSize: fontSize.base,
-    color: colors.textSecondary,
-  },
-  itemLocation: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  itemAttendee: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  attendBtn: {
-    paddingHorizontal: spacing.sp3,
-    paddingVertical: spacing.sp2,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface2,
-  },
-  attendBtnActive: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentMuted,
-  },
-  attendBtnText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  attendBtnTextActive: {
-    color: colors.accent,
-  },
-  addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sp2,
-    paddingVertical: spacing.sp3,
-    marginHorizontal: spacing.sp4,
-    marginTop: spacing.sp3,
-    borderWidth: 1,
-    borderColor: colors.accent,
-    borderRadius: radius.md,
-    borderStyle: 'dashed',
-  },
-  addBtnText: {
-    fontSize: fontSize.base,
-    fontWeight: '600',
-    color: colors.accent,
-  },
-})
-
-const postsStyles = StyleSheet.create({
-  writeBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sp2,
-    paddingVertical: spacing.sp3,
-    marginHorizontal: spacing.sp4,
-    marginBottom: spacing.sp2,
-    borderWidth: 1,
-    borderColor: colors.accent,
-    borderRadius: radius.md,
-  },
-  writeBtnText: {
-    fontSize: fontSize.base,
-    fontWeight: '600',
-    color: colors.accent,
-  },
-  addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sp2,
-    paddingVertical: spacing.sp3,
-    marginHorizontal: spacing.sp4,
-    marginTop: spacing.sp3,
-    borderWidth: 1,
-    borderColor: colors.accent,
-    borderRadius: radius.md,
-    borderStyle: 'dashed',
-  },
-  addBtnText: {
-    fontSize: fontSize.base,
-    fontWeight: '600',
-    color: colors.accent,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: spacing.sp4,
-  },
-  item: {
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    gap: spacing.sp2,
-  },
-  itemHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  nickname: {
-    fontSize: fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  date: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  body: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    lineHeight: fontSize.md * 1.5,
-  },
-  itemFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp1,
-  },
-  footerCount: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  moreBtn: {
-    alignItems: 'center',
-    paddingVertical: spacing.sp3,
-    marginTop: spacing.sp2,
-  },
-  moreBtnText: {
-    fontSize: fontSize.base,
-    color: colors.accent,
-    fontWeight: '600',
-  },
-})
-
-const modalStyles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: colors.bg,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    maxHeight: '85%',
-  },
-  sheetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp4,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  sheetTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  body: {
-    padding: spacing.sp4,
-  },
-  label: {
-    fontSize: fontSize.base,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    marginBottom: spacing.sp2,
-    marginTop: spacing.sp3,
-  },
-  required: {
-    color: colors.accent,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.sp3,
-    paddingVertical: spacing.sp3,
-    fontSize: fontSize.md,
-    color: colors.text,
-    backgroundColor: colors.surface2,
-  },
-  inputMultiline: {
-    minHeight: 100,
-    paddingTop: spacing.sp3,
-    textAlignVertical: 'top',
-  },
-  submitBtn: {
-    backgroundColor: colors.accent,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.sp4,
-    alignItems: 'center',
-    marginTop: spacing.sp5,
-    marginBottom: spacing.sp4,
-  },
-  submitBtnDisabled: {
-    opacity: 0.5,
-  },
-  submitBtnText: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: '#fff',
-  },
-})
-
-const memberStyles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    gap: spacing.sp3,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: spacing.sp4,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
-    backgroundColor: colors.accentMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.accent,
-  },
-  nickname: {
-    flex: 1,
-    fontSize: fontSize.md,
-    fontWeight: '500',
-    color: colors.text,
-  },
-  leaderBadge: {
-    backgroundColor: colors.accentMuted,
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 3,
-    borderRadius: radius.sm,
-  },
-  leaderBadgeText: {
-    fontSize: fontSize.sm,
-    color: colors.accent,
-    fontWeight: '700',
-  },
-  memberBadge: {
-    backgroundColor: colors.surface3,
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 3,
-    borderRadius: radius.sm,
-  },
-  memberBadgeText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    fontWeight: '500',
-  },
-})

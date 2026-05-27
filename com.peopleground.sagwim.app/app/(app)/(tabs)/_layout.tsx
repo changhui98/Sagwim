@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Tabs, router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { colors, fontSize, radius, spacing } from '../../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../../src/constants/theme'
+import { useTheme } from '../../../src/context/ThemeContext'
 
 const ICON_SIZE = 24
 const TAB_CONTENT_HEIGHT = 44
@@ -17,6 +18,81 @@ function CreateBottomSheet({
   onClose: () => void
   bottomInset: number
 }) {
+  const { colors } = useTheme()
+
+  const sheet = useMemo(() => StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'flex-end',
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: radius.xl,
+      borderTopRightRadius: radius.xl,
+      paddingTop: spacing.sp3,
+      paddingHorizontal: spacing.sp4,
+    },
+    handle: {
+      width: 40,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.border,
+      alignSelf: 'center',
+      marginBottom: spacing.sp4,
+    },
+    item: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.sp4,
+      gap: spacing.sp3,
+      borderRadius: radius.md,
+    },
+    itemPressed: {
+      backgroundColor: colors.surface3,
+    },
+    iconWrap: {
+      width: 48,
+      height: 48,
+      borderRadius: radius.md,
+      backgroundColor: colors.accentMuted,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    textWrap: {
+      flex: 1,
+      gap: 2,
+    },
+    itemTitle: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    itemSubtitle: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: spacing.sp2,
+    },
+    cancelBtn: {
+      marginTop: spacing.sp3,
+      paddingVertical: spacing.sp4,
+      alignItems: 'center',
+      borderRadius: radius.md,
+    },
+    cancelBtnPressed: {
+      backgroundColor: colors.surface3,
+    },
+    cancelText: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+  }), [colors])
+
   const handleSelect = (path: '/(app)/post-create' | '/(app)/group-create') => {
     onClose()
     setTimeout(() => router.push(path), 50)
@@ -81,81 +157,9 @@ function CreateBottomSheet({
   )
 }
 
-const sheet = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'flex-end',
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    paddingTop: spacing.sp3,
-    paddingHorizontal: spacing.sp4,
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.border,
-    alignSelf: 'center',
-    marginBottom: spacing.sp4,
-  },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sp4,
-    gap: spacing.sp3,
-    borderRadius: radius.md,
-  },
-  itemPressed: {
-    backgroundColor: colors.surface3,
-  },
-  iconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.md,
-    backgroundColor: colors.accentMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textWrap: {
-    flex: 1,
-    gap: 2,
-  },
-  itemTitle: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  itemSubtitle: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: spacing.sp2,
-  },
-  cancelBtn: {
-    marginTop: spacing.sp3,
-    paddingVertical: spacing.sp4,
-    alignItems: 'center',
-    borderRadius: radius.md,
-  },
-  cancelBtnPressed: {
-    backgroundColor: colors.surface3,
-  },
-  cancelText: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-})
-
 export default function TabsLayout() {
   const insets = useSafeAreaInsets()
+  const { colors } = useTheme()
   const tabBarHeight = TAB_CONTENT_HEIGHT + insets.bottom
   const [createVisible, setCreateVisible] = useState(false)
 

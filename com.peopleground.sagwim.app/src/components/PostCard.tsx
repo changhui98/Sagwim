@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Alert,
   Dimensions,
@@ -16,7 +16,8 @@ import { ActionSheet, type ActionSheetOption } from './common/ActionSheet'
 import { ConfirmDialog } from './common/ConfirmDialog'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import { useAuth } from '../context/AuthContext'
-import { colors, fontSize, radius, spacing } from '../constants/theme'
+import { fontSize, radius, spacing } from '../constants/theme'
+import { useTheme } from '../context/ThemeContext'
 import type { ContentResponse } from '../types/post'
 
 export function formatRelativeTime(isoString: string): string {
@@ -35,6 +36,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width
 const IMAGE_MAX_HEIGHT = 360
 
 function DynamicPostImage({ uri }: { uri: string }) {
+  const { colors } = useTheme()
   const [height, setHeight] = useState(240)
 
   useEffect(() => {
@@ -53,7 +55,7 @@ function DynamicPostImage({ uri }: { uri: string }) {
   return (
     <Image
       source={{ uri }}
-      style={[styles.postImage, { height }]}
+      style={{ width: '100%', borderRadius: radius.md, backgroundColor: colors.surface3, height }}
       resizeMode="cover"
       accessibilityLabel="게시글 이미지"
     />
@@ -67,6 +69,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
+  const { colors } = useTheme()
   const { meUsername, meProfileImageUrl } = useAuth()
   const author = post.nickname ?? post.createdBy
   const isMine = !!meUsername && post.createdBy === meUsername
@@ -141,7 +144,32 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
         { label: '허위정보', onPress: () => submitReport('허위정보') },
       ]
 
+  const styles = useMemo(() => StyleSheet.create({
+    card: { backgroundColor: colors.bg, paddingHorizontal: spacing.sp4, paddingVertical: spacing.sp4, gap: spacing.sp3 },
+    cardPressed: { backgroundColor: colors.surface2 },
+    cardHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp3 },
+    avatar: {
+      width: 40, height: 40, borderRadius: radius.full,
+      backgroundColor: colors.accentMuted,
+      alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+    },
+    avatarText: { fontSize: fontSize.md, fontWeight: '700', color: colors.accent },
+    authorWrap: { flex: 1, gap: 2 },
+    author: { fontSize: fontSize.base, fontWeight: '600', color: colors.text },
+    time: { fontSize: fontSize.sm, color: colors.textMuted },
+    moreBtn: { padding: 4 },
+    body: { fontSize: fontSize.md, color: colors.text, lineHeight: fontSize.md * 1.55 },
+    tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sp2 },
+    tag: { backgroundColor: colors.accentMuted, paddingHorizontal: spacing.sp2, paddingVertical: 3, borderRadius: radius.sm },
+    tagText: { fontSize: fontSize.xs, color: colors.accent, fontWeight: '500' },
+    footer: { flexDirection: 'row', gap: spacing.sp4 },
+    footerButton: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp1 },
+    footerCount: { fontSize: fontSize.base, color: colors.textMuted },
+    footerCountActive: { color: colors.error },
+  }), [colors])
+
   return (
+    <>
     <Pressable
       onPress={goToDetail}
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
@@ -241,94 +269,7 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
       }}
       onCancel={() => setShowDeleteConfirm(false)}
     />
+  </>
   )
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.bg,
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp4,
-    gap: spacing.sp3,
-  },
-  cardPressed: {
-    backgroundColor: colors.surface2,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp3,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
-    backgroundColor: colors.accentMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  avatarText: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: colors.accent,
-  },
-  authorWrap: {
-    flex: 1,
-    gap: 2,
-  },
-  author: {
-    fontSize: fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  time: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  moreBtn: {
-    padding: 4,
-  },
-  body: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    lineHeight: fontSize.md * 1.55,
-  },
-  postImage: {
-    width: '100%',
-    borderRadius: radius.md,
-    backgroundColor: colors.surface3,
-  },
-  tags: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sp2,
-  },
-  tag: {
-    backgroundColor: colors.accentMuted,
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 3,
-    borderRadius: radius.sm,
-  },
-  tagText: {
-    fontSize: fontSize.xs,
-    color: colors.accent,
-    fontWeight: '500',
-  },
-  footer: {
-    flexDirection: 'row',
-    gap: spacing.sp4,
-  },
-  footerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp1,
-  },
-  footerCount: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-  },
-  footerCountActive: {
-    color: colors.error,
-  },
-})

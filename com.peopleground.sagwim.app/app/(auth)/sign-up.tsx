@@ -44,7 +44,8 @@ import { PasswordChecklist } from '../../src/components/PasswordChecklist'
 import { PrimaryButton } from '../../src/components/PrimaryButton'
 import { SecondaryButton } from '../../src/components/SecondaryButton'
 import { isPasswordValid, isConfirmPasswordValid } from '../../src/utils/passwordRules'
-import { colors, spacing, radius, fontSize } from '../../src/constants/theme'
+import { spacing, radius, fontSize } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 
 type SignUpField = 'username' | 'password' | 'nickname' | 'userEmail'
 
@@ -59,6 +60,7 @@ const mapMessageToField = (message: string): SignUpField | null => {
 
 export default function SignUpScreen() {
   const { loading: oauthLoading, handleKakaoLogin, handleGoogleLogin } = useOAuth()
+  const { colors } = useTheme()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<SignUpField, string>>>({})
@@ -282,6 +284,82 @@ export default function SignUpScreen() {
     () => (confirmPassword.length === 0 ? undefined : confirmValid ? 'success' : 'error'),
     [confirmPassword.length, confirmValid],
   ) as 'success' | 'error' | undefined
+
+  const styles = useMemo(() => StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.bg },
+    flex: { flex: 1 },
+    scroll: {
+      flexGrow: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.sp8,
+      paddingVertical: spacing.sp8,
+    },
+    card: { width: '100%', maxWidth: 480 },
+    heading: {
+      fontSize: fontSize.xl4,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: spacing.sp1,
+    },
+    subheading: { fontSize: fontSize.base, color: colors.textMuted, marginBottom: spacing.sp8 },
+    mb4: { marginBottom: spacing.sp4 },
+    fieldLabel: {
+      fontSize: fontSize.sm,
+      fontWeight: '500',
+      color: colors.textSecondary,
+      marginBottom: spacing.sp2,
+    },
+    fieldLabelOptional: { fontSize: fontSize.xs, fontWeight: '400', color: colors.textMuted },
+    inlineRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sp2 },
+    inlineInput: { flex: 1, marginBottom: 0 },
+    inlineBtn: { flexShrink: 0, alignSelf: 'flex-start', marginTop: 0 },
+    checkMsg: { fontSize: fontSize.xs, marginTop: spacing.sp1 },
+    checkMsgOk: { color: colors.success },
+    checkMsgErr: { color: colors.error },
+    hintText: { fontSize: fontSize.xs, color: colors.textMuted, marginTop: spacing.sp1 },
+    verifiedAlert: {
+      backgroundColor: colors.successSoft,
+      borderRadius: radius.md,
+      padding: spacing.sp3,
+      marginBottom: spacing.sp4,
+    },
+    verifiedText: { color: colors.success, fontSize: fontSize.sm, fontWeight: '500' },
+    alertError: {
+      backgroundColor: colors.errorSoft,
+      borderRadius: radius.md,
+      padding: spacing.sp3,
+      marginBottom: spacing.sp4,
+    },
+    alertErrorText: { color: colors.error, fontSize: fontSize.sm },
+    submitBtn: { marginTop: spacing.sp2 },
+    dividerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: spacing.sp5,
+      gap: spacing.sp3,
+    },
+    dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
+    dividerText: { fontSize: fontSize.sm, color: colors.textMuted },
+    oauthSection: { gap: spacing.sp3 },
+    oauthBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: radius.md,
+      height: 48,
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: spacing.sp3,
+    },
+    oauthBtnDisabled: { opacity: 0.5 },
+    kakaoBtn: { backgroundColor: '#FEE500', borderColor: '#FEE500' },
+    googleBtn: { backgroundColor: colors.surface },
+    oauthBtnText: { fontSize: fontSize.base, fontWeight: '500', color: colors.text },
+    footer: { flexDirection: 'row', justifyContent: 'center', marginTop: spacing.sp5 },
+    footerText: { fontSize: fontSize.sm, color: colors.textMuted },
+    footerLink: { fontSize: fontSize.sm, color: colors.accent, fontWeight: '600' },
+  }), [colors])
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -519,158 +597,3 @@ export default function SignUpScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
-  scroll: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.sp8,
-    paddingVertical: spacing.sp8,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 480,
-  },
-  heading: {
-    fontSize: fontSize.xl4,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: spacing.sp1,
-  },
-  subheading: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-    marginBottom: spacing.sp8,
-  },
-  mb4: {
-    marginBottom: spacing.sp4,
-  },
-  fieldLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '500',
-    color: colors.textSecondary,
-    marginBottom: spacing.sp2,
-  },
-  fieldLabelOptional: {
-    fontSize: fontSize.xs,
-    fontWeight: '400',
-    color: colors.textMuted,
-  },
-  inlineRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sp2,
-  },
-  inlineInput: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  inlineBtn: {
-    flexShrink: 0,
-    alignSelf: 'flex-start',
-    marginTop: 0,
-  },
-  checkMsg: {
-    fontSize: fontSize.xs,
-    marginTop: spacing.sp1,
-  },
-  checkMsgOk: {
-    color: colors.success,
-  },
-  checkMsgErr: {
-    color: colors.error,
-  },
-  hintText: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: spacing.sp1,
-  },
-  verifiedAlert: {
-    backgroundColor: colors.successSoft,
-    borderRadius: radius.md,
-    padding: spacing.sp3,
-    marginBottom: spacing.sp4,
-  },
-  verifiedText: {
-    color: colors.success,
-    fontSize: fontSize.sm,
-    fontWeight: '500',
-  },
-  alertError: {
-    backgroundColor: colors.errorSoft,
-    borderRadius: radius.md,
-    padding: spacing.sp3,
-    marginBottom: spacing.sp4,
-  },
-  alertErrorText: {
-    color: colors.error,
-    fontSize: fontSize.sm,
-  },
-  submitBtn: {
-    marginTop: spacing.sp2,
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: spacing.sp5,
-    gap: spacing.sp3,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.border,
-  },
-  dividerText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  oauthSection: {
-    gap: spacing.sp3,
-  },
-  oauthBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    height: 48,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.sp3,
-  },
-  oauthBtnDisabled: {
-    opacity: 0.5,
-  },
-  kakaoBtn: {
-    backgroundColor: '#FEE500',
-    borderColor: '#FEE500',
-  },
-  googleBtn: {
-    backgroundColor: colors.surface,
-  },
-  oauthBtnText: {
-    fontSize: fontSize.base,
-    fontWeight: '500',
-    color: colors.text,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: spacing.sp5,
-  },
-  footerText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  footerLink: {
-    fontSize: fontSize.sm,
-    color: colors.accent,
-    fontWeight: '600',
-  },
-})

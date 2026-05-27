@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
-import { colors, fontSize, radius, spacing } from '../../constants/theme'
+import { fontSize, radius, spacing } from '../../constants/theme'
+import { useTheme } from '../../context/ThemeContext'
 
 interface Props {
   isOpen: boolean
@@ -23,6 +24,38 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: Props) {
+  const { colors } = useTheme()
+  const styles = useMemo(() => StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: spacing.sp6,
+    },
+    card: {
+      width: '100%',
+      backgroundColor: colors.bg,
+      borderRadius: radius.xl,
+      paddingHorizontal: spacing.sp6,
+      paddingTop: spacing.sp6,
+      paddingBottom: spacing.sp5,
+      gap: spacing.sp2,
+    },
+    title: { fontSize: fontSize.lg, fontWeight: '700', color: colors.text, marginBottom: spacing.sp1 },
+    message: { fontSize: fontSize.base, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.sp3 },
+    buttonRow: { flexDirection: 'row', gap: spacing.sp2, marginTop: spacing.sp1 },
+    btn: { flex: 1, height: 46, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center' },
+    cancelBtn: { backgroundColor: colors.surface3 },
+    cancelBtnPressed: { opacity: 0.7 },
+    cancelBtnText: { fontSize: fontSize.base, fontWeight: '600', color: colors.text },
+    primaryBtn: { backgroundColor: colors.accent },
+    dangerBtn: { backgroundColor: colors.errorSoft },
+    confirmBtnPressed: { opacity: 0.8 },
+    primaryBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
+    dangerBtnText: { fontSize: fontSize.base, fontWeight: '700', color: colors.error },
+  }), [colors])
+
   return (
     <Modal
       transparent
@@ -50,10 +83,7 @@ export function ConfirmDialog({
               ]}
               onPress={onConfirm}
             >
-              <Text style={[
-                styles.confirmBtnText,
-                confirmVariant === 'danger' ? styles.dangerBtnText : styles.primaryBtnText,
-              ]}>
+              <Text style={confirmVariant === 'danger' ? styles.dangerBtnText : styles.primaryBtnText}>
                 {confirmLabel}
               </Text>
             </Pressable>
@@ -64,75 +94,3 @@ export function ConfirmDialog({
   )
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.sp6,
-  },
-  card: {
-    width: '100%',
-    backgroundColor: colors.bg,
-    borderRadius: radius.xl,
-    paddingHorizontal: spacing.sp6,
-    paddingTop: spacing.sp6,
-    paddingBottom: spacing.sp5,
-    gap: spacing.sp2,
-  },
-  title: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: spacing.sp1,
-  },
-  message: {
-    fontSize: fontSize.base,
-    color: colors.textSecondary,
-    lineHeight: 22,
-    marginBottom: spacing.sp3,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: spacing.sp2,
-    marginTop: spacing.sp1,
-  },
-  btn: {
-    flex: 1,
-    height: 46,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelBtn: {
-    backgroundColor: colors.surface3,
-  },
-  cancelBtnPressed: {
-    opacity: 0.7,
-  },
-  cancelBtnText: {
-    fontSize: fontSize.base,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  primaryBtn: {
-    backgroundColor: colors.accent,
-  },
-  dangerBtn: {
-    backgroundColor: colors.errorSoft,
-  },
-  confirmBtnPressed: {
-    opacity: 0.8,
-  },
-  primaryBtnText: {
-    fontSize: fontSize.base,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  dangerBtnText: {
-    fontSize: fontSize.base,
-    fontWeight: '700',
-    color: colors.error,
-  },
-})

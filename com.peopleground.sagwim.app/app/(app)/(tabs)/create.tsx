@@ -1,12 +1,73 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
-import { colors, fontSize, radius, shadow, spacing } from '../../../src/constants/theme'
+import { fontSize, radius, shadow, spacing } from '../../../src/constants/theme'
+import { useTheme } from '../../../src/context/ThemeContext'
 
 export default function CreateScreen() {
   const insets = useSafeAreaInsets()
+  const { colors } = useTheme()
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    header: {
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp4,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerTitle: {
+      fontSize: fontSize.xl2,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    body: {
+      flex: 1,
+      padding: spacing.sp4,
+      gap: spacing.sp4,
+      justifyContent: 'center',
+    },
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: radius.lg,
+      padding: spacing.sp5,
+      gap: spacing.sp4,
+      borderWidth: 1,
+      borderColor: colors.border,
+      ...shadow.sm,
+    },
+    cardPressed: {
+      backgroundColor: colors.accentMuted,
+    },
+    cardIconWrap: {
+      width: 56,
+      height: 56,
+      borderRadius: radius.md,
+      backgroundColor: colors.accentMuted,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    cardTextWrap: {
+      flex: 1,
+      gap: spacing.sp1,
+    },
+    cardTitle: {
+      fontSize: fontSize.lg,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    cardSubtitle: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+    },
+  }), [colors])
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -50,62 +111,3 @@ export default function CreateScreen() {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  header: {
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp4,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerTitle: {
-    fontSize: fontSize.xl2,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  body: {
-    flex: 1,
-    padding: spacing.sp4,
-    gap: spacing.sp4,
-    justifyContent: 'center',
-  },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.sp5,
-    gap: spacing.sp4,
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadow.sm,
-  },
-  cardPressed: {
-    backgroundColor: colors.accentMuted,
-  },
-  cardIconWrap: {
-    width: 56,
-    height: 56,
-    borderRadius: radius.md,
-    backgroundColor: colors.accentMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardTextWrap: {
-    flex: 1,
-    gap: spacing.sp1,
-  },
-  cardTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  cardSubtitle: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-})

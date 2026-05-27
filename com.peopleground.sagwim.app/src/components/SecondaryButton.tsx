@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   ActivityIndicator,
   StyleSheet,
@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   type TouchableOpacityProps,
 } from 'react-native'
-import { colors, radius, fontSize } from '../constants/theme'
+import { radius, fontSize } from '../constants/theme'
+import { useTheme } from '../context/ThemeContext'
 
 interface Props extends TouchableOpacityProps {
   label: string
@@ -14,7 +15,23 @@ interface Props extends TouchableOpacityProps {
 }
 
 export function SecondaryButton({ label, loading, disabled, style, ...rest }: Props) {
+  const { colors } = useTheme()
   const isDisabled = disabled || loading
+
+  const styles = useMemo(() => StyleSheet.create({
+    btn: {
+      backgroundColor: colors.surface,
+      borderRadius: radius.md,
+      height: 44,
+      paddingHorizontal: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+    },
+    btnDisabled: { opacity: 0.5 },
+    label: { color: colors.text, fontSize: fontSize.sm, fontWeight: '500' },
+  }), [colors])
 
   return (
     <TouchableOpacity
@@ -32,23 +49,3 @@ export function SecondaryButton({ label, loading, disabled, style, ...rest }: Pr
   )
 }
 
-const styles = StyleSheet.create({
-  btn: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.md,
-    height: 44,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-  },
-  btnDisabled: {
-    opacity: 0.5,
-  },
-  label: {
-    color: colors.text,
-    fontSize: fontSize.sm,
-    fontWeight: '500',
-  },
-})

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -18,7 +18,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuth } from '../../src/context/AuthContext'
 import { getMe, updateMyProfile, uploadUserProfileImage } from '../../src/api/userApi'
 import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
-import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 import type { UserDetailResponse } from '../../src/types/user'
 
 function genderLabel(gender?: string): string {
@@ -30,6 +31,7 @@ function genderLabel(gender?: string): string {
 export default function ProfileEditScreen() {
   const insets = useSafeAreaInsets()
   const { setMeProfile } = useAuth()
+  const { colors } = useTheme()
 
   const [profile, setProfile] = useState<UserDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -120,6 +122,71 @@ export default function ProfileEditScreen() {
       setSearchableLoading(false)
     }
   }, [profile, isSearchable])
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerSide: { width: 72 },
+    headerBack: { fontSize: fontSize.sm, color: colors.text },
+    headerTitle: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
+    imageSection: {
+      alignItems: 'center',
+      paddingVertical: spacing.sp6,
+      gap: spacing.sp3,
+    },
+    avatarWrapper: { position: 'relative' },
+    avatar: {
+      width: 88,
+      height: 88,
+      borderRadius: 44,
+    },
+    avatarFallback: {
+      backgroundColor: colors.accentMuted,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    avatarInitial: { fontSize: 32, fontWeight: '700', color: colors.accent },
+    avatarOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      borderRadius: 44,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    imageChangeBtn: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.xl,
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp2,
+    },
+    imageBtnPressed: { backgroundColor: colors.surface2 },
+    imageChangeBtnText: { fontSize: fontSize.sm, color: colors.text },
+    divider: { height: 1, backgroundColor: colors.border },
+    settingList: {},
+    settingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp4,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    rowPressed: { backgroundColor: colors.surface2 },
+    settingLabel: { fontSize: fontSize.base, color: colors.text, fontWeight: '500' },
+    settingRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp1, flexShrink: 1, marginLeft: spacing.sp4 },
+    settingValue: { fontSize: fontSize.base, color: colors.textMuted, flexShrink: 1 },
+  }), [colors])
 
   if (loading) {
     return (
@@ -260,71 +327,3 @@ export default function ProfileEditScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerSide: { width: 72 },
-  headerBack: { fontSize: fontSize.sm, color: colors.text },
-  headerTitle: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
-
-  imageSection: {
-    alignItems: 'center',
-    paddingVertical: spacing.sp6,
-    gap: spacing.sp3,
-  },
-  avatarWrapper: { position: 'relative' },
-  avatar: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-  },
-  avatarFallback: {
-    backgroundColor: colors.accentMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitial: { fontSize: 32, fontWeight: '700', color: colors.accent },
-  avatarOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 44,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageChangeBtn: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.xl,
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp2,
-  },
-  imageBtnPressed: { backgroundColor: colors.surface2 },
-  imageChangeBtnText: { fontSize: fontSize.sm, color: colors.text },
-
-  divider: { height: 1, backgroundColor: colors.border },
-
-  settingList: {},
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp4,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  rowPressed: { backgroundColor: colors.surface2 },
-  settingLabel: { fontSize: fontSize.base, color: colors.text, fontWeight: '500' },
-  settingRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp1, flexShrink: 1, marginLeft: spacing.sp4 },
-  settingValue: { fontSize: fontSize.base, color: colors.textMuted, flexShrink: 1 },
-})

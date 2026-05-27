@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   ActivityIndicator,
   StyleSheet,
@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   type TouchableOpacityProps,
 } from 'react-native'
-import { colors, radius, spacing, fontSize } from '../constants/theme'
+import { radius, spacing, fontSize } from '../constants/theme'
+import { useTheme } from '../context/ThemeContext'
 
 interface Props extends TouchableOpacityProps {
   label: string
@@ -14,7 +15,21 @@ interface Props extends TouchableOpacityProps {
 }
 
 export function PrimaryButton({ label, loading, disabled, style, ...rest }: Props) {
+  const { colors } = useTheme()
   const isDisabled = disabled || loading
+
+  const styles = useMemo(() => StyleSheet.create({
+    btn: {
+      backgroundColor: colors.accent,
+      borderRadius: radius.md,
+      height: 52,
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+    },
+    btnDisabled: { opacity: 0.5 },
+    label: { color: '#fff', fontSize: fontSize.md, fontWeight: '600', letterSpacing: 0.2 },
+  }), [colors])
 
   return (
     <TouchableOpacity
@@ -32,22 +47,3 @@ export function PrimaryButton({ label, loading, disabled, style, ...rest }: Prop
   )
 }
 
-const styles = StyleSheet.create({
-  btn: {
-    backgroundColor: colors.accent,
-    borderRadius: radius.md,
-    height: 52,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  btnDisabled: {
-    opacity: 0.5,
-  },
-  label: {
-    color: '#fff',
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    letterSpacing: 0.2,
-  },
-})

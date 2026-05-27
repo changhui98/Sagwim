@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -17,7 +17,8 @@ import { useAuth } from '../../src/context/AuthContext'
 import { updateMyProfile } from '../../src/api/userApi'
 import apiClient from '../../src/lib/apiClient'
 import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
-import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 import type { UserDetailResponse } from '../../src/types/user'
 
 async function searchAddress(query: string): Promise<string[]> {
@@ -34,6 +35,7 @@ async function searchAddress(query: string): Promise<string[]> {
 export default function ProfileEditAddressScreen() {
   const insets = useSafeAreaInsets()
   const { setMeProfile } = useAuth()
+  const { colors } = useTheme()
   const { profile: profileJson } = useLocalSearchParams<{ profile: string }>()
   const profile: UserDetailResponse = JSON.parse(profileJson ?? '{}')
 
@@ -106,6 +108,92 @@ export default function ProfileEditAddressScreen() {
       setSaving(false)
     }
   }, [canSave, selectedAddress, profile, setMeProfile])
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerSide: { width: 72 },
+    headerBack: { fontSize: fontSize.sm, color: colors.text },
+    headerTitle: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
+    body: { padding: spacing.sp4, gap: spacing.sp3 },
+    selectedRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp2,
+      paddingVertical: spacing.sp3,
+      paddingHorizontal: spacing.sp3,
+      borderRadius: radius.md,
+      backgroundColor: colors.surface2,
+    },
+    selectedText: {
+      flex: 1,
+      fontSize: fontSize.base,
+      color: colors.text,
+      fontWeight: '500',
+    },
+    label: { fontSize: fontSize.sm, fontWeight: '600', color: colors.text },
+    searchRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      position: 'relative',
+    },
+    input: {
+      flex: 1,
+      height: 44,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.sp3,
+      paddingRight: spacing.sp8,
+      fontSize: fontSize.base,
+      color: colors.text,
+      backgroundColor: colors.bg,
+    },
+    searchIndicator: {
+      position: 'absolute',
+      right: spacing.sp3,
+    },
+    hint: { fontSize: fontSize.sm, color: colors.textMuted },
+    suggestionList: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      overflow: 'hidden',
+      backgroundColor: colors.bg,
+    },
+    suggestionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    rowPressed: { backgroundColor: colors.surface2 },
+    suggestionRowSelected: {},
+    suggestionText: { fontSize: fontSize.base, color: colors.text, flex: 1 },
+    suggestionTextSelected: { color: colors.accent, fontWeight: '600' },
+    saveBtn: {
+      marginTop: spacing.sp2,
+      height: 48,
+      borderRadius: radius.xl,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    saveBtnDisabled: { backgroundColor: colors.border },
+    saveBtnPressed: { opacity: 0.85 },
+    saveBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
+  }), [colors])
 
   return (
     <>
@@ -226,96 +314,3 @@ export default function ProfileEditAddressScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerSide: { width: 72 },
-  headerBack: { fontSize: fontSize.sm, color: colors.text },
-  headerTitle: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
-
-  body: { padding: spacing.sp4, gap: spacing.sp3 },
-
-  selectedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp2,
-    paddingVertical: spacing.sp3,
-    paddingHorizontal: spacing.sp3,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface2,
-  },
-  selectedText: {
-    flex: 1,
-    fontSize: fontSize.base,
-    color: colors.text,
-    fontWeight: '500',
-  },
-
-  label: { fontSize: fontSize.sm, fontWeight: '600', color: colors.text },
-
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  input: {
-    flex: 1,
-    height: 44,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.sp3,
-    paddingRight: spacing.sp8,
-    fontSize: fontSize.base,
-    color: colors.text,
-    backgroundColor: colors.bg,
-  },
-  searchIndicator: {
-    position: 'absolute',
-    right: spacing.sp3,
-  },
-
-  hint: { fontSize: fontSize.sm, color: colors.textMuted },
-
-  suggestionList: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    overflow: 'hidden',
-    backgroundColor: colors.bg,
-  },
-  suggestionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  rowPressed: { backgroundColor: colors.surface2 },
-  suggestionRowSelected: {},
-  suggestionText: { fontSize: fontSize.base, color: colors.text, flex: 1 },
-  suggestionTextSelected: { color: colors.accent, fontWeight: '600' },
-
-  saveBtn: {
-    marginTop: spacing.sp2,
-    height: 48,
-    borderRadius: radius.xl,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveBtnDisabled: { backgroundColor: colors.border },
-  saveBtnPressed: { opacity: 0.85 },
-  saveBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
-})

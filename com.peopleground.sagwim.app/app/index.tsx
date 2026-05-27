@@ -1,7 +1,7 @@
 import { Redirect } from 'expo-router'
 import { ActivityIndicator, View } from 'react-native'
 import { useAuth } from '../src/context/AuthContext'
-import { colors } from '../src/constants/theme'
+import { useTheme } from '../src/context/ThemeContext'
 
 /**
  * 진입 분기 라우터
@@ -11,6 +11,7 @@ import { colors } from '../src/constants/theme'
  */
 export default function Index() {
   const { isAuthenticated, isBootstrapping } = useAuth()
+  const { colors } = useTheme()
 
   if (isBootstrapping) {
     return (
