@@ -4,6 +4,8 @@ export type NotificationType =
   | 'COMMENT_ADDED'
   | 'MEETING_MEMBER_JOINED'
   | 'MEETING_SCHEDULE_ADDED'
+  | 'MEETING_LIKED'
+  | 'MEETING_JOIN_REQUESTED'
 
 export interface NotificationResponse {
   id: number

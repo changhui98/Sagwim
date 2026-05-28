@@ -73,7 +73,7 @@ export interface GroupMemberResponse {
   userId: string
   nickname: string
   username: string
-  role: 'LEADER' | 'MEMBER'
+  role: 'LEADER' | 'SUB_LEADER' | 'MEMBER'
   joinedAt: string
 }
 

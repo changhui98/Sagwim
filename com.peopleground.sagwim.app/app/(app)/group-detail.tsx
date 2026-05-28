@@ -2071,6 +2071,17 @@ function MemberList({ members, leaderUsername }: MemberListProps) {
       color: colors.accent,
       fontWeight: '700',
     },
+    subLeaderBadge: {
+      backgroundColor: 'rgba(99, 102, 241, 0.12)',
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: 3,
+      borderRadius: radius.sm,
+    },
+    subLeaderBadgeText: {
+      fontSize: fontSize.sm,
+      color: '#6366f1',
+      fontWeight: '600',
+    },
     memberBadge: {
       backgroundColor: colors.surface3,
       paddingHorizontal: spacing.sp2,
@@ -2114,7 +2125,6 @@ function MemberList({ members, leaderUsername }: MemberListProps) {
       ItemSeparatorComponent={() => <View style={memberStyles.separator} />}
       renderItem={({ item }) => {
         const initial = item.nickname.slice(0, 1).toUpperCase()
-        const isLeaderItem = item.username === leaderUsername
 
         return (
           <View style={memberStyles.row}>
@@ -2124,14 +2134,19 @@ function MemberList({ members, leaderUsername }: MemberListProps) {
             <Text style={memberStyles.nickname} numberOfLines={1}>
               {item.nickname}
             </Text>
-            {isLeaderItem && (
+            {item.role === 'LEADER' && (
               <View style={memberStyles.leaderBadge}>
-                <Text style={memberStyles.leaderBadgeText}>모임장</Text>
+                <Text style={memberStyles.leaderBadgeText}>관리자</Text>
               </View>
             )}
-            {!isLeaderItem && (
+            {item.role === 'SUB_LEADER' && (
+              <View style={memberStyles.subLeaderBadge}>
+                <Text style={memberStyles.subLeaderBadgeText}>부관리자</Text>
+              </View>
+            )}
+            {item.role === 'MEMBER' && (
               <View style={memberStyles.memberBadge}>
-                <Text style={memberStyles.memberBadgeText}>멤버</Text>
+                <Text style={memberStyles.memberBadgeText}>모임원</Text>
               </View>
             )}
           </View>

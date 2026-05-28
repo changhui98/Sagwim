@@ -47,6 +47,10 @@ function getNotificationMessage(item: NotificationResponse): string {
       return `${item.actorNickname}님이 모임에 가입했습니다.`
     case 'MEETING_SCHEDULE_ADDED':
       return `${item.targetTitle ?? '모임'} 모임에 새 일정이 등록됐습니다.`
+    case 'MEETING_LIKED':
+      return `${item.actorNickname}님이 ${item.targetTitle ?? '모임'}을 좋아합니다.`
+    case 'MEETING_JOIN_REQUESTED':
+      return `${item.actorNickname}님이 ${item.targetTitle ?? '모임'}에 가입을 신청했습니다.`
   }
 }
 
@@ -59,7 +63,12 @@ function navigateForNotification(type: NotificationType, targetId: number | null
     type === 'COMMENT_ADDED'
   ) {
     router.push({ pathname: '/(app)/post-detail', params: { id: String(targetId) } })
-  } else {
+  } else if (
+    type === 'MEETING_MEMBER_JOINED' ||
+    type === 'MEETING_SCHEDULE_ADDED' ||
+    type === 'MEETING_LIKED' ||
+    type === 'MEETING_JOIN_REQUESTED'
+  ) {
     router.push({ pathname: '/(app)/group-detail', params: { id: String(targetId) } })
   }
 }
