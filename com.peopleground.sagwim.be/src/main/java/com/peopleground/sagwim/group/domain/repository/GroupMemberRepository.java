@@ -21,4 +21,7 @@ public interface GroupMemberRepository {
     void delete(GroupMember groupMember);
 
     void deleteAllByGroupId(Long groupId);
+
+    /** LEADER 또는 SUB_LEADER 멤버 목록 조회 (알림 발송용) */
+    List<GroupMember> findManagersByGroupId(Long groupId);
 }
