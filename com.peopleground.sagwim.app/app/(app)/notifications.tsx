@@ -19,6 +19,7 @@ import {
 } from '../../src/api/notificationApi'
 import type { NotificationResponse, NotificationType } from '../../src/types/notification'
 import { fontSize, radius, spacing } from '../../src/constants/theme'
+import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
 
 const PAGE_SIZE = 20
 
@@ -86,9 +87,9 @@ function NotificationItem({ item, onPress, colors, styles }: NotificationItemPro
     >
       {/* 아바타 */}
       <View style={styles.avatar}>
-        {item.actorProfileImageUrl ? (
+        {resolveImageUrl(item.actorProfileImageUrl) ? (
           <Image
-            source={{ uri: item.actorProfileImageUrl }}
+            source={{ uri: resolveImageUrl(item.actorProfileImageUrl)! }}
             style={StyleSheet.absoluteFill}
             resizeMode="cover"
           />
