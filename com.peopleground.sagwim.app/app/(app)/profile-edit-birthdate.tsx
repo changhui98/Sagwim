@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuth } from '../../src/context/AuthContext'
 import { updateMyProfile } from '../../src/api/userApi'
 import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
-import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 import type { UserDetailResponse } from '../../src/types/user'
 
 /** YYYY-MM-DD 형식 검증 */
@@ -44,6 +45,7 @@ function formatBirthDateInput(prev: string, next: string): string {
 export default function ProfileEditBirthDateScreen() {
   const insets = useSafeAreaInsets()
   const { setMeProfile } = useAuth()
+  const { colors } = useTheme()
   const { profile: profileJson } = useLocalSearchParams<{ profile: string }>()
   const profile: UserDetailResponse = JSON.parse(profileJson ?? '{}')
 
@@ -91,6 +93,53 @@ export default function ProfileEditBirthDateScreen() {
       setSaving(false)
     }
   }, [canSave, birthDate, profile, setMeProfile])
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerSide: { width: 72 },
+    headerBack: { fontSize: fontSize.sm, color: colors.text },
+    headerTitle: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
+    body: { padding: spacing.sp4, gap: spacing.sp3 },
+    label: { fontSize: fontSize.sm, fontWeight: '600', color: colors.text },
+    input: {
+      height: 44,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.sp3,
+      fontSize: fontSize.base,
+      color: colors.text,
+      backgroundColor: colors.bg,
+    },
+    inputError: {
+      borderColor: '#ef4444',
+    },
+    errorText: {
+      fontSize: fontSize.xs,
+      color: '#ef4444',
+    },
+    notice: { fontSize: fontSize.sm, color: colors.textMuted },
+    saveBtn: {
+      marginTop: spacing.sp2,
+      height: 48,
+      borderRadius: radius.xl,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    saveBtnDisabled: { backgroundColor: colors.border },
+    saveBtnPressed: { opacity: 0.85 },
+    saveBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
+  }), [colors])
 
   return (
     <>
@@ -169,53 +218,3 @@ export default function ProfileEditBirthDateScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerSide: { width: 72 },
-  headerBack: { fontSize: fontSize.sm, color: colors.text },
-  headerTitle: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
-
-  body: { padding: spacing.sp4, gap: spacing.sp3 },
-  label: { fontSize: fontSize.sm, fontWeight: '600', color: colors.text },
-
-  input: {
-    height: 44,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.sp3,
-    fontSize: fontSize.base,
-    color: colors.text,
-    backgroundColor: colors.bg,
-  },
-  inputError: {
-    borderColor: '#ef4444',
-  },
-  errorText: {
-    fontSize: fontSize.xs,
-    color: '#ef4444',
-  },
-  notice: { fontSize: fontSize.sm, color: colors.textMuted },
-
-  saveBtn: {
-    marginTop: spacing.sp2,
-    height: 48,
-    borderRadius: radius.xl,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveBtnDisabled: { backgroundColor: colors.border },
-  saveBtnPressed: { opacity: 0.85 },
-  saveBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
-})

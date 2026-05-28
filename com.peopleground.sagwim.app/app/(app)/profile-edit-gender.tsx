@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuth } from '../../src/context/AuthContext'
 import { updateMyProfile } from '../../src/api/userApi'
 import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
-import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 import type { Gender, UserDetailResponse } from '../../src/types/user'
 
 const GENDER_OPTIONS: { value: Gender; label: string }[] = [
@@ -26,6 +27,7 @@ const GENDER_OPTIONS: { value: Gender; label: string }[] = [
 export default function ProfileEditGenderScreen() {
   const insets = useSafeAreaInsets()
   const { setMeProfile } = useAuth()
+  const { colors } = useTheme()
   const { profile: profileJson } = useLocalSearchParams<{ profile: string }>()
   const profile: UserDetailResponse = JSON.parse(profileJson ?? '{}')
 
@@ -68,6 +70,47 @@ export default function ProfileEditGenderScreen() {
       setSaving(false)
     }
   }
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerSide: { width: 72 },
+    headerBack: { fontSize: fontSize.sm, color: colors.text },
+    headerTitle: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
+    optionList: {},
+    optionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp4,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    rowPressed: { backgroundColor: colors.surface2 },
+    optionLabel: { fontSize: fontSize.base, color: colors.text },
+    footer: {
+      padding: spacing.sp4,
+    },
+    saveBtn: {
+      height: 48,
+      borderRadius: radius.xl,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    saveBtnDisabled: { backgroundColor: colors.border },
+    saveBtnPressed: { opacity: 0.85 },
+    saveBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
+  }), [colors])
 
   return (
     <>
@@ -140,46 +183,3 @@ export default function ProfileEditGenderScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerSide: { width: 72 },
-  headerBack: { fontSize: fontSize.sm, color: colors.text },
-  headerTitle: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
-
-  optionList: {},
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp4,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  rowPressed: { backgroundColor: colors.surface2 },
-  optionLabel: { fontSize: fontSize.base, color: colors.text },
-
-  footer: {
-    padding: spacing.sp4,
-  },
-  saveBtn: {
-    height: 48,
-    borderRadius: radius.xl,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveBtnDisabled: { backgroundColor: colors.border },
-  saveBtnPressed: { opacity: 0.85 },
-  saveBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
-})

@@ -1,6 +1,7 @@
 package com.peopleground.sagwim.group.infrastructure.repository;
 
 import com.peopleground.sagwim.group.domain.entity.GroupMember;
+import com.peopleground.sagwim.group.domain.entity.GroupMemberRole;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -27,4 +28,7 @@ public interface GroupMemberJpaRepository extends JpaRepository<GroupMember, Lon
     @org.springframework.data.jpa.repository.Modifying
     @Query("DELETE FROM p_group_member gm WHERE gm.group.id = :groupId")
     void deleteAllByGroupId(@Param("groupId") Long groupId);
+
+    @Query("SELECT gm FROM p_group_member gm JOIN FETCH gm.user WHERE gm.group.id = :groupId AND gm.role IN :roles AND gm.deletedDate IS NULL")
+    List<GroupMember> findByGroupIdAndRoleIn(@Param("groupId") Long groupId, @Param("roles") List<GroupMemberRole> roles);
 }

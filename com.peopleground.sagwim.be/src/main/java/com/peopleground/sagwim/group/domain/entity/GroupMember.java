@@ -57,4 +57,29 @@ public class GroupMember extends BaseEntity {
     public boolean isLeader() {
         return this.role == GroupMemberRole.LEADER;
     }
+
+    public boolean isSubLeader() {
+        return this.role == GroupMemberRole.SUB_LEADER;
+    }
+
+    /** LEADER 또는 SUB_LEADER → 관리 권한 있음 */
+    public boolean isManager() {
+        return this.role == GroupMemberRole.LEADER || this.role == GroupMemberRole.SUB_LEADER;
+    }
+
+    /** MEMBER → SUB_LEADER 승격 */
+    public void promoteToSubLeader() {
+        if (this.role != GroupMemberRole.MEMBER) {
+            throw new IllegalStateException("MEMBER만 SUB_LEADER로 승격할 수 있습니다.");
+        }
+        this.role = GroupMemberRole.SUB_LEADER;
+    }
+
+    /** SUB_LEADER → MEMBER 강등 */
+    public void demoteToMember() {
+        if (this.role != GroupMemberRole.SUB_LEADER) {
+            throw new IllegalStateException("SUB_LEADER만 MEMBER로 강등할 수 있습니다.");
+        }
+        this.role = GroupMemberRole.MEMBER;
+    }
 }

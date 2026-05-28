@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import type { GroupResponse } from '../../types/group'
 import { GroupCard } from './GroupCard'
-import { colors, fontSize, spacing } from '../../constants/theme'
+import { fontSize, spacing } from '../../constants/theme'
+import { useTheme } from '../../context/ThemeContext'
 
 interface GroupSectionProps {
   title: string
@@ -23,6 +24,33 @@ export function GroupSection({
   onPressGroup,
   onPressMore,
 }: GroupSectionProps) {
+  const { colors } = useTheme()
+  const styles = useMemo(() => StyleSheet.create({
+    section: { marginBottom: spacing.sp8 },
+    header: {
+      paddingHorizontal: spacing.sp4,
+      marginBottom: spacing.sp3,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    titleBlock: { flex: 1, gap: 2 },
+    title: { fontSize: fontSize.xl, fontWeight: '700', color: colors.text },
+    subtitle: { fontSize: fontSize.base, color: colors.textMuted },
+    more: { fontSize: fontSize.base, color: colors.textSecondary },
+    listContent: { paddingHorizontal: spacing.sp4 },
+    separator: { width: spacing.sp3 },
+    empty: {
+      marginHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp8,
+      backgroundColor: colors.surface,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emptyText: { fontSize: fontSize.base, color: colors.textMuted },
+  }), [colors])
+
   return (
     <View style={styles.section}>
       <View style={styles.header}>
@@ -67,50 +95,3 @@ export function GroupSection({
   )
 }
 
-const styles = StyleSheet.create({
-  section: {
-    marginBottom: spacing.sp8,
-  },
-  header: {
-    paddingHorizontal: spacing.sp4,
-    marginBottom: spacing.sp3,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  titleBlock: {
-    flex: 1,
-    gap: 2,
-  },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  subtitle: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-  },
-  more: {
-    fontSize: fontSize.base,
-    color: colors.textSecondary,
-  },
-  listContent: {
-    paddingHorizontal: spacing.sp4,
-  },
-  separator: {
-    width: spacing.sp3,
-  },
-  empty: {
-    marginHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp8,
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyText: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-  },
-})

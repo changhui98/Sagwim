@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native'
 import { Image } from 'expo-image'
 import type { GroupResponse } from '../../types/group'
 import { GROUP_CATEGORY_LABELS, GROUP_MEETING_TYPE_LABELS } from '../../types/group'
-import { colors, fontSize, radius, spacing } from '../../constants/theme'
+import { fontSize, radius, spacing } from '../../constants/theme'
+import { useTheme } from '../../context/ThemeContext'
 import { resolveImageUrl } from '../../lib/resolveImageUrl'
 
 /**
@@ -23,6 +24,53 @@ interface GroupCardProps {
 }
 
 export function GroupCard({ group, onPress }: GroupCardProps) {
+  const { colors } = useTheme()
+  const styles = useMemo(() => StyleSheet.create({
+    card: {
+      width: GROUP_CARD_WIDTH,
+      backgroundColor: colors.surface,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: colors.border,
+      overflow: 'hidden',
+    },
+    cardPressed: { opacity: 0.7 },
+    imageWrap: {
+      width: '100%',
+      aspectRatio: 1,
+      backgroundColor: colors.surface3,
+      position: 'relative',
+    },
+    image: { width: '100%', height: '100%' },
+    imagePlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    imagePlaceholderText: { fontSize: 36 },
+    pendingBadge: {
+      position: 'absolute',
+      top: spacing.sp2,
+      left: spacing.sp2,
+      backgroundColor: colors.warning,
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: 2,
+      borderRadius: radius.sm,
+    },
+    pendingBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+    meetingBadge: {
+      position: 'absolute',
+      bottom: spacing.sp2,
+      left: spacing.sp2,
+      right: spacing.sp2,
+      backgroundColor: 'rgba(0, 0, 0, 0.55)',
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: 2,
+      borderRadius: radius.sm,
+    },
+    meetingBadgeText: { color: '#fff', fontSize: 10, fontWeight: '600' },
+    body: { paddingHorizontal: spacing.sp3, paddingVertical: spacing.sp2, gap: 2 },
+    category: { fontSize: fontSize.sm, color: colors.textSecondary },
+    name: { fontSize: fontSize.md, fontWeight: '700', color: colors.text },
+    member: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: 2 },
+  }), [colors])
+
   return (
     <Pressable
       onPress={() => onPress(group.id)}
@@ -70,82 +118,3 @@ export function GroupCard({ group, onPress }: GroupCardProps) {
   )
 }
 
-const styles = StyleSheet.create({
-  card: {
-    width: GROUP_CARD_WIDTH,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-  },
-  cardPressed: {
-    opacity: 0.7,
-  },
-  imageWrap: {
-    width: '100%',
-    aspectRatio: 1,
-    backgroundColor: colors.surface3,
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
-  imagePlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imagePlaceholderText: {
-    fontSize: 36,
-  },
-  pendingBadge: {
-    position: 'absolute',
-    top: spacing.sp2,
-    left: spacing.sp2,
-    backgroundColor: colors.warning,
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
-  },
-  pendingBadgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  meetingBadge: {
-    position: 'absolute',
-    bottom: spacing.sp2,
-    left: spacing.sp2,
-    right: spacing.sp2,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
-  },
-  meetingBadgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '600',
-  },
-  body: {
-    paddingHorizontal: spacing.sp3,
-    paddingVertical: spacing.sp2,
-    gap: 2,
-  },
-  category: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  name: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  member: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-})

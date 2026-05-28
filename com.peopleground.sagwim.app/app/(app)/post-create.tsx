@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import {
   Alert,
   KeyboardAvoidingView,
@@ -17,7 +17,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import axios from 'axios'
 import { createPost, uploadContentImage } from '../../src/api/postApi'
-import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 
 const MAX_IMAGES = 5
 const MAX_TAG_LENGTH = 20
@@ -25,6 +26,7 @@ const MAX_TAGS = 10
 
 export default function PostCreateScreen() {
   const insets = useSafeAreaInsets()
+  const { colors } = useTheme()
   const tagInputRef = useRef<TextInput>(null)
 
   const [body, setBody] = useState('')
@@ -93,6 +95,146 @@ export default function PostCreateScreen() {
       setSubmitting(false)
     }
   }
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerSide: {
+      width: 56,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerTitle: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    submitText: {
+      fontSize: fontSize.base,
+      fontWeight: '700',
+      color: colors.accent,
+    },
+    submitTextDisabled: {
+      color: colors.textMuted,
+    },
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+    },
+    bodyInput: {
+      fontSize: fontSize.base,
+      color: colors.text,
+      lineHeight: fontSize.base * 1.7,
+      minHeight: 160,
+      padding: spacing.sp4,
+      paddingTop: spacing.sp4,
+      textAlignVertical: 'top',
+    },
+    sectionDivider: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: spacing.sp4,
+    },
+    // 사진 섹션
+    imageSection: {
+      paddingVertical: spacing.sp4,
+    },
+    imageRow: {
+      paddingHorizontal: spacing.sp4,
+      gap: spacing.sp3,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    imageThumbWrap: {
+      width: 80,
+      height: 80,
+    },
+    imageThumb: {
+      width: 80,
+      height: 80,
+      borderRadius: radius.md,
+      backgroundColor: colors.surface3,
+    },
+    imageRemoveBtn: {
+      position: 'absolute',
+      top: 4,
+      right: 4,
+      backgroundColor: colors.bg,
+      borderRadius: radius.full,
+    },
+    imageAddBtn: {
+      width: 80,
+      height: 80,
+      borderRadius: radius.md,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      borderStyle: 'dashed',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 2,
+    },
+    imageAddBtnPressed: {
+      backgroundColor: colors.surface3,
+    },
+    imageCount: {
+      fontSize: fontSize.xs,
+      color: colors.textMuted,
+    },
+    // 태그 섹션
+    tagSection: {
+      padding: spacing.sp4,
+      gap: spacing.sp3,
+    },
+    tagLabel: {
+      fontSize: fontSize.sm,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    tagList: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sp2,
+    },
+    tagChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: colors.accentMuted,
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: 5,
+      borderRadius: radius.full,
+    },
+    tagChipText: {
+      fontSize: fontSize.sm,
+      color: colors.accent,
+      fontWeight: '500',
+    },
+    tagInput: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp3,
+      fontSize: fontSize.base,
+      color: colors.text,
+      backgroundColor: colors.surface,
+    },
+  }), [colors])
 
   return (
     <>
@@ -224,142 +366,3 @@ export default function PostCreateScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerSide: {
-    width: 56,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  submitText: {
-    fontSize: fontSize.base,
-    fontWeight: '700',
-    color: colors.accent,
-  },
-  submitTextDisabled: {
-    color: colors.textMuted,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  bodyInput: {
-    fontSize: fontSize.base,
-    color: colors.text,
-    lineHeight: fontSize.base * 1.7,
-    minHeight: 160,
-    padding: spacing.sp4,
-    paddingTop: spacing.sp4,
-    textAlignVertical: 'top',
-  },
-  sectionDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: spacing.sp4,
-  },
-  // 사진 섹션
-  imageSection: {
-    paddingVertical: spacing.sp4,
-  },
-  imageRow: {
-    paddingHorizontal: spacing.sp4,
-    gap: spacing.sp3,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  imageThumbWrap: {
-    width: 80,
-    height: 80,
-  },
-  imageThumb: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface3,
-  },
-  imageRemoveBtn: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: colors.bg,
-    borderRadius: radius.full,
-  },
-  imageAddBtn: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 2,
-  },
-  imageAddBtnPressed: {
-    backgroundColor: colors.surface3,
-  },
-  imageCount: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-  },
-  // 태그 섹션
-  tagSection: {
-    padding: spacing.sp4,
-    gap: spacing.sp3,
-  },
-  tagLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  tagList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sp2,
-  },
-  tagChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.accentMuted,
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: 5,
-    borderRadius: radius.full,
-  },
-  tagChipText: {
-    fontSize: fontSize.sm,
-    color: colors.accent,
-    fontWeight: '500',
-  },
-  tagInput: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.sp3,
-    paddingVertical: spacing.sp3,
-    fontSize: fontSize.base,
-    color: colors.text,
-    backgroundColor: colors.surface,
-  },
-})

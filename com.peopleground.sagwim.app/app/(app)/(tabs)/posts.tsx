@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   FlatList,
@@ -11,10 +11,12 @@ import {
 import { getPosts } from '../../../src/api/postApi'
 import type { ContentResponse } from '../../../src/types/post'
 import { PostCard } from '../../../src/components/PostCard'
-import { colors, fontSize, radius, spacing } from '../../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../../src/constants/theme'
+import { useTheme } from '../../../src/context/ThemeContext'
 
 
 export default function PostsScreen() {
+  const { colors } = useTheme()
   const [posts, setPosts] = useState<ContentResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -79,6 +81,51 @@ export default function PostsScreen() {
     }
   }, [])
 
+  const styles = useMemo(() => StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: spacing.sp6,
+      backgroundColor: colors.bg,
+    },
+    listContent: {
+      paddingBottom: spacing.sp8,
+    },
+    emptyContainer: {
+      flex: 1,
+      paddingHorizontal: spacing.sp4,
+    },
+    emptyText: {
+      fontSize: fontSize.base,
+      color: colors.textMuted,
+    },
+    errorText: {
+      fontSize: fontSize.base,
+      color: colors.error,
+      marginBottom: spacing.sp4,
+      textAlign: 'center',
+    },
+    retryButton: {
+      backgroundColor: colors.accent,
+      paddingHorizontal: spacing.sp6,
+      paddingVertical: spacing.sp3,
+      borderRadius: radius.md,
+    },
+    retryText: {
+      fontSize: fontSize.base,
+      fontWeight: '600',
+      color: '#fff',
+    },
+    footerLoader: {
+      paddingVertical: spacing.sp4,
+    },
+  }), [colors])
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -139,48 +186,3 @@ export default function PostsScreen() {
     </View>
   )
 }
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.sp6,
-    backgroundColor: colors.bg,
-  },
-  listContent: {
-    paddingBottom: spacing.sp8,
-  },
-  emptyContainer: {
-    flex: 1,
-    paddingHorizontal: spacing.sp4,
-  },
-  emptyText: {
-    fontSize: fontSize.base,
-    color: colors.textMuted,
-  },
-  errorText: {
-    fontSize: fontSize.base,
-    color: colors.error,
-    marginBottom: spacing.sp4,
-    textAlign: 'center',
-  },
-  retryButton: {
-    backgroundColor: colors.accent,
-    paddingHorizontal: spacing.sp6,
-    paddingVertical: spacing.sp3,
-    borderRadius: radius.md,
-  },
-  retryText: {
-    fontSize: fontSize.base,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  footerLoader: {
-    paddingVertical: spacing.sp4,
-  },
-})

@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { Animated, StyleSheet, Text, View } from 'react-native'
 import { SvgXml } from 'react-native-svg'
 import { PrimaryButton } from '../PrimaryButton'
-import { colors, fontSize, radius, spacing } from '../../constants/theme'
+import { fontSize, radius, spacing } from '../../constants/theme'
+import { useTheme } from '../../context/ThemeContext'
 
 const sagwimIconSvg = `<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -59,11 +60,46 @@ function useFadeSlideUp(delay: number) {
  * 웹의 fadeSlideUp(opacity 0→1, translateY 14px→0, 0.55s)을 요소별 순차 지연으로 재현.
  */
 export function AddressOnboarding({ onPressSetAddress }: AddressOnboardingProps) {
+  const { colors } = useTheme()
   const iconAnim = useFadeSlideUp(DELAYS[0])
   const titleAnim = useFadeSlideUp(DELAYS[1])
   const subtitleAnim = useFadeSlideUp(DELAYS[2])
   const hintAnim = useFadeSlideUp(DELAYS[3])
   const buttonAnim = useFadeSlideUp(DELAYS[4])
+
+  const styles = useMemo(() => StyleSheet.create({
+    wrap: { flex: 1, paddingHorizontal: spacing.sp5, justifyContent: 'center', alignItems: 'center' },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: radius.xl,
+      padding: spacing.sp8,
+      alignItems: 'center',
+      width: '100%',
+    },
+    iconWrap: { marginBottom: spacing.sp6 },
+    title: {
+      fontSize: fontSize.xl2,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: spacing.sp2,
+      textAlign: 'center',
+    },
+    titleHighlight: { color: '#E06060' },
+    subtitle: {
+      fontSize: fontSize.base,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginBottom: spacing.sp6,
+    },
+    hint: {
+      fontSize: fontSize.sm,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginBottom: spacing.sp6,
+    },
+    buttonWrap: { width: '100%' },
+    button: { width: '100%' },
+  }), [colors])
 
   return (
     <View style={styles.wrap}>
@@ -92,49 +128,3 @@ export function AddressOnboarding({ onPressSetAddress }: AddressOnboardingProps)
   )
 }
 
-const styles = StyleSheet.create({
-  wrap: {
-    flex: 1,
-    paddingHorizontal: spacing.sp5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    padding: spacing.sp8,
-    alignItems: 'center',
-    width: '100%',
-  },
-  iconWrap: {
-    marginBottom: spacing.sp6,
-  },
-  title: {
-    fontSize: fontSize.xl2,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: spacing.sp2,
-    textAlign: 'center',
-  },
-  titleHighlight: {
-    color: '#E06060',
-  },
-  subtitle: {
-    fontSize: fontSize.base,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.sp6,
-  },
-  hint: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.sp6,
-  },
-  buttonWrap: {
-    width: '100%',
-  },
-  button: {
-    width: '100%',
-  },
-})

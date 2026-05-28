@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
-import { colors, fontSize, radius, spacing } from '../../constants/theme'
+import { fontSize, radius, spacing } from '../../constants/theme'
+import { useTheme } from '../../context/ThemeContext'
 
 export interface ActionSheetOption {
   label: string
@@ -15,6 +16,41 @@ interface Props {
 }
 
 export function ActionSheet({ isOpen, options, onClose }: Props) {
+  const { colors } = useTheme()
+  const styles = useMemo(() => StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.4)',
+      justifyContent: 'flex-end',
+    },
+    sheet: {
+      backgroundColor: colors.surface2,
+      borderTopLeftRadius: radius.xl,
+      borderTopRightRadius: radius.xl,
+      paddingHorizontal: spacing.sp4,
+      paddingTop: spacing.sp3,
+      paddingBottom: spacing.sp8,
+      gap: 0,
+    },
+    option: {
+      backgroundColor: colors.bg,
+      paddingVertical: spacing.sp4,
+      alignItems: 'center',
+    },
+    optionBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
+    optionPressed: { opacity: 0.6 },
+    optionText: { fontSize: fontSize.lg, color: colors.text },
+    destructiveText: { color: colors.error },
+    gap: { height: spacing.sp2 },
+    cancelOption: {
+      backgroundColor: colors.bg,
+      borderRadius: radius.lg,
+      paddingVertical: spacing.sp4,
+      alignItems: 'center',
+    },
+    cancelText: { fontSize: fontSize.lg, fontWeight: '600', color: colors.text },
+  }), [colors])
+
   return (
     <Modal
       transparent
@@ -55,52 +91,3 @@ export function ActionSheet({ isOpen, options, onClose }: Props) {
   )
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: colors.surface2,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    paddingHorizontal: spacing.sp4,
-    paddingTop: spacing.sp3,
-    paddingBottom: spacing.sp8,
-    gap: 0,
-  },
-  option: {
-    backgroundColor: colors.bg,
-    paddingVertical: spacing.sp4,
-    alignItems: 'center',
-  },
-  optionBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  optionPressed: {
-    opacity: 0.6,
-  },
-  optionText: {
-    fontSize: fontSize.lg,
-    color: colors.text,
-  },
-  destructiveText: {
-    color: colors.error,
-  },
-  gap: {
-    height: spacing.sp2,
-  },
-  cancelOption: {
-    backgroundColor: colors.bg,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.sp4,
-    alignItems: 'center',
-  },
-  cancelText: {
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-    color: colors.text,
-  },
-})

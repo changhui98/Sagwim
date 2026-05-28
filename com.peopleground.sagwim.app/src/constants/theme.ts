@@ -3,7 +3,7 @@
  * var(--clr-accent) → colors.accent 형태로 사용
  */
 
-export const colors = {
+export const lightColors = {
   // Brand Accent
   accent: '#F08080',
   accentHover: '#e06060',
@@ -35,6 +35,41 @@ export const colors = {
   oauthDisabled: '#d1d5db',
   oauthDisabledText: '#9ca3af',
 } as const
+
+export const darkColors = {
+  // Brand Accent (동일)
+  accent: '#F08080',
+  accentHover: '#e06060',
+  accentMuted: 'rgba(240, 128, 128, 0.18)',
+  accentGlow: 'rgba(240, 128, 128, 0.28)',
+  // Semantic (동일)
+  error: '#ef4444',
+  errorSoft: 'rgba(239, 68, 68, 0.10)',
+  success: '#10b981',
+  successSoft: 'rgba(16, 185, 129, 0.10)',
+  warning: '#f59e0b',
+  // Surface — Dark Mode
+  bg: '#07071a',
+  bgAlt: '#0c0c24',
+  surface: '#0f0f28',
+  surface2: '#151535',
+  surface3: '#1c1c44',
+  border: 'rgba(255, 255, 255, 0.07)',
+  borderStrong: 'rgba(255, 255, 255, 0.12)',
+  text: '#ededf8',
+  textSecondary: '#a8a8cc',
+  textMuted: '#6a6a90',
+  // OAuth (동일)
+  kakaoYellow: '#FEE500',
+  googleWhite: '#ffffff',
+  oauthDisabled: '#d1d5db',
+  oauthDisabledText: '#9ca3af',
+} as const
+
+// 기존 colors export는 lightColors로 유지 (기존 코드 호환)
+export const colors = lightColors
+
+export type AppColors = typeof lightColors | typeof darkColors
 
 export const spacing = {
   sp1: 4,

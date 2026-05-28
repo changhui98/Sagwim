@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Pressable,
   StyleSheet,
@@ -19,7 +18,8 @@ import { getUserPosts } from '../../../src/api/postApi'
 import { PostCard } from '../../../src/components/PostCard'
 import type { ContentResponse } from '../../../src/types/post'
 import { resolveImageUrl } from '../../../src/lib/resolveImageUrl'
-import { colors, fontSize, radius, spacing } from '../../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../../src/constants/theme'
+import { useTheme } from '../../../src/context/ThemeContext'
 
 type ViewMode = 'photo' | 'text'
 
@@ -33,7 +33,8 @@ const GRID_GAP = 1
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets()
   const { width: screenWidth } = useWindowDimensions()
-  const { meUsername, meNickname, meProfileImageUrl, logout } = useAuth()
+  const { meUsername, meNickname, meProfileImageUrl } = useAuth()
+  const { colors } = useTheme()
 
   const cellSize = (screenWidth - GRID_GAP * (GRID_COLUMNS - 1)) / GRID_COLUMNS
 
@@ -122,17 +123,7 @@ export default function ProfileScreen() {
   }
 
   const handleSettingsPress = () => {
-    Alert.alert('설정', undefined, [
-      {
-        text: '로그아웃',
-        style: 'destructive',
-        onPress: async () => {
-          await logout()
-          router.replace('/(auth)/login')
-        },
-      },
-      { text: '취소', style: 'cancel' },
-    ])
+    router.push('/(app)/settings')
   }
 
   const avatarUri = resolveImageUrl(meProfileImageUrl)
@@ -280,6 +271,160 @@ export default function ProfileScreen() {
     </View>
   )
 
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+
+    // 헤더
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerSide: {
+      width: 40,
+      alignItems: 'flex-end',
+    },
+    headerTitle: {
+      fontSize: fontSize.lg,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    headerIconBtn: {
+      padding: 4,
+    },
+
+    // 프로필 섹션
+    profileSection: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp4,
+      paddingHorizontal: spacing.sp4,
+      paddingTop: spacing.sp4,
+      paddingBottom: spacing.sp3,
+    },
+    avatarWrapper: {
+      flexShrink: 0,
+    },
+    avatar: {
+      width: 72,
+      height: 72,
+      borderRadius: 36,
+    },
+    avatarFallback: {
+      backgroundColor: colors.accentMuted,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    avatarInitial: {
+      fontSize: fontSize.xl2,
+      fontWeight: '700',
+      color: colors.accent,
+    },
+    profileInfo: {
+      flex: 1,
+      gap: spacing.sp1,
+    },
+    nickname: {
+      fontSize: fontSize.lg,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    bio: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+      lineHeight: 18,
+    },
+
+    // 프로필 편집 버튼
+    editButton: {
+      marginHorizontal: spacing.sp4,
+      marginVertical: spacing.sp3,
+      paddingVertical: spacing.sp2,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.xl,
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+    },
+    editButtonPressed: {
+      backgroundColor: colors.surface2,
+    },
+    editButtonText: {
+      fontSize: fontSize.sm,
+      fontWeight: '600',
+      color: colors.text,
+    },
+
+    // 구분선
+    divider: {
+      height: 1,
+      backgroundColor: colors.border,
+    },
+
+    // 탭 토글
+    tabRow: {
+      flexDirection: 'row',
+    },
+    tabItem: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: spacing.sp3,
+    },
+    tabItemActive: {},
+
+    // FlatList
+    flatList: {
+      flex: 1,
+    },
+    flatListContentEmpty: {
+      flexGrow: 1,
+    },
+
+    // 사진 그리드 셀
+    gridRow: {
+      flexDirection: 'row',
+    },
+    cell: {
+      overflow: 'hidden',
+      backgroundColor: colors.surface2,
+    },
+    multiImageBadge: {
+      position: 'absolute',
+      top: 4,
+      right: 4,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      borderRadius: 4,
+      padding: 2,
+    },
+
+    // Empty state
+    emptyContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: spacing.sp16,
+      gap: spacing.sp3,
+    },
+    emptyText: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+      textAlign: 'center',
+      paddingHorizontal: spacing.sp8,
+    },
+
+    // Footer loader
+    footerLoader: {
+      paddingVertical: spacing.sp4,
+      alignItems: 'center',
+    },
+  }), [colors])
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -324,157 +469,3 @@ export default function ProfileScreen() {
     </>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-
-  // 헤더
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerSide: {
-    width: 40,
-    alignItems: 'flex-end',
-  },
-  headerTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  headerIconBtn: {
-    padding: 4,
-  },
-
-  // 프로필 섹션
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp4,
-    paddingHorizontal: spacing.sp4,
-    paddingTop: spacing.sp4,
-    paddingBottom: spacing.sp3,
-  },
-  avatarWrapper: {
-    flexShrink: 0,
-  },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-  },
-  avatarFallback: {
-    backgroundColor: colors.accentMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarInitial: {
-    fontSize: fontSize.xl2,
-    fontWeight: '700',
-    color: colors.accent,
-  },
-  profileInfo: {
-    flex: 1,
-    gap: spacing.sp1,
-  },
-  nickname: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  bio: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    lineHeight: 18,
-  },
-
-  // 프로필 편집 버튼
-  editButton: {
-    marginHorizontal: spacing.sp4,
-    marginVertical: spacing.sp3,
-    paddingVertical: spacing.sp2,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.xl,
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  editButtonPressed: {
-    backgroundColor: colors.surface2,
-  },
-  editButtonText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.text,
-  },
-
-  // 구분선
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-  },
-
-  // 탭 토글
-  tabRow: {
-    flexDirection: 'row',
-  },
-  tabItem: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing.sp3,
-  },
-  tabItemActive: {},
-
-  // FlatList
-  flatList: {
-    flex: 1,
-  },
-  flatListContentEmpty: {
-    flexGrow: 1,
-  },
-
-  // 사진 그리드 셀
-  gridRow: {
-    flexDirection: 'row',
-  },
-  cell: {
-    overflow: 'hidden',
-    backgroundColor: colors.surface2,
-  },
-  multiImageBadge: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    borderRadius: 4,
-    padding: 2,
-  },
-
-  // Empty state
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.sp16,
-    gap: spacing.sp3,
-  },
-  emptyText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-    paddingHorizontal: spacing.sp8,
-  },
-
-  // Footer loader
-  footerLoader: {
-    paddingVertical: spacing.sp4,
-    alignItems: 'center',
-  },
-})

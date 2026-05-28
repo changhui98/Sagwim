@@ -22,7 +22,9 @@ import { useAuth } from '../../../src/context/AuthContext'
 import { GroupSection } from '../../../src/components/group/GroupSection'
 import { AddressOnboarding } from '../../../src/components/home/AddressOnboarding'
 import type { GroupResponse } from '../../../src/types/group'
-import { colors, spacing } from '../../../src/constants/theme'
+import type { UserDetailResponse } from '../../../src/types/user'
+import { spacing } from '../../../src/constants/theme'
+import { useTheme } from '../../../src/context/ThemeContext'
 
 const PREVIEW_COUNT = 3
 
@@ -34,8 +36,10 @@ function extractDong(address: string | null | undefined): string {
 
 export default function HomeScreen() {
   const { isAuthenticated } = useAuth()
+  const { colors } = useTheme()
 
   const [address, setAddress] = useState<string | null | undefined>(undefined)
+  const [meProfile, setMeProfile] = useState<UserDetailResponse | null>(null)
   const [newGroups, setNewGroups] = useState<GroupResponse[]>([])
   const [popularGroups, setPopularGroups] = useState<GroupResponse[]>([])
   const [neighborhoodGroups, setNeighborhoodGroups] = useState<GroupResponse[]>([])
@@ -54,8 +58,10 @@ export default function HomeScreen() {
 
       if (meRes.status === 'fulfilled') {
         setAddress(meRes.value.address ?? null)
+        setMeProfile(meRes.value)
       } else {
         setAddress(null)
+        setMeProfile(null)
       }
 
       setNewGroups(
@@ -93,11 +99,13 @@ export default function HomeScreen() {
   // 주소 분기: meAddress 없으면 온보딩만 노출
   if (!loading && !address) {
     return (
-      <View style={styles.safe}>
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
         <AddressOnboarding
           onPressSetAddress={() => {
-            // 주소 설정 화면도 추후 단계 — 우선 임시 알림 처리.
-            console.log('[Home] navigate to address setup — pending')
+            router.push({
+              pathname: '/(app)/profile-edit-address',
+              params: { profile: JSON.stringify(meProfile ?? {}) },
+            })
           }}
         />
       </View>
@@ -105,7 +113,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.safe}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -162,10 +170,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
   scroll: {
     flex: 1,
   },

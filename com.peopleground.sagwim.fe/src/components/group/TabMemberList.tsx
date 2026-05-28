@@ -68,11 +68,14 @@ export function TabMemberList({ members, isLeader, actionLoading, onKick }: TabM
     }
   }, [members, token])
 
+  const roleOrder: Record<string, number> = { LEADER: 0, SUB_LEADER: 1, MEMBER: 2 }
+
   const membersSorted = useMemo(
     () =>
       [...members].sort((a, b) => {
-        if (a.role === 'LEADER' && b.role !== 'LEADER') return -1
-        if (a.role !== 'LEADER' && b.role === 'LEADER') return 1
+        const roleA = roleOrder[a.role] ?? 2
+        const roleB = roleOrder[b.role] ?? 2
+        if (roleA !== roleB) return roleA - roleB
         return new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime()
       }),
     [members],
@@ -118,6 +121,11 @@ export function TabMemberList({ members, isLeader, actionLoading, onKick }: TabM
             {member.role === 'LEADER' && (
               <span className={styles.leaderBadge} aria-label="모임장">
                 <CrownIcon />
+              </span>
+            )}
+            {member.role === 'SUB_LEADER' && (
+              <span className={styles.subLeaderBadge} aria-label="부관리자">
+                부관리자
               </span>
             )}
             {isLeader && member.role !== 'LEADER' && (

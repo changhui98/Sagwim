@@ -1,8 +1,3 @@
-/**
- * 알림 도메인 타입.
- *
- * 백엔드 NotificationType 과 1:1 대응한다 (com.peopleground.sagwim.notification.domain.entity.NotificationType).
- */
 export type NotificationType =
   | 'CONTENT_LIKED'
   | 'COMMENT_LIKED'

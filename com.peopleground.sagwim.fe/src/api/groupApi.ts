@@ -355,3 +355,18 @@ export const cancelMyJoinRequest = (
     if (!res.ok) return res.text().then((t) => { throw new ApiError(res.status, t || `Request failed: ${res.status}`) })
   })
 }
+
+export const updateMemberRole = (
+  token: string,
+  groupId: number,
+  username: string,
+  role: 'SUB_LEADER' | 'MEMBER',
+): Promise<void> => {
+  return fetch(`${API_BASE_URL}/groups/${groupId}/members/${encodeURIComponent(username)}/role`, {
+    method: 'PATCH',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify({ role }),
+  }).then((res) => {
+    if (!res.ok) return res.text().then((t) => { throw new ApiError(res.status, t || `Request failed: ${res.status}`) })
+  })
+}

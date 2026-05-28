@@ -245,6 +245,7 @@ public class GroupService {
                 throw new AppException(GroupErrorCode.GROUP_JOIN_REQUEST_ALREADY_EXISTS);
             }
             // 거절된 신청이 있으면 재활성화(PENDING으로 변경)하여 중복 키 오류 방지
+            User applicant = getUser(customUser.getUsername());
             joinRequestRepository.findByGroupIdAndUsernameAndStatus(
                     groupId, customUser.getUsername(), GroupJoinRequestStatus.REJECTED)
                 .ifPresentOrElse(
@@ -252,11 +253,19 @@ public class GroupService {
                         existing.reactivate(answer);
                         joinRequestRepository.save(existing);
                     },
-                    () -> {
-                        User user = getUser(customUser.getUsername());
-                        joinRequestRepository.save(GroupJoinRequest.of(group, user, answer));
-                    }
+                    () -> joinRequestRepository.save(GroupJoinRequest.of(group, applicant, answer))
                 );
+            // 관리자(LEADER/SUB_LEADER)에게 가입 신청 알림 발송
+            List<GroupMember> managers = groupMemberRepository.findManagersByGroupId(groupId);
+            for (GroupMember manager : managers) {
+                notificationService.notify(
+                    manager.getUser(),
+                    NotificationType.MEETING_JOIN_REQUESTED,
+                    applicant,
+                    group.getId(),
+                    group.getName()
+                );
+            }
             return;
         }
 
@@ -286,8 +295,12 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public List<GroupJoinRequestResponse> getPendingJoinRequests(Long groupId, CustomUser customUser) {
-        Group group = findGroup(groupId);
-        validateLeader(group, customUser.getUsername());
+        findGroup(groupId);
+        GroupMember requester = groupMemberRepository.findByGroupIdAndUsername(groupId, customUser.getUsername())
+            .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_NOT_MEMBER));
+        if (!requester.isManager()) {
+            throw new AppException(GroupErrorCode.GROUP_PERMISSION_DENIED);
+        }
 
         return joinRequestRepository.findByGroupIdAndStatus(groupId, GroupJoinRequestStatus.PENDING)
             .stream()
@@ -298,7 +311,11 @@ public class GroupService {
     @Transactional
     public void approveJoinRequest(Long groupId, Long requestId, CustomUser customUser) {
         Group group = findGroup(groupId);
-        validateLeader(group, customUser.getUsername());
+        GroupMember requester = groupMemberRepository.findByGroupIdAndUsername(groupId, customUser.getUsername())
+            .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_NOT_MEMBER));
+        if (!requester.isManager()) {
+            throw new AppException(GroupErrorCode.GROUP_PERMISSION_DENIED);
+        }
 
         GroupJoinRequest joinRequest = joinRequestRepository.findById(requestId)
             .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_JOIN_REQUEST_NOT_FOUND));
@@ -316,8 +333,12 @@ public class GroupService {
 
     @Transactional
     public void rejectJoinRequest(Long groupId, Long requestId, CustomUser customUser) {
-        Group group = findGroup(groupId);
-        validateLeader(group, customUser.getUsername());
+        findGroup(groupId);
+        GroupMember requester = groupMemberRepository.findByGroupIdAndUsername(groupId, customUser.getUsername())
+            .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_NOT_MEMBER));
+        if (!requester.isManager()) {
+            throw new AppException(GroupErrorCode.GROUP_PERMISSION_DENIED);
+        }
 
         GroupJoinRequest joinRequest = joinRequestRepository.findById(requestId)
             .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_JOIN_REQUEST_NOT_FOUND));
@@ -342,15 +363,46 @@ public class GroupService {
 
     @Transactional
     public void kickMember(Long groupId, String targetUsername, CustomUser customUser) {
-        Group group = findGroup(groupId);
-        validateLeader(group, customUser.getUsername());
+        findGroup(groupId);
+        GroupMember requester = groupMemberRepository.findByGroupIdAndUsername(groupId, customUser.getUsername())
+            .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_NOT_MEMBER));
+        if (!requester.isManager()) {
+            throw new AppException(GroupErrorCode.GROUP_PERMISSION_DENIED);
+        }
 
         GroupMember targetMember = groupMemberRepository
             .findByGroupIdAndUsername(groupId, targetUsername)
             .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_MEMBER_NOT_FOUND));
 
+        // SUB_LEADER 이상(LEADER/SUB_LEADER) 강퇴는 LEADER만 가능
+        if (targetMember.isManager() && !requester.isLeader()) {
+            throw new AppException(GroupErrorCode.GROUP_PERMISSION_DENIED);
+        }
+
         groupMemberRepository.delete(targetMember);
         groupRepository.decrementMemberCount(groupId);
+    }
+
+    @Transactional
+    public void updateMemberRole(Long groupId, String targetUsername, String newRole, CustomUser customUser) {
+        findGroup(groupId);
+        GroupMember requester = groupMemberRepository.findByGroupIdAndUsername(groupId, customUser.getUsername())
+            .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_NOT_MEMBER));
+        if (!requester.isLeader()) {
+            throw new AppException(GroupErrorCode.GROUP_PERMISSION_DENIED);
+        }
+        GroupMember target = groupMemberRepository.findByGroupIdAndUsername(groupId, targetUsername)
+            .orElseThrow(() -> new AppException(GroupErrorCode.GROUP_MEMBER_NOT_FOUND));
+        if (target.isLeader()) {
+            throw new AppException(GroupErrorCode.GROUP_PERMISSION_DENIED);
+        }
+        if ("SUB_LEADER".equals(newRole)) {
+            target.promoteToSubLeader();
+        } else if ("MEMBER".equals(newRole)) {
+            target.demoteToMember();
+        } else {
+            throw new AppException(GroupErrorCode.GROUP_PERMISSION_DENIED);
+        }
     }
 
     @Transactional(readOnly = true)

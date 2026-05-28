@@ -70,7 +70,7 @@ export const GROUP_SUB_CATEGORY_MAP: Record<GroupCategory, string[]> = {
     '💑 솔로 모임', '👨‍👩‍👧 육아 / 맘 모임',
   ],
 }
-export type GroupMemberRole = 'LEADER' | 'MEMBER'
+export type GroupMemberRole = 'LEADER' | 'SUB_LEADER' | 'MEMBER'
 export type GroupMeetingType = 'ONLINE' | 'OFFLINE'
 export type GroupStatus = 'PENDING' | 'ACTIVE' | 'REJECTED'
 export type GroupJoinType = 'OPEN' | 'APPROVAL_REQUIRED'

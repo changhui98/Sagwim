@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import {
   StyleSheet,
   Text,
@@ -8,7 +8,8 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from 'react-native'
-import { colors, radius, spacing, fontSize } from '../constants/theme'
+import { radius, spacing, fontSize } from '../constants/theme'
+import { useTheme } from '../context/ThemeContext'
 
 interface Props extends TextInputProps {
   label?: string
@@ -35,6 +36,7 @@ export function TextField({
   editable = true,
   ...rest
 }: Props) {
+  const { colors } = useTheme()
   // useRef로 관리: state 변경 시 컴포넌트 리렌더를 유발하지 않아
   // iOS New Architecture에서 secureTextEntry 필드의 포커스 소실 방지.
   // setNativeProps로 TextInput에 직접 주입.
@@ -49,6 +51,25 @@ export function TextField({
     // setNativeProps로 secureTextEntry를 직접 변경 — 리렌더 없이 네이티브에 전달
     inputRef.current?.setNativeProps({ secureTextEntry: !next })
   }
+
+  const styles = useMemo(() => StyleSheet.create({
+    wrapper: { marginBottom: spacing.sp4 },
+    label: { fontSize: fontSize.sm, fontWeight: '500', color: colors.textSecondary, marginBottom: spacing.sp2 },
+    inputRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderRadius: radius.md,
+      minHeight: 48,
+      paddingHorizontal: spacing.sp3,
+    },
+    input: { flex: 1, fontSize: fontSize.md, color: colors.text, paddingVertical: spacing.sp3 },
+    inputDisabled: { backgroundColor: colors.surface3, opacity: 0.7 },
+    eyeBtn: { paddingLeft: spacing.sp2 },
+    eyeText: { fontSize: fontSize.xs, color: colors.textMuted },
+    error: { fontSize: fontSize.xs, color: colors.error, marginTop: spacing.sp1 },
+  }), [colors])
 
   const borderColor =
     validationState === 'success'
@@ -117,46 +138,3 @@ export function TextField({
   )
 }
 
-const styles = StyleSheet.create({
-  wrapper: {
-    marginBottom: spacing.sp4,
-  },
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: '500',
-    color: colors.textSecondary,
-    marginBottom: spacing.sp2,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderRadius: radius.md,
-    minHeight: 48,
-    paddingHorizontal: spacing.sp3,
-  },
-  input: {
-    flex: 1,
-    fontSize: fontSize.md,
-    color: colors.text,
-    paddingVertical: spacing.sp3,
-  },
-  inputDisabled: {
-    backgroundColor: colors.surface3,
-    opacity: 0.7,
-  },
-  eyeBtn: {
-    paddingLeft: spacing.sp2,
-  },
-  eyeText: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-  },
-  error: {
-    fontSize: fontSize.xs,
-    color: colors.error,
-    marginTop: spacing.sp1,
-  },
-  // focusSuccess / focusError는 인라인 style로 이전됨 (항상 동일 구조 유지 목적)
-})

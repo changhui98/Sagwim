@@ -251,4 +251,16 @@ public class GroupController {
         groupService.rejectJoinRequest(groupId, requestId, customUser);
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/{groupId}/members/{username}/role")
+    public ResponseEntity<Void> updateMemberRole(
+        @PathVariable Long groupId,
+        @PathVariable String username,
+        @RequestBody Map<String, String> body,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        String role = body.get("role");
+        groupService.updateMemberRole(groupId, username, role, customUser);
+        return ResponseEntity.ok().build();
+    }
 }

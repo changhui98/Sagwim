@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -31,7 +31,8 @@ import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
 import { useAuth } from '../../src/context/AuthContext'
 import { ActionSheet, type ActionSheetOption } from '../../src/components/common/ActionSheet'
 import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
-import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 
 function formatRelativeTime(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime()
@@ -51,6 +52,7 @@ interface ImageSliderProps { urls: string[] }
 const MAX_IMAGE_HEIGHT = 480
 
 function ImageSlider({ urls }: ImageSliderProps) {
+  const { colors } = useTheme()
   const { width: screenWidth, height: screenHeight } = useWindowDimensions()
   const itemWidth = screenWidth - spacing.sp4 * 2
   const maxHeight = Math.min(MAX_IMAGE_HEIGHT, Math.round(screenHeight * 0.65))
@@ -111,9 +113,15 @@ function ImageSlider({ urls }: ImageSliderProps) {
         style={{ borderRadius: radius.lg, overflow: 'hidden' }}
       />
       {urls.length > 1 && (
-        <View style={sliderStyles.dots}>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: spacing.sp1, paddingTop: spacing.sp2 }}>
           {urls.map((_, i) => (
-            <View key={i} style={[sliderStyles.dot, i === index && sliderStyles.dotActive]} />
+            <View
+              key={i}
+              style={{
+                width: 6, height: 6, borderRadius: radius.full,
+                backgroundColor: i === index ? colors.accent : colors.border,
+              }}
+            />
           ))}
         </View>
       )}
@@ -146,6 +154,41 @@ function CommentItem({
   onDelete,
   onLikeToggle,
 }: CommentItemProps) {
+  const { colors } = useTheme()
+  const commentStyles = useMemo(() => StyleSheet.create({
+    commentGroup: {},
+    row: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      paddingHorizontal: spacing.sp4,
+      paddingTop: spacing.sp3,
+      paddingBottom: spacing.sp3,
+    },
+    replyRow: {},
+    avatarCol: { width: 36, alignItems: 'center', marginRight: spacing.sp3 },
+    avatar: {
+      width: 36, height: 36, borderRadius: 18,
+      backgroundColor: colors.accentMuted,
+      alignItems: 'center', justifyContent: 'center',
+      overflow: 'hidden',
+      flexShrink: 0,
+    },
+    avatarText: { fontSize: fontSize.sm, fontWeight: '700', color: colors.accent },
+    connector: { width: 2, backgroundColor: colors.border, borderRadius: 1 },
+    content: { flex: 1, gap: 4 },
+    header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp2, flexWrap: 'wrap' },
+    author: { fontSize: fontSize.sm, fontWeight: '700', color: colors.text },
+    time: { fontSize: fontSize.xs, color: colors.textMuted },
+    body: { fontSize: fontSize.base, color: colors.text, lineHeight: fontSize.base * 1.5 },
+    deletedText: { fontSize: fontSize.sm, color: colors.textMuted, fontStyle: 'italic' },
+    actions: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp4, marginTop: 2 },
+    actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+    actionCount: { fontSize: fontSize.xs, color: colors.textMuted },
+    actionCountActive: { color: colors.error },
+    replyBtn: { fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '600' },
+    moreDots: { paddingTop: 2, paddingLeft: spacing.sp1 },
+  }), [colors])
+
   const isMine = myUsername != null && comment.authorUsername === myUsername
   const hasReplies = !isReply && comment.replies.length > 0
   const [parentRowHeight, setParentRowHeight] = useState(0)
@@ -290,6 +333,7 @@ export default function PostDetailScreen() {
     else router.replace('/(app)/(tabs)')
   }
   const insets = useSafeAreaInsets()
+  const { colors } = useTheme()
   const { meUsername, meProfileImageUrl } = useAuth()
   const inputRef = useRef<TextInput>(null)
 
@@ -458,6 +502,85 @@ export default function PostDetailScreen() {
     setReplyTarget(comment)
     inputRef.current?.focus()
   }, [])
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.sp6 },
+    errorText: { fontSize: fontSize.base, color: colors.error, textAlign: 'center', marginBottom: spacing.sp4 },
+    backButton: { backgroundColor: colors.accent, paddingHorizontal: spacing.sp6, paddingVertical: spacing.sp3, borderRadius: radius.md },
+    backButtonText: { fontSize: fontSize.base, fontWeight: '600', color: '#fff' },
+    header: {
+      flexDirection: 'row', alignItems: 'center',
+      paddingHorizontal: spacing.sp2, paddingVertical: spacing.sp3,
+      borderBottomWidth: 1, borderBottomColor: colors.border,
+    },
+    headerBack: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+    headerTitle: { flex: 1, textAlign: 'center', fontSize: fontSize.md, fontWeight: '600', color: colors.text },
+    postSection: { paddingHorizontal: spacing.sp4, paddingTop: spacing.sp4, gap: spacing.sp3 },
+    authorRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp3 },
+    avatar: { width: 40, height: 40, borderRadius: radius.full, backgroundColor: colors.accentMuted, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+    avatarText: { fontSize: fontSize.md, fontWeight: '700', color: colors.accent },
+    authorMeta: { gap: 2 },
+    authorName: { fontSize: fontSize.base, fontWeight: '600', color: colors.text },
+    time: { fontSize: fontSize.xs, color: colors.textMuted },
+    body: { fontSize: fontSize.base, color: colors.text, lineHeight: fontSize.base * 1.7 },
+    tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sp2 },
+    tag: { backgroundColor: colors.accentMuted, paddingHorizontal: spacing.sp2, paddingVertical: 3, borderRadius: radius.sm },
+    tagText: { fontSize: fontSize.xs, color: colors.accent, fontWeight: '500' },
+    actionBar: { flexDirection: 'row', gap: spacing.sp4, paddingVertical: spacing.sp2, marginBottom: spacing.sp4 },
+    actionButton: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp1 },
+    actionCount: { fontSize: fontSize.sm, color: colors.textMuted },
+    actionCountActive: { color: colors.error },
+    divider: { height: 1, backgroundColor: colors.border, marginTop: spacing.sp2 },
+    commentSectionTitle: { fontSize: fontSize.sm, fontWeight: '600', color: colors.textSecondary, paddingBottom: spacing.sp2 },
+    moreBtn: { alignItems: 'center', paddingVertical: spacing.sp4 },
+    moreBtnText: { fontSize: fontSize.sm, color: colors.accent, fontWeight: '600' },
+    emptyComments: { alignItems: 'center', gap: spacing.sp2, paddingVertical: spacing.sp8 },
+    emptyCommentsText: { fontSize: fontSize.sm, color: colors.textMuted },
+    inputBar: {
+      borderTopWidth: 1, borderTopColor: colors.border,
+      backgroundColor: colors.bg,
+      paddingTop: spacing.sp2,
+      paddingHorizontal: spacing.sp3,
+    },
+    replyIndicator: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+      backgroundColor: colors.surface2,
+      borderRadius: radius.sm,
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp2,
+      marginBottom: spacing.sp2,
+    },
+    replyIndicatorText: { flex: 1, fontSize: fontSize.xs, color: colors.textMuted },
+    inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.sp2 },
+    input: {
+      flex: 1,
+      minHeight: 22,
+      maxHeight: 80,
+      fontSize: fontSize.base,
+      color: colors.text,
+      paddingHorizontal: 0,
+      paddingVertical: 0,
+    },
+    inputContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      backgroundColor: colors.surface2,
+      borderRadius: radius.xl,
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp2,
+      minHeight: 38,
+    },
+    photoBtn: { paddingLeft: spacing.sp2, paddingBottom: 2 },
+    sendBtn: {
+      width: 38, height: 38,
+      borderRadius: 19,
+      backgroundColor: colors.accent,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    sendBtnDisabled: { backgroundColor: colors.border },
+  }), [colors])
 
   // ── 렌더 ────────────────────────────────────────────────────
   if (loading) {
@@ -749,142 +872,3 @@ export default function PostDetailScreen() {
   )
 }
 
-// ── 스타일 ───────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.sp6 },
-  errorText: { fontSize: fontSize.base, color: colors.error, textAlign: 'center', marginBottom: spacing.sp4 },
-  backButton: { backgroundColor: colors.accent, paddingHorizontal: spacing.sp6, paddingVertical: spacing.sp3, borderRadius: radius.md },
-  backButtonText: { fontSize: fontSize.base, fontWeight: '600', color: '#fff' },
-
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: spacing.sp2, paddingVertical: spacing.sp3,
-    borderBottomWidth: 1, borderBottomColor: colors.border,
-  },
-  headerBack: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { flex: 1, textAlign: 'center', fontSize: fontSize.md, fontWeight: '600', color: colors.text },
-
-  // 게시글 섹션
-  postSection: { paddingHorizontal: spacing.sp4, paddingTop: spacing.sp4, gap: spacing.sp3 },
-  authorRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp3 },
-  avatar: { width: 40, height: 40, borderRadius: radius.full, backgroundColor: colors.accentMuted, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  avatarText: { fontSize: fontSize.md, fontWeight: '700', color: colors.accent },
-  authorMeta: { gap: 2 },
-  authorName: { fontSize: fontSize.base, fontWeight: '600', color: colors.text },
-  time: { fontSize: fontSize.xs, color: colors.textMuted },
-  body: { fontSize: fontSize.base, color: colors.text, lineHeight: fontSize.base * 1.7 },
-  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sp2 },
-  tag: { backgroundColor: colors.accentMuted, paddingHorizontal: spacing.sp2, paddingVertical: 3, borderRadius: radius.sm },
-  tagText: { fontSize: fontSize.xs, color: colors.accent, fontWeight: '500' },
-  actionBar: { flexDirection: 'row', gap: spacing.sp4, paddingVertical: spacing.sp2, marginBottom: spacing.sp4 },
-  actionButton: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp1 },
-  actionCount: { fontSize: fontSize.sm, color: colors.textMuted },
-  actionCountActive: { color: colors.error },
-  divider: { height: 1, backgroundColor: colors.border, marginTop: spacing.sp2 },
-  commentSectionTitle: { fontSize: fontSize.sm, fontWeight: '600', color: colors.textSecondary, paddingBottom: spacing.sp2 },
-
-  // 더 보기 / 빈 댓글
-  moreBtn: { alignItems: 'center', paddingVertical: spacing.sp4 },
-  moreBtnText: { fontSize: fontSize.sm, color: colors.accent, fontWeight: '600' },
-  emptyComments: { alignItems: 'center', gap: spacing.sp2, paddingVertical: spacing.sp8 },
-  emptyCommentsText: { fontSize: fontSize.sm, color: colors.textMuted },
-
-  // 입력 바
-  inputBar: {
-    borderTopWidth: 1, borderTopColor: colors.border,
-    backgroundColor: colors.bg,
-    paddingTop: spacing.sp2,
-    paddingHorizontal: spacing.sp3,
-  },
-  replyIndicator: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: colors.surface2,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sp3,
-    paddingVertical: spacing.sp2,
-    marginBottom: spacing.sp2,
-  },
-  replyIndicatorText: { flex: 1, fontSize: fontSize.xs, color: colors.textMuted },
-  inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.sp2 },
-  input: {
-    flex: 1,
-    minHeight: 22,
-    maxHeight: 80,
-    fontSize: fontSize.base,
-    color: colors.text,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-  },
-  inputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    backgroundColor: colors.surface2,
-    borderRadius: radius.xl,
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp2,
-    minHeight: 38,
-  },
-  photoBtn: {
-    paddingLeft: spacing.sp2,
-    paddingBottom: 2,
-  },
-  sendBtn: {
-    width: 38, height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.accent,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  sendBtnDisabled: { backgroundColor: colors.border },
-})
-
-const commentStyles = StyleSheet.create({
-  // 부모+대댓글 전체를 감싸는 그룹 - 구분선은 여기에
-  commentGroup: {},
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingHorizontal: spacing.sp4,
-    paddingTop: spacing.sp3,
-    paddingBottom: spacing.sp3,
-  },
-  replyRow: {},
-  avatarCol: {
-    width: 36,
-    alignItems: 'center',
-    marginRight: spacing.sp3,
-  },
-  avatar: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: colors.accentMuted,
-    alignItems: 'center', justifyContent: 'center',
-    overflow: 'hidden',
-    flexShrink: 0,
-  },
-  avatarText: { fontSize: fontSize.sm, fontWeight: '700', color: colors.accent },
-  // 부모 아바타 → 첫 답글 아바타 중심을 잇는 선 (absolute 배치로 사용)
-  connector: {
-    width: 2,
-    backgroundColor: colors.border,
-    borderRadius: 1,
-  },
-  content: { flex: 1, gap: 4 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp2, flexWrap: 'wrap' },
-  author: { fontSize: fontSize.sm, fontWeight: '700', color: colors.text },
-  time: { fontSize: fontSize.xs, color: colors.textMuted },
-  body: { fontSize: fontSize.base, color: colors.text, lineHeight: fontSize.base * 1.5 },
-  deletedText: { fontSize: fontSize.sm, color: colors.textMuted, fontStyle: 'italic' },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: spacing.sp4, marginTop: 2 },
-  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  actionCount: { fontSize: fontSize.xs, color: colors.textMuted },
-  actionCountActive: { color: colors.error },
-  replyBtn: { fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '600' },
-  moreDots: { paddingTop: 2, paddingLeft: spacing.sp1 },
-})
-
-const sliderStyles = StyleSheet.create({
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sp1, paddingTop: spacing.sp2 },
-  dot: { width: 6, height: 6, borderRadius: radius.full, backgroundColor: colors.border },
-  dotActive: { backgroundColor: colors.accent },
-})

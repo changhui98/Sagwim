@@ -1,6 +1,7 @@
 package com.peopleground.sagwim.group.infrastructure.repository;
 
 import com.peopleground.sagwim.group.domain.entity.GroupMember;
+import com.peopleground.sagwim.group.domain.entity.GroupMemberRole;
 import com.peopleground.sagwim.group.domain.repository.GroupMemberRepository;
 import java.util.List;
 import java.util.Optional;
@@ -48,5 +49,11 @@ public class GroupMemberRepositoryImpl implements GroupMemberRepository {
     @Override
     public void deleteAllByGroupId(Long groupId) {
         groupMemberJpaRepository.deleteAllByGroupId(groupId);
+    }
+
+    @Override
+    public List<GroupMember> findManagersByGroupId(Long groupId) {
+        return groupMemberJpaRepository.findByGroupIdAndRoleIn(
+            groupId, List.of(GroupMemberRole.LEADER, GroupMemberRole.SUB_LEADER));
     }
 }

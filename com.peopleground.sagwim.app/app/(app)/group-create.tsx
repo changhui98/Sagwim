@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
   Alert,
   Image,
@@ -23,7 +23,8 @@ import {
   type GroupJoinType,
   type GroupMeetingType,
 } from '../../src/types/group'
-import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 
 const CATEGORIES = Object.keys(GROUP_CATEGORY_LABELS) as GroupCategory[]
 
@@ -45,6 +46,7 @@ const SUBCATEGORIES: Record<GroupCategory, string[]> = {
 
 export default function GroupCreateScreen() {
   const insets = useSafeAreaInsets()
+  const { colors } = useTheme()
 
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [name, setName] = useState('')
@@ -123,6 +125,264 @@ export default function GroupCreateScreen() {
       setSubmitting(false)
     }
   }
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.bg,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerBack: {
+      width: 40,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerTitle: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: fontSize.lg,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    stepDots: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sp2,
+    },
+    stepDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: colors.border,
+    },
+    stepDotActive: {
+      backgroundColor: colors.accent,
+    },
+    stepCount: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+      width: 40,
+      textAlign: 'right',
+    },
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: spacing.sp4,
+      gap: spacing.sp2,
+    },
+    fieldBlock: {
+      marginBottom: spacing.sp5,
+      gap: spacing.sp2,
+    },
+    fieldLabel: {
+      fontSize: fontSize.lg,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    required: {
+      color: colors.accent,
+    },
+    fieldHint: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+    },
+    charCount: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+      textAlign: 'right',
+    },
+    textInput: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp3,
+      fontSize: fontSize.md,
+      color: colors.text,
+      backgroundColor: colors.surface2,
+    },
+    textInputMultiline: {
+      minHeight: 100,
+      paddingTop: spacing.sp3,
+    },
+    textInputShort: {
+      width: 100,
+    },
+    imagePicker: {
+      aspectRatio: 16 / 9,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      backgroundColor: colors.surface2,
+      overflow: 'hidden',
+    },
+    imagePickerPlaceholder: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sp2,
+    },
+    imagePickerText: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+    },
+    imagePreview: {
+      width: '100%',
+      height: '100%',
+    },
+    imageRemove: {
+      position: 'absolute',
+      top: spacing.sp2,
+      right: spacing.sp2,
+    },
+    categoryGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sp2,
+    },
+    categoryBtn: {
+      width: '47%',
+      paddingVertical: spacing.sp3,
+      paddingHorizontal: spacing.sp2,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      backgroundColor: colors.surface2,
+      alignItems: 'center',
+    },
+    categoryBtnSelected: {
+      borderColor: colors.accent,
+      backgroundColor: colors.accentMuted,
+    },
+    categoryBtnText: {
+      fontSize: fontSize.base,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    categoryBtnTextSelected: {
+      color: colors.accent,
+      fontWeight: '700',
+    },
+    chipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sp2,
+    },
+    chip: {
+      paddingVertical: spacing.sp2,
+      paddingHorizontal: spacing.sp3,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.full,
+      backgroundColor: colors.surface2,
+    },
+    chipSelected: {
+      borderColor: colors.accent,
+      backgroundColor: colors.accentMuted,
+    },
+    chipText: {
+      fontSize: fontSize.base,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    chipTextSelected: {
+      color: colors.accent,
+      fontWeight: '700',
+    },
+    toggleRow: {
+      flexDirection: 'row',
+      gap: spacing.sp3,
+    },
+    toggleBtn: {
+      flex: 1,
+      paddingVertical: spacing.sp3,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      backgroundColor: colors.surface2,
+      alignItems: 'center',
+    },
+    toggleBtnSelected: {
+      borderColor: colors.accent,
+      backgroundColor: colors.accentMuted,
+    },
+    toggleBtnText: {
+      fontSize: fontSize.md,
+      color: colors.textSecondary,
+      fontWeight: '500',
+    },
+    toggleBtnTextSelected: {
+      color: colors.accent,
+      fontWeight: '700',
+    },
+    bottomBar: {
+      paddingHorizontal: spacing.sp4,
+      paddingTop: spacing.sp3,
+      backgroundColor: colors.bg,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    submitBtn: {
+      backgroundColor: colors.accent,
+      borderRadius: radius.lg,
+      paddingVertical: spacing.sp4,
+      alignItems: 'center',
+    },
+    submitBtnPressed: {
+      backgroundColor: colors.accentHover,
+    },
+    submitBtnDisabled: {
+      opacity: 0.6,
+    },
+    submitBtnText: {
+      fontSize: fontSize.md,
+      fontWeight: '700',
+      color: '#fff',
+    },
+    joinQuestionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp2,
+    },
+    joinQuestionNum: {
+      fontSize: fontSize.md,
+      color: colors.textSecondary,
+      fontWeight: '600',
+      minWidth: 20,
+    },
+    joinQuestionInput: {
+      flex: 1,
+    },
+    joinQuestionDelete: {
+      width: 32,
+      height: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    joinQuestionAddBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp1,
+      paddingVertical: spacing.sp2,
+      alignSelf: 'flex-start',
+    },
+    joinQuestionAddText: {
+      fontSize: fontSize.base,
+      color: colors.accent,
+      fontWeight: '600',
+    },
+  }), [colors])
 
   return (
     <>
@@ -500,260 +760,3 @@ export default function GroupCreateScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerBack: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  stepDots: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sp2,
-  },
-  stepDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.border,
-  },
-  stepDotActive: {
-    backgroundColor: colors.accent,
-  },
-  stepCount: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    width: 40,
-    textAlign: 'right',
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: spacing.sp4,
-    gap: spacing.sp2,
-  },
-  fieldBlock: {
-    marginBottom: spacing.sp5,
-    gap: spacing.sp2,
-  },
-  fieldLabel: {
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  required: {
-    color: colors.accent,
-  },
-  fieldHint: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  charCount: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'right',
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.sp3,
-    paddingVertical: spacing.sp3,
-    fontSize: fontSize.md,
-    color: colors.text,
-    backgroundColor: colors.surface2,
-  },
-  textInputMultiline: {
-    minHeight: 100,
-    paddingTop: spacing.sp3,
-  },
-  textInputShort: {
-    width: 100,
-  },
-  imagePicker: {
-    aspectRatio: 16 / 9,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface2,
-    overflow: 'hidden',
-  },
-  imagePickerPlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sp2,
-  },
-  imagePickerText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  imagePreview: {
-    width: '100%',
-    height: '100%',
-  },
-  imageRemove: {
-    position: 'absolute',
-    top: spacing.sp2,
-    right: spacing.sp2,
-  },
-  categoryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sp2,
-  },
-  categoryBtn: {
-    width: '47%',
-    paddingVertical: spacing.sp3,
-    paddingHorizontal: spacing.sp2,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface2,
-    alignItems: 'center',
-  },
-  categoryBtnSelected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentMuted,
-  },
-  categoryBtnText: {
-    fontSize: fontSize.base,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  categoryBtnTextSelected: {
-    color: colors.accent,
-    fontWeight: '700',
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sp2,
-  },
-  chip: {
-    paddingVertical: spacing.sp2,
-    paddingHorizontal: spacing.sp3,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.full,
-    backgroundColor: colors.surface2,
-  },
-  chipSelected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentMuted,
-  },
-  chipText: {
-    fontSize: fontSize.base,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  chipTextSelected: {
-    color: colors.accent,
-    fontWeight: '700',
-  },
-  toggleRow: {
-    flexDirection: 'row',
-    gap: spacing.sp3,
-  },
-  toggleBtn: {
-    flex: 1,
-    paddingVertical: spacing.sp3,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface2,
-    alignItems: 'center',
-  },
-  toggleBtnSelected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentMuted,
-  },
-  toggleBtnText: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  toggleBtnTextSelected: {
-    color: colors.accent,
-    fontWeight: '700',
-  },
-  bottomBar: {
-    paddingHorizontal: spacing.sp4,
-    paddingTop: spacing.sp3,
-    backgroundColor: colors.bg,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  submitBtn: {
-    backgroundColor: colors.accent,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.sp4,
-    alignItems: 'center',
-  },
-  submitBtnPressed: {
-    backgroundColor: colors.accentHover,
-  },
-  submitBtnDisabled: {
-    opacity: 0.6,
-  },
-  submitBtnText: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  joinQuestionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp2,
-  },
-  joinQuestionNum: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    fontWeight: '600',
-    minWidth: 20,
-  },
-  joinQuestionInput: {
-    flex: 1,
-  },
-  joinQuestionDelete: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  joinQuestionAddBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp1,
-    paddingVertical: spacing.sp2,
-    alignSelf: 'flex-start',
-  },
-  joinQuestionAddText: {
-    fontSize: fontSize.base,
-    color: colors.accent,
-    fontWeight: '600',
-  },
-})

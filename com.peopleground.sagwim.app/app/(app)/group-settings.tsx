@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -24,7 +24,9 @@ import {
   updateGroup,
   updateGroupJoinQuestions,
 } from '../../src/api/groupApi'
-import { colors, fontSize, radius, spacing } from '../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../src/constants/theme'
+import type { AppColors } from '../../src/constants/theme'
+import { useTheme } from '../../src/context/ThemeContext'
 import type { GroupDetailResponse, GroupJoinRequestResponse } from '../../src/types/group'
 
 type SubView = 'menu' | 'name' | 'description' | 'memberCount' | 'joinRequests' | 'joinType'
@@ -32,6 +34,7 @@ type SubView = 'menu' | 'name' | 'description' | 'memberCount' | 'joinRequests' 
 export default function GroupSettingsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const insets = useSafeAreaInsets()
+  const { colors } = useTheme()
   const [deleting, setDeleting] = useState(false)
   const [group, setGroup] = useState<GroupDetailResponse | null>(null)
   const [view, setView] = useState<SubView>('menu')
@@ -75,6 +78,86 @@ export default function GroupSettingsScreen() {
       ],
     )
   }
+
+  const styles = useMemo(() => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerBack: {
+      width: 40,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerTitle: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: fontSize.lg,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    scroll: { flex: 1 },
+    section: {
+      marginTop: spacing.sp5,
+      paddingHorizontal: spacing.sp4,
+    },
+    sectionTitle: {
+      fontSize: fontSize.sm,
+      fontWeight: '600',
+      color: colors.textMuted,
+      marginBottom: spacing.sp2,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    menuList: {
+      backgroundColor: colors.surface2,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      overflow: 'hidden',
+    },
+    menuItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.sp4,
+      paddingVertical: spacing.sp4,
+    },
+    menuItemPressed: { backgroundColor: colors.surface3 },
+    menuItemLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp3,
+      flex: 1,
+    },
+    menuItemRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp2,
+      flexShrink: 0,
+    },
+    menuItemText: {
+      fontSize: fontSize.md,
+      color: colors.text,
+      fontWeight: '500',
+    },
+    menuItemValue: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+    },
+    menuItemDanger: { color: colors.error },
+    menuDivider: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: spacing.sp4,
+    },
+  }), [colors])
 
   // 서브뷰 렌더링
   if (view === 'name' && group) {
@@ -331,6 +414,7 @@ function NameSubView({
   groupId: number
   onBack: (updatedName?: string) => void
 }) {
+  const { colors } = useTheme()
   const [name, setName] = useState(group.name)
   const [saving, setSaving] = useState(false)
   const original = useRef(group.name)
@@ -361,6 +445,8 @@ function NameSubView({
   }
 
   const isDirty = name.trim() !== original.current && name.trim() !== ''
+
+  const subStyles = useMemo(() => buildSubStyles(colors), [colors])
 
   return (
     <>
@@ -421,6 +507,7 @@ function DescriptionSubView({
   groupId: number
   onBack: (updatedDescription?: string | null) => void
 }) {
+  const { colors } = useTheme()
   const [description, setDescription] = useState(group.description ?? '')
   const [saving, setSaving] = useState(false)
   const original = useRef(group.description ?? '')
@@ -451,6 +538,8 @@ function DescriptionSubView({
   }
 
   const isDirty = description.trim() !== original.current
+
+  const subStyles = useMemo(() => buildSubStyles(colors), [colors])
 
   return (
     <>
@@ -513,6 +602,7 @@ function MemberCountSubView({
   groupId: number
   onBack: (updatedCount?: number) => void
 }) {
+  const { colors } = useTheme()
   const [count, setCount] = useState(String(group.maxMemberCount))
   const [saving, setSaving] = useState(false)
   const original = useRef(group.maxMemberCount)
@@ -544,6 +634,8 @@ function MemberCountSubView({
       setSaving(false)
     }
   }
+
+  const subStyles = useMemo(() => buildSubStyles(colors), [colors])
 
   return (
     <>
@@ -604,6 +696,7 @@ function JoinRequestsSubView({
   groupId: number
   onBack: () => void
 }) {
+  const { colors } = useTheme()
   const [requests, setRequests] = useState<GroupJoinRequestResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set())
@@ -651,6 +744,9 @@ function JoinRequestsSubView({
       })
     }
   }
+
+  const subStyles = useMemo(() => buildSubStyles(colors), [colors])
+  const requestStyles = useMemo(() => buildRequestStyles(colors), [colors])
 
   return (
     <>
@@ -754,6 +850,7 @@ function JoinTypeSubView({
   groupId: number
   onBack: (updatedJoinType?: string, updatedQuestions?: string[]) => void
 }) {
+  const { colors } = useTheme()
   const [joinType, setJoinType] = useState<'OPEN' | 'APPROVAL_REQUIRED'>(group.joinType)
   const [questions, setQuestions] = useState<string[]>([])
   const [loadingQuestions, setLoadingQuestions] = useState(false)
@@ -827,6 +924,9 @@ function JoinTypeSubView({
       setSaving(false)
     }
   }
+
+  const subStyles = useMemo(() => buildSubStyles(colors), [colors])
+  const joinTypeStyles = useMemo(() => buildJoinTypeStyles(colors), [colors])
 
   return (
     <>
@@ -967,358 +1067,229 @@ function JoinTypeSubView({
   )
 }
 
-// ─────────────────────────────────────────────
-// 메인 메뉴 스타일
-// ─────────────────────────────────────────────
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerBack: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  scroll: {
-    flex: 1,
-  },
-  section: {
-    marginTop: spacing.sp5,
-    paddingHorizontal: spacing.sp4,
-  },
-  sectionTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.textMuted,
-    marginBottom: spacing.sp2,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  menuList: {
-    backgroundColor: colors.surface2,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    overflow: 'hidden',
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.sp4,
-    paddingVertical: spacing.sp4,
-  },
-  menuItemPressed: {
-    backgroundColor: colors.surface3,
-  },
-  menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp3,
-    flex: 1,
-  },
-  menuItemRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp2,
-    flexShrink: 0,
-  },
-  menuItemText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: '500',
-  },
-  menuItemValue: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  menuItemDanger: {
-    color: colors.error,
-  },
-  menuDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: spacing.sp4,
-  },
-})
 
 // ─────────────────────────────────────────────
-// 공통 서브뷰 스타일
+// 공통 서브뷰 스타일 빌더
 // ─────────────────────────────────────────────
-const subStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.sp2,
-    paddingVertical: spacing.sp3,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerBtn: {
-    width: 64,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: fontSize.lg,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  headerBtnTextAccent: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.accent,
-  },
-  body: {
-    padding: spacing.sp4,
-  },
-  bodyPadding: {
-    padding: spacing.sp4,
-  },
-  scroll: {
-    flex: 1,
-  },
-  input: {
-    backgroundColor: colors.surface2,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sp3,
-    paddingVertical: spacing.sp3,
-    fontSize: fontSize.md,
-    color: colors.text,
-  },
-  inputMultiline: {
-    minHeight: 160,
-    paddingTop: spacing.sp3,
-  },
-  inputError: {
-    borderColor: colors.error,
-  },
-  charCount: {
-    marginTop: spacing.sp2,
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    textAlign: 'right',
-  },
-  errorText: {
-    marginTop: spacing.sp2,
-    fontSize: fontSize.sm,
-    color: colors.error,
-  },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyText: {
-    fontSize: fontSize.md,
-    color: colors.textMuted,
-  },
-})
+function buildSubStyles(colors: AppColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.bg },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.sp2,
+      paddingVertical: spacing.sp3,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    headerBtn: {
+      width: 64,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerTitle: {
+      flex: 1,
+      textAlign: 'center',
+      fontSize: fontSize.lg,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    headerBtnTextAccent: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.accent,
+    },
+    body: { padding: spacing.sp4 },
+    bodyPadding: { padding: spacing.sp4 },
+    scroll: { flex: 1 },
+    input: {
+      backgroundColor: colors.surface2,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.sm,
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp3,
+      fontSize: fontSize.md,
+      color: colors.text,
+    },
+    inputMultiline: {
+      minHeight: 160,
+      paddingTop: spacing.sp3,
+    },
+    inputError: { borderColor: colors.error },
+    charCount: {
+      marginTop: spacing.sp2,
+      fontSize: fontSize.xs,
+      color: colors.textMuted,
+      textAlign: 'right',
+    },
+    errorText: {
+      marginTop: spacing.sp2,
+      fontSize: fontSize.sm,
+      color: colors.error,
+    },
+    centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    emptyText: { fontSize: fontSize.md, color: colors.textMuted },
+  })
+}
 
 // ─────────────────────────────────────────────
-// 가입 신청 목록 스타일
+// 가입 신청 목록 스타일 빌더
 // ─────────────────────────────────────────────
-const requestStyles = StyleSheet.create({
-  card: {
-    marginHorizontal: spacing.sp4,
-    marginTop: spacing.sp3,
-    backgroundColor: colors.surface2,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.sp4,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  info: {
-    flex: 1,
-    gap: spacing.sp1,
-  },
-  nickname: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  date: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.sp2,
-    marginLeft: spacing.sp3,
-  },
-  btn: {
-    paddingHorizontal: spacing.sp3,
-    paddingVertical: spacing.sp2,
-    borderRadius: radius.sm,
-    minWidth: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  approveBtn: {
-    backgroundColor: colors.accent,
-  },
-  rejectBtn: {
-    backgroundColor: colors.surface3,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  btnPressed: {
-    opacity: 0.75,
-  },
-  btnDisabled: {
-    opacity: 0.5,
-  },
-  approveBtnText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.bg,
-  },
-  rejectBtnText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  answer: {
-    marginTop: spacing.sp3,
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-})
+function buildRequestStyles(colors: AppColors) {
+  return StyleSheet.create({
+    card: {
+      marginHorizontal: spacing.sp4,
+      marginTop: spacing.sp3,
+      backgroundColor: colors.surface2,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      padding: spacing.sp4,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    info: { flex: 1, gap: spacing.sp1 },
+    nickname: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    date: { fontSize: fontSize.sm, color: colors.textMuted },
+    actions: {
+      flexDirection: 'row',
+      gap: spacing.sp2,
+      marginLeft: spacing.sp3,
+    },
+    btn: {
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp2,
+      borderRadius: radius.sm,
+      minWidth: 56,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    approveBtn: { backgroundColor: colors.accent },
+    rejectBtn: {
+      backgroundColor: colors.surface3,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    btnPressed: { opacity: 0.75 },
+    btnDisabled: { opacity: 0.5 },
+    approveBtnText: {
+      fontSize: fontSize.sm,
+      fontWeight: '600',
+      color: colors.bg,
+    },
+    rejectBtnText: {
+      fontSize: fontSize.sm,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    answer: {
+      marginTop: spacing.sp3,
+      fontSize: fontSize.sm,
+      color: colors.textSecondary,
+      lineHeight: 20,
+    },
+  })
+}
 
 // ─────────────────────────────────────────────
-// 가입 방식 스타일
+// 가입 방식 스타일 빌더
 // ─────────────────────────────────────────────
-const joinTypeStyles = StyleSheet.create({
-  radioGroup: {
-    gap: spacing.sp3,
-  },
-  radioItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: spacing.sp4,
-    backgroundColor: colors.surface2,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.sp3,
-  },
-  radioItemSelected: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accentMuted,
-  },
-  radioItemPressed: {
-    opacity: 0.75,
-  },
-  radioCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: colors.textMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  radioFill: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.accent,
-  },
-  radioContent: {
-    flex: 1,
-    gap: spacing.sp1,
-  },
-  radioLabel: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  radioDesc: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    lineHeight: 18,
-  },
-  questionsSection: {
-    marginTop: spacing.sp5,
-  },
-  questionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.sp3,
-  },
-  questionTitle: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  questionCount: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  questionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp2,
-    marginBottom: spacing.sp2,
-  },
-  questionInput: {
-    flex: 1,
-    backgroundColor: colors.surface2,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sp3,
-    paddingVertical: spacing.sp3,
-    fontSize: fontSize.base,
-    color: colors.text,
-  },
-  removeBtn: {
-    padding: spacing.sp1,
-  },
-  addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sp2,
-    paddingVertical: spacing.sp3,
-    marginTop: spacing.sp1,
-  },
-  addBtnText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.accent,
-  },
-})
+function buildJoinTypeStyles(colors: AppColors) {
+  return StyleSheet.create({
+    radioGroup: { gap: spacing.sp3 },
+    radioItem: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      padding: spacing.sp4,
+      backgroundColor: colors.surface2,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      gap: spacing.sp3,
+    },
+    radioItemSelected: {
+      borderColor: colors.accent,
+      backgroundColor: colors.accentMuted,
+    },
+    radioItemPressed: { opacity: 0.75 },
+    radioCircle: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: colors.textMuted,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 2,
+    },
+    radioFill: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: colors.accent,
+    },
+    radioContent: { flex: 1, gap: spacing.sp1 },
+    radioLabel: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    radioDesc: {
+      fontSize: fontSize.sm,
+      color: colors.textSecondary,
+      lineHeight: 18,
+    },
+    questionsSection: { marginTop: spacing.sp5 },
+    questionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: spacing.sp3,
+    },
+    questionTitle: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    questionCount: { fontSize: fontSize.sm, color: colors.textMuted },
+    questionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp2,
+      marginBottom: spacing.sp2,
+    },
+    questionInput: {
+      flex: 1,
+      backgroundColor: colors.surface2,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.sm,
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp3,
+      fontSize: fontSize.base,
+      color: colors.text,
+    },
+    removeBtn: { padding: spacing.sp1 },
+    addBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sp2,
+      paddingVertical: spacing.sp3,
+      marginTop: spacing.sp1,
+    },
+    addBtnText: {
+      fontSize: fontSize.sm,
+      fontWeight: '600',
+      color: colors.accent,
+    },
+  })
+}

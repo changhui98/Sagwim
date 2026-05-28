@@ -25,6 +25,9 @@ export function GroupMemberList({ members, isLeader, actionLoading, onKick }: Gr
             {member.role === 'LEADER' && (
               <span className={styles.leaderBadge}>모임장</span>
             )}
+            {member.role === 'SUB_LEADER' && (
+              <span className={styles.subLeaderBadge}>부관리자</span>
+            )}
             {isLeader && member.role !== 'LEADER' && (
               <button
                 type="button"

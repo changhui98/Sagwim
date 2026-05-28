@@ -10,7 +10,8 @@
 import React, { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { RULES } from '../utils/passwordRules'
-import { colors, spacing, fontSize } from '../constants/theme'
+import { spacing, fontSize } from '../constants/theme'
+import { useTheme } from '../context/ThemeContext'
 
 interface Props {
   password: string
@@ -18,6 +19,7 @@ interface Props {
 }
 
 function PasswordChecklistComponent({ password, confirmPassword }: Props) {
+  const { colors } = useTheme()
   const showConfirmRule = confirmPassword !== undefined && confirmPassword.length > 0
   const confirmMet = showConfirmRule && password === confirmPassword
 
@@ -26,6 +28,28 @@ function PasswordChecklistComponent({ password, confirmPassword }: Props) {
     () => RULES.map(({ label, test }) => ({ label, met: test(password) })),
     [password],
   )
+
+  const styles = useMemo(() => StyleSheet.create({
+    root: { marginBottom: spacing.sp4, paddingHorizontal: spacing.sp1 },
+    ruleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      minHeight: 22,
+      marginBottom: spacing.sp1,
+    },
+    icon: {
+      width: 16,
+      fontSize: fontSize.sm,
+      fontWeight: '700',
+      marginRight: spacing.sp2,
+      textAlign: 'center',
+    },
+    iconMet: { color: colors.success },
+    iconUnmet: { color: colors.textMuted },
+    ruleText: { fontSize: fontSize.sm },
+    textMet: { color: colors.success },
+    textUnmet: { color: colors.textMuted },
+  }), [colors])
 
   return (
     <View style={styles.root}>
@@ -56,38 +80,3 @@ function PasswordChecklistComponent({ password, confirmPassword }: Props) {
 
 export const PasswordChecklist = React.memo(PasswordChecklistComponent)
 
-const styles = StyleSheet.create({
-  root: {
-    marginBottom: spacing.sp4,
-    paddingHorizontal: spacing.sp1,
-  },
-  ruleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    // minHeight 고정: ✓/· 전환 시 줄 높이 변화로 인한 레이아웃 재계산 방지
-    minHeight: 22,
-    marginBottom: spacing.sp1,
-  },
-  icon: {
-    width: 16,
-    fontSize: fontSize.sm,
-    fontWeight: '700',
-    marginRight: spacing.sp2,
-    textAlign: 'center',
-  },
-  iconMet: {
-    color: colors.success,
-  },
-  iconUnmet: {
-    color: colors.textMuted,
-  },
-  ruleText: {
-    fontSize: fontSize.sm,
-  },
-  textMet: {
-    color: colors.success,
-  },
-  textUnmet: {
-    color: colors.textMuted,
-  },
-})

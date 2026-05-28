@@ -10,6 +10,8 @@ import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.group.domain.GroupErrorCode;
 import com.peopleground.sagwim.group.domain.entity.Group;
+import com.peopleground.sagwim.group.domain.entity.GroupMember;
+import com.peopleground.sagwim.group.domain.repository.GroupMemberRepository;
 import com.peopleground.sagwim.group.domain.repository.GroupRepository;
 import com.peopleground.sagwim.image.application.ImageUrlResolver;
 import com.peopleground.sagwim.like.domain.entity.ContentLike;
@@ -42,6 +44,7 @@ public class LikeService {
     private final ContentRepository contentRepository;
     private final CommentRepository commentRepository;
     private final GroupRepository groupRepository;
+    private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
     private final ImageUrlResolver imageUrlResolver;
     private final NotificationService notificationService;
@@ -194,6 +197,19 @@ public class LikeService {
         int inserted = groupLikeRepository.insertIfNotExists(group.getId(), user.getId());
         if (inserted == 1) {
             groupRepository.incrementLikeCount(groupId);
+            // 관리자(LEADER/SUB_LEADER)에게 알림 발송. 좋아요를 누른 본인은 제외한다.
+            List<GroupMember> managers = groupMemberRepository.findManagersByGroupId(groupId);
+            for (GroupMember manager : managers) {
+                if (!manager.getUser().getId().equals(user.getId())) {
+                    notificationService.notify(
+                        manager.getUser(),
+                        NotificationType.MEETING_LIKED,
+                        user,
+                        group.getId(),
+                        group.getName()
+                    );
+                }
+            }
         }
         return LikeToggleResponse.liked(currentGroupLikeCount(groupId));
     }

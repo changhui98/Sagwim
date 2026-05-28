@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Tabs, router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { colors, fontSize, radius, spacing } from '../../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../../src/constants/theme'
+import { useTheme } from '../../../src/context/ThemeContext'
+import { useNotificationCount } from '../../../src/context/NotificationCountContext'
 
 const ICON_SIZE = 24
 const TAB_CONTENT_HEIGHT = 44
@@ -17,6 +19,81 @@ function CreateBottomSheet({
   onClose: () => void
   bottomInset: number
 }) {
+  const { colors } = useTheme()
+
+  const sheet = useMemo(() => StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'flex-end',
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: radius.xl,
+      borderTopRightRadius: radius.xl,
+      paddingTop: spacing.sp3,
+      paddingHorizontal: spacing.sp4,
+    },
+    handle: {
+      width: 40,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: colors.border,
+      alignSelf: 'center',
+      marginBottom: spacing.sp4,
+    },
+    item: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.sp4,
+      gap: spacing.sp3,
+      borderRadius: radius.md,
+    },
+    itemPressed: {
+      backgroundColor: colors.surface3,
+    },
+    iconWrap: {
+      width: 48,
+      height: 48,
+      borderRadius: radius.md,
+      backgroundColor: colors.accentMuted,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    textWrap: {
+      flex: 1,
+      gap: 2,
+    },
+    itemTitle: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    itemSubtitle: {
+      fontSize: fontSize.sm,
+      color: colors.textMuted,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginHorizontal: spacing.sp2,
+    },
+    cancelBtn: {
+      marginTop: spacing.sp3,
+      paddingVertical: spacing.sp4,
+      alignItems: 'center',
+      borderRadius: radius.md,
+    },
+    cancelBtnPressed: {
+      backgroundColor: colors.surface3,
+    },
+    cancelText: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+  }), [colors])
+
   const handleSelect = (path: '/(app)/post-create' | '/(app)/group-create') => {
     onClose()
     setTimeout(() => router.push(path), 50)
@@ -81,81 +158,49 @@ function CreateBottomSheet({
   )
 }
 
-const sheet = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'flex-end',
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    paddingTop: spacing.sp3,
-    paddingHorizontal: spacing.sp4,
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.border,
-    alignSelf: 'center',
-    marginBottom: spacing.sp4,
-  },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sp4,
-    gap: spacing.sp3,
-    borderRadius: radius.md,
-  },
-  itemPressed: {
-    backgroundColor: colors.surface3,
-  },
-  iconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.md,
-    backgroundColor: colors.accentMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  textWrap: {
-    flex: 1,
-    gap: 2,
-  },
-  itemTitle: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  itemSubtitle: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: spacing.sp2,
-  },
-  cancelBtn: {
-    marginTop: spacing.sp3,
-    paddingVertical: spacing.sp4,
-    alignItems: 'center',
-    borderRadius: radius.md,
-  },
-  cancelBtnPressed: {
-    backgroundColor: colors.surface3,
-  },
-  cancelText: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-})
+function NotificationBell() {
+  const { colors } = useTheme()
+  const { unreadCount } = useNotificationCount()
+
+  const badgeStyles = useMemo(() => StyleSheet.create({
+    wrap: { position: 'relative' },
+    badge: {
+      position: 'absolute',
+      top: -4,
+      right: -6,
+      minWidth: 16,
+      height: 16,
+      borderRadius: radius.full,
+      backgroundColor: colors.error,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 3,
+    },
+    badgeText: {
+      fontSize: 9,
+      fontWeight: '700',
+      color: '#ffffff',
+      lineHeight: 11,
+    },
+  }), [colors])
+
+  return (
+    <View style={badgeStyles.wrap}>
+      <Ionicons name="heart-outline" size={ICON_SIZE} color={colors.text} />
+      {unreadCount > 0 && (
+        <View style={badgeStyles.badge}>
+          <Text style={badgeStyles.badgeText}>
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </Text>
+        </View>
+      )}
+    </View>
+  )
+}
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets()
+  const { colors } = useTheme()
   const tabBarHeight = TAB_CONTENT_HEIGHT + insets.bottom
   const [createVisible, setCreateVisible] = useState(false)
 
@@ -189,12 +234,12 @@ export default function TabsLayout() {
         ),
         headerRight: () => (
           <Pressable
-            onPress={() => console.log('[Header] notifications — pending')}
+            onPress={() => router.push('/(app)/notifications')}
             style={{ paddingRight: 16, paddingVertical: 8 }}
             accessibilityLabel="알림"
             accessibilityRole="button"
           >
-            <Ionicons name="heart-outline" size={ICON_SIZE} color={colors.text} />
+            <NotificationBell />
           </Pressable>
         ),
 
