@@ -511,6 +511,16 @@
   flex-shrink: 0;
 }
 
+.subLeaderBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.12);
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-full);
+  flex-shrink: 0;
+}
+
 .editButton {
   font-size: 0.875rem;
   font-weight: 600;

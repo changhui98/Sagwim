@@ -30,6 +30,10 @@ function buildNotificationMessage(notification: NotificationResponse): ReactNode
           <strong>{notification.targetTitle ?? '모임'}</strong> 모임에 새 일정이 등록됐습니다.
         </>
       )
+    case 'MEETING_LIKED':
+      return <>{actor}님이 <strong>{notification.targetTitle ?? '모임'}</strong>을 좋아합니다.</>
+    case 'MEETING_JOIN_REQUESTED':
+      return <>{actor}님이 <strong>{notification.targetTitle ?? '모임'}</strong>에 가입을 신청했습니다.</>
     default:
       return null
   }
@@ -47,6 +51,8 @@ function resolveNotificationLink(notification: NotificationResponse): string | n
       return `/app/posts/${notification.targetId}`
     case 'MEETING_MEMBER_JOINED':
     case 'MEETING_SCHEDULE_ADDED':
+    case 'MEETING_LIKED':
+    case 'MEETING_JOIN_REQUESTED':
       return `/app/groups/${notification.targetId}`
     default:
       return null
