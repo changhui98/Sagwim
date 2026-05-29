@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { createGroup, uploadGroupImage } from '../../src/api/groupApi'
+import { markGroupsDirty } from '../../src/lib/listRefresh'
 import {
   GROUP_CATEGORY_LABELS,
   GROUP_MEETING_TYPE_LABELS,
@@ -114,6 +115,7 @@ export default function GroupCreateScreen() {
           console.error('[GroupCreate] 이미지 업로드 실패:', e)
         }
       }
+      markGroupsDirty()
       router.replace({
         pathname: '/(app)/group-detail',
         params: { id: String(created.id) },

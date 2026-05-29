@@ -8,7 +8,9 @@ import {
   Text,
   View,
 } from 'react-native'
+import { useFocusEffect } from 'expo-router'
 import { getPosts } from '../../../src/api/postApi'
+import { consumePostsDirty } from '../../../src/lib/listRefresh'
 import type { ContentResponse } from '../../../src/types/post'
 import { PostCard } from '../../../src/components/PostCard'
 import { fontSize, radius, spacing } from '../../../src/constants/theme'
@@ -54,6 +56,16 @@ export default function PostsScreen() {
   useEffect(() => {
     void loadInitial()
   }, [])
+
+  // 게시글 작성 후 이 탭으로 돌아오면 dirty 플래그를 소비해 조용히 재조회한다.
+  useFocusEffect(
+    useCallback(() => {
+      if (consumePostsDirty()) {
+        nextPage.current = 0
+        void loadInitial()
+      }
+    }, [loadInitial]),
+  )
 
   const onRefresh = useCallback(() => {
     setRefreshing(true)
