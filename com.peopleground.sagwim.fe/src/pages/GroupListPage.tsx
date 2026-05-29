@@ -183,7 +183,7 @@ export function GroupListPage() {
         loading={neighborhoodLoading}
         error={neighborhoodError}
         onRetry={loadGroups}
-        onViewAll={() => navigate('/app/groups')}
+        onViewAll={() => navigate('/app/groups/all')}
         likedMap={likedMap}
         likeCountMap={likeCountMap}
         onLikeToggle={handleLikeToggle}

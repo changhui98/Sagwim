@@ -33,8 +33,8 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId) {
-        return groupQueryRepository.findAll(page, size, keyword, category, userId);
+    public List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId, Point userLocation, int exposureRangeKm) {
+        return groupQueryRepository.findAll(page, size, keyword, category, userId, userLocation, exposureRangeKm);
     }
 
     @Override
@@ -45,6 +45,11 @@ public class GroupRepositoryImpl implements GroupRepository {
     @Override
     public List<GroupWithLiked> findPopularGroups(int page, int size, UUID userId, Point userLocation, int exposureRangeKm) {
         return groupQueryRepository.findPopularGroups(page, size, userId, userLocation, exposureRangeKm);
+    }
+
+    @Override
+    public List<GroupWithLiked> findDeadlineGroups(int page, int size, UUID userId, Point userLocation, int exposureRangeKm) {
+        return groupQueryRepository.findDeadlineGroups(page, size, userId, userLocation, exposureRangeKm);
     }
 
     @Override

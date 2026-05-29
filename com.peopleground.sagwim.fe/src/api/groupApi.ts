@@ -60,6 +60,20 @@ export const getPopularGroups = (
   }).then((res) => parseResponse<PageResponse<GroupResponse>>(res))
 }
 
+/**
+ * 정원이 거의 다 찬(마감 임박) 모임 목록을 조회합니다.
+ */
+export const getDeadlineGroups = (
+  token: string,
+  page = 0,
+  size = 20,
+): Promise<PageResponse<GroupResponse>> => {
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  return fetch(`${API_BASE_URL}/groups/deadline?${params.toString()}`, {
+    headers: createAuthHeaders(token),
+  }).then((res) => parseResponse<PageResponse<GroupResponse>>(res))
+}
+
 export const getGroup = (
   token: string,
   groupId: number,
