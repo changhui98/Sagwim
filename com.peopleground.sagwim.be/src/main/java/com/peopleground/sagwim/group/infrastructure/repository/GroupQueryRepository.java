@@ -197,7 +197,8 @@ public class GroupQueryRepository {
     }
 
     /**
-     * ONLINE 모임은 항상 통과, OFFLINE 모임은 userLocation 기준 exposureRangeKm 이내 또는 위치 미설정 시 통과.
+     * ONLINE 모임은 항상 통과, OFFLINE 모임은 userLocation 기준 exposureRangeKm 이내인 것만 통과.
+     * location 이 null 인 OFFLINE 모임(지오코딩 실패)은 제외됩니다.
      * userLocation 이 null 이면 필터를 적용하지 않습니다.
      */
     private BooleanExpression locationFilter(QGroup group, Point userLocation, int exposureRangeKm) {
@@ -210,8 +211,7 @@ public class GroupQueryRepository {
             "st_dwithin({0}, {1}, {2})",
             group.location, userLocation, rangeMeters
         );
-        BooleanExpression noLocation = group.location.isNull();
-        return isOnline.or(withinRange).or(noLocation);
+        return isOnline.or(withinRange);
     }
 
     /**
