@@ -32,6 +32,7 @@ import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
 import { useAuth } from '../../src/context/AuthContext'
 import { ActionSheet, type ActionSheetOption } from '../../src/components/common/ActionSheet'
 import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
+import { ReportModal } from '../../src/components/common/ReportModal'
 import { fontSize, radius, spacing } from '../../src/constants/theme'
 import { useTheme } from '../../src/context/ThemeContext'
 
@@ -146,7 +147,7 @@ interface CommentItemProps {
   onReply: (comment: CommentResponse) => void
   onDelete: (commentId: number) => void
   onLikeToggle: (commentId: number, liked: boolean, likeCount: number) => void
-  onReport: (commentId: number, reason: string) => void
+  onReport: (commentId: number) => void
 }
 
 const AVATAR_SIZE = 36
@@ -422,9 +423,7 @@ function CommentItem({
                 },
               ]
             : [
-                { label: '스팸입니다', onPress: () => onReport(comment.id, '스팸입니다') },
-                { label: '부적절한 콘텐츠', onPress: () => onReport(comment.id, '부적절한 콘텐츠') },
-                { label: '허위정보', onPress: () => onReport(comment.id, '허위정보') },
+                { label: '신고하기', variant: 'destructive', onPress: () => onReport(comment.id) },
               ]
         }
         onClose={() => setShowMenu(false)}
@@ -471,6 +470,9 @@ export default function PostDetailScreen() {
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
   const [editBody, setEditBody] = useState('')
   const [editSubmitting, setEditSubmitting] = useState(false)
+
+  // 댓글 신고 모달
+  const [reportCommentId, setReportCommentId] = useState<number | null>(null)
 
   const contentId = Number(id)
 
@@ -584,13 +586,8 @@ export default function PostDetailScreen() {
     }
   }, [post])
 
-  const handleReportComment = useCallback(async (commentId: number, reason: string) => {
-    try {
-      await createReport('COMMENT', commentId, reason)
-      Alert.alert('신고 완료', '신고가 접수되었습니다.')
-    } catch {
-      Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.')
-    }
+  const handleReportComment = useCallback((commentId: number) => {
+    setReportCommentId(commentId)
   }, [])
 
   // 댓글 / 답글 제출
@@ -939,7 +936,7 @@ export default function PostDetailScreen() {
                   onReply={handleReply}
                   onDelete={(cid) => void handleDeleteComment(cid)}
                   onLikeToggle={handleCommentLike}
-                  onReport={(cid, reason) => void handleReportComment(cid, reason)}
+                  onReport={handleReportComment}
                 />
               )
             }
@@ -1081,6 +1078,13 @@ export default function PostDetailScreen() {
           />
         </>
       )}
+
+      <ReportModal
+        isOpen={reportCommentId !== null}
+        targetType="COMMENT"
+        targetId={reportCommentId}
+        onClose={() => setReportCommentId(null)}
+      />
     </>
   )
 }
