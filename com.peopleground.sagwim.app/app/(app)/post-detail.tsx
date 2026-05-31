@@ -473,6 +473,7 @@ export default function PostDetailScreen() {
   // 신고 모달
   const [reportCommentId, setReportCommentId] = useState<number | null>(null)
   const [showPostReport, setShowPostReport] = useState(false)
+  const [showPostAlreadyReported, setShowPostAlreadyReported] = useState(false)
 
   const contentId = Number(id)
 
@@ -1041,7 +1042,14 @@ export default function PostDetailScreen() {
                     },
                   ]
                 : [
-                    { label: '신고하기', variant: 'destructive', onPress: () => setShowPostReport(true) },
+                    {
+                      label: '신고하기',
+                      variant: 'destructive',
+                      onPress: () => {
+                        if (post.reportedByMe) setShowPostAlreadyReported(true)
+                        else setShowPostReport(true)
+                      },
+                    },
                   ]
             }
             onClose={() => setShowPostMenu(false)}
@@ -1079,6 +1087,14 @@ export default function PostDetailScreen() {
         targetType="POST"
         targetId={post?.id ?? null}
         onClose={() => setShowPostReport(false)}
+      />
+
+      <ReportModal
+        isOpen={showPostAlreadyReported}
+        targetType="POST"
+        targetId={post?.id ?? null}
+        onClose={() => setShowPostAlreadyReported(false)}
+        presetAlreadyReported
       />
     </>
   )

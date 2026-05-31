@@ -81,6 +81,7 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
   const [showMenu, setShowMenu] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showReport, setShowReport] = useState(false)
+  const [showAlreadyReported, setShowAlreadyReported] = useState(false)
 
   const handleLike = useCallback(async () => {
     if (isLikeInFlight.current) return
@@ -131,7 +132,14 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
         },
       ]
     : [
-        { label: '신고하기', variant: 'destructive', onPress: () => setShowReport(true) },
+        {
+          label: '신고하기',
+          variant: 'destructive',
+          onPress: () => {
+            if (post.reportedByMe) setShowAlreadyReported(true)
+            else setShowReport(true)
+          },
+        },
       ]
 
   const styles = useMemo(() => StyleSheet.create({
@@ -265,6 +273,14 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
       targetType="POST"
       targetId={post.id}
       onClose={() => setShowReport(false)}
+    />
+
+    <ReportModal
+      isOpen={showAlreadyReported}
+      targetType="POST"
+      targetId={post.id}
+      onClose={() => setShowAlreadyReported(false)}
+      presetAlreadyReported
     />
   </>
   )

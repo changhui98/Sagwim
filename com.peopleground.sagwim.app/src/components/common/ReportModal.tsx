@@ -28,9 +28,18 @@ interface Props {
   targetId: number | null
   onClose: () => void
   onSuccess?: () => void
+  /** 모달을 열 때 이미 신고된 항목임이 확정된 경우, 사유 폼을 건너뛰고 안내 화면을 띄운다 */
+  presetAlreadyReported?: boolean
 }
 
-export function ReportModal({ isOpen, targetType, targetId, onClose, onSuccess }: Props) {
+export function ReportModal({
+  isOpen,
+  targetType,
+  targetId,
+  onClose,
+  onSuccess,
+  presetAlreadyReported = false,
+}: Props) {
   const { colors } = useTheme()
   const [reason, setReason] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -44,9 +53,9 @@ export function ReportModal({ isOpen, targetType, targetId, onClose, onSuccess }
       setErrorMsg(null)
       setSubmitting(false)
       setSubmitted(false)
-      setAlreadyReported(false)
+      setAlreadyReported(presetAlreadyReported)
     }
-  }, [isOpen])
+  }, [isOpen, presetAlreadyReported])
 
   const typeLabel = TARGET_TYPE_LABEL[targetType] ?? targetType
   const isOverLimit = reason.length > MAX_REASON_LENGTH
