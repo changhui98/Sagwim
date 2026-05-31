@@ -17,7 +17,6 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { deletePost, getPost, togglePostLike } from '../../src/api/postApi'
-import { createReport } from '../../src/api/reportApi'
 import {
   createComment,
   createReply,
@@ -471,8 +470,9 @@ export default function PostDetailScreen() {
   const [editBody, setEditBody] = useState('')
   const [editSubmitting, setEditSubmitting] = useState(false)
 
-  // 댓글 신고 모달
+  // 신고 모달
   const [reportCommentId, setReportCommentId] = useState<number | null>(null)
+  const [showPostReport, setShowPostReport] = useState(false)
 
   const contentId = Number(id)
 
@@ -575,16 +575,6 @@ export default function PostDetailScreen() {
       Alert.alert('오류', '댓글 삭제에 실패했습니다.')
     }
   }, [contentId])
-
-  const submitReport = useCallback(async (reason: string) => {
-    if (!post) return
-    try {
-      await createReport('POST', post.id, reason)
-      Alert.alert('신고 완료', '신고가 접수되었습니다.')
-    } catch {
-      Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.')
-    }
-  }, [post])
 
   const handleReportComment = useCallback((commentId: number) => {
     setReportCommentId(commentId)
@@ -1051,9 +1041,7 @@ export default function PostDetailScreen() {
                     },
                   ]
                 : [
-                    { label: '스팸입니다', onPress: () => submitReport('스팸입니다') },
-                    { label: '부적절한 콘텐츠', onPress: () => submitReport('부적절한 콘텐츠') },
-                    { label: '허위정보', onPress: () => submitReport('허위정보') },
+                    { label: '신고하기', variant: 'destructive', onPress: () => setShowPostReport(true) },
                   ]
             }
             onClose={() => setShowPostMenu(false)}
@@ -1084,6 +1072,13 @@ export default function PostDetailScreen() {
         targetType="COMMENT"
         targetId={reportCommentId}
         onClose={() => setReportCommentId(null)}
+      />
+
+      <ReportModal
+        isOpen={showPostReport}
+        targetType="POST"
+        targetId={post?.id ?? null}
+        onClose={() => setShowPostReport(false)}
       />
     </>
   )
