@@ -19,7 +19,7 @@ export function MessagesPage() {
 
   const [rooms, setRooms] = useState<ChatRoomSummary[]>([])
 
-  const { connected } = useChatSocket({ token })
+  useChatSocket({ token })
 
   useEffect(() => {
     if (!token) return
@@ -86,11 +86,6 @@ export function MessagesPage() {
           )}
         </div>
       </div>
-      {!connected && rooms.length > 0 && (
-        <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--clr-warning)', color: '#000', textAlign: 'center', padding: '6px', fontSize: '0.8rem' }}>
-          실시간 연결 중...
-        </div>
-      )}
     </div>
   )
 }

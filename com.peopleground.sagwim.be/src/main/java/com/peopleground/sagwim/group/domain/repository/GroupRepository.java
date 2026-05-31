@@ -21,7 +21,7 @@ public interface GroupRepository {
     /**
      * 무한스크롤용 모임 목록. COUNT 쿼리 없이 size+1 방식으로 hasNext를 판단한다.
      */
-    List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId);
+    List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId, Point userLocation, int exposureRangeKm);
 
     /**
      * 무한스크롤용 신규 모임 목록. COUNT 쿼리 없이 size+1 방식.
@@ -32,6 +32,11 @@ public interface GroupRepository {
      * 무한스크롤용 인기 모임 목록. COUNT 쿼리 없이 size+1 방식.
      */
     List<GroupWithLiked> findPopularGroups(int page, int size, UUID userId, Point userLocation, int exposureRangeKm);
+
+    /**
+     * 무한스크롤용 마감 임박(정원 임박) 모임 목록. COUNT 쿼리 없이 size+1 방식.
+     */
+    List<GroupWithLiked> findDeadlineGroups(int page, int size, UUID userId, Point userLocation, int exposureRangeKm);
 
     /**
      * 무한스크롤용 내 모임 목록. COUNT 쿼리 없이 size+1 방식.

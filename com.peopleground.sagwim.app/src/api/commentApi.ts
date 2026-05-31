@@ -45,6 +45,18 @@ export const deleteComment = async (
   await apiClient.delete(`/contents/${contentId}/comments/${commentId}`)
 }
 
+export const updateComment = async (
+  contentId: number,
+  commentId: number,
+  body: string,
+): Promise<CommentResponse> => {
+  const response = await apiClient.patch<CommentResponse>(
+    `/contents/${contentId}/comments/${commentId}`,
+    { body },
+  )
+  return response.data
+}
+
 export const toggleCommentLike = async (
   commentId: number,
 ): Promise<{ liked: boolean; likeCount: number }> => {

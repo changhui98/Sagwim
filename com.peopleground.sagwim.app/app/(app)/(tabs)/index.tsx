@@ -15,8 +15,9 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native'
-import { router } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
 import { getNewGroups, getPopularGroups, getGroups } from '../../../src/api/groupApi'
+import { consumeGroupsDirty } from '../../../src/lib/listRefresh'
 import { getMe } from '../../../src/api/userApi'
 import { useAuth } from '../../../src/context/AuthContext'
 import { GroupSection } from '../../../src/components/group/GroupSection'
@@ -87,6 +88,15 @@ export default function HomeScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated])
 
+  // 모임 생성 후 홈 탭으로 돌아오면 dirty 플래그를 소비해 조용히 재조회한다.
+  useFocusEffect(
+    useCallback(() => {
+      if (isAuthenticated && consumeGroupsDirty()) {
+        void loadAll()
+      }
+    }, [isAuthenticated, loadAll]),
+  )
+
   const onRefresh = useCallback(() => {
     setRefreshing(true)
     void loadAll()
@@ -128,7 +138,12 @@ export default function HomeScreen() {
           loading={neighborhoodLoading}
           emptyMessage="노출 범위 내 모임이 아직 없어요."
           onPressGroup={handlePressGroup}
-          onPressMore={() => console.log('[Home] more neighborhood — pending')}
+          onPressMore={() =>
+            router.push({
+              pathname: '/(app)/group-list',
+              params: { title: `${extractDong(address)} 모든 모임` },
+            })
+          }
         />
 
         <GroupSection

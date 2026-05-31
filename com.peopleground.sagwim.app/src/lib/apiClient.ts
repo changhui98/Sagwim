@@ -56,7 +56,11 @@ apiClient.interceptors.response.use(
           ? serverMessage.trim()
           : getDefaultMessage(status)
 
-        return Promise.reject(new Error(message))
+        const serverCode = error.response.data?.code
+        const apiError = new Error(message) as Error & { status?: number; code?: string }
+        apiError.status = status
+        if (typeof serverCode === 'string') apiError.code = serverCode
+        return Promise.reject(apiError)
       }
 
       // 네트워크 에러 (응답 자체가 없는 경우)

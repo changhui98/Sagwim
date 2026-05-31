@@ -7,6 +7,8 @@ import com.peopleground.sagwim.image.application.ImageUrlResolver;
 import com.peopleground.sagwim.image.domain.entity.ImageTargetType;
 import com.peopleground.sagwim.image.domain.repository.ImageRepository;
 import com.peopleground.sagwim.like.domain.repository.ContentLikeRepository;
+import com.peopleground.sagwim.report.domain.entity.ReportTargetType;
+import com.peopleground.sagwim.report.domain.repository.ReportRepository;
 import com.peopleground.sagwim.tag.domain.entity.ContentTag;
 import com.peopleground.sagwim.tag.domain.repository.ContentTagRepository;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
@@ -40,6 +42,7 @@ public class ContentResponseAssembler {
     private final ContentTagRepository contentTagRepository;
     private final ImageRepository imageRepository;
     private final ImageUrlResolver imageUrlResolver;
+    private final ReportRepository reportRepository;
 
     /**
      * {@link Content} 단건을 {@link ContentResponse} 로 변환한다.
@@ -53,10 +56,15 @@ public class ContentResponseAssembler {
             .get(content.getCreatedBy());
 
         boolean likedByMe = false;
+        boolean reportedByMe = false;
         if (user != null) {
             Set<Long> likedIds = contentLikeRepository.findLikedContentIds(
                 user.getId(), List.of(content.getId()));
             likedByMe = likedIds.contains(content.getId());
+
+            Set<Long> reportedIds = reportRepository.findReportedTargetIds(
+                user.getId(), ReportTargetType.POST, List.of(content.getId()));
+            reportedByMe = reportedIds.contains(content.getId());
         }
 
         List<String> tags = contentTagRepository.findAllFetchTagByContentIdIn(List.of(content.getId()))
@@ -71,7 +79,7 @@ public class ContentResponseAssembler {
             .map(imageUrlResolver::resolve)
             .toList();
 
-        return ContentResponse.from(content, nickname, likedByMe, tags, imageUrls);
+        return ContentResponse.from(content, nickname, likedByMe, reportedByMe, tags, imageUrls);
     }
 
     /**
@@ -95,6 +103,7 @@ public class ContentResponseAssembler {
             : userRepository.findNicknamesByUsernames(usernames);
 
         Set<Long> likedIds = resolveLikedIds(list, user);
+        Set<Long> reportedIds = resolveReportedIds(list, user);
         Map<Long, List<String>> tagsByContentId = resolveTagsByContentId(list);
         Map<String, List<String>> imagesByContentId = resolveImagesByContentId(list);
 
@@ -102,6 +111,7 @@ public class ContentResponseAssembler {
             c,
             nicknames.get(c.getCreatedBy()),
             likedIds.contains(c.getId()),
+            reportedIds.contains(c.getId()),
             tagsByContentId.getOrDefault(c.getId(), List.of()),
             imagesByContentId.getOrDefault(String.valueOf(c.getId()), List.of())
         ));
@@ -126,6 +136,7 @@ public class ContentResponseAssembler {
             : userRepository.findNicknamesByUsernames(usernames);
 
         Set<Long> likedIds = resolveLikedIds(contents, user);
+        Set<Long> reportedIds = resolveReportedIds(contents, user);
         Map<Long, List<String>> tagsByContentId = resolveTagsByContentId(contents);
         Map<String, List<String>> imagesByContentId = resolveImagesByContentId(contents);
 
@@ -134,6 +145,7 @@ public class ContentResponseAssembler {
                 c,
                 nicknames.get(c.getCreatedBy()),
                 likedIds.contains(c.getId()),
+                reportedIds.contains(c.getId()),
                 tagsByContentId.getOrDefault(c.getId(), List.of()),
                 imagesByContentId.getOrDefault(String.valueOf(c.getId()), List.of())
             ))
@@ -148,6 +160,15 @@ public class ContentResponseAssembler {
         UUID userId = user.getId();
         List<Long> ids = contents.stream().map(Content::getId).toList();
         return contentLikeRepository.findLikedContentIds(userId, ids);
+    }
+
+    private Set<Long> resolveReportedIds(List<Content> contents, CustomUser user) {
+
+        if (user == null || contents.isEmpty()) {
+            return Collections.emptySet();
+        }
+        List<Long> ids = contents.stream().map(Content::getId).toList();
+        return reportRepository.findReportedTargetIds(user.getId(), ReportTargetType.POST, ids);
     }
 
     private Map<String, List<String>> resolveImagesByContentId(List<Content> contents) {

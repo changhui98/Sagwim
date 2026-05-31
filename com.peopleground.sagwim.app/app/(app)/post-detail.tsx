@@ -17,13 +17,13 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { deletePost, getPost, togglePostLike } from '../../src/api/postApi'
-import { createReport } from '../../src/api/reportApi'
 import {
   createComment,
   createReply,
   deleteComment,
   getComments,
   toggleCommentLike,
+  updateComment,
 } from '../../src/api/commentApi'
 import type { ContentResponse } from '../../src/types/post'
 import type { CommentResponse } from '../../src/types/comment'
@@ -31,6 +31,7 @@ import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
 import { useAuth } from '../../src/context/AuthContext'
 import { ActionSheet, type ActionSheetOption } from '../../src/components/common/ActionSheet'
 import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
+import { ReportModal } from '../../src/components/common/ReportModal'
 import { fontSize, radius, spacing } from '../../src/constants/theme'
 import { useTheme } from '../../src/context/ThemeContext'
 
@@ -135,9 +136,17 @@ interface CommentItemProps {
   contentId: number
   myUsername: string | null
   isReply?: boolean
+  editingCommentId: number | null
+  editBody: string
+  editSubmitting: boolean
+  onEditStart: (comment: CommentResponse) => void
+  onEditCancel: () => void
+  onEditBodyChange: (text: string) => void
+  onEditSubmit: () => void
   onReply: (comment: CommentResponse) => void
   onDelete: (commentId: number) => void
   onLikeToggle: (commentId: number, liked: boolean, likeCount: number) => void
+  onReport: (commentId: number) => void
 }
 
 const AVATAR_SIZE = 36
@@ -150,9 +159,17 @@ function CommentItem({
   contentId,
   myUsername,
   isReply = false,
+  editingCommentId,
+  editBody,
+  editSubmitting,
+  onEditStart,
+  onEditCancel,
+  onEditBodyChange,
+  onEditSubmit,
   onReply,
   onDelete,
   onLikeToggle,
+  onReport,
 }: CommentItemProps) {
   const { colors } = useTheme()
   const commentStyles = useMemo(() => StyleSheet.create({
@@ -187,18 +204,43 @@ function CommentItem({
     actionCountActive: { color: colors.error },
     replyBtn: { fontSize: fontSize.xs, color: colors.textMuted, fontWeight: '600' },
     moreDots: { paddingTop: 2, paddingLeft: spacing.sp1 },
+    editArea: { gap: spacing.sp2, marginTop: 2 },
+    editInput: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.md,
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp2,
+      fontSize: fontSize.base,
+      color: colors.text,
+      backgroundColor: colors.surface2,
+      minHeight: 60,
+    },
+    editActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.sp2 },
+    editCancelBtn: {
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp2,
+      borderRadius: radius.sm,
+    },
+    editCancelText: { fontSize: fontSize.sm, color: colors.textMuted, fontWeight: '600' },
+    editSubmitBtn: {
+      paddingHorizontal: spacing.sp3,
+      paddingVertical: spacing.sp2,
+      borderRadius: radius.sm,
+      backgroundColor: colors.accent,
+    },
+    editSubmitBtnDisabled: { backgroundColor: colors.border },
+    editSubmitText: { fontSize: fontSize.sm, color: '#fff', fontWeight: '700' },
   }), [colors])
 
   const isMine = myUsername != null && comment.authorUsername === myUsername
   const hasReplies = !isReply && comment.replies.length > 0
   const [parentRowHeight, setParentRowHeight] = useState(0)
+  const [showMenu, setShowMenu] = useState(false)
+  const isEditing = editingCommentId === comment.id
 
   const handleMorePress = () => {
-    if (!isMine) return
-    Alert.alert('댓글 옵션', undefined, [
-      { text: '취소', style: 'cancel' },
-      { text: '삭제', style: 'destructive', onPress: () => onDelete(comment.id) },
-    ])
+    setShowMenu(true)
   }
 
   if (comment.deleted) {
@@ -267,7 +309,44 @@ function CommentItem({
             <Text style={commentStyles.time}>{formatRelativeTime(comment.createdAt)}</Text>
           </View>
 
-          <Text style={commentStyles.body}>{comment.body}</Text>
+          {isEditing ? (
+            <View style={commentStyles.editArea}>
+              <TextInput
+                style={commentStyles.editInput}
+                value={editBody}
+                onChangeText={onEditBodyChange}
+                multiline
+                autoFocus
+                placeholder="댓글을 입력하세요"
+                placeholderTextColor={colors.textMuted}
+              />
+              <View style={commentStyles.editActions}>
+                <Pressable
+                  style={commentStyles.editCancelBtn}
+                  onPress={onEditCancel}
+                  hitSlop={8}
+                >
+                  <Text style={commentStyles.editCancelText}>취소</Text>
+                </Pressable>
+                <Pressable
+                  style={[
+                    commentStyles.editSubmitBtn,
+                    (!editBody.trim() || editSubmitting) && commentStyles.editSubmitBtnDisabled,
+                  ]}
+                  onPress={onEditSubmit}
+                  disabled={!editBody.trim() || editSubmitting}
+                  hitSlop={8}
+                >
+                  {editSubmitting
+                    ? <ActivityIndicator size="small" color="#fff" />
+                    : <Text style={commentStyles.editSubmitText}>저장</Text>
+                  }
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            <Text style={commentStyles.body}>{comment.body}</Text>
+          )}
 
           <View style={commentStyles.actions}>
             <Pressable
@@ -296,11 +375,9 @@ function CommentItem({
         </View>
 
         {/* ... 도트 버튼 (오른쪽 끝) */}
-        {isMine && (
-          <Pressable onPress={handleMorePress} hitSlop={8} style={commentStyles.moreDots}>
-            <Ionicons name="ellipsis-horizontal" size={16} color={colors.textMuted} />
-          </Pressable>
-        )}
+        <Pressable onPress={handleMorePress} hitSlop={8} style={commentStyles.moreDots}>
+          <Ionicons name="ellipsis-horizontal" size={16} color={colors.textMuted} />
+        </Pressable>
       </View>
 
       {/* 답글 목록 */}
@@ -313,13 +390,43 @@ function CommentItem({
               contentId={contentId}
               myUsername={myUsername}
               isReply
+              editingCommentId={editingCommentId}
+              editBody={editBody}
+              editSubmitting={editSubmitting}
+              onEditStart={onEditStart}
+              onEditCancel={onEditCancel}
+              onEditBodyChange={onEditBodyChange}
+              onEditSubmit={onEditSubmit}
               onReply={onReply}
               onDelete={onDelete}
               onLikeToggle={onLikeToggle}
+              onReport={onReport}
             />
           ))}
         </View>
       )}
+
+      <ActionSheet
+        isOpen={showMenu}
+        options={
+          isMine
+            ? [
+                {
+                  label: '수정',
+                  onPress: () => onEditStart(comment),
+                },
+                {
+                  label: '삭제',
+                  variant: 'destructive',
+                  onPress: () => onDelete(comment.id),
+                },
+              ]
+            : [
+                { label: '신고하기', variant: 'destructive', onPress: () => onReport(comment.id) },
+              ]
+        }
+        onClose={() => setShowMenu(false)}
+      />
     </View>
   )
 }
@@ -357,6 +464,16 @@ export default function PostDetailScreen() {
   const [replyTarget, setReplyTarget] = useState<CommentResponse | null>(null)
   const [showPostMenu, setShowPostMenu] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+  // 댓글 수정 (인라인)
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
+  const [editBody, setEditBody] = useState('')
+  const [editSubmitting, setEditSubmitting] = useState(false)
+
+  // 신고 모달
+  const [reportCommentId, setReportCommentId] = useState<number | null>(null)
+  const [showPostReport, setShowPostReport] = useState(false)
+  const [showPostAlreadyReported, setShowPostAlreadyReported] = useState(false)
 
   const contentId = Number(id)
 
@@ -460,15 +577,9 @@ export default function PostDetailScreen() {
     }
   }, [contentId])
 
-  const submitReport = useCallback(async (reason: string) => {
-    if (!post) return
-    try {
-      await createReport('POST', post.id, reason)
-      Alert.alert('신고 완료', '신고가 접수되었습니다.')
-    } catch {
-      Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.')
-    }
-  }, [post])
+  const handleReportComment = useCallback((commentId: number) => {
+    setReportCommentId(commentId)
+  }, [])
 
   // 댓글 / 답글 제출
   const handleSubmit = useCallback(async () => {
@@ -503,6 +614,41 @@ export default function PostDetailScreen() {
     inputRef.current?.focus()
   }, [])
 
+  // 댓글 수정 시작
+  const handleEditStart = useCallback((comment: CommentResponse) => {
+    setEditingCommentId(comment.id)
+    setEditBody(comment.body)
+  }, [])
+
+  const handleEditCancel = useCallback(() => {
+    setEditingCommentId(null)
+    setEditBody('')
+  }, [])
+
+  const handleEditSubmit = useCallback(async () => {
+    if (editingCommentId == null) return
+    const body = editBody.trim()
+    if (!body || editSubmitting) return
+    setEditSubmitting(true)
+    try {
+      const updated = await updateComment(contentId, editingCommentId, body)
+      const apply = (list: CommentResponse[]): CommentResponse[] =>
+        list.map((c) => {
+          if (c.id === editingCommentId) {
+            return { ...c, body: updated.body }
+          }
+          return { ...c, replies: apply(c.replies) }
+        })
+      setComments((prev) => apply(prev))
+      setEditingCommentId(null)
+      setEditBody('')
+    } catch {
+      Alert.alert('오류', '댓글 수정에 실패했습니다.')
+    } finally {
+      setEditSubmitting(false)
+    }
+  }, [contentId, editingCommentId, editBody, editSubmitting])
+
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bg },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.sp6 },
@@ -533,6 +679,16 @@ export default function PostDetailScreen() {
     actionCountActive: { color: colors.error },
     divider: { height: 1, backgroundColor: colors.border, marginTop: spacing.sp2 },
     commentSectionTitle: { fontSize: fontSize.sm, fontWeight: '600', color: colors.textSecondary, paddingBottom: spacing.sp2 },
+    sectionHeader: {
+      paddingHorizontal: spacing.sp4,
+      paddingTop: spacing.sp4,
+      paddingBottom: spacing.sp2,
+    },
+    sectionHeaderText: {
+      fontSize: fontSize.sm,
+      fontWeight: '700',
+      color: colors.textSecondary,
+    },
     moreBtn: { alignItems: 'center', paddingVertical: spacing.sp4 },
     moreBtnText: { fontSize: fontSize.sm, color: colors.accent, fontWeight: '600' },
     emptyComments: { alignItems: 'center', gap: spacing.sp2, paddingVertical: spacing.sp8 },
@@ -610,18 +766,46 @@ export default function PostDetailScreen() {
   const isPostMine = !!meUsername && post.createdBy === meUsername
   const postAvatarUrl = isPostMine ? resolveImageUrl(meProfileImageUrl) : null
 
+  // 인기 댓글 / 전체 댓글 분리 (웹과 동일 로직)
+  // 상위 3개: 좋아요 많은 순, 동점 시 최신순 / 나머지: 최신순
+  const topComments = [...comments]
+    .filter((c) => !c.deleted && c.likeCount > 0)
+    .sort((a, b) => {
+      if (b.likeCount !== a.likeCount) return b.likeCount - a.likeCount
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    })
+    .slice(0, 3)
+  const topIds = new Set(topComments.map((c) => c.id))
+  const restComments = comments
+    .filter((c) => !topIds.has(c.id))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
   // FlatList에 넘길 데이터: 게시글 헤더 + 댓글 목록
   type ListItem =
     | { type: 'post' }
+    | { type: 'section-header'; title: string }
     | { type: 'comment'; data: CommentResponse }
     | { type: 'more' }
     | { type: 'empty' }
 
   const listData: ListItem[] = [
     { type: 'post' },
-    ...comments.map((c): ListItem => ({ type: 'comment', data: c })),
+    ...(comments.length === 0 && !commentsLoading
+      ? [{ type: 'empty' } as ListItem]
+      : []),
+    ...(topComments.length > 0
+      ? [
+          { type: 'section-header', title: '인기 댓글' } as ListItem,
+          ...topComments.map((c): ListItem => ({ type: 'comment', data: c })),
+        ]
+      : []),
+    ...(restComments.length > 0
+      ? [
+          { type: 'section-header', title: '전체 댓글' } as ListItem,
+          ...restComments.map((c): ListItem => ({ type: 'comment', data: c })),
+        ]
+      : []),
     ...(hasNextComments ? [{ type: 'more' } as ListItem] : []),
-    ...(comments.length === 0 && !commentsLoading ? [{ type: 'empty' } as ListItem] : []),
   ]
 
   return (
@@ -652,6 +836,7 @@ export default function PostDetailScreen() {
           data={listData}
           keyExtractor={(item, i) => {
             if (item.type === 'comment') return `comment-${item.data.id}`
+            if (item.type === 'section-header') return `section-${item.title}-${i}`
             return `${item.type}-${i}`
           }}
           renderItem={({ item }) => {
@@ -718,15 +903,31 @@ export default function PostDetailScreen() {
               )
             }
 
+            if (item.type === 'section-header') {
+              return (
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionHeaderText}>{item.title}</Text>
+                </View>
+              )
+            }
+
             if (item.type === 'comment') {
               return (
                 <CommentItem
                   comment={item.data}
                   contentId={contentId}
                   myUsername={meUsername}
+                  editingCommentId={editingCommentId}
+                  editBody={editBody}
+                  editSubmitting={editSubmitting}
+                  onEditStart={handleEditStart}
+                  onEditCancel={handleEditCancel}
+                  onEditBodyChange={setEditBody}
+                  onEditSubmit={() => void handleEditSubmit()}
                   onReply={handleReply}
                   onDelete={(cid) => void handleDeleteComment(cid)}
                   onLikeToggle={handleCommentLike}
+                  onReport={handleReportComment}
                 />
               )
             }
@@ -841,9 +1042,14 @@ export default function PostDetailScreen() {
                     },
                   ]
                 : [
-                    { label: '스팸입니다', onPress: () => submitReport('스팸입니다') },
-                    { label: '부적절한 콘텐츠', onPress: () => submitReport('부적절한 콘텐츠') },
-                    { label: '허위정보', onPress: () => submitReport('허위정보') },
+                    {
+                      label: '신고하기',
+                      variant: 'destructive',
+                      onPress: () => {
+                        if (post.reportedByMe) setShowPostAlreadyReported(true)
+                        else setShowPostReport(true)
+                      },
+                    },
                   ]
             }
             onClose={() => setShowPostMenu(false)}
@@ -868,6 +1074,29 @@ export default function PostDetailScreen() {
           />
         </>
       )}
+
+      <ReportModal
+        isOpen={reportCommentId !== null}
+        targetType="COMMENT"
+        targetId={reportCommentId}
+        onClose={() => setReportCommentId(null)}
+      />
+
+      <ReportModal
+        isOpen={showPostReport}
+        targetType="POST"
+        targetId={post?.id ?? null}
+        onClose={() => setShowPostReport(false)}
+        onSuccess={() => setPost((prev) => (prev ? { ...prev, reportedByMe: true } : prev))}
+      />
+
+      <ReportModal
+        isOpen={showPostAlreadyReported}
+        targetType="POST"
+        targetId={post?.id ?? null}
+        onClose={() => setShowPostAlreadyReported(false)}
+        presetAlreadyReported
+      />
     </>
   )
 }

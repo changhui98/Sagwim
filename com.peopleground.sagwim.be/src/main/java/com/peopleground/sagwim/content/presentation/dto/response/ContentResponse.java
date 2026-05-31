@@ -13,17 +13,19 @@ public record ContentResponse(
     int likeCount,
     int commentCount,
     boolean likedByMe,
+    boolean reportedByMe,
     List<String> tags,
     List<String> imageUrls
 ) {
     public static ContentResponse from(Content content) {
-        return from(content, null, false, List.of(), List.of());
+        return from(content, null, false, false, List.of(), List.of());
     }
 
     public static ContentResponse from(
         Content content,
         String nickname,
         boolean likedByMe,
+        boolean reportedByMe,
         List<String> tags,
         List<String> imageUrls
     ) {
@@ -36,6 +38,7 @@ public record ContentResponse(
             content.getLikeCount(),
             content.getCommentCount(),
             likedByMe,
+            reportedByMe,
             tags == null ? List.of() : List.copyOf(tags),
             imageUrls == null ? List.of() : List.copyOf(imageUrls)
         );

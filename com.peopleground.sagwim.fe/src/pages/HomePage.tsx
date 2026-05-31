@@ -39,6 +39,10 @@ export function HomePage() {
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [linkLoading, setLinkLoading] = useState(false)
   const pendingLinkRef = useRef<{ provider: string; accessToken: string } | null>(null)
+  // 이미 처리한 인가 code를 동기적으로 기록한다.
+  // socialLoading state는 비동기 반영이라 StrictMode useEffect 이중 실행을 막지 못하고,
+  // 같은 code로 토큰 교환이 2번 일어나 카카오 invalid_grant(KOE320)를 유발한다.
+  const processedCodeRef = useRef<string | null>(null)
 
   // OAuth redirect callback 처리 (?code=...&state=KAKAO|GOOGLE)
   useEffect(() => {
@@ -47,7 +51,8 @@ export function HomePage() {
     const provider = params.get('state') // state 파라미터에 provider 정보를 담는다
 
     if (!code || !provider) return
-    if (socialLoading) return
+    if (processedCodeRef.current === code) return
+    processedCodeRef.current = code
 
     // URL 쿼리 파라미터 제거 (히스토리 교체)
     navigate(location.pathname, { replace: true, state: location.state })

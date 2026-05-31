@@ -31,6 +31,9 @@ import { GroupSettingsPage } from './pages/GroupSettingsPage'
 import { GroupCreatePage } from './pages/GroupCreatePage'
 import { NewGroupsPage } from './pages/NewGroupsPage'
 import { PopularGroupsPage } from './pages/PopularGroupsPage'
+import { AllGroupsPage } from './pages/AllGroupsPage'
+import { DeadlineGroupsPage } from './pages/DeadlineGroupsPage'
+import { ThisWeekGroupsPage } from './pages/ThisWeekGroupsPage'
 import { PostDetailPage } from './pages/PostDetailPage'
 import { MessagesPage } from './pages/MessagesPage'
 import { SettingsPage } from './pages/SettingsPage'
@@ -63,9 +66,12 @@ function App() {
           <Route path="/app/users" element={<UserGridPage />} />
         </Route>
         <Route path="/app/groups" element={<GroupListPage />} />
+        <Route path="/app/groups/all" element={<AllGroupsPage />} />
         <Route path="/app/groups/new" element={<GroupCreatePage />} />
         <Route path="/app/groups/recent" element={<NewGroupsPage />} />
         <Route path="/app/groups/popular" element={<PopularGroupsPage />} />
+        <Route path="/app/groups/deadline" element={<DeadlineGroupsPage />} />
+        <Route path="/app/groups/thisweek" element={<ThisWeekGroupsPage />} />
         <Route path="/app/groups/:groupId" element={<GroupDetailPage />} />
         <Route path="/app/groups/:groupId/join" element={<GroupJoinRequestPage />} />
         <Route path="/app/groups/:groupId/settings" element={<GroupSettingsPage />} />

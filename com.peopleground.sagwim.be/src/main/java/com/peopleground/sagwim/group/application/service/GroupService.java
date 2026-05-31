@@ -111,7 +111,8 @@ public class GroupService {
 
     @Transactional(readOnly = true)
     public PageResponse<GroupResponse> getGroups(int page, int size, String keyword, GroupCategory category, CustomUser customUser) {
-        List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findAll(page, size, keyword, category, customUser.getId()));
+        User user = getUser(customUser.getUsername());
+        List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findAll(page, size, keyword, category, customUser.getId(), user.getLocation(), user.getExposureRangeKm()));
         boolean hasNext = PageResponse.trim(raw, size);
         List<GroupResponse> responses = raw.stream()
             .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
@@ -144,6 +145,22 @@ public class GroupService {
     public PageResponse<GroupResponse> getPopularGroups(int page, int size, CustomUser customUser) {
         User user = getUser(customUser.getUsername());
         List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findPopularGroups(page, size, customUser.getId(), user.getLocation(), user.getExposureRangeKm()));
+        boolean hasNext = PageResponse.trim(raw, size);
+        List<GroupResponse> responses = raw.stream()
+            .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))
+            .toList();
+        return PageResponse.ofSlice(responses, page, size, hasNext);
+    }
+
+    /**
+     * 정원이 거의 다 찬(마감 임박) 모임 목록을 조회합니다.
+     * OFFLINE 모임은 사용자의 노출 범위(km) 이내인 것만 포함합니다.
+     * COUNT 쿼리 없이 size+1 방식.
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<GroupResponse> getDeadlineGroups(int page, int size, CustomUser customUser) {
+        User user = getUser(customUser.getUsername());
+        List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findDeadlineGroups(page, size, customUser.getId(), user.getLocation(), user.getExposureRangeKm()));
         boolean hasNext = PageResponse.trim(raw, size);
         List<GroupResponse> responses = raw.stream()
             .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))

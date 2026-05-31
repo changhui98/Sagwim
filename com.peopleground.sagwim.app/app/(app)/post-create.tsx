@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import axios from 'axios'
 import { createPost, uploadContentImage } from '../../src/api/postApi'
+import { markPostsDirty } from '../../src/lib/listRefresh'
 import { fontSize, radius, spacing } from '../../src/constants/theme'
 import { useTheme } from '../../src/context/ThemeContext'
 
@@ -83,6 +84,7 @@ export default function PostCreateScreen() {
       if (images.length > 0) {
         await Promise.all(images.map((uri) => uploadContentImage(created.id, uri)))
       }
+      markPostsDirty()
       router.back()
     } catch (e) {
       const msg = axios.isAxiosError(e)

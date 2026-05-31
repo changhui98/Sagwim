@@ -11,9 +11,9 @@ import {
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { deletePost, togglePostLike } from '../api/postApi'
-import { createReport } from '../api/reportApi'
 import { ActionSheet, type ActionSheetOption } from './common/ActionSheet'
 import { ConfirmDialog } from './common/ConfirmDialog'
+import { ReportModal } from './common/ReportModal'
 import { resolveImageUrl } from '../lib/resolveImageUrl'
 import { useAuth } from '../context/AuthContext'
 import { fontSize, radius, spacing } from '../constants/theme'
@@ -77,9 +77,12 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
 
   const [liked, setLiked] = useState(post.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(post.likeCount ?? 0)
+  const [reported, setReported] = useState(post.reportedByMe ?? false)
   const isLikeInFlight = useRef(false)
   const [showMenu, setShowMenu] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showReport, setShowReport] = useState(false)
+  const [showAlreadyReported, setShowAlreadyReported] = useState(false)
 
   const handleLike = useCallback(async () => {
     if (isLikeInFlight.current) return
@@ -110,15 +113,6 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
     router.push({ pathname: '/(app)/post-detail', params: { id: String(post.id) } })
   }, [post.id])
 
-  const submitReport = useCallback(async (reason: string) => {
-    try {
-      await createReport('POST', post.id, reason)
-      Alert.alert('신고 완료', '신고가 접수되었습니다.')
-    } catch {
-      Alert.alert('오류', '신고 처리 중 오류가 발생했습니다.')
-    }
-  }, [post.id])
-
   const menuOptions: ActionSheetOption[] = isMine
     ? [
         {
@@ -139,9 +133,14 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
         },
       ]
     : [
-        { label: '스팸입니다', onPress: () => submitReport('스팸입니다') },
-        { label: '부적절한 콘텐츠', onPress: () => submitReport('부적절한 콘텐츠') },
-        { label: '허위정보', onPress: () => submitReport('허위정보') },
+        {
+          label: '신고하기',
+          variant: 'destructive',
+          onPress: () => {
+            if (reported) setShowAlreadyReported(true)
+            else setShowReport(true)
+          },
+        },
       ]
 
   const styles = useMemo(() => StyleSheet.create({
@@ -268,6 +267,22 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
         }
       }}
       onCancel={() => setShowDeleteConfirm(false)}
+    />
+
+    <ReportModal
+      isOpen={showReport}
+      targetType="POST"
+      targetId={post.id}
+      onClose={() => setShowReport(false)}
+      onSuccess={() => setReported(true)}
+    />
+
+    <ReportModal
+      isOpen={showAlreadyReported}
+      targetType="POST"
+      targetId={post.id}
+      onClose={() => setShowAlreadyReported(false)}
+      presetAlreadyReported
     />
   </>
   )

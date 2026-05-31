@@ -7,6 +7,7 @@ export interface ContentResponse {
   likeCount?: number
   commentCount?: number
   likedByMe?: boolean
+  reportedByMe?: boolean
   tags?: string[]
   imageUrls?: string[]
 }

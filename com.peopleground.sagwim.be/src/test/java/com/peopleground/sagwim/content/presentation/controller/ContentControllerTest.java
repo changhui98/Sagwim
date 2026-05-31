@@ -44,7 +44,7 @@ class ContentControllerTest {
     }
 
     private ContentResponse mockContent() {
-        return new ContentResponse(1L, "내용", "testuser", "닉네임", null, 0, 0, false, List.of(), List.of());
+        return new ContentResponse(1L, "내용", "testuser", "닉네임", null, 0, 0, false, false, List.of(), List.of());
     }
 
     @Test

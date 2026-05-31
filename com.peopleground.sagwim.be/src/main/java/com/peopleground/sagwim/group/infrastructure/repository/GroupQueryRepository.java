@@ -55,8 +55,9 @@ public class GroupQueryRepository {
 
     /**
      * 무한스크롤용 모임 목록 조회. COUNT 쿼리 없이 size+1 방식.
+     * OFFLINE 모임은 사용자의 노출 범위(km) 이내인 것만 포함합니다.
      */
-    public List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId) {
+    public List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId, Point userLocation, int exposureRangeKm) {
         QGroup group = QGroup.group;
         QUser leader = QUser.user;
         QGroupLike groupLike = new QGroupLike("groupLikeForStatus");
@@ -64,6 +65,7 @@ public class GroupQueryRepository {
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(group.deletedDate.isNull());
         builder.and(group.status.eq(GroupStatus.ACTIVE));
+        builder.and(locationFilter(group, userLocation, exposureRangeKm));
 
         if (keyword != null && !keyword.isBlank()) {
             builder.and(group.name.containsIgnoreCase(keyword));
@@ -162,6 +164,53 @@ public class GroupQueryRepository {
     }
 
     /**
+     * 무한스크롤용 마감 임박(정원 임박) 모임 조회. COUNT 쿼리 없이 size+1 방식.
+     * 자리가 아직 남아있으면서(currentMemberCount < maxMemberCount) 정원의 70% 이상 찬 모임만 포함합니다.
+     * 남은 자리 오름차순(가장 임박한 순)으로 정렬합니다.
+     * OFFLINE 모임은 사용자의 노출 범위(km) 이내인 것만 포함합니다.
+     */
+    public List<GroupWithLiked> findDeadlineGroups(int page, int size, UUID userId, Point userLocation, int exposureRangeKm) {
+        QGroup group = QGroup.group;
+        QUser leader = QUser.user;
+        QGroupLike groupLike = new QGroupLike("groupLikeForStatus");
+
+        BooleanExpression hasSeatLeft = group.currentMemberCount.lt(group.maxMemberCount);
+        BooleanExpression almostFull = Expressions.numberTemplate(
+            Double.class, "({0} * 1.0 / {1})", group.currentMemberCount, group.maxMemberCount
+        ).goe(0.7);
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(group.deletedDate.isNull());
+        builder.and(group.status.eq(GroupStatus.ACTIVE));
+        builder.and(hasSeatLeft);
+        builder.and(almostFull);
+        builder.and(locationFilter(group, userLocation, exposureRangeKm));
+
+        List<Tuple> tuples = queryFactory
+            .select(group, groupLike.id.isNotNull())
+            .from(group)
+            .join(group.leader, leader).fetchJoin()
+            .leftJoin(groupLike).on(
+                groupLike.group.eq(group),
+                groupLike.user.id.eq(userId)
+            )
+            .where(builder)
+            .orderBy(
+                Expressions.numberTemplate(
+                    Integer.class, "({0} - {1})", group.maxMemberCount, group.currentMemberCount
+                ).asc(),
+                group.createdDate.desc()
+            )
+            .offset((long) page * size)
+            .limit(size + 1L)
+            .fetch();
+
+        return tuples.stream()
+            .map(t -> new GroupWithLiked(t.get(group), Boolean.TRUE.equals(t.get(groupLike.id.isNotNull()))))
+            .toList();
+    }
+
+    /**
      * 무한스크롤용 내 모임 목록 조회. COUNT 쿼리 없이 size+1 방식.
      */
     public List<GroupWithLiked> findByMemberUsername(String username, int page, int size, UUID userId) {
@@ -197,7 +246,8 @@ public class GroupQueryRepository {
     }
 
     /**
-     * ONLINE 모임은 항상 통과, OFFLINE 모임은 userLocation 기준 exposureRangeKm 이내 또는 위치 미설정 시 통과.
+     * ONLINE 모임은 항상 통과, OFFLINE 모임은 userLocation 기준 exposureRangeKm 이내인 것만 통과.
+     * location 이 null 인 OFFLINE 모임(지오코딩 실패)은 제외됩니다.
      * userLocation 이 null 이면 필터를 적용하지 않습니다.
      */
     private BooleanExpression locationFilter(QGroup group, Point userLocation, int exposureRangeKm) {
@@ -210,8 +260,7 @@ public class GroupQueryRepository {
             "st_dwithin({0}, {1}, {2})",
             group.location, userLocation, rangeMeters
         );
-        BooleanExpression noLocation = group.location.isNull();
-        return isOnline.or(withinRange).or(noLocation);
+        return isOnline.or(withinRange);
     }
 
     /**

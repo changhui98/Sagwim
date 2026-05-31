@@ -5,6 +5,7 @@ import { uploadContentImage } from '../api/imageApi'
 import { getMyProfile } from '../api/userApi'
 import { ApiError } from '../api/ApiError'
 import { useAuth } from '../context/AuthContext'
+import { usePostList } from '../context/PostListContext'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { ImageBoxPicker } from '../components/post/ImageBoxPicker'
@@ -14,6 +15,7 @@ import styles from './PostCreatePage.module.css'
 export function PostCreatePage() {
   const navigate = useNavigate()
   const { token, logout } = useAuth()
+  const { resetAndRefresh } = usePostList()
   const handleLogout = useLogout()
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
 
@@ -58,6 +60,8 @@ export function PostCreatePage() {
       if (images.length > 0) {
         await Promise.all(images.map((file) => uploadContentImage(token, file, createdPost.id)))
       }
+      // 게시글 목록 컨텍스트를 재조회하여 사용자가 수동 새로고침 없이 새 글을 보게 한다.
+      resetAndRefresh()
       navigate('/app')
     } catch {
       setError('게시글 등록에 실패했습니다. 다시 시도해 주세요.')

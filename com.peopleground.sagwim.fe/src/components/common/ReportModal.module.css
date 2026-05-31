@@ -96,3 +96,56 @@
   color: var(--clr-error);
   margin-top: var(--sp-3);
 }
+
+/* 상태 화면 (신고 완료 / 이미 신고됨) */
+.statusView {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--sp-2) 0;
+}
+
+.statusIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--sp-4);
+}
+
+.statusIconSuccess {
+  background: var(--clr-accent-muted);
+  color: var(--clr-accent);
+}
+
+.statusIconInfo {
+  background: var(--clr-surface-3);
+  color: var(--clr-text-secondary);
+}
+
+.statusTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  margin: 0 0 var(--sp-2);
+}
+
+.statusMessage {
+  font-size: 0.9375rem;
+  color: var(--clr-text-secondary);
+  line-height: 1.55;
+  margin: 0 0 var(--sp-6);
+}
+
+.statusActions {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.statusActions .btn {
+  min-width: 120px;
+}

@@ -103,6 +103,19 @@ public class GroupController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 정원이 거의 다 찬(마감 임박) 모임 목록을 조회합니다.
+     */
+    @GetMapping("/deadline")
+    public ResponseEntity<PageResponse<GroupResponse>> getDeadlineGroups(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        PageResponse<GroupResponse> response = groupService.getDeadlineGroups(page, size, customUser);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{groupId}")
     public ResponseEntity<GroupDetailResponse> getGroup(@PathVariable Long groupId) {
         GroupDetailResponse response = groupService.getGroup(groupId);
