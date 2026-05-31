@@ -66,7 +66,7 @@ export function PostDetailPage() {
   const [postError, setPostError] = useState<string | null>(null)
 
   // 신고 모달 상태: { targetType, targetId }
-  const [reportTarget, setReportTarget] = useState<{ targetType: 'POST' | 'COMMENT'; targetId: number } | null>(null)
+  const [reportTarget, setReportTarget] = useState<{ targetType: 'POST' | 'COMMENT'; targetId: number; alreadyReported?: boolean } | null>(null)
 
   const [liked, setLiked] = useState(() => passedPost?.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(() => passedPost?.likeCount ?? 0)
@@ -549,7 +549,7 @@ export function PostDetailPage() {
                       { label: '삭제', danger: true, onClick: () => void handleDeletePost() },
                     ]
                   : [
-                      { label: '신고하기', danger: true, onClick: () => setReportTarget({ targetType: 'POST', targetId: contentId }) },
+                      { label: '신고하기', danger: true, onClick: () => setReportTarget({ targetType: 'POST', targetId: contentId, alreadyReported: post?.reportedByMe ?? false }) },
                     ]
               }
             />
@@ -819,6 +819,7 @@ export function PostDetailPage() {
         onClose={() => setReportTarget(null)}
         targetType={reportTarget?.targetType ?? 'POST'}
         targetId={reportTarget?.targetId ?? 0}
+        presetAlreadyReported={reportTarget?.alreadyReported ?? false}
       />
     </>
   )

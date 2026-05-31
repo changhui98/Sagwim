@@ -15,6 +15,8 @@ interface ReportModalProps {
   targetId: number
   /** 신고 대상을 사람이 읽기 쉬운 형태로 표시하는 선택적 레이블 */
   targetLabel?: string
+  /** 모달을 열 때 이미 신고된 항목임이 확정된 경우, 사유 폼 대신 안내 화면을 띄운다 */
+  presetAlreadyReported?: boolean
 }
 
 const TARGET_TYPE_LABEL: Record<ReportTargetType, string> = {
@@ -32,6 +34,7 @@ export function ReportModal({
   targetType,
   targetId,
   targetLabel,
+  presetAlreadyReported = false,
 }: ReportModalProps) {
   const { token } = useAuth()
   const [reason, setReason] = useState('')
@@ -46,9 +49,9 @@ export function ReportModal({
       setReason('')
       setErrorMsg(null)
       setSubmitted(false)
-      setAlreadyReported(false)
+      setAlreadyReported(presetAlreadyReported)
     }
-  }, [open])
+  }, [open, presetAlreadyReported])
 
   // ESC 키로 닫기
   useModalKeyboard(open, onClose)
