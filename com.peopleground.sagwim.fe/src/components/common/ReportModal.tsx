@@ -17,6 +17,8 @@ interface ReportModalProps {
   targetLabel?: string
   /** 모달을 열 때 이미 신고된 항목임이 확정된 경우, 사유 폼 대신 안내 화면을 띄운다 */
   presetAlreadyReported?: boolean
+  /** 신고 성공 시 호출 (호출자가 로컬 state의 reportedByMe 를 갱신할 수 있도록) */
+  onSuccess?: () => void
 }
 
 const TARGET_TYPE_LABEL: Record<ReportTargetType, string> = {
@@ -35,6 +37,7 @@ export function ReportModal({
   targetId,
   targetLabel,
   presetAlreadyReported = false,
+  onSuccess,
 }: ReportModalProps) {
   const { token } = useAuth()
   const [reason, setReason] = useState('')
@@ -78,6 +81,7 @@ export function ReportModal({
 
     try {
       await createReport(token, { targetType, targetId, reason: reason.trim() })
+      onSuccess?.()
       setSubmitted(true)
     } catch (err) {
       if (err instanceof ApiError) {

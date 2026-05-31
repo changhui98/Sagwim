@@ -64,6 +64,7 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
   const [deleteSubmitting, setDeleteSubmitting] = useState(false)
   const [reportModalOpen, setReportModalOpen] = useState(false)
   const [alreadyReportedOpen, setAlreadyReportedOpen] = useState(false)
+  const [reported, setReported] = useState(() => post.reportedByMe ?? false)
 
   const handleCardClick = useCallback(() => {
     sessionStorage.setItem('postList_scrollY', String(window.scrollY))
@@ -182,7 +183,7 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
           label: '신고하기',
           danger: true,
           onClick: () => {
-            if (post.reportedByMe) setAlreadyReportedOpen(true)
+            if (reported) setAlreadyReportedOpen(true)
             else setReportModalOpen(true)
           },
         },
@@ -242,6 +243,7 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
         onClose={() => setReportModalOpen(false)}
         targetType="POST"
         targetId={post.id}
+        onSuccess={() => setReported(true)}
       />
       <ReportModal
         open={alreadyReportedOpen}

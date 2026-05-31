@@ -820,6 +820,11 @@ export function PostDetailPage() {
         targetType={reportTarget?.targetType ?? 'POST'}
         targetId={reportTarget?.targetId ?? 0}
         presetAlreadyReported={reportTarget?.alreadyReported ?? false}
+        onSuccess={() => {
+          if (reportTarget?.targetType === 'POST') {
+            setPost((prev) => (prev ? { ...prev, reportedByMe: true } : prev))
+          }
+        }}
       />
     </>
   )
