@@ -25,7 +25,7 @@ public interface ReportJpaRepository extends JpaRepository<Report, Long> {
      * 한 유저가 주어진 targetId 목록 중 이미 신고한 항목만 IN 쿼리 한 번으로 가져온다.
      * 게시글/댓글 목록의 reportedByMe 매핑에 사용된다.
      */
-    @Query("SELECT r.targetId FROM Report r "
+    @Query("SELECT r.targetId FROM report r "
         + "WHERE r.reporterUserId = :reporterUserId "
         + "AND r.targetType = :targetType "
         + "AND r.targetId IN :targetIds")
