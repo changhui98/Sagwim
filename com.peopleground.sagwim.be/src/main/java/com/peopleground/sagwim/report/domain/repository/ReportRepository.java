@@ -3,6 +3,8 @@ package com.peopleground.sagwim.report.domain.repository;
 import com.peopleground.sagwim.report.domain.entity.Report;
 import com.peopleground.sagwim.report.domain.entity.ReportTargetType;
 import com.peopleground.sagwim.report.presentation.dto.response.AdminReportResponse;
+import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +20,16 @@ public interface ReportRepository {
         UUID reporterUserId,
         ReportTargetType targetType,
         Long targetId
+    );
+
+    /**
+     * 한 유저가 주어진 targetId 중 이미 신고한 것만 Set 으로 반환한다.
+     * 목록 응답에 reportedByMe 플래그를 IN 쿼리 한 번으로 매핑할 때 사용한다.
+     */
+    Set<Long> findReportedTargetIds(
+        UUID reporterUserId,
+        ReportTargetType targetType,
+        Collection<Long> targetIds
     );
 
     /**

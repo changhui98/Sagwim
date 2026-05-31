@@ -4,6 +4,10 @@ import com.peopleground.sagwim.report.domain.entity.Report;
 import com.peopleground.sagwim.report.domain.entity.ReportTargetType;
 import com.peopleground.sagwim.report.domain.repository.ReportRepository;
 import com.peopleground.sagwim.report.presentation.dto.response.AdminReportResponse;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,6 +34,20 @@ public class ReportRepositoryImpl implements ReportRepository {
     ) {
         return reportJpaRepository.existsByReporterUserIdAndTargetTypeAndTargetId(
             reporterUserId, targetType, targetId
+        );
+    }
+
+    @Override
+    public Set<Long> findReportedTargetIds(
+        UUID reporterUserId,
+        ReportTargetType targetType,
+        Collection<Long> targetIds
+    ) {
+        if (reporterUserId == null || targetIds == null || targetIds.isEmpty()) {
+            return Collections.emptySet();
+        }
+        return new HashSet<>(
+            reportJpaRepository.findReportedTargetIds(reporterUserId, targetType, targetIds)
         );
     }
 
