@@ -1087,6 +1087,7 @@ export default function PostDetailScreen() {
         targetType="POST"
         targetId={post?.id ?? null}
         onClose={() => setShowPostReport(false)}
+        onSuccess={() => setPost((prev) => (prev ? { ...prev, reportedByMe: true } : prev))}
       />
 
       <ReportModal

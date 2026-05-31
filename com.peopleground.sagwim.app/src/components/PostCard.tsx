@@ -77,6 +77,7 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
 
   const [liked, setLiked] = useState(post.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(post.likeCount ?? 0)
+  const [reported, setReported] = useState(post.reportedByMe ?? false)
   const isLikeInFlight = useRef(false)
   const [showMenu, setShowMenu] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -136,7 +137,7 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
           label: '신고하기',
           variant: 'destructive',
           onPress: () => {
-            if (post.reportedByMe) setShowAlreadyReported(true)
+            if (reported) setShowAlreadyReported(true)
             else setShowReport(true)
           },
         },
@@ -273,6 +274,7 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
       targetType="POST"
       targetId={post.id}
       onClose={() => setShowReport(false)}
+      onSuccess={() => setReported(true)}
     />
 
     <ReportModal
