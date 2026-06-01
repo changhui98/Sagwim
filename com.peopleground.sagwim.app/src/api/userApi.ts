@@ -1,9 +1,35 @@
 import apiClient from '../lib/apiClient'
 import { getToken } from '../lib/secureStore'
-import type { UserDetailResponse, UserUpdateRequest } from '../types/user'
+import type { PageResponse, UserDetailResponse, UserResponse, UserUpdateRequest } from '../types/user'
 
 export const getMe = async (): Promise<UserDetailResponse> => {
   const response = await apiClient.get<UserDetailResponse>('/users/me')
+  return response.data
+}
+
+/**
+ * 닉네임/아이디로 유저 검색. GET /users/search?keyword=&page=&size=
+ */
+export const searchUsers = async (
+  keyword: string,
+  page = 0,
+  size = 5,
+): Promise<PageResponse<UserResponse>> => {
+  const params: Record<string, string | number> = { page, size }
+  if (keyword.trim()) params.keyword = keyword.trim()
+  const response = await apiClient.get<PageResponse<UserResponse>>('/users/search', {
+    params,
+  })
+  return response.data
+}
+
+/**
+ * 특정 유저의 공개 프로필 조회. GET /users/{username}
+ */
+export const getUserProfile = async (username: string): Promise<UserDetailResponse> => {
+  const response = await apiClient.get<UserDetailResponse>(
+    `/users/${encodeURIComponent(username)}`,
+  )
   return response.data
 }
 

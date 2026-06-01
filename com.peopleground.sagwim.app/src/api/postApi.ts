@@ -55,9 +55,16 @@ export const uploadContentImage = async (
 export const getPosts = async (
   page = 0,
   size = 12,
+  keyword = '',
+  searchType: 'TITLE' | 'USERNAME' = 'TITLE',
 ): Promise<PageResponse<ContentResponse>> => {
+  const params: Record<string, string | number> = { page, size }
+  if (keyword.trim()) {
+    params.keyword = keyword.trim()
+    params.searchType = searchType
+  }
   const response = await apiClient.get<PageResponse<ContentResponse>>('/contents', {
-    params: { page, size },
+    params,
   })
   return response.data
 }

@@ -118,7 +118,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/api/v1/groups/thisweek").permitAll()
                     // WebSocket 핸드셰이크는 HTTP 레벨에서 인증 없이 허용
                     // 실제 인증은 STOMP CONNECT 단계의 StompHandlerInterceptor에서 처리한다.
-                    .requestMatchers("/ws-chat/**").permitAll()
+                    // /ws-chat: 웹 SockJS, /ws-chat-native: 모바일 raw WebSocket
+                    .requestMatchers("/ws-chat/**", "/ws-chat-native", "/ws-chat-native/**").permitAll()
                     .anyRequest().authenticated())
 
             .exceptionHandling(e ->

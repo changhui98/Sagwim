@@ -1,16 +1,27 @@
+import { useEffect } from 'react'
 import { Redirect, Stack } from 'expo-router'
 import { useAuth } from '../../src/context/AuthContext'
 import { ActivityIndicator, View } from 'react-native'
 import { useTheme } from '../../src/context/ThemeContext'
+import { chatSocket } from '../../src/lib/chatSocket'
 
 /**
  * 보호된 라우트 그룹 레이아웃
  * - 비인증 상태면 /(auth)/login 으로 리다이렉트
  * - 부트스트래핑 중이면 로딩 화면 표시
+ * - 인증된 동안 채팅 STOMP 소켓을 단일 연결로 유지 (탭 전환과 무관)
  */
 export default function AppLayout() {
-  const { isAuthenticated, isBootstrapping } = useAuth()
+  const { isAuthenticated, isBootstrapping, token } = useAuth()
   const { colors } = useTheme()
+
+  useEffect(() => {
+    if (!isAuthenticated || !token.trim()) return
+    chatSocket.connect(token)
+    return () => {
+      chatSocket.disconnect()
+    }
+  }, [isAuthenticated, token])
 
   if (isBootstrapping) {
     return (
