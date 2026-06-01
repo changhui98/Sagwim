@@ -186,6 +186,8 @@ export default function ChatRoomScreen() {
     },
     sendBtnDisabled: { backgroundColor: colors.surface2 },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    // inverted FlatList 는 콘텐츠를 상하 반전(scaleY -1)하므로, 빈 컴포넌트를 다시 반전해 정상 표시한다.
+    emptyInverted: { flex: 1, alignItems: 'center', justifyContent: 'center', transform: [{ scaleY: -1 }] },
     emptyText: { fontSize: fontSize.base, color: colors.textMuted },
   }), [colors])
 
@@ -242,7 +244,7 @@ export default function ChatRoomScreen() {
               onEndReached={() => { if (hasNext && !loading) void loadMessages(cursor) }}
               onEndReachedThreshold={0.3}
               ListEmptyComponent={() => (
-                <View style={styles.center}>
+                <View style={styles.emptyInverted}>
                   <Text style={styles.emptyText}>대화를 시작해보세요.</Text>
                 </View>
               )}

@@ -32,6 +32,8 @@ class ChatSocketClient {
   private subscriptions: Map<number, RoomSubscription> = new Map()
   private pendingSubscriptions: PendingSubscription[] = []
   private globalListeners: Set<MessageHandler> = new Set()
+  // 연결 완료 전(또는 재연결 대기 중)에 전송 요청된 메시지를 보관했다가 onConnect 시 일괄 전송한다.
+  private pendingMessages: SendMessagePayload[] = []
 
   connect(token: string, onConnect?: () => void, onDisconnect?: () => void): void {
     if (this.client?.connected) return
@@ -49,6 +51,15 @@ class ChatSocketClient {
         this.pendingSubscriptions = []
         for (const { roomId, handler, handlerId } of pending) {
           this._subscribeRoomWithId(roomId, handler, handlerId)
+        }
+        // 연결 전 큐에 쌓인 전송 메시지를 일괄 발행한다.
+        const queued = [...this.pendingMessages]
+        this.pendingMessages = []
+        for (const payload of queued) {
+          this.client?.publish({
+            destination: '/app/chat/message',
+            body: JSON.stringify(payload),
+          })
         }
         onConnect?.()
       },
@@ -70,6 +81,7 @@ class ChatSocketClient {
     this.subscriptions.forEach((sub) => sub.unsubscribe())
     this.subscriptions.clear()
     this.pendingSubscriptions = []
+    this.pendingMessages = []
     this.globalListeners.clear()
     void this.client?.deactivate()
     this.client = null
@@ -131,11 +143,15 @@ class ChatSocketClient {
   }
 
   sendMessage(payload: SendMessagePayload): void {
-    if (!this.client?.connected) return
-    this.client.publish({
-      destination: '/app/chat/message',
-      body: JSON.stringify(payload),
-    })
+    if (this.client?.connected) {
+      this.client.publish({
+        destination: '/app/chat/message',
+        body: JSON.stringify(payload),
+      })
+      return
+    }
+    // 미연결 상태면 큐에 적재 — onConnect(최초 연결 또는 재연결) 시점에 전송된다.
+    this.pendingMessages.push(payload)
   }
 
   addMessageListener(handler: MessageHandler): () => void {
