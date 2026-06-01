@@ -43,9 +43,12 @@ export const getPopularGroups = async (
 export const getGroups = async (
   page = 0,
   size = 20,
+  keyword = '',
 ): Promise<PageResponse<GroupResponse>> => {
+  const params: Record<string, string | number> = { page, size }
+  if (keyword.trim()) params.keyword = keyword.trim()
   const response = await apiClient.get<PageResponse<GroupResponse>>('/groups', {
-    params: { page, size },
+    params,
   })
   return response.data
 }
