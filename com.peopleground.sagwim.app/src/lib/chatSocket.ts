@@ -44,8 +44,12 @@ class ChatSocketClient {
         Authorization: token,
       },
       reconnectDelay: 5000,
-      // RN 환경에서는 SockJS 가 아닌 raw WebSocket 을 사용하므로 표준 STOMP 프레임만 처리한다.
-      forceBinaryWSFrames: false,
+      // ── React Native 필수 설정 ──
+      // RN 의 WebSocket 구현은 텍스트 STOMP 프레임 끝의 NULL 종결자를 누락시키는 알려진 버그가 있어,
+      // 서버의 CONNECTED 등 응답 프레임을 @stomp/stompjs 가 파싱하지 못해 연결이 완료되지 않는다.
+      // 프레임을 바이너리로 주고받고(forceBinaryWSFrames), 수신 프레임에 NULL 을 보정(appendMissingNULLonIncoming)하면 해결된다.
+      forceBinaryWSFrames: true,
+      appendMissingNULLonIncoming: true,
       onConnect: () => {
         const pending = [...this.pendingSubscriptions]
         this.pendingSubscriptions = []
