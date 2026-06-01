@@ -15,10 +15,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { getUserProfile } from '../../src/api/userApi'
 import { getUserPosts } from '../../src/api/postApi'
+import { createDirectRoom } from '../../src/api/chatApi'
 import { PostCard } from '../../src/components/PostCard'
 import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
-import { fontSize, spacing } from '../../src/constants/theme'
+import { fontSize, radius, spacing } from '../../src/constants/theme'
 import { useTheme } from '../../src/context/ThemeContext'
+import { useAuth } from '../../src/context/AuthContext'
 import type { ContentResponse } from '../../src/types/post'
 import type { UserDetailResponse } from '../../src/types/user'
 
@@ -35,7 +37,10 @@ export default function UserProfileScreen() {
   const insets = useSafeAreaInsets()
   const { width: screenWidth } = useWindowDimensions()
   const { colors } = useTheme()
+  const { meUsername } = useAuth()
   const { username } = useLocalSearchParams<{ username: string }>()
+  const isMe = !!username && username === meUsername
+  const [messaging, setMessaging] = useState(false)
 
   const cellSize = (screenWidth - GRID_GAP * (GRID_COLUMNS - 1)) / GRID_COLUMNS
 
@@ -117,6 +122,27 @@ export default function UserProfileScreen() {
     void fetchPosts(page + 1)
   }
 
+  const handleMessage = async () => {
+    if (!profile || messaging) return
+    setMessaging(true)
+    try {
+      const room = await createDirectRoom(profile.id)
+      router.push({
+        pathname: '/(app)/chat-room',
+        params: {
+          roomId: String(room.roomId),
+          partnerUsername: profile.username,
+          partnerNickname: profile.nickname,
+          partnerProfileImageUrl: profile.profileImageUrl ?? '',
+        },
+      })
+    } catch {
+      // 무시 (이미 방이 존재하면 백엔드가 기존 방을 반환)
+    } finally {
+      setMessaging(false)
+    }
+  }
+
   const displayNickname = profile?.nickname ?? username ?? '사용자'
   const avatarUri = resolveImageUrl(profile?.profileImageUrl)
   const avatarInitial = displayNickname.charAt(0).toUpperCase()
@@ -161,6 +187,18 @@ export default function UserProfileScreen() {
     profileInfo: { flex: 1, gap: spacing.sp1 },
     nickname: { fontSize: fontSize.lg, fontWeight: '700', color: colors.text },
     bio: { fontSize: fontSize.sm, color: colors.textMuted, lineHeight: 18 },
+    messageButton: {
+      marginHorizontal: spacing.sp4,
+      marginBottom: spacing.sp3,
+      paddingVertical: spacing.sp2,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.xl,
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+    },
+    messageButtonPressed: { backgroundColor: colors.surface2 },
+    messageButtonText: { fontSize: fontSize.sm, fontWeight: '600', color: colors.text },
     tabRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border },
     tabItem: { flex: 1, alignItems: 'center', paddingVertical: spacing.sp3 },
     gridRow: { flexDirection: 'row' },
@@ -206,6 +244,18 @@ export default function UserProfileScreen() {
           )}
         </View>
       </View>
+
+      {!isMe && !!profile && (
+        <Pressable
+          style={({ pressed }) => [styles.messageButton, pressed && styles.messageButtonPressed]}
+          onPress={handleMessage}
+          disabled={messaging}
+        >
+          <Text style={styles.messageButtonText}>
+            {messaging ? '연결 중...' : '메시지 보내기'}
+          </Text>
+        </Pressable>
+      )}
 
       <View style={styles.tabRow}>
         <Pressable
