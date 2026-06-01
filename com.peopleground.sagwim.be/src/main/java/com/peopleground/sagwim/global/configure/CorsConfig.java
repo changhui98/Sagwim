@@ -39,6 +39,18 @@ public class CorsConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
+        // 모바일(React Native) WebSocket 핸드셰이크는 임의의 Origin(예: http://localhost:8081)을
+        // 전송하므로 웹용 allowedOrigins 로 제한하면 CORS 단계에서 403 으로 거부된다.
+        // 이 엔드포인트는 브라우저가 아닌 네이티브 클라이언트 전용이고 인증은 STOMP CONNECT
+        // 단계의 토큰으로 수행하므로 모든 Origin 을 허용한다(credentials 불필요).
+        CorsConfiguration wsConfig = new CorsConfiguration();
+        wsConfig.setAllowedOriginPatterns(List.of("*"));
+        wsConfig.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+        wsConfig.setAllowedHeaders(List.of("*"));
+        wsConfig.setAllowCredentials(false);
+        source.registerCorsConfiguration("/ws-chat-native", wsConfig);
+        source.registerCorsConfiguration("/ws-chat-native/**", wsConfig);
+
         source.registerCorsConfiguration("/**", config);
 
         return source;

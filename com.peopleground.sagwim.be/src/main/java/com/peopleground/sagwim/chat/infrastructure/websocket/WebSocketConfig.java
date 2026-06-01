@@ -27,8 +27,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             .withSockJS();
 
         // 모바일(React Native) 클라이언트용 raw WebSocket 엔드포인트
+        // RN 의 WebSocket 은 임의의 Origin 헤더(예: http://localhost:8081)를 보내므로
+        // 웹용 allowedOrigins 로 제한하면 핸드셰이크가 403 으로 거부된다.
+        // 모바일은 동일출처정책이 없고 실제 인증은 STOMP CONNECT 단계의 토큰으로 수행하므로
+        // 모든 Origin 을 허용한다.
         registry.addEndpoint("/ws-chat-native")
-            .setAllowedOriginPatterns(allowedOrigins.split(","));
+            .setAllowedOriginPatterns("*");
     }
 
     @Override
