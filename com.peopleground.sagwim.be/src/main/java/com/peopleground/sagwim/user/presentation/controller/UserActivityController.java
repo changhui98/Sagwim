@@ -5,6 +5,7 @@ import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.group.presentation.dto.response.GroupResponse;
 import com.peopleground.sagwim.user.application.UserActivityService;
+import com.peopleground.sagwim.user.presentation.dto.response.LikedActivityResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,6 +32,19 @@ public class UserActivityController {
         @AuthenticationPrincipal CustomUser customUser
     ) {
         return ResponseEntity.ok(userActivityService.getLikedContents(customUser, page, size));
+    }
+
+    /**
+     * 내가 좋아요를 누른 게시글·모임을 좋아요 시각 기준으로 통합 조회.
+     * GET /api/v1/users/me/activity/likes?page=0&size=10
+     */
+    @GetMapping("/likes")
+    public ResponseEntity<PageResponse<LikedActivityResponse>> getLikedActivities(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @AuthenticationPrincipal CustomUser customUser
+    ) {
+        return ResponseEntity.ok(userActivityService.getLikedActivities(customUser, page, size));
     }
 
     /**
