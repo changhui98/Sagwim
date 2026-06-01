@@ -1,8 +1,24 @@
 import type { PageResponse } from '../types/user'
 import type { ContentResponse } from '../types/post'
 import type { GroupResponse } from '../types/group'
+import type { LikedActivityResponse } from '../types/activity'
 import { API_BASE_URL } from './config'
 import { createAuthHeaders, parseResponse } from './apiUtils'
+
+/**
+ * 내가 좋아요를 누른 게시글·모임을 좋아요 시각 기준으로 통합 조회.
+ * GET /api/v1/users/me/activity/likes
+ */
+export const getLikedActivities = (
+  token: string,
+  page = 0,
+  size = 10,
+): Promise<PageResponse<LikedActivityResponse>> => {
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  return fetch(`${API_BASE_URL}/users/me/activity/likes?${params.toString()}`, {
+    headers: createAuthHeaders(token),
+  }).then((res) => parseResponse<PageResponse<LikedActivityResponse>>(res))
+}
 
 /**
  * 내가 좋아요를 누른 게시글 목록 조회.

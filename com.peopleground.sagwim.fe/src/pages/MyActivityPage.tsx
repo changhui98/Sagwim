@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getLikedPosts } from '../api/activityApi'
+import { getLikedActivities } from '../api/activityApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { extractErrorMessage } from '../utils/errorUtils'
-import type { ContentResponse } from '../types/post'
+import type { LikedActivityResponse } from '../types/activity'
 import profileStyles from '../components/profile/ProfileEditModal.module.css'
 import styles from './MyActivityPage.module.css'
 
@@ -18,7 +18,7 @@ export function MyActivityPage() {
   const handleUnauthorized = useHandleUnauthorized()
   const handleLogout = useLogout()
 
-  const [likedPosts, setLikedPosts] = useState<ContentResponse[]>([])
+  const [likedPosts, setLikedPosts] = useState<LikedActivityResponse[]>([])
   const [likedPostsPage, setLikedPostsPage] = useState(0)
   const [likedPostsHasMore, setLikedPostsHasMore] = useState(false)
   const [likedPostsLoading, setLikedPostsLoading] = useState(false)
@@ -31,7 +31,7 @@ export function MyActivityPage() {
     setLikedPostsLoading(true)
     setLikedPostsError('')
     try {
-      const res = await getLikedPosts(token, page, PAGE_SIZE)
+      const res = await getLikedActivities(token, page, PAGE_SIZE)
       setLikedPosts((prev) => append ? [...prev, ...res.content] : res.content)
       setLikedPostsHasMore(res.hasNext)
       setLikedPostsPage(page)
@@ -85,24 +85,33 @@ export function MyActivityPage() {
               <p className={styles.loadingMsg}>불러오는 중...</p>
             )}
             {!likedPostsLoading && likedPosts.length === 0 && !likedPostsError && (
-              <p className={styles.emptyMsg}>좋아요한 게시글이 없습니다.</p>
+              <p className={styles.emptyMsg}>좋아요한 활동이 없습니다.</p>
             )}
             {likedPostsError && likedPosts.length === 0 && (
               <p className={styles.errorMsg}>{likedPostsError}</p>
             )}
 
-            {likedPosts.map((post) => (
-              <div
-                key={`lp-${post.id}`}
-                role="button"
-                tabIndex={0}
-                className={styles.item}
-                onClick={() => navigate(`/app/posts/${post.id}`)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate(`/app/posts/${post.id}`) }}
-              >
-                <p className={styles.itemTitle}>{post.body}에 좋아요를 남겼습니다.</p>
-              </div>
-            ))}
+            {likedPosts.map((activity) => {
+              const path = activity.type === 'GROUP'
+                ? `/app/groups/${activity.targetId}`
+                : `/app/posts/${activity.targetId}`
+              const text = activity.type === 'GROUP'
+                ? `${activity.label} 모임에 좋아요를 남겼습니다.`
+                : `${activity.label}에 좋아요를 남겼습니다.`
+              return (
+                <div
+                  key={`${activity.type}-${activity.targetId}`}
+                  role="button"
+                  tabIndex={0}
+                  className={styles.item}
+                  onClick={() => navigate(path)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate(path) }}
+                >
+                  <p className={styles.itemTitle}>{text}</p>
+                  <span className={styles.chevron}>›</span>
+                </div>
+              )
+            })}
 
             {likedPostsLoading && likedPosts.length > 0 && (
               <p className={styles.loadingMore}>불러오는 중...</p>

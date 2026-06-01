@@ -8,12 +8,12 @@ import {
   View,
 } from 'react-native'
 import { Stack, router } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { getLikedPosts } from '../../src/api/activityApi'
-import { PostCard } from '../../src/components/PostCard'
+import { getLikedActivities } from '../../src/api/activityApi'
 import { useTheme } from '../../src/context/ThemeContext'
 import { fontSize, spacing } from '../../src/constants/theme'
-import type { ContentResponse } from '../../src/types/post'
+import type { LikedActivityResponse } from '../../src/types/activity'
 
 const PAGE_SIZE = 10
 
@@ -21,7 +21,7 @@ export default function MyActivityScreen() {
   const insets = useSafeAreaInsets()
   const { colors } = useTheme()
 
-  const [posts, setPosts] = useState<ContentResponse[]>([])
+  const [posts, setPosts] = useState<LikedActivityResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchingMore, setFetchingMore] = useState(false)
   const [page, setPage] = useState(0)
@@ -51,23 +51,23 @@ export default function MyActivityScreen() {
     emptyText: { fontSize: fontSize.base, color: colors.textMuted },
     separator: { height: 1, backgroundColor: colors.border },
     footer: { alignItems: 'center', paddingVertical: spacing.sp4 },
-    sectionHeader: {
+    item: {
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingHorizontal: spacing.sp4,
       paddingVertical: spacing.sp3,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-      backgroundColor: colors.surface2,
     },
-    sectionHeaderText: {
-      fontSize: fontSize.sm,
-      fontWeight: '600',
-      color: colors.textMuted,
+    itemText: {
+      flex: 1,
+      fontSize: fontSize.base,
+      lineHeight: fontSize.base * 1.45,
+      color: colors.text,
     },
   }), [colors])
 
   const loadPage = useCallback(async (pageNum: number, replace: boolean) => {
     try {
-      const res = await getLikedPosts(pageNum, PAGE_SIZE)
+      const res = await getLikedActivities(pageNum, PAGE_SIZE)
       setPosts((prev) => replace ? res.content : [...prev, ...res.content])
       setHasNext(res.hasNext)
       setPage(pageNum)
@@ -92,16 +92,6 @@ export default function MyActivityScreen() {
     await loadPage(page + 1, false)
     setFetchingMore(false)
   }, [fetchingMore, hasNext, page, loadPage])
-
-  const handleLikeToggle = useCallback((id: number, liked: boolean, likeCount: number) => {
-    setPosts((prev) =>
-      prev.map((p) => p.id === id ? { ...p, likedByMe: liked, likeCount } : p)
-    )
-  }, [])
-
-  const handleDelete = useCallback((id: number) => {
-    setPosts((prev) => prev.filter((p) => p.id !== id))
-  }, [])
 
   if (loading) {
     return (
@@ -135,23 +125,25 @@ export default function MyActivityScreen() {
 
         <FlatList
           data={posts}
-          keyExtractor={(item) => String(item.id)}
-          ListHeaderComponent={() => (
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderText}>좋아요한 게시글</Text>
-            </View>
-          )}
-          renderItem={({ item }) => (
-            <PostCard
-              post={item}
-              onLikeToggle={handleLikeToggle}
-              onDelete={handleDelete}
-            />
-          )}
+          keyExtractor={(item) => `${item.type}-${item.targetId}`}
+          renderItem={({ item }) => {
+            const target = item.type === 'GROUP'
+              ? { pathname: '/(app)/group-detail' as const, params: { id: String(item.targetId) } }
+              : { pathname: '/(app)/post-detail' as const, params: { id: String(item.targetId) } }
+            const text = item.type === 'GROUP'
+              ? `${item.label} 모임에 좋아요를 남겼습니다.`
+              : `${item.label}에 좋아요를 남겼습니다.`
+            return (
+              <Pressable style={styles.item} onPress={() => router.push(target)}>
+                <Text style={styles.itemText}>{text}</Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+              </Pressable>
+            )
+          }}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
           ListEmptyComponent={() => (
             <View style={styles.center}>
-              <Text style={styles.emptyText}>좋아요한 게시글이 없어요.</Text>
+              <Text style={styles.emptyText}>좋아요한 활동이 없어요.</Text>
             </View>
           )}
           ListFooterComponent={

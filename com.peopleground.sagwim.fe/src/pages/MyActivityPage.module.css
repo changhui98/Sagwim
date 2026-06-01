@@ -49,6 +49,14 @@
   margin: 0;
 }
 
+.chevron {
+  margin-left: auto;
+  padding-left: var(--sp-3);
+  font-size: 1.25rem;
+  color: var(--clr-text-secondary);
+  flex-shrink: 0;
+}
+
 /* ── 무한 스크롤 센티넬 ── */
 .sentinel {
   height: 1px;
