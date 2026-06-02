@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { searchUsers } from '../../../src/api/userApi'
 import { getPosts } from '../../../src/api/postApi'
 import { getGroups } from '../../../src/api/groupApi'
+import { getSearchHistory, saveSearchHistory } from '../../../src/api/searchHistoryApi'
 import { resolveImageUrl } from '../../../src/lib/resolveImageUrl'
 import { fontSize, radius, spacing } from '../../../src/constants/theme'
 import { useTheme } from '../../../src/context/ThemeContext'
@@ -24,6 +25,7 @@ import type { UserResponse } from '../../../src/types/user'
 import type { ContentResponse } from '../../../src/types/post'
 import type { GroupResponse } from '../../../src/types/group'
 import { GROUP_CATEGORY_LABELS } from '../../../src/types/group'
+import type { SearchHistoryResponse } from '../../../src/types/searchHistory'
 
 interface SearchResults {
   users: UserResponse[]
@@ -39,11 +41,13 @@ export default function SearchScreen() {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<SearchResults | null>(null)
+  const [recent, setRecent] = useState<SearchHistoryResponse[]>([])
 
-  // 탭 진입 시 입력창 포커스
+  // 탭 진입 시 입력창 포커스 + 최근 검색 기록 갱신
   useFocusEffect(
     useCallback(() => {
       const timer = setTimeout(() => inputRef.current?.focus(), 250)
+      getSearchHistory().then(setRecent).catch(() => {})
       return () => clearTimeout(timer)
     }, []),
   )
@@ -80,18 +84,28 @@ export default function SearchScreen() {
 
   const handleUserPress = useCallback((username: string) => {
     Keyboard.dismiss()
+    void saveSearchHistory('USER', username).catch(() => {})
     router.push({ pathname: '/(app)/user-profile', params: { username } })
   }, [])
 
   const handlePostPress = useCallback((id: number) => {
     Keyboard.dismiss()
+    void saveSearchHistory('POST', String(id)).catch(() => {})
     router.push({ pathname: '/(app)/post-detail', params: { id: String(id) } })
   }, [])
 
   const handleGroupPress = useCallback((id: number) => {
     Keyboard.dismiss()
+    void saveSearchHistory('GROUP', String(id)).catch(() => {})
     router.push({ pathname: '/(app)/group-detail', params: { id: String(id) } })
   }, [])
+
+  // 최근 검색 항목 클릭 — type 별 상세로 이동 (재방문도 기록 갱신)
+  const handleRecentPress = useCallback((item: SearchHistoryResponse) => {
+    if (item.type === 'USER') handleUserPress(item.targetId)
+    else if (item.type === 'POST') handlePostPress(Number(item.targetId))
+    else handleGroupPress(Number(item.targetId))
+  }, [handleUserPress, handlePostPress, handleGroupPress])
 
   const hasResults =
     !!results &&
@@ -221,6 +235,35 @@ export default function SearchScreen() {
     )
   }
 
+  const renderRecentRow = (item: SearchHistoryResponse) => {
+    const avatarUri = item.type === 'USER' ? resolveImageUrl(item.profileImageUrl) : null
+    const showAvatar = item.type !== 'POST'
+    const typeLabel = item.type === 'USER' ? '유저' : item.type === 'POST' ? '게시글' : '모임'
+    return (
+      <Pressable
+        key={`${item.type}-${item.targetId}`}
+        style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
+        onPress={() => handleRecentPress(item)}
+      >
+        {showAvatar && (
+          avatarUri ? (
+            <Image source={{ uri: avatarUri }} style={styles.avatar} contentFit="cover" />
+          ) : (
+            <View style={styles.avatarFallback}>
+              <Text style={styles.avatarInitial}>{item.label.charAt(0).toUpperCase()}</Text>
+            </View>
+          )
+        )}
+        <View style={styles.meta}>
+          <Text style={styles.primary} numberOfLines={1}>
+            {item.label.length > 60 ? item.label.slice(0, 60) + '…' : item.label}
+          </Text>
+          <Text style={styles.secondary} numberOfLines={1}>{typeLabel}</Text>
+        </View>
+      </Pressable>
+    )
+  }
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -259,9 +302,16 @@ export default function SearchScreen() {
             </View>
           )}
 
-          {!loading && !query.trim() && (
+          {!loading && !query.trim() && recent.length === 0 && (
             <View style={styles.centerWrap}>
               <Text style={styles.emptyText}>검색어를 입력해주세요.</Text>
+            </View>
+          )}
+
+          {!loading && !query.trim() && recent.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>최근 검색</Text>
+              {recent.map(renderRecentRow)}
             </View>
           )}
 
