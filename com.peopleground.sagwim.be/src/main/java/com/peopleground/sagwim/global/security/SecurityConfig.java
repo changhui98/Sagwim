@@ -11,6 +11,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import jakarta.servlet.DispatcherType;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -95,6 +96,11 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .authorizeHttpRequests(auth ->
                 auth
+                    // Spring Security 6은 기본적으로 ASYNC/ERROR 디스패치까지 인증을 재검사한다.
+                    // SSE(/notifications/stream) 같은 비동기 응답은 타임아웃·종료 시 ASYNC 로 재디스패치되는데
+                    // 그 시점 비동기 스레드에는 SecurityContext 가 없어 AuthorizationDeniedException 이 발생한다.
+                    // ASYNC/ERROR 디스패치는 이미 REQUEST 단계에서 인증된 요청의 연속이므로 허용한다.
+                    .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
                     // CORS preflight(OPTIONS) 요청은 인증 없이 허용
                     // — .cors()만으로도 처리되지만 명시적으로 선언해 의도를 분명히 함
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()

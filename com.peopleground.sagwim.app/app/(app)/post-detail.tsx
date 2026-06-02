@@ -31,6 +31,7 @@ import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
 import { useAuth } from '../../src/context/AuthContext'
 import { ActionSheet, type ActionSheetOption } from '../../src/components/common/ActionSheet'
 import { ConfirmDialog } from '../../src/components/common/ConfirmDialog'
+import { BottomTabBar } from '../../src/components/BottomTabBar'
 import { ReportModal } from '../../src/components/common/ReportModal'
 import { fontSize, radius, spacing } from '../../src/constants/theme'
 import { useTheme } from '../../src/context/ThemeContext'
@@ -651,6 +652,7 @@ export default function PostDetailScreen() {
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bg },
+    flexFill: { flex: 1 },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.sp6 },
     errorText: { fontSize: fontSize.base, color: colors.error, textAlign: 'center', marginBottom: spacing.sp4 },
     backButton: { backgroundColor: colors.accent, paddingHorizontal: spacing.sp6, paddingVertical: spacing.sp3, borderRadius: radius.md },
@@ -811,10 +813,11 @@ export default function PostDetailScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false, gestureEnabled: true }} />
+      <View style={[styles.container, { paddingTop: insets.top }]}>
       <KeyboardAvoidingView
-        style={[styles.container, { paddingTop: insets.top }]}
+        style={styles.flexFill}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={0}
+        keyboardVerticalOffset={insets.top}
       >
         {/* 헤더 */}
         <View style={styles.header}>
@@ -967,7 +970,7 @@ export default function PostDetailScreen() {
         />
 
         {/* 하단 댓글 입력 바 */}
-        <View style={[styles.inputBar, { paddingBottom: insets.bottom + spacing.sp2 }]}>
+        <View style={[styles.inputBar, { paddingBottom: spacing.sp2 }]}>
           {replyTarget && (
             <View style={styles.replyIndicator}>
               <Text style={styles.replyIndicatorText} numberOfLines={1}>
@@ -1016,6 +1019,7 @@ export default function PostDetailScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
+      <BottomTabBar />
 
       {post && (
         <>
@@ -1097,6 +1101,7 @@ export default function PostDetailScreen() {
         onClose={() => setShowPostAlreadyReported(false)}
         presetAlreadyReported
       />
+      </View>
     </>
   )
 }

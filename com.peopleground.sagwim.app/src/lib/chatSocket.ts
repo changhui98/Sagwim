@@ -32,6 +32,8 @@ class ChatSocketClient {
   private subscriptions: Map<number, RoomSubscription> = new Map()
   private pendingSubscriptions: PendingSubscription[] = []
   private globalListeners: Set<MessageHandler> = new Set()
+  // 연결 완료 전(또는 재연결 대기 중)에 전송 요청된 메시지를 보관했다가 onConnect 시 일괄 전송한다.
+  private pendingMessages: SendMessagePayload[] = []
 
   connect(token: string, onConnect?: () => void, onDisconnect?: () => void): void {
     if (this.client?.connected) return
@@ -42,13 +44,26 @@ class ChatSocketClient {
         Authorization: token,
       },
       reconnectDelay: 5000,
-      // RN 환경에서는 SockJS 가 아닌 raw WebSocket 을 사용하므로 표준 STOMP 프레임만 처리한다.
-      forceBinaryWSFrames: false,
+      // ── React Native 필수 설정 ──
+      // RN 의 WebSocket 구현은 텍스트 STOMP 프레임 끝의 NULL 종결자를 누락시키는 알려진 버그가 있어,
+      // 서버의 CONNECTED 등 응답 프레임을 @stomp/stompjs 가 파싱하지 못해 연결이 완료되지 않는다.
+      // 프레임을 바이너리로 주고받고(forceBinaryWSFrames), 수신 프레임에 NULL 을 보정(appendMissingNULLonIncoming)하면 해결된다.
+      forceBinaryWSFrames: true,
+      appendMissingNULLonIncoming: true,
       onConnect: () => {
         const pending = [...this.pendingSubscriptions]
         this.pendingSubscriptions = []
         for (const { roomId, handler, handlerId } of pending) {
           this._subscribeRoomWithId(roomId, handler, handlerId)
+        }
+        // 연결 전 큐에 쌓인 전송 메시지를 일괄 발행한다.
+        const queued = [...this.pendingMessages]
+        this.pendingMessages = []
+        for (const payload of queued) {
+          this.client?.publish({
+            destination: '/app/chat/message',
+            body: JSON.stringify(payload),
+          })
         }
         onConnect?.()
       },
@@ -70,6 +85,7 @@ class ChatSocketClient {
     this.subscriptions.forEach((sub) => sub.unsubscribe())
     this.subscriptions.clear()
     this.pendingSubscriptions = []
+    this.pendingMessages = []
     this.globalListeners.clear()
     void this.client?.deactivate()
     this.client = null
@@ -131,11 +147,15 @@ class ChatSocketClient {
   }
 
   sendMessage(payload: SendMessagePayload): void {
-    if (!this.client?.connected) return
-    this.client.publish({
-      destination: '/app/chat/message',
-      body: JSON.stringify(payload),
-    })
+    if (this.client?.connected) {
+      this.client.publish({
+        destination: '/app/chat/message',
+        body: JSON.stringify(payload),
+      })
+      return
+    }
+    // 미연결 상태면 큐에 적재 — onConnect(최초 연결 또는 재연결) 시점에 전송된다.
+    this.pendingMessages.push(payload)
   }
 
   addMessageListener(handler: MessageHandler): () => void {
