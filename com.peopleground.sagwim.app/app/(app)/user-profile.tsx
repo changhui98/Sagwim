@@ -199,7 +199,7 @@ export default function UserProfileScreen() {
     },
     messageButtonPressed: { backgroundColor: colors.surface2 },
     messageButtonText: { fontSize: fontSize.sm, fontWeight: '600', color: colors.text },
-    tabRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: colors.border },
+    tabRow: { flexDirection: 'row' },
     tabItem: { flex: 1, alignItems: 'center', paddingVertical: spacing.sp3 },
     gridRow: { flexDirection: 'row' },
     cell: { overflow: 'hidden', backgroundColor: colors.surface2 },
