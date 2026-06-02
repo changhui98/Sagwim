@@ -17,6 +17,7 @@ import { getUserProfile } from '../../src/api/userApi'
 import { getUserPosts } from '../../src/api/postApi'
 import { createDirectRoom } from '../../src/api/chatApi'
 import { PostCard } from '../../src/components/PostCard'
+import { BottomTabBar } from '../../src/components/BottomTabBar'
 import { resolveImageUrl } from '../../src/lib/resolveImageUrl'
 import { fontSize, radius, spacing } from '../../src/constants/theme'
 import { useTheme } from '../../src/context/ThemeContext'
@@ -149,6 +150,7 @@ export default function UserProfileScreen() {
 
   const styles = useMemo(() => StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.bg },
+    list: { flex: 1 },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -376,6 +378,7 @@ export default function UserProfileScreen() {
         ) : (
           <FlatList
             key={viewMode}
+            style={styles.list}
             data={listData}
             keyExtractor={(item, index) =>
               item.type === 'photo-row' ? `row-${index}` : `post-${item.post.id}`
@@ -387,9 +390,11 @@ export default function UserProfileScreen() {
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.4}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: insets.bottom + spacing.sp8 }}
+            contentContainerStyle={{ paddingBottom: spacing.sp8 }}
           />
         )}
+
+        <BottomTabBar />
       </View>
     </>
   )
