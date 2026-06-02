@@ -16,6 +16,7 @@ import {
 } from 'react-native'
 import { Image } from 'expo-image'
 import { router, Stack, useLocalSearchParams } from 'expo-router'
+import { BottomTabBar } from '../../src/components/BottomTabBar'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -685,6 +686,7 @@ export default function GroupDetailScreen() {
             )}
           </View>
         </ScrollView>
+        <BottomTabBar />
       </View>
     </>
   )
