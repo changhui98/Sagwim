@@ -4,10 +4,12 @@ import { useAuth } from '../../context/AuthContext'
 import { searchUsers } from '../../api/userApi'
 import { getPosts } from '../../api/postApi'
 import { getGroups } from '../../api/groupApi'
+import { getSearchHistory, saveSearchHistory } from '../../api/searchHistoryApi'
 import type { UserResponse } from '../../types/user'
 import type { ContentResponse } from '../../types/post'
 import type { GroupResponse } from '../../types/group'
 import { GROUP_CATEGORY_LABELS } from '../../types/group'
+import type { SearchHistoryResponse } from '../../types/searchHistory'
 import styles from './SearchContent.module.css'
 
 interface SearchResults {
@@ -55,10 +57,20 @@ export function SearchContent({ onClose }: SearchContentProps) {
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<SearchResults | null>(null)
+  const [recent, setRecent] = useState<SearchHistoryResponse[]>([])
 
   useEffect(() => {
     inputRef.current?.focus()
   }, [])
+
+  // 최근 검색 기록 로드
+  useEffect(() => {
+    let active = true
+    getSearchHistory(token)
+      .then((data) => { if (active) setRecent(data) })
+      .catch(() => { if (active) setRecent([]) })
+    return () => { active = false }
+  }, [token])
 
   useEffect(() => {
     const trimmed = query.trim()
@@ -89,19 +101,29 @@ export function SearchContent({ onClose }: SearchContentProps) {
   }, [query, token])
 
   const handleUserClick = useCallback((username: string) => {
+    void saveSearchHistory(token, 'USER', username).catch(() => {})
     navigate(`/app/profile/${username}`)
     onClose()
-  }, [navigate, onClose])
+  }, [navigate, onClose, token])
 
   const handlePostClick = useCallback((postId: number) => {
+    void saveSearchHistory(token, 'POST', String(postId)).catch(() => {})
     navigate(`/app/posts/${postId}`)
     onClose()
-  }, [navigate, onClose])
+  }, [navigate, onClose, token])
 
   const handleGroupClick = useCallback((groupId: number) => {
+    void saveSearchHistory(token, 'GROUP', String(groupId)).catch(() => {})
     navigate(`/app/groups/${groupId}`)
     onClose()
-  }, [navigate, onClose])
+  }, [navigate, onClose, token])
+
+  // 최근 검색 항목 클릭 — type 별 상세로 이동 (재방문도 기록 갱신)
+  const handleRecentClick = useCallback((item: SearchHistoryResponse) => {
+    if (item.type === 'USER') handleUserClick(item.targetId)
+    else if (item.type === 'POST') handlePostClick(Number(item.targetId))
+    else handleGroupClick(Number(item.targetId))
+  }, [handleUserClick, handlePostClick, handleGroupClick])
 
   const hasResults =
     results &&
@@ -127,8 +149,49 @@ export function SearchContent({ onClose }: SearchContentProps) {
         </div>
       )}
 
-      {!loading && !query.trim() && (
+      {!loading && !query.trim() && recent.length === 0 && (
         <p className={styles.emptyMessage}>검색어를 입력해주세요.</p>
+      )}
+
+      {!loading && !query.trim() && recent.length > 0 && (
+        <div className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <p className={styles.sectionTitle}>최근 검색</p>
+          </div>
+          <ul className={styles.resultList}>
+            {recent.map((item) => (
+              <li key={`${item.type}-${item.targetId}`}>
+                <button
+                  type="button"
+                  className={styles.resultItem}
+                  onClick={() => handleRecentClick(item)}
+                >
+                  {item.type === 'USER' && (
+                    <div className={styles.avatar}>
+                      {item.profileImageUrl ? (
+                        <AvatarImage
+                          src={item.profileImageUrl}
+                          alt={item.label}
+                          fallback={item.label[0]}
+                        />
+                      ) : (
+                        <span className={styles.avatarFallback}>{item.label[0]}</span>
+                      )}
+                    </div>
+                  )}
+                  <div className={styles.resultMeta}>
+                    <span className={styles.resultPrimary}>
+                      {item.label.length > 60 ? item.label.slice(0, 60) + '…' : item.label}
+                    </span>
+                    <span className={styles.resultSecondary}>
+                      {item.type === 'USER' ? '유저' : item.type === 'POST' ? '게시글' : '모임'}
+                    </span>
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {!loading && query.trim() && results && !hasResults && (
