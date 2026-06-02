@@ -37,11 +37,16 @@ export function BottomTabBar() {
       backgroundColor: colors.surface,
       height: TAB_CONTENT_HEIGHT + insets.bottom,
       paddingBottom: insets.bottom,
+      paddingTop: 0,
     },
     item: {
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    // (tabs)/_layout 의 tabBarIconStyle.marginTop 과 동일하게 아이콘을 내려 메인 탭바와 위치를 일치시킨다.
+    icon: {
+      marginTop: insets.bottom / 2,
     },
   }), [colors, insets.bottom])
 
@@ -54,7 +59,7 @@ export function BottomTabBar() {
           onPress={() => router.navigate(tab.path as never)}
           accessibilityRole="button"
         >
-          <Ionicons name={tab.icon} size={ICON_SIZE} color={colors.textMuted} />
+          <Ionicons name={tab.icon} size={ICON_SIZE} color={colors.textMuted} style={styles.icon} />
         </Pressable>
       ))}
     </View>
