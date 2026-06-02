@@ -4,6 +4,7 @@ import com.peopleground.sagwim.user.domain.entity.OAuthProvider;
 import com.peopleground.sagwim.user.domain.entity.User;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +16,8 @@ public interface UserRepository {
     Optional<User> findById(UUID id);
 
     Optional<User> findByUsername(String username);
+
+    List<User> findByUsernameIn(Collection<String> usernames);
 
     boolean existsByUsername(String username);
 

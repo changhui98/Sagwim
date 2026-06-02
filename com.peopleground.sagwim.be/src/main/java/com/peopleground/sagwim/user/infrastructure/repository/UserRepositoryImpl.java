@@ -33,6 +33,14 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public java.util.List<User> findByUsernameIn(java.util.Collection<String> usernames) {
+        if (usernames == null || usernames.isEmpty()) {
+            return java.util.List.of();
+        }
+        return userJpaRepository.findByUsernameIn(usernames);
+    }
+
+    @Override
     public boolean existsByUsername(String username) {
 
         return userJpaRepository.existsByUsername(username);
