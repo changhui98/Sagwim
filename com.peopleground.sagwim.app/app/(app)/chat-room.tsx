@@ -50,7 +50,8 @@ export default function ChatRoomScreen() {
 
   const loadMessages = useCallback(
     async (nextCursor?: number) => {
-      if (!roomId) return
+      // Number(params.roomId) 가 NaN/-1/0 인 비정상 진입(딥링크 등)을 모두 차단한다.
+      if (!Number.isFinite(roomId) || roomId <= 0) return
       setLoading(true)
       try {
         const res = await fetchMessages(roomId, nextCursor)
@@ -77,7 +78,7 @@ export default function ChatRoomScreen() {
 
   // 읽음 처리: 낙관적 메시지(음수 id)는 건너뛴다.
   useEffect(() => {
-    if (messages.length === 0) return
+    if (!Number.isFinite(roomId) || roomId <= 0 || messages.length === 0) return
     const lastId = messages[0].id
     if (lastId <= 0) return
     void markAsRead(roomId, lastId).catch(() => null)
@@ -105,6 +106,8 @@ export default function ChatRoomScreen() {
   const handleSend = () => {
     const content = draft.trim()
     if (!content) return
+    // roomId 가 유효하지 않으면 전송하지 않는다(비정상 진입 방어).
+    if (!Number.isFinite(roomId) || roomId <= 0) return
     const tempId = optimisticIdCounter--
     const optimistic: ChatMessage = {
       id: tempId,

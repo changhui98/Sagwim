@@ -20,7 +20,8 @@ export function useChatRoom({ roomId, onMessage }: UseChatRoomOptions) {
   }, [onMessage])
 
   useEffect(() => {
-    if (roomId === null) return
+    // roomId 가 없거나 유효하지 않은 값이면 구독하지 않는다.
+    if (roomId === null || roomId <= 0) return
     const handlerId = chatSocket.subscribeRoom(roomId, (msg) => handlerRef.current(msg))
     return () => {
       chatSocket.unsubscribeRoom(roomId, handlerId)
