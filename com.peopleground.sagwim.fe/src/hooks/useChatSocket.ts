@@ -46,7 +46,8 @@ export function useChatRoom({ roomId, onMessage }: UseChatRoomOptions) {
   }, [onMessage])
 
   useEffect(() => {
-    if (roomId === null) return
+    // roomId 가 없거나 유효하지 않은 값(placeholder -1 등)이면 구독하지 않는다.
+    if (roomId === null || roomId <= 0) return
 
     // subscribeRoom은 핸들러 식별자(symbol)를 반환한다.
     // 소켓이 아직 연결 중이면 chatSocket 내부 큐에 적재되었다가

@@ -32,7 +32,8 @@ export function ChatRoomView({ roomId, roomSummary, myUsername }: Props) {
 
   const loadMessages = useCallback(
     async (nextCursor?: number) => {
-      if (!token) return
+      // roomId 가 유효하지 않으면(채팅방 미선택 placeholder -1 등) 조회하지 않는다.
+      if (!token || roomId <= 0) return
       setLoading(true)
       try {
         const res = await fetchMessages(token, roomId, nextCursor)
@@ -68,7 +69,7 @@ export function ChatRoomView({ roomId, roomSummary, myUsername }: Props) {
 
   // 읽음 처리: 낙관적 메시지(음수 id)는 아직 서버에 저장되지 않았으므로 건너뛴다.
   useEffect(() => {
-    if (!token || messages.length === 0) return
+    if (!token || roomId <= 0 || messages.length === 0) return
     const lastId = messages[0].id
     if (lastId <= 0) return
     void markAsRead(token, roomId, lastId).catch(() => null)
@@ -97,6 +98,8 @@ export function ChatRoomView({ roomId, roomSummary, myUsername }: Props) {
   })
 
   const handleSend = (content: string) => {
+    // roomId 가 유효하지 않으면 전송하지 않는다(placeholder 상태 방어).
+    if (roomId <= 0) return
     // 낙관적 업데이트: 서버 echo를 기다리지 않고 즉시 화면에 표시한다.
     // 임시 id로 음수 값을 사용하므로 서버 id(양수)와 충돌하지 않는다.
     const tempId = optimisticIdCounter--
