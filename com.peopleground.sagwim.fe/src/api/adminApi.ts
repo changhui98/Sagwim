@@ -3,7 +3,7 @@ import type { AdminContentResponse } from '../types/post'
 import type { MonthlyStatsResponse } from '../types/adminStats'
 import type { AdminImageResponse } from '../types/image'
 import type { AdminGroupResponse } from '../types/group'
-import type { DeleteLogEntry } from '../types/deleteLog'
+import type { DeleteLogEntry, DeleteLogSummary } from '../types/deleteLog'
 import type { AdminReportEntry } from '../types/report'
 import type { AdminInquiryEntry } from '../types/inquiry'
 import type { ForbiddenWordResponse } from '../types/moderation'
@@ -209,6 +209,19 @@ export const restoreDeleteLog = (
     method: 'POST',
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<DeleteLogEntry>(response))
+}
+
+export const getDeleteLogSummary = (
+  token: string,
+  from?: string,
+  to?: string,
+): Promise<DeleteLogSummary> => {
+  const params = new URLSearchParams()
+  if (from) params.set('from', from)
+  if (to) params.set('to', to)
+  return fetch(`${API_BASE_URL}/admin/delete-logs/summary?${params.toString()}`, {
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<DeleteLogSummary>(response))
 }
 
 export const getAdminReports = (

@@ -1,4 +1,10 @@
-import type { ErrorLogEntry, LogPageResponse, RegistrationLogEntry } from '../types/log'
+import type {
+  ErrorLogEntry,
+  ErrorLogSummary,
+  LogPageResponse,
+  RegistrationLogEntry,
+  RegistrationLogSummary,
+} from '../types/log'
 import { API_BASE_URL } from './config'
 import { createAuthHeaders, parseResponse } from './apiUtils'
 
@@ -46,4 +52,30 @@ export const getRegistrationLogs = (
   return fetch(`${API_BASE_URL}/admin/logs/registration?${params.toString()}`, {
     headers: createAuthHeaders(token),
   }).then((r) => parseResponse<LogPageResponse<RegistrationLogEntry>>(r))
+}
+
+export const getErrorLogSummary = (
+  token: string,
+  from?: string,
+  to?: string,
+): Promise<ErrorLogSummary> => {
+  const params = new URLSearchParams()
+  if (from) params.set('from', from)
+  if (to) params.set('to', to)
+  return fetch(`${API_BASE_URL}/admin/logs/error/summary?${params.toString()}`, {
+    headers: createAuthHeaders(token),
+  }).then((r) => parseResponse<ErrorLogSummary>(r))
+}
+
+export const getRegistrationLogSummary = (
+  token: string,
+  from?: string,
+  to?: string,
+): Promise<RegistrationLogSummary> => {
+  const params = new URLSearchParams()
+  if (from) params.set('from', from)
+  if (to) params.set('to', to)
+  return fetch(`${API_BASE_URL}/admin/logs/registration/summary?${params.toString()}`, {
+    headers: createAuthHeaders(token),
+  }).then((r) => parseResponse<RegistrationLogSummary>(r))
 }

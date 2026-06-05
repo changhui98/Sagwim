@@ -27,3 +27,17 @@ export interface LogPageResponse<T> {
   totalPages: number
   hasNext: boolean
 }
+
+/** 에러 로그 요약 — 조회 기간 기준 status group별 건수 */
+export interface ErrorLogSummary {
+  total: number
+  count4xx: number
+  count5xx: number
+}
+
+/** 회원가입 로그 요약 — 조회 기간 기준 provider별 건수 */
+export interface RegistrationLogSummary {
+  total: number
+  /** provider 원본 문자열(대소문자 혼재 가능) → 건수 */
+  byProvider: Record<string, number>
+}
