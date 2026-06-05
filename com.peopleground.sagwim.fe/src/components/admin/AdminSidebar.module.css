@@ -70,8 +70,23 @@
 .nav {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-1);
+  gap: var(--sp-5);
   padding: var(--sp-4) 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sectionTitle {
+  padding: 0 var(--sp-5) var(--sp-2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--clr-text-muted);
 }
 
 .menuItem {
@@ -91,6 +106,7 @@
   cursor: pointer;
   width: 100%;
   text-align: left;
+  border-radius: var(--r-md);
 }
 
 .menuItem:hover {
@@ -100,16 +116,36 @@
 
 .menuItemActive {
   composes: menuItem;
-  background: var(--clr-accent-muted);
   color: var(--clr-accent);
   font-weight: 700;
 }
 
+.menuItemActive:hover {
+  background: none;
+}
+
 .menuIcon {
-  width: 24px;
-  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
-  object-fit: contain;
+  color: var(--clr-text-muted);
+  transition: color var(--t-fast);
+}
+
+.menuIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.menuItem:hover .menuIcon {
+  color: var(--clr-text);
+}
+
+.menuItemActive .menuIcon {
+  color: var(--clr-accent);
 }
 
 .menuLabel {
@@ -146,8 +182,11 @@
     display: none;
   }
 
-  .menuIcon {
-    width: 28px;
-    height: 28px;
+  .sectionTitle {
+    display: none;
+  }
+
+  .nav {
+    gap: var(--sp-3);
   }
 }
