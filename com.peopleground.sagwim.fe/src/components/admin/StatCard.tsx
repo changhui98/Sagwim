@@ -7,6 +7,7 @@ interface StatCardProps {
   subtitle?: string
   loading?: boolean
   accent?: boolean
+  className?: string
 }
 
 export function StatCard({
@@ -15,9 +16,12 @@ export function StatCard({
   subtitle,
   loading = false,
   accent = false,
+  className,
 }: StatCardProps) {
   return (
-    <div className={accent ? styles.cardAccent : styles.card}>
+    <div
+      className={`${accent ? styles.cardAccent : styles.card}${className ? ` ${className}` : ''}`}
+    >
       <p className={styles.title}>{title}</p>
       {loading ? (
         <Skeleton width="80px" height="28px" />

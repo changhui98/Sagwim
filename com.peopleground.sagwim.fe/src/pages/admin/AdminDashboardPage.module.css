@@ -25,16 +25,12 @@
   gap: var(--sp-5);
 }
 
-.chartsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--sp-5);
-}
-
-@media (max-width: 1024px) {
-  .chartsGrid {
-    grid-template-columns: 1fr;
-  }
+/* 현재 시간 카드: 오른쪽 테두리만 남기고 나머지 제거 */
+.timeCard {
+  border-top: none;
+  border-left: none;
+  border-bottom: none;
+  border-radius: 0;
 }
 
 .sectionCard {

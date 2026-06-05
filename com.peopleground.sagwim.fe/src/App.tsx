@@ -15,6 +15,7 @@ import { ProfileEditGenderPage } from './pages/ProfileEditGenderPage'
 import { ProfileEditBirthDatePage } from './pages/ProfileEditBirthDatePage'
 import { ProfileEditAddressPage } from './pages/ProfileEditAddressPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
+import { AdminChartsPage } from './pages/admin/AdminChartsPage'
 import { AdminUserListPage } from './pages/admin/AdminUserListPage'
 import { AdminGroupsPage } from './pages/admin/AdminGroupsPage'
 import { AdminPostListPage } from './pages/admin/AdminPostListPage'
@@ -49,7 +50,7 @@ function App() {
   useDevToolsProtection()
 
   return (
-    <div key={location.key} className="page-transition">
+    <div className="page-transition">
     <Routes location={location}>
       <Route path="/" element={<HomePage />} />
       <Route
@@ -92,6 +93,7 @@ function App() {
         <Route path="/app/messages/:roomId" element={<MessagesPage />} />
         <Route path="/app/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardPage />} />
+          <Route path="charts" element={<AdminChartsPage />} />
           <Route path="users" element={<AdminUserListPage />} />
           <Route path="groups" element={<AdminGroupsPage />} />
           <Route path="posts" element={<AdminPostListPage />} />
