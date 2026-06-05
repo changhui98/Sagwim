@@ -75,7 +75,34 @@ export function AdminLayout() {
     <div className={styles.wrapper}>
       <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
         <nav className={styles.navbar}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className={styles.navLeft}>
+            <Link to="/app" className={styles.homeButton} aria-label="사이트 홈으로 이동" title="홈으로">
+              <svg
+                className={styles.iconSvg}
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3 10.5 12 3l9 7.5"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </Link>
+          </div>
+
+          <div className={styles.navCenter}>
             <Link to="/app/admin" className={styles.navBrand}>
               Sagwim
             </Link>
@@ -83,53 +110,6 @@ export function AdminLayout() {
           </div>
 
           <div className={styles.navRight}>
-            <button
-              type="button"
-              className={styles.iconButton}
-              onClick={() => window.location.reload()}
-              aria-label="새로고침"
-              title="새로고침"
-            >
-              <svg
-                className={`${styles.iconSvg} ${styles.refreshIcon}`}
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M21 3v5h-5"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M3 16v5h5"
-                  stroke="currentColor"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-            <Link to="/app" className={styles.backLink} aria-label="사이트 홈으로 이동">
-              HOME
-            </Link>
             <button
               type="button"
               className={styles.logoutButton}
