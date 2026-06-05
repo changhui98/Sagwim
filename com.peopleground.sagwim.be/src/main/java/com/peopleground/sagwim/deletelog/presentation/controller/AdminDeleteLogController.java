@@ -2,6 +2,7 @@ package com.peopleground.sagwim.deletelog.presentation.controller;
 
 import com.peopleground.sagwim.deletelog.application.service.DeleteLogService;
 import com.peopleground.sagwim.deletelog.presentation.dto.response.DeleteLogResponse;
+import com.peopleground.sagwim.deletelog.presentation.dto.response.DeleteLogSummaryResponse;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import java.time.LocalDate;
@@ -42,6 +43,19 @@ public class AdminDeleteLogController {
             return ResponseEntity.ok(deleteLogService.findAll(effectiveFrom, effectiveTo, page, size));
         }
         return ResponseEntity.ok(deleteLogService.findAll(page, size));
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<DeleteLogSummaryResponse> getDeleteLogSummary(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        LocalDate effectiveFrom = from != null ? from : LocalDate.now();
+        LocalDate effectiveTo = to != null ? to : LocalDate.now();
+        if (effectiveFrom.isAfter(effectiveTo)) {
+            effectiveFrom = effectiveTo;
+        }
+        return ResponseEntity.ok(deleteLogService.getSummary(effectiveFrom, effectiveTo));
     }
 
     @PostMapping("/{id}/restore")

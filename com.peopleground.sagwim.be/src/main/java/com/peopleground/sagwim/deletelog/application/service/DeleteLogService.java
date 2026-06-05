@@ -7,6 +7,7 @@ import com.peopleground.sagwim.deletelog.domain.TargetType;
 import com.peopleground.sagwim.deletelog.domain.entity.DeleteLog;
 import com.peopleground.sagwim.deletelog.domain.repository.DeleteLogRepository;
 import com.peopleground.sagwim.deletelog.presentation.dto.response.DeleteLogResponse;
+import com.peopleground.sagwim.deletelog.presentation.dto.response.DeleteLogSummaryResponse;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.group.domain.entity.Group;
@@ -16,6 +17,7 @@ import com.peopleground.sagwim.user.domain.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -58,6 +60,18 @@ public class DeleteLogService {
             deleteLogRepository.findAllByDeletedAtBetweenOrderByDeletedAtDesc(fromDt, toDt, pageable)
                 .map(DeleteLogResponse::from)
         );
+    }
+
+    @Transactional(readOnly = true)
+    public DeleteLogSummaryResponse getSummary(LocalDate from, LocalDate to) {
+        LocalDateTime fromDt = from.atStartOfDay();
+        LocalDateTime toDt = to.atTime(LocalTime.MAX);
+
+        long total = deleteLogRepository.countByDeletedAtBetween(fromDt, toDt);
+        long restored = deleteLogRepository.countRestoredByDeletedAtBetween(fromDt, toDt);
+        Map<String, Long> byTargetType = deleteLogRepository.countGroupByTargetTypeBetween(fromDt, toDt);
+
+        return new DeleteLogSummaryResponse(total, byTargetType, restored, total - restored);
     }
 
     /**
