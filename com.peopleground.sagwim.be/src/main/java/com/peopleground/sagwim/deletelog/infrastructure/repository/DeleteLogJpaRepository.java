@@ -2,6 +2,7 @@ package com.peopleground.sagwim.deletelog.infrastructure.repository;
 
 import com.peopleground.sagwim.deletelog.domain.entity.DeleteLog;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,5 +21,15 @@ public interface DeleteLogJpaRepository extends JpaRepository<DeleteLog, Long> {
     Optional<DeleteLog> findTopByTargetTypeAndTargetIdAndRestoredFalse(
         @Param("targetType") String targetType,
         @Param("targetId") String targetId
+    );
+
+    long countByDeletedAtBetween(LocalDateTime from, LocalDateTime to);
+
+    long countByRestoredTrueAndDeletedAtBetween(LocalDateTime from, LocalDateTime to);
+
+    @Query("SELECT dl.targetType, COUNT(dl) FROM delete_log dl WHERE dl.deletedAt BETWEEN :from AND :to GROUP BY dl.targetType")
+    List<Object[]> countGroupByTargetTypeBetween(
+        @Param("from") LocalDateTime from,
+        @Param("to") LocalDateTime to
     );
 }

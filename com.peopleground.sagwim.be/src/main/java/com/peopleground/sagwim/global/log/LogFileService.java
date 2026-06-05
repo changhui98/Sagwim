@@ -11,7 +11,9 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -23,12 +25,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import com.peopleground.sagwim.global.dto.ErrorLogSummaryResponse;
+import com.peopleground.sagwim.global.dto.RegistrationLogSummaryResponse;
+
 @Service
 public class LogFileService {
 
     private static final Pattern STATUS_PATTERN = Pattern.compile("\"status\"\\s*:\\s*(\\d{3})");
     // timestamp 필드에서 날짜 부분(yyyy-MM-dd)을 캡처. Instant.toString() 포맷 기준.
     private static final Pattern TIMESTAMP_DATE_PATTERN = Pattern.compile("\"timestamp\"\\s*:\\s*\"(\\d{4}-\\d{2}-\\d{2})");
+    // provider 필드 값 캡처. RegistrationLogger 가 기록하는 JSON 기준.
+    private static final Pattern PROVIDER_PATTERN = Pattern.compile("\"provider\"\\s*:\\s*\"([^\"]*)\"");
 
     private final Path logDir;
     private final Path errorLogPath;
@@ -119,6 +126,47 @@ public class LogFileService {
      */
     public long countErrorLogs(LocalDate from, LocalDate to, String statusGroup) {
         return collectErrorLines(from, to, statusGroup).size();
+    }
+
+    // ─── 요약 집계 ────────────────────────────────────────────────────────────
+
+    /**
+     * from~to 범위의 에러 로그를 한 번만 수집하여 전체/4xx/5xx 건수를 집계.
+     * (status group별로 파일을 재수집하지 않는다.)
+     */
+    public ErrorLogSummaryResponse summarizeErrors(LocalDate from, LocalDate to) {
+        List<String> all = collectErrorLines(from, to, "all");
+        long count4xx = 0;
+        long count5xx = 0;
+        for (String line : all) {
+            Matcher m = STATUS_PATTERN.matcher(line);
+            if (!m.find()) continue;
+            int status = Integer.parseInt(m.group(1));
+            if (status >= 400 && status <= 499) {
+                count4xx++;
+            } else if (status >= 500 && status <= 599) {
+                count5xx++;
+            }
+        }
+        return new ErrorLogSummaryResponse(all.size(), count4xx, count5xx);
+    }
+
+    /**
+     * from~to 범위의 회원가입 로그를 한 번만 수집하여 provider별 건수를 집계.
+     * provider 키는 로그에 기록된 원본 문자열이며, 값이 비어 있으면 "UNKNOWN" 으로 묶는다.
+     */
+    public RegistrationLogSummaryResponse summarizeRegistrations(LocalDate from, LocalDate to) {
+        List<String> all = collectRegistrationLines(from, to);
+        Map<String, Long> byProvider = new LinkedHashMap<>();
+        for (String line : all) {
+            Matcher m = PROVIDER_PATTERN.matcher(line);
+            String provider = m.find() ? m.group(1) : "";
+            if (provider.isBlank()) {
+                provider = "UNKNOWN";
+            }
+            byProvider.merge(provider, 1L, Long::sum);
+        }
+        return new RegistrationLogSummaryResponse(all.size(), byProvider);
     }
 
     // ─── SSE 스트리밍 ─────────────────────────────────────────────────────────

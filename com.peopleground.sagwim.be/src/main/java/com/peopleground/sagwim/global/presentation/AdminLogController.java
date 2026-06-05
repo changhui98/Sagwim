@@ -1,5 +1,7 @@
 package com.peopleground.sagwim.global.presentation;
 
+import com.peopleground.sagwim.global.dto.ErrorLogSummaryResponse;
+import com.peopleground.sagwim.global.dto.RegistrationLogSummaryResponse;
 import com.peopleground.sagwim.global.log.LogFileService;
 import java.time.LocalDate;
 import java.util.List;
@@ -76,6 +78,32 @@ public class AdminLogController {
             "totalPages", (int) Math.ceil((double) total / size),
             "hasNext", (long) (page + 1) * size < total
         ));
+    }
+
+    @GetMapping("/error/summary")
+    public ResponseEntity<ErrorLogSummaryResponse> getErrorLogSummary(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        LocalDate effectiveFrom = from != null ? from : LocalDate.now();
+        LocalDate effectiveTo = to != null ? to : LocalDate.now();
+        if (effectiveFrom.isAfter(effectiveTo)) {
+            effectiveFrom = effectiveTo;
+        }
+        return ResponseEntity.ok(logFileService.summarizeErrors(effectiveFrom, effectiveTo));
+    }
+
+    @GetMapping("/registration/summary")
+    public ResponseEntity<RegistrationLogSummaryResponse> getRegistrationLogSummary(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        LocalDate effectiveFrom = from != null ? from : LocalDate.now();
+        LocalDate effectiveTo = to != null ? to : LocalDate.now();
+        if (effectiveFrom.isAfter(effectiveTo)) {
+            effectiveFrom = effectiveTo;
+        }
+        return ResponseEntity.ok(logFileService.summarizeRegistrations(effectiveFrom, effectiveTo));
     }
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
