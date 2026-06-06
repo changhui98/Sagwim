@@ -9,8 +9,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  height: 30px;
-  padding: 0 var(--sp-1);
+  height: 38px;
+  padding: 0 var(--sp-2);
   border: none;
   border-bottom: 1px solid var(--clr-border-strong);
   background: transparent;

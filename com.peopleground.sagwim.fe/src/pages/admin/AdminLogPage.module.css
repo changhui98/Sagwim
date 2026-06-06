@@ -70,8 +70,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  height: 30px;
-  padding: 0 var(--sp-2);
+  height: 38px;
+  padding: 0 var(--sp-3);
   border: none;
   border-radius: var(--r-md);
   background: transparent;
@@ -220,8 +220,8 @@
 
 .segBtn,
 .segBtnActive {
-  height: 28px;
-  padding: 0 var(--sp-3);
+  height: 38px;
+  padding: 0 var(--sp-4);
   border: none;
   background: transparent;
   border-radius: var(--r-md);
@@ -253,8 +253,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  height: 30px;
-  padding: 0 var(--sp-4);
+  height: 38px;
+  padding: 0 var(--sp-5);
   margin-left: auto;
   border: none;
   border-radius: var(--r-md);
@@ -495,7 +495,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
-  height: 26px;
+  height: 32px;
   padding: 0 var(--sp-3);
   font-size: 0.8125rem;
   font-weight: 500;

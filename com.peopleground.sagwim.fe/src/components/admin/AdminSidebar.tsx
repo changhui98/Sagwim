@@ -1,8 +1,5 @@
-import { useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { getInitials } from '../../utils/stringUtils'
-import type { UserDetailResponse } from '../../types/user'
 import styles from './AdminSidebar.module.css'
 
 /* ── 메뉴 아이콘 (라인 스타일, currentColor 상속) ── */
@@ -64,8 +61,9 @@ const ICONS = {
   ),
   report: (
     <svg {...iconProps}>
-      <path d="M4 21V4" />
-      <path d="M4 4h13l-2.5 4L17 12H4" />
+      <path d="M12 3 2.6 20a1 1 0 0 0 .87 1.5h17.06a1 1 0 0 0 .87-1.5z" />
+      <path d="M12 9.5v4.5" />
+      <path d="M12 17.5h.01" />
     </svg>
   ),
   ban: (
@@ -77,6 +75,8 @@ const ICONS = {
   service: (
     <svg {...iconProps}>
       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      <path d="M9.8 9.2a2.2 2.2 0 0 1 3.5 1.7c0 1.5-1.8 1.8-1.8 3" />
+      <path d="M11.5 16.2h.01" />
     </svg>
   ),
   log: (
@@ -143,39 +143,7 @@ const MENU_SECTIONS: readonly MenuSection[] = [
   },
 ] as const
 
-interface ProfileAvatarProps {
-  profile: UserDetailResponse
-}
-
-function ProfileAvatar({ profile }: ProfileAvatarProps) {
-  const [imgError, setImgError] = useState(false)
-  const imageUrl = profile.profileImageUrl?.trim()
-
-  useEffect(() => {
-    setImgError(false)
-  }, [imageUrl])
-
-  return (
-    <span className={`avatar avatar-lg ${styles.profileAvatar}`}>
-      {imageUrl && !imgError ? (
-        <img
-          src={imageUrl}
-          alt={`${profile.nickname} 프로필`}
-          className={styles.profileAvatarImg}
-          onError={() => setImgError(true)}
-        />
-      ) : (
-        getInitials(profile.nickname)
-      )}
-    </span>
-  )
-}
-
-interface AdminSidebarProps {
-  profile: UserDetailResponse | null
-}
-
-export function AdminSidebar({ profile }: AdminSidebarProps) {
+export function AdminSidebar() {
   const location = useLocation()
 
   const isActive = (path: string): boolean => {
@@ -187,16 +155,6 @@ export function AdminSidebar({ profile }: AdminSidebarProps) {
 
   return (
     <aside className={styles.sidebar}>
-      {profile && (
-        <div className={styles.profileSection}>
-          <ProfileAvatar profile={profile} />
-          <div className={styles.profileInfo}>
-            <span className={styles.profileName}>{profile.nickname}</span>
-            <span className={styles.profileRole}>Administrator</span>
-          </div>
-        </div>
-      )}
-
       <nav className={styles.nav}>
         {MENU_SECTIONS.map((section) => (
           <div key={section.title} className={styles.section}>
