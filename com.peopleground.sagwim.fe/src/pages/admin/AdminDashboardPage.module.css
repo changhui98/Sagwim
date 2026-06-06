@@ -19,23 +19,9 @@
   margin: var(--sp-1) 0 0;
 }
 
-.statsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-5);
-}
-
-/* 현재 시간 카드: 오른쪽 테두리만 남기고 나머지 제거 */
-.timeCard {
-  border-top: none;
-  border-left: none;
-  border-bottom: none;
-  border-radius: 0;
-}
-
 .sectionCard {
   background: transparent;
-  border: 1px solid var(--clr-border-strong);
+  border: none;
   border-radius: var(--r-xl);
   padding: var(--sp-6);
 }
@@ -127,10 +113,6 @@
 }
 
 @media (max-width: 768px) {
-  .statsGrid {
-    grid-template-columns: 1fr;
-  }
-
   .table {
     font-size: 0.8125rem;
   }
