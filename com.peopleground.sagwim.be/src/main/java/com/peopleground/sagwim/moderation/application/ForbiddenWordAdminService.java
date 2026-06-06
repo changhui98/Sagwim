@@ -4,6 +4,7 @@ import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.moderation.domain.ModerationErrorCode;
 import com.peopleground.sagwim.moderation.domain.entity.ForbiddenWord;
+import com.peopleground.sagwim.moderation.domain.entity.ForbiddenWordStatus;
 import com.peopleground.sagwim.moderation.domain.repository.ForbiddenWordRepository;
 import com.peopleground.sagwim.moderation.presentation.dto.response.ForbiddenWordResponse;
 import com.peopleground.sagwim.user.domain.repository.UserRepository;
@@ -43,10 +44,14 @@ public class ForbiddenWordAdminService {
      * @return 금지 단어 페이지 응답
      */
     @Transactional(readOnly = true)
-    public PageResponse<ForbiddenWordResponse> getForbiddenWords(int page, int size) {
-        Page<ForbiddenWord> resultPage = forbiddenWordRepository.findPage(
-            PageRequest.of(page, size)
-        );
+    public PageResponse<ForbiddenWordResponse> getForbiddenWords(int page, int size, String keyword) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        // 검색 키워드는 저장 시와 동일하게 정규화하여 부분 일치 비교한다.
+        String normalizedKeyword = keyword == null ? "" : profanityValidator.normalize(keyword);
+        Page<ForbiddenWord> resultPage = normalizedKeyword.isBlank()
+            ? forbiddenWordRepository.findPage(pageRequest)
+            : forbiddenWordRepository.searchPage(normalizedKeyword, pageRequest);
 
         return PageResponse.from(resultPage.map(entity -> {
             String nickname = resolveNickname(entity.getCreatedByUsername());
@@ -126,34 +131,22 @@ public class ForbiddenWordAdminService {
     }
 
     /**
-     * 소프트 삭제된 금지 단어를 복원한다.
+     * 금지 단어의 차단 활성 상태를 변경한다. (ACTIVE ↔ INACTIVE)
      *
-     * <ol>
-     *   <li>활성/삭제 무관 row 를 조회한다. 없으면 M002 예외를 던진다.</li>
-     *   <li>이미 활성 상태면 idempotent 하게 그대로 응답한다.</li>
-     *   <li>자기 자신 제외한 같은 단어의 활성 row 가 있으면 M003 예외를 던진다.</li>
-     *   <li>restore() 후 캐시를 무효화한다.</li>
-     * </ol>
+     * <p>활성/비활성은 삭제와 무관하다. ACTIVE 단어만 게시글/모임 생성 차단 검증에 사용된다.</p>
      *
-     * @param id 복원할 금지 단어 ID
-     * @return 복원된 금지 단어 응답
+     * @param id     대상 금지 단어 ID
+     * @param status 변경할 상태
+     * @return 변경된 금지 단어 응답
      */
-    public ForbiddenWordResponse restoreForbiddenWord(Long id) {
-        ForbiddenWord entity = forbiddenWordRepository.findById(id)
-            .orElseThrow(() -> new AppException(ModerationErrorCode.FORBIDDEN_WORD_NOT_FOUND));
+    public ForbiddenWordResponse changeStatus(Long id, ForbiddenWordStatus status) {
+        ForbiddenWord entity = findActiveOrThrow(id);
 
-        // 이미 활성 상태면 idempotent 처리: 그대로 반환
-        if (!entity.isDeleted()) {
-            String nickname = resolveNickname(entity.getCreatedByUsername());
-            return ForbiddenWordResponse.of(entity, nickname);
+        if (status == ForbiddenWordStatus.ACTIVE) {
+            entity.activate();
+        } else {
+            entity.deactivate();
         }
-
-        // 자기 자신 제외, 동일 단어가 이미 활성 상태인지 검사
-        if (forbiddenWordRepository.existsActiveByWordExcludingId(entity.getWord(), id)) {
-            throw new AppException(ModerationErrorCode.FORBIDDEN_WORD_ALREADY_EXISTS);
-        }
-
-        entity.restore();
         evictCache();
 
         String nickname = resolveNickname(entity.getCreatedByUsername());
@@ -161,13 +154,13 @@ public class ForbiddenWordAdminService {
     }
 
     /**
-     * 금지 단어를 소프트 삭제한다.
+     * 금지 단어를 영구 삭제(하드 딜리트)한다.
      *
      * @param id 삭제할 금지 단어 ID
      */
     public void deleteForbiddenWord(Long id) {
         ForbiddenWord entity = findActiveOrThrow(id);
-        entity.delete();
+        forbiddenWordRepository.delete(entity);
         evictCache();
     }
 

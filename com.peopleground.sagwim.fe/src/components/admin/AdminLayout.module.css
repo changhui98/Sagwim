@@ -1,6 +1,14 @@
 /* ── AdminLayout ── */
 
 .wrapper {
+  /* 관리자 페이지 전용 테마 색상 (#87CEFA) */
+  --clr-accent: #87CEFA;
+  --clr-accent-hover: #5fb4ef;
+  --clr-accent-muted: rgba(135, 206, 250, 0.14);
+  --clr-accent-glow: rgba(135, 206, 250, 0.28);
+  --clr-accent-gradient: linear-gradient(135deg, #87CEFA 0%, #a6d8fc 100%);
+  --clr-primary: var(--clr-accent);
+
   display: flex;
   height: 100vh;
   overflow: hidden;
@@ -16,10 +24,22 @@
   border-bottom: 1px solid var(--clr-border-strong);
   padding: 0 var(--sp-6);
   height: 60px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.navLeft {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-4);
+  justify-self: start;
+}
+
+.navCenter {
+  display: flex;
+  align-items: center;
+  justify-self: center;
 }
 
 .navBrand {
@@ -36,78 +56,62 @@
   color: var(--clr-accent);
 }
 
-.navBrandSuffix {
-  font-family: var(--font-sans);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--clr-accent);
-  background: var(--clr-accent-muted);
-  padding: 2px 8px;
-  border-radius: var(--r-full);
-  margin-left: var(--sp-2);
-}
-
 .navRight {
   display: flex;
   align-items: center;
+  justify-self: end;
   gap: var(--sp-3);
 }
 
-.backLink {
+.homeButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 34px;
-  padding: 0 var(--sp-2);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--clr-text-secondary);
-  text-decoration: none;
-  border-radius: var(--r-md);
-  transition: color var(--t-fast), background var(--t-fast);
-}
-
-.backLink:hover {
-  color: var(--clr-accent);
-  background: var(--clr-accent-muted);
-}
-
-.iconButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   line-height: 0;
-  border: none;
   border-radius: var(--r-md);
   background: transparent;
   color: var(--clr-text-secondary);
+  text-decoration: none;
   cursor: pointer;
   transition: color var(--t-fast), background var(--t-fast);
 }
 
-.iconButton:hover {
+.homeButton:hover {
   color: var(--clr-accent);
   background: var(--clr-accent-muted);
 }
 
 .iconSvg {
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
   display: block;
   flex-shrink: 0;
-}
-
-.refreshIcon {
-  transform: translateY(-1px);
 }
 
 .userInfo {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
+}
+
+.navAvatar {
+  width: 32px;
+  height: 32px;
+  font-size: 0.8125rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.navAvatarImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .userName {
@@ -117,21 +121,20 @@
 }
 
 .logoutButton {
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--clr-text-muted);
   background: transparent;
-  border: 1px solid var(--clr-border);
-  padding: var(--sp-1) var(--sp-3);
+  border: none;
+  padding: var(--sp-1) var(--sp-2);
   border-radius: var(--r-md);
   cursor: pointer;
-  transition: color var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+  transition: color var(--t-fast), background var(--t-fast);
 }
 
 .logoutButton:hover {
-  color: var(--clr-error);
-  border-color: var(--clr-error);
-  background: var(--clr-error-soft);
+  color: var(--clr-accent);
+  background: var(--clr-accent-muted);
 }
 
 /* ── Body ── */
@@ -145,6 +148,13 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--sp-6);
+}
+
+.pageTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  margin: 0 0 var(--sp-5);
 }
 
 /* ── Loading ── */

@@ -11,6 +11,7 @@ import com.peopleground.sagwim.content.presentation.dto.response.ContentResponse
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.AppException;
+import com.peopleground.sagwim.moderation.application.ProfanityValidator;
 import com.peopleground.sagwim.tag.application.service.TagService;
 import com.peopleground.sagwim.user.domain.UserErrorCode;
 import com.peopleground.sagwim.user.domain.entity.User;
@@ -30,10 +31,13 @@ public class ContentService {
     private final UserRepository userRepository;
     private final TagService tagService;
     private final ContentResponseAssembler contentResponseAssembler;
+    private final ProfanityValidator profanityValidator;
 
     @CacheEvict(value = "contentList", allEntries = true)
     @Transactional
     public ContentResponse contentCreate(ContentCreateRequest req, CustomUser user) {
+
+        profanityValidator.validate(req.body());
 
         User findUser = getUser(user);
         Content content = contentRepository.save(Content.of(req.body(), findUser, req.groupId()));
@@ -115,6 +119,8 @@ public class ContentService {
     @CacheEvict(value = "contentList", allEntries = true)
     @Transactional
     public ContentResponse updateContent(Long contentId, ContentUpdateRequest req, CustomUser customUser) {
+
+        profanityValidator.validate(req.body());
 
         Content content = getContentByOwner(contentId, customUser);
         content.update(req.body());

@@ -19,27 +19,9 @@
   margin: var(--sp-1) 0 0;
 }
 
-.statsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-5);
-}
-
-.chartsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--sp-5);
-}
-
-@media (max-width: 1024px) {
-  .chartsGrid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .sectionCard {
   background: transparent;
-  border: 1px solid var(--clr-border-strong);
+  border: none;
   border-radius: var(--r-xl);
   padding: var(--sp-6);
 }
@@ -131,10 +113,6 @@
 }
 
 @media (max-width: 768px) {
-  .statsGrid {
-    grid-template-columns: 1fr;
-  }
-
   .table {
     font-size: 0.8125rem;
   }

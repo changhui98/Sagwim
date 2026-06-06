@@ -6,7 +6,7 @@ import type { AdminGroupResponse } from '../types/group'
 import type { DeleteLogEntry, DeleteLogSummary } from '../types/deleteLog'
 import type { AdminReportEntry } from '../types/report'
 import type { AdminInquiryEntry } from '../types/inquiry'
-import type { ForbiddenWordResponse } from '../types/moderation'
+import type { ForbiddenWordResponse, ForbiddenWordStatus } from '../types/moderation'
 import { API_BASE_URL } from './config'
 import { createAuthHeaders, parseResponse } from './apiUtils'
 
@@ -248,8 +248,11 @@ export const getAdminForbiddenWords = (
   token: string,
   page = 0,
   size = 10,
+  keyword = '',
 ): Promise<PageResponse<ForbiddenWordResponse>> => {
-  return fetch(`${API_BASE_URL}/admin/forbidden-words?page=${page}&size=${size}`, {
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  if (keyword.trim()) params.set('keyword', keyword.trim())
+  return fetch(`${API_BASE_URL}/admin/forbidden-words?${params.toString()}`, {
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<PageResponse<ForbiddenWordResponse>>(response))
 }
@@ -287,12 +290,14 @@ export const deleteAdminForbiddenWord = (
   }).then((response) => parseResponse<void>(response))
 }
 
-export const restoreAdminForbiddenWord = (
+export const setForbiddenWordStatus = (
   token: string,
   id: number,
+  status: ForbiddenWordStatus,
 ): Promise<ForbiddenWordResponse> => {
-  return fetch(`${API_BASE_URL}/admin/forbidden-words/${id}/restore`, {
-    method: 'POST',
+  return fetch(`${API_BASE_URL}/admin/forbidden-words/${id}/status`, {
+    method: 'PATCH',
     headers: createAuthHeaders(token),
+    body: JSON.stringify({ status }),
   }).then((response) => parseResponse<ForbiddenWordResponse>(response))
 }

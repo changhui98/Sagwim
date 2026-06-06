@@ -4,8 +4,7 @@ import {
   createAdminForbiddenWord,
   deleteAdminForbiddenWord,
   getAdminForbiddenWords,
-  restoreAdminForbiddenWord,
-  updateAdminForbiddenWord,
+  setForbiddenWordStatus,
 } from '../../api/adminApi'
 import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
@@ -14,19 +13,13 @@ import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
 import { SuccessDialog } from '../../components/common/SuccessDialog'
 import { Pagination } from '../../components/common/Pagination'
+import { ToggleSwitch } from '../../components/common/ToggleSwitch'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { ForbiddenWordResponse } from '../../types/moderation'
 import tableStyles from '../../components/admin/adminTable.module.css'
-import pageStyles from './AdminPostListPage.module.css'
+import pageStyles from './AdminForbiddenWordsPage.module.css'
 
 const PAGE_SIZE = 10
-
-type ModalMode = 'create' | 'edit' | 'delete' | 'restore'
-
-interface ModalState {
-  mode: ModalMode
-  target?: ForbiddenWordResponse
-}
 
 export function AdminForbiddenWordsPage() {
   const { token } = useAuth()
@@ -39,20 +32,28 @@ export function AdminForbiddenWordsPage() {
   const [loading, setLoading] = useState(true)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
+  const [keyword, setKeyword] = useState('')
 
-  const [modalState, setModalState] = useState<ModalState | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
   const [inputWord, setInputWord] = useState('')
-  const [actionLoading, setActionLoading] = useState(false)
-  const [successMode, setSuccessMode] = useState<ModalMode | null>(null)
+  const [createLoading, setCreateLoading] = useState(false)
+  const [createSuccess, setCreateSuccess] = useState(false)
+
+  const [togglingId, setTogglingId] = useState<number | null>(null)
+
+  const [deleteTarget, setDeleteTarget] = useState<ForbiddenWordResponse | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteSuccess, setDeleteSuccess] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
+  const submittingRef = useRef(false)
 
   const loadWords = useCallback(
-    async (targetPage: number) => {
+    async (targetPage: number, searchKeyword: string) => {
       try {
         setLoading(true)
         setError('')
-        const response = await getAdminForbiddenWords(token, targetPage, PAGE_SIZE)
+        const response = await getAdminForbiddenWords(token, targetPage, PAGE_SIZE, searchKeyword)
         setWords(response.content)
         setTotalPages(response.totalPages)
         setTotalElements(response.totalElements)
@@ -68,123 +69,136 @@ export function AdminForbiddenWordsPage() {
     [token, handleUnauthorized],
   )
 
+  // 검색어 변경 시 300ms debounce 후 자동 검색 (첫 로드도 이 effect가 담당)
   useEffect(() => {
-    loadWords(0)
-  }, [loadWords])
+    const timer = setTimeout(() => {
+      setPage(0)
+      loadWords(0, keyword)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [keyword, loadWords])
 
-  // 모달이 열릴 때 input에 포커스
+  // 등록 모달이 열릴 때 input에 포커스
   useEffect(() => {
-    if (modalState?.mode === 'create' || modalState?.mode === 'edit') {
+    if (createOpen) {
       setTimeout(() => inputRef.current?.focus(), 50)
     }
-  }, [modalState])
+  }, [createOpen])
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
-    loadWords(nextPage)
+    loadWords(nextPage, keyword)
   }
 
   const openCreate = () => {
     setInputWord('')
-    setModalState({ mode: 'create' })
+    setError('')
+    setCreateOpen(true)
   }
 
-  const openEdit = (word: ForbiddenWordResponse) => {
-    setInputWord(word.word)
-    setModalState({ mode: 'edit', target: word })
-  }
-
-  const openDelete = (word: ForbiddenWordResponse) => {
-    setModalState({ mode: 'delete', target: word })
-  }
-
-  const openRestore = (word: ForbiddenWordResponse) => {
-    setModalState({ mode: 'restore', target: word })
-  }
-
-  const closeModal = () => {
-    setModalState(null)
+  const closeCreate = () => {
+    setCreateOpen(false)
     setInputWord('')
     setError('')
   }
 
-  const handleConfirm = async () => {
-    if (!modalState) return
-
+  const handleCreate = async () => {
+    // 이중 제출 가드 (한글 IME Enter 중복 keydown 등으로 두 번 호출되는 것 방지)
+    if (submittingRef.current) return
+    submittingRef.current = true
     try {
-      setActionLoading(true)
+      setCreateLoading(true)
       setError('')
-
-      if (modalState.mode === 'create') {
-        await createAdminForbiddenWord(token, inputWord)
-      } else if (modalState.mode === 'edit' && modalState.target) {
-        await updateAdminForbiddenWord(token, modalState.target.id, inputWord)
-      } else if (modalState.mode === 'delete' && modalState.target) {
-        await deleteAdminForbiddenWord(token, modalState.target.id)
-      } else if (modalState.mode === 'restore' && modalState.target) {
-        await restoreAdminForbiddenWord(token, modalState.target.id)
-      }
-
-      const currentMode = modalState.mode
-      closeModal()
-      setSuccessMode(currentMode)
-      loadWords(page)
+      await createAdminForbiddenWord(token, inputWord)
+      closeCreate()
+      setCreateSuccess(true)
+      loadWords(page, keyword)
     } catch (err) {
       // M003(중복) 등 백엔드 에러 메시지를 그대로 노출
       const message = err instanceof Error ? err.message : '처리 중 오류가 발생했습니다.'
       setError(message)
       handleUnauthorized(err)
     } finally {
-      setActionLoading(false)
+      submittingRef.current = false
+      setCreateLoading(false)
     }
   }
 
-  const modalTitle = () => {
-    if (!modalState) return ''
-    if (modalState.mode === 'create') return '금지 단어 등록'
-    if (modalState.mode === 'edit') return '금지 단어 수정'
-    if (modalState.mode === 'restore') return '금지 단어 복원'
-    return '금지 단어 삭제'
-  }
-
-  const modalMessage = () => {
-    if (!modalState) return ''
-    if (modalState.mode === 'delete') {
-      return `"${modalState.target?.word}" 단어를 삭제하시겠습니까?`
+  // 토글: 활성(ACTIVE, 차단 중) ↔ 비활성(INACTIVE, 차단 안 함)
+  const handleToggle = async (word: ForbiddenWordResponse) => {
+    const nextStatus = word.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+    try {
+      setTogglingId(word.id)
+      setError('')
+      await setForbiddenWordStatus(token, word.id, nextStatus)
+      await loadWords(page, keyword)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '상태 변경 중 오류가 발생했습니다.'
+      setError(message)
+      handleUnauthorized(err)
+    } finally {
+      setTogglingId(null)
     }
-    if (modalState.mode === 'restore') {
-      return `"${modalState.target?.word}" 단어를 다시 차단 목록에 추가하시겠습니까?`
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    try {
+      setDeleteLoading(true)
+      setError('')
+      await deleteAdminForbiddenWord(token, deleteTarget.id)
+      setDeleteTarget(null)
+      setDeleteSuccess(true)
+      loadWords(page, keyword)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '삭제 중 오류가 발생했습니다.'
+      setError(message)
+      handleUnauthorized(err)
+    } finally {
+      setDeleteLoading(false)
     }
-    return ''
   }
 
-  const confirmLabel = () => {
-    if (!modalState) return '확인'
-    if (modalState.mode === 'create') return '등록'
-    if (modalState.mode === 'edit') return '수정'
-    if (modalState.mode === 'restore') return '복원'
-    return '삭제'
-  }
-
-  const successTitle = () => {
-    if (successMode === 'create') return '금지 단어가 등록되었습니다'
-    if (successMode === 'edit') return '금지 단어가 수정되었습니다'
-    if (successMode === 'restore') return '금지 단어가 복원되었습니다'
-    return '금지 단어가 삭제되었습니다'
-  }
-
-  const successMessage = () => {
-    if (successMode === 'create') return '새 금지 단어를 등록했습니다.'
-    if (successMode === 'edit') return '금지 단어를 수정했습니다.'
-    if (successMode === 'restore') return '단어가 복원되었습니다.'
-    return '선택한 금지 단어를 삭제했습니다.'
-  }
-
-  const isInputMode = modalState?.mode === 'create' || modalState?.mode === 'edit'
+  const modalOpen = createOpen || deleteTarget !== null
 
   return (
     <div className={pageStyles.container}>
-      {error && !modalState && (
+      <div className={pageStyles.header}>
+        <h1 className={pageStyles.title}>금지 단어</h1>
+        <div className={pageStyles.search}>
+          <div className={pageStyles.searchBox}>
+            <svg
+              className={pageStyles.searchIcon}
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input
+              type="text"
+              className={pageStyles.searchInput}
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="금지 단어 검색"
+              aria-label="금지 단어 검색"
+            />
+          </div>
+        </div>
+        <button type="button" className={pageStyles.addButton} onClick={openCreate}>
+          <span className={pageStyles.addButtonIcon}>+</span>
+          금지 단어 추가
+        </button>
+      </div>
+
+      {error && !modalOpen && (
         <p className="alert alert-error" role="alert">
           {error}
         </p>
@@ -197,118 +211,74 @@ export function AdminForbiddenWordsPage() {
           </div>
         ) : (
           <>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 'var(--sp-3) var(--sp-4)',
-                borderBottom: '1px solid var(--clr-border)',
-              }}
-            >
-              <span className={tableStyles.totalCount} style={{ padding: 0, border: 'none' }}>
-                총 {totalElements.toLocaleString()}건
-              </span>
-              <button
-                type="button"
-                onClick={openCreate}
-                aria-label="단어 등록"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: 0,
-                  margin: 0,
-                  cursor: 'pointer',
-                  color: '#000',
-                  fontSize: '1.25rem',
-                  lineHeight: 1,
-                }}
-              >
-                +
-              </button>
-            </div>
+            <div className={tableStyles.totalCount}>총 {totalElements.toLocaleString()}건</div>
 
             <div className={tableStyles.tableWrap} style={{ position: 'relative' }}>
               {loading && <LoadingSpinner overlay />}
-              <table className={tableStyles.table} style={{ tableLayout: 'fixed' }}>
+              <table
+                className={tableStyles.table}
+                style={{ tableLayout: 'fixed', fontSize: '0.9375rem' }}
+              >
                 <colgroup>
-                  <col style={{ width: '30%' }} />
-                  <col style={{ width: '20%' }} />
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '25%' }} />
+                  <col style={{ width: '22.5%' }} />
+                  <col style={{ width: '22.5%' }} />
+                  <col style={{ width: '22.5%' }} />
+                  <col style={{ width: '22.5%' }} />
+                  <col style={{ width: '10%' }} />
                 </colgroup>
                 <thead>
                   <tr>
                     <th>금지 단어</th>
                     <th>등록자</th>
+                    <th>상태</th>
                     <th>등록일</th>
-                    <th style={{ textAlign: 'right' }}>관리</th>
+                    <th>관리</th>
                   </tr>
                 </thead>
                 <tbody>
                   {words.length === 0 ? (
                     <tr className={tableStyles.emptyRow}>
-                      <td colSpan={4}>등록된 금지 단어가 없습니다.</td>
+                      <td colSpan={5}>등록된 금지 단어가 없습니다.</td>
                     </tr>
                   ) : (
                     words.map((word) => {
-                      const isDeleted = word.deletedDate !== null
+                      const isActive = word.status === 'ACTIVE'
                       return (
                         <tr key={word.id}>
                           <td>
-                            {isDeleted ? (
-                              <span
-                                style={{
-                                  textDecoration: 'line-through',
-                                  color: 'var(--clr-text-muted)',
-                                }}
-                              >
-                                {word.word}
-                              </span>
-                            ) : (
+                            {isActive ? (
                               <span className={tableStyles.tableUsername}>{word.word}</span>
+                            ) : (
+                              <span style={{ color: 'var(--clr-text-muted)' }}>{word.word}</span>
                             )}
                           </td>
                           <td className={tableStyles.tableSecondary}>
-                            {word.createdByNickname != null
-                              ? `@${word.createdByNickname}`
-                              : '시스템'}
+                            {word.createdByNickname != null ? word.createdByNickname : '시스템'}
                           </td>
-                          <td className={tableStyles.tableDate}>
+                          <td>
+                            <div style={{ display: 'inline-flex' }}>
+                              <ToggleSwitch
+                                checked={isActive}
+                                disabled={togglingId === word.id || loading}
+                                onChange={() => handleToggle(word)}
+                                ariaLabel={`${word.word} 차단`}
+                                onLabel="활성"
+                                offLabel="비활성"
+                              />
+                            </div>
+                          </td>
+                          <td className={tableStyles.tableDate} style={{ fontSize: '0.9375rem' }}>
                             {formatDateTime(word.createdDate)}
                           </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <div style={{ display: 'inline-flex', gap: 'var(--sp-2)', justifyContent: 'flex-end' }}>
-                              {isDeleted ? (
-                                <button
-                                  type="button"
-                                  className={tableStyles.refreshButton}
-                                  onClick={() => openRestore(word)}
-                                  disabled={actionLoading}
-                                >
-                                  복원
-                                </button>
-                              ) : (
-                                <>
-                                  <button
-                                    type="button"
-                                    className={tableStyles.refreshButton}
-                                    onClick={() => openEdit(word)}
-                                    disabled={actionLoading}
-                                  >
-                                    수정
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className={tableStyles.deleteButton}
-                                    onClick={() => openDelete(word)}
-                                    disabled={actionLoading}
-                                  >
-                                    삭제
-                                  </button>
-                                </>
-                              )}
-                            </div>
+                          <td>
+                            <button
+                              type="button"
+                              className={pageStyles.deleteButton}
+                              onClick={() => setDeleteTarget(word)}
+                              disabled={deleteLoading}
+                            >
+                              삭제
+                            </button>
                           </td>
                         </tr>
                       )
@@ -329,57 +299,70 @@ export function AdminForbiddenWordsPage() {
       </div>
 
       <ConfirmDialog
-        isOpen={modalState !== null}
-        title={modalTitle()}
-        message={modalMessage()}
-        confirmLabel={confirmLabel()}
-        confirmVariant={modalState?.mode === 'delete' ? 'danger' : 'primary'}
-        isLoading={actionLoading}
-        confirmDisabled={isInputMode && inputWord.trim() === ''}
-        onConfirm={handleConfirm}
-        onCancel={closeModal}
+        isOpen={createOpen}
+        title="금지 단어 등록"
+        message=""
+        confirmLabel="등록"
+        confirmVariant="primary"
+        isLoading={createLoading}
+        confirmDisabled={inputWord.trim() === ''}
+        onConfirm={handleCreate}
+        onCancel={closeCreate}
       >
-        {/* 등록/수정 모달: 단어 입력 필드 */}
-        {isInputMode && (
-          <div className={confirmDialogStyles.reasonField}>
-            <label htmlFor="forbidden-word-input" className={confirmDialogStyles.reasonLabel}>
-              금지 단어 <span aria-hidden="true">*</span>
-            </label>
-            <input
-              id="forbidden-word-input"
-              ref={inputRef}
-              type="text"
-              maxLength={100}
-              value={inputWord}
-              onChange={(e) => setInputWord(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && inputWord.trim() !== '') {
-                  handleConfirm()
-                }
-              }}
-              placeholder="등록할 금지 단어를 입력하세요."
-              style={{
-                width: '100%',
-                padding: 'var(--sp-3)',
-                border: '1px solid var(--clr-border)',
-                borderRadius: 'var(--r-md)',
-                background: 'var(--clr-bg)',
-                color: 'var(--clr-text)',
-                fontSize: '0.9375rem',
-                boxSizing: 'border-box',
-                marginTop: 'var(--sp-1)',
-              }}
-            />
-            {/* 백엔드 에러 (M003 중복 등) 인라인 노출 */}
-            {error && (
-              <p style={{ color: 'var(--clr-error)', fontSize: '0.875rem', margin: 0 }}>
-                {error}
-              </p>
-            )}
-          </div>
-        )}
-        {/* 복원 모달: 에러 인라인 노출 (M003 이미 활성 단어 존재 등) */}
-        {modalState?.mode === 'restore' && error && (
+        <div className={confirmDialogStyles.reasonField}>
+          <label htmlFor="forbidden-word-input" className={confirmDialogStyles.reasonLabel}>
+            금지 단어 <span aria-hidden="true">*</span>
+          </label>
+          <input
+            id="forbidden-word-input"
+            ref={inputRef}
+            type="text"
+            maxLength={100}
+            value={inputWord}
+            onChange={(e) => setInputWord(e.target.value)}
+            onKeyDown={(e) => {
+              // 한글 IME 조합 중 Enter는 무시 (조합 확정용 keydown으로 인한 이중 제출 방지)
+              if (e.key === 'Enter' && !e.nativeEvent.isComposing && inputWord.trim() !== '') {
+                handleCreate()
+              }
+            }}
+            placeholder="등록할 금지 단어를 입력하세요."
+            style={{
+              width: '100%',
+              padding: 'var(--sp-3)',
+              border: '1px solid var(--clr-border)',
+              borderRadius: 'var(--r-md)',
+              background: 'var(--clr-bg)',
+              color: 'var(--clr-text)',
+              fontSize: '0.9375rem',
+              boxSizing: 'border-box',
+              marginTop: 'var(--sp-1)',
+            }}
+          />
+          {/* 백엔드 에러 (M003 중복 등) 인라인 노출 */}
+          {error && (
+            <p style={{ color: 'var(--clr-error)', fontSize: '0.875rem', margin: 0 }}>
+              {error}
+            </p>
+          )}
+        </div>
+      </ConfirmDialog>
+
+      <ConfirmDialog
+        isOpen={deleteTarget !== null}
+        title="금지 단어 삭제"
+        message={
+          deleteTarget
+            ? `"${deleteTarget.word}" 단어를 삭제하시겠습니까? 삭제하면 복구할 수 없습니다.`
+            : ''
+        }
+        confirmLabel="삭제"
+        confirmVariant="danger"
+        isLoading={deleteLoading}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      >
+        {deleteTarget && error && (
           <p style={{ color: 'var(--clr-error)', fontSize: '0.875rem', margin: 0 }}>
             {error}
           </p>
@@ -387,10 +370,17 @@ export function AdminForbiddenWordsPage() {
       </ConfirmDialog>
 
       <SuccessDialog
-        isOpen={successMode !== null}
-        title={successTitle()}
-        message={successMessage()}
-        onClose={() => setSuccessMode(null)}
+        isOpen={createSuccess}
+        title="금지 단어가 등록되었습니다"
+        message="새 금지 단어를 등록했습니다."
+        onClose={() => setCreateSuccess(false)}
+      />
+
+      <SuccessDialog
+        isOpen={deleteSuccess}
+        title="금지 단어가 삭제되었습니다"
+        message="선택한 금지 단어를 삭제했습니다."
+        onClose={() => setDeleteSuccess(false)}
       />
     </div>
   )

@@ -46,6 +46,11 @@ public class ForbiddenWordRepositoryImpl implements ForbiddenWordRepository {
     }
 
     @Override
+    public Page<ForbiddenWord> searchPage(String keyword, Pageable pageable) {
+        return forbiddenWordJpaRepository.searchPage(keyword, pageable);
+    }
+
+    @Override
     public boolean existsActiveByWordExcludingId(String normalizedWord, Long excludeId) {
         return forbiddenWordJpaRepository.existsActiveByWordExcludingId(normalizedWord, excludeId);
     }
@@ -53,5 +58,10 @@ public class ForbiddenWordRepositoryImpl implements ForbiddenWordRepository {
     @Override
     public ForbiddenWord save(ForbiddenWord word) {
         return forbiddenWordJpaRepository.save(word);
+    }
+
+    @Override
+    public void delete(ForbiddenWord word) {
+        forbiddenWordJpaRepository.delete(word);
     }
 }

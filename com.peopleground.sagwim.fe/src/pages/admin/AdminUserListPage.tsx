@@ -76,6 +76,7 @@ export function AdminUserListPage() {
   const [users, setUsers] = useState<UserResponse[]>([])
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+  const [totalElements, setTotalElements] = useState(0)
   const [loading, setLoading] = useState(true)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
@@ -101,6 +102,7 @@ export function AdminUserListPage() {
         })
         setUsers(sortedUsers)
         setTotalPages(response.totalPages)
+        setTotalElements(response.totalElements)
       } catch (err) {
         const message = err instanceof Error ? err.message : '사용자 목록 조회 실패'
         setError(message)
@@ -173,6 +175,7 @@ export function AdminUserListPage() {
           </div>
         ) : (
           <>
+            <div className={tableStyles.totalCount}>총 {totalElements.toLocaleString()}명</div>
             <div className={tableStyles.tableWrap} style={{ position: 'relative' }}>
               {loading && <LoadingSpinner overlay />}
               <table className={tableStyles.table}>

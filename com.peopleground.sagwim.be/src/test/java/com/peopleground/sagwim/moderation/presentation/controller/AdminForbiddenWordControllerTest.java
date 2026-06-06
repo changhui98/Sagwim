@@ -11,7 +11,9 @@ import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.global.exception.ApiErrorCode;
 import com.peopleground.sagwim.global.exception.AppException;
 import com.peopleground.sagwim.moderation.application.ForbiddenWordAdminService;
+import com.peopleground.sagwim.moderation.domain.entity.ForbiddenWordStatus;
 import com.peopleground.sagwim.moderation.presentation.dto.request.ForbiddenWordRequest;
+import com.peopleground.sagwim.moderation.presentation.dto.request.ForbiddenWordStatusRequest;
 import com.peopleground.sagwim.moderation.presentation.dto.response.ForbiddenWordResponse;
 import com.peopleground.sagwim.user.domain.entity.UserRole;
 import java.util.List;
@@ -40,7 +42,7 @@ class AdminForbiddenWordControllerTest {
     }
 
     private ForbiddenWordResponse mockResponse() {
-        return new ForbiddenWordResponse(1L, "욕설", "admin닉", null, null);
+        return new ForbiddenWordResponse(1L, "욕설", "admin닉", null, ForbiddenWordStatus.ACTIVE);
     }
 
     @Test
@@ -48,9 +50,9 @@ class AdminForbiddenWordControllerTest {
     @SuppressWarnings("unchecked")
     void getForbiddenWords_success() {
         PageResponse<Object> page = new PageResponse<>(List.of(), 0, 10, 0L, 0, false);
-        given(forbiddenWordAdminService.getForbiddenWords(0, 10)).willReturn((PageResponse) page);
+        given(forbiddenWordAdminService.getForbiddenWords(0, 10, null)).willReturn((PageResponse) page);
 
-        ResponseEntity<?> res = controller.getForbiddenWords(0, 10);
+        ResponseEntity<?> res = controller.getForbiddenWords(0, 10, null);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
@@ -117,11 +119,12 @@ class AdminForbiddenWordControllerTest {
     }
 
     @Test
-    @DisplayName("금지 단어 복원 성공")
-    void restoreForbiddenWord_success() {
-        given(forbiddenWordAdminService.restoreForbiddenWord(1L)).willReturn(mockResponse());
+    @DisplayName("금지 단어 상태 변경 성공")
+    void changeStatus_success() {
+        given(forbiddenWordAdminService.changeStatus(1L, ForbiddenWordStatus.INACTIVE)).willReturn(mockResponse());
 
-        ResponseEntity<ForbiddenWordResponse> res = controller.restoreForbiddenWord(1L);
+        ResponseEntity<ForbiddenWordResponse> res =
+            controller.changeStatus(1L, new ForbiddenWordStatusRequest(ForbiddenWordStatus.INACTIVE));
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }

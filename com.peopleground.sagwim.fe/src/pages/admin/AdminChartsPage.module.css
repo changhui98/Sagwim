@@ -1,0 +1,7 @@
+/* ── AdminChartsPage ── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}

@@ -12,6 +12,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { Skeleton } from '../../components/common/Skeleton'
 import { Pagination } from '../../components/common/Pagination'
+import { MiniDatePicker } from '../../components/admin/MiniDatePicker'
 import { formatDateTime } from '../../utils/dateUtils'
 import type {
   ErrorLogEntry,
@@ -22,8 +23,7 @@ import type {
 } from '../../types/log'
 import type { DeleteLogEntry, DeleteLogSummary } from '../../types/deleteLog'
 import type { PageResponse } from '../../types/user'
-import tableStyles from '../../components/admin/adminTable.module.css'
-import pageStyles from './AdminLogPage.module.css'
+import s from './AdminLogPage.module.css'
 
 type Tab = 'error' | 'registration' | 'delete'
 
@@ -47,34 +47,23 @@ function nMonthsAgoStr(n: number): string {
 
 type QuickRange = 'today' | '1m' | '3m' | 'custom'
 
-function statusBadgeClass(status: number): string {
-  if (status >= 500) return pageStyles.badgeRed
-  if (status >= 400) return pageStyles.badgeYellow
-  return pageStyles.badgeGreen
+/** 상태 셀 — 점(5xx만 빨강) + 숫자 */
+function StatusCell({ status }: { status: number }) {
+  const danger = status >= 500
+  return (
+    <span className={s.statusCell}>
+      <span className={`${s.statusDot} ${danger ? s.statusDotDanger : ''}`} />
+      <span className={`${s.status} ${danger ? s.statusDanger : ''}`}>{status}</span>
+    </span>
+  )
 }
 
-function methodBadgeClass(method: string): string {
-  switch ((method ?? '').toUpperCase()) {
-    case 'GET':
-      return `${pageStyles.methodBadge} ${pageStyles.methodGet}`
-    case 'POST':
-      return `${pageStyles.methodBadge} ${pageStyles.methodPost}`
-    case 'PUT':
-    case 'PATCH':
-      return `${pageStyles.methodBadge} ${pageStyles.methodPut}`
-    case 'DELETE':
-      return `${pageStyles.methodBadge} ${pageStyles.methodDelete}`
-    default:
-      return `${pageStyles.methodBadge} ${pageStyles.methodOther}`
-  }
-}
-
-// ─── 아이콘 (인라인 SVG) ──────────────────────────────────────────────────────
+// ─── 아이콘 ───────────────────────────────────────────────────────────────────
 
 function RefreshIcon({ spinning = false }: { spinning?: boolean }) {
   return (
     <svg
-      className={`${pageStyles.btnIcon} ${spinning ? pageStyles.spin : ''}`}
+      className={`${s.btnIcon} ${spinning ? s.spin : ''}`}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -92,7 +81,7 @@ function RefreshIcon({ spinning = false }: { spinning?: boolean }) {
 function SearchIcon() {
   return (
     <svg
-      className={pageStyles.btnIcon}
+      className={s.btnIcon}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -110,7 +99,7 @@ function SearchIcon() {
 function RestoreIcon() {
   return (
     <svg
-      className={pageStyles.btnIcon}
+      className={s.btnIcon}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -128,7 +117,7 @@ function RestoreIcon() {
 function InboxIcon() {
   return (
     <svg
-      className={pageStyles.emptyIcon}
+      className={s.emptyIcon}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -162,13 +151,12 @@ export function AdminLogPage() {
   const [regSummary, setRegSummary] = useState<RegistrationLogSummary | null>(null)
   const [deleteSummary, setDeleteSummary] = useState<DeleteLogSummary | null>(null)
 
-  // ─── 에러 로그 필터 상태 ───────────────────────────────────────────────────
+  // ─── 필터 상태 ─────────────────────────────────────────────────────────────
   const [quickRange, setQuickRange] = useState<QuickRange>('today')
   const [fromDate, setFromDate] = useState<string>(todayStr())
   const [toDate, setToDate] = useState<string>(todayStr())
   const [statusGroup, setStatusGroup] = useState<StatusGroup>('all')
 
-  // 빠른 기간 버튼 클릭 시 날짜 input 자동 세팅
   const applyQuickRange = (range: QuickRange) => {
     setQuickRange(range)
     const today = todayStr()
@@ -182,7 +170,6 @@ export function AdminLogPage() {
       setFromDate(nMonthsAgoStr(3))
       setToDate(today)
     }
-    // 'custom'은 input에서 직접 변경하므로 여기서 날짜는 건드리지 않는다
   }
 
   const handleFromDateChange = (val: string) => {
@@ -245,10 +232,8 @@ export function AdminLogPage() {
 
   useEffect(() => {
     setPage(0)
-    // 탭 전환 시 현재 필터 그대로 목록·요약 재조회
     load(0, fromDate, toDate, statusGroup)
     loadSummary(fromDate, toDate)
-    // 필터 변경은 조회 버튼으로 수동 트리거하므로 dep에 넣지 않음
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, load, loadSummary])
 
@@ -271,7 +256,6 @@ export function AdminLogPage() {
     load(next, fromDate, toDate, statusGroup)
   }
 
-  // 조회 버튼 클릭 — 명시적 조회 트리거 (목록 + 요약)
   const handleSearch = () => {
     setPage(0)
     load(0, fromDate, toDate, statusGroup)
@@ -283,7 +267,7 @@ export function AdminLogPage() {
     loadSummary(fromDate, toDate)
   }
 
-  // 에러 요약 카드 클릭 → 해당 status group 으로 즉시 조회
+  // 에러 통계 항목 클릭 → 해당 status group 으로 즉시 조회
   const handleStatusSelect = (sg: StatusGroup) => {
     setStatusGroup(sg)
     setPage(0)
@@ -301,7 +285,6 @@ export function AdminLogPage() {
             content: prev.content.map((entry) => (entry.id === updated.id ? updated : entry)),
           }
         })
-        // 복원 여부 집계가 바뀌므로 요약 갱신
         loadSummary(fromDate, toDate)
       } catch (err) {
         handleUnauthorized(err)
@@ -316,25 +299,26 @@ export function AdminLogPage() {
   const currentData = tab === 'error' ? errorLogs : tab === 'registration' ? regLogs : deleteLogs
 
   return (
-    <div className={pageStyles.container}>
-      <div className={pageStyles.header}>
-        <div className={tableStyles.tabs}>
+    <div className={s.container}>
+      {/* 헤더: 텍스트 탭 + 액션 */}
+      <div className={s.header}>
+        <div className={s.tabBar}>
           <button
-            className={tab === 'error' ? tableStyles.tabActive : tableStyles.tab}
+            className={tab === 'error' ? s.tabActive : s.tab}
             onClick={() => setTab('error')}
             type="button"
           >
             에러 로그
           </button>
           <button
-            className={tab === 'registration' ? tableStyles.tabActive : tableStyles.tab}
+            className={tab === 'registration' ? s.tabActive : s.tab}
             onClick={() => setTab('registration')}
             type="button"
           >
             회원가입 로그
           </button>
           <button
-            className={tab === 'delete' ? tableStyles.tabActive : tableStyles.tab}
+            className={tab === 'delete' ? s.tabActive : s.tab}
             onClick={() => setTab('delete')}
             type="button"
           >
@@ -342,26 +326,26 @@ export function AdminLogPage() {
           </button>
         </div>
 
-        <div className={pageStyles.actions}>
+        <div className={s.actions}>
           {tab !== 'delete' && (
             <button
               type="button"
-              className={autoRefresh ? pageStyles.btnLiveOn : pageStyles.btnLive}
+              className={autoRefresh ? s.btnLiveOn : s.btnLive}
               onClick={() => setAutoRefresh((v) => !v)}
             >
-              {autoRefresh ? <span className={pageStyles.liveDot} /> : <RefreshIcon />}
-              {autoRefresh ? '자동 새로고침 중' : '자동 새로고침'}
+              {autoRefresh ? <span className={s.liveDot} /> : <RefreshIcon />}
+              자동 새로고침
             </button>
           )}
-          <button type="button" className={pageStyles.btnRefresh} onClick={handleManualRefresh}>
+          <button type="button" className={s.btnRefresh} onClick={handleManualRefresh}>
             <RefreshIcon spinning={loading} />
             새로고침
           </button>
         </div>
       </div>
 
-      {/* ── 요약 카드 ── */}
-      <SummarySection
+      {/* 인라인 통계 스트립 */}
+      <StatStrip
         tab={tab}
         loading={summaryLoading}
         errorSummary={errorSummary}
@@ -371,17 +355,16 @@ export function AdminLogPage() {
         onStatusSelect={handleStatusSelect}
       />
 
-      {/* ── 날짜 필터 (전 탭 공통, 상태코드는 에러 탭 전용) ── */}
-      <div className={pageStyles.filterBar}>
-        {/* 빠른 기간 */}
-        <div className={pageStyles.filterGroup}>
-          <span className={pageStyles.filterLabel}>기간</span>
-          <div className={pageStyles.toggleGroup}>
+      {/* 컨트롤 행 */}
+      <div className={s.controls}>
+        <div className={s.controlGroup}>
+          <span className={s.controlLabel}>기간</span>
+          <div className={s.segGroup}>
             {(['today', '1m', '3m'] as const).map((range) => (
               <button
                 key={range}
                 type="button"
-                className={quickRange === range ? pageStyles.toggleBtnActive : pageStyles.toggleBtn}
+                className={quickRange === range ? s.segBtnActive : s.segBtn}
                 onClick={() => applyQuickRange(range)}
               >
                 {range === 'today' ? '오늘' : range === '1m' ? '1개월' : '3개월'}
@@ -390,54 +373,21 @@ export function AdminLogPage() {
           </div>
         </div>
 
-        {/* 직접 날짜 입력 */}
-        <div className={pageStyles.filterGroup}>
-          <input
-            type="date"
-            className={pageStyles.dateInput}
-            value={fromDate}
-            max={toDate}
-            onChange={(e) => handleFromDateChange(e.target.value)}
-          />
-          <span className={pageStyles.dateSep}>~</span>
-          <input
-            type="date"
-            className={pageStyles.dateInput}
-            value={toDate}
-            min={fromDate}
-            max={todayStr()}
-            onChange={(e) => handleToDateChange(e.target.value)}
-          />
+        <div className={s.controlGroup}>
+          <MiniDatePicker value={fromDate} max={toDate} onChange={handleFromDateChange} />
+          <span className={s.dateSep}>~</span>
+          <MiniDatePicker value={toDate} min={fromDate} max={todayStr()} onChange={handleToDateChange} />
         </div>
 
-        {/* 상태코드 필터 — 에러 탭 전용 */}
-        {tab === 'error' && (
-          <div className={pageStyles.filterGroup}>
-            <span className={pageStyles.filterLabel}>상태코드</span>
-            <div className={pageStyles.toggleGroup}>
-              {(['all', '4xx', '5xx'] as const).map((sg) => (
-                <button
-                  key={sg}
-                  type="button"
-                  className={statusGroup === sg ? pageStyles.toggleBtnActive : pageStyles.toggleBtn}
-                  onClick={() => setStatusGroup(sg)}
-                >
-                  {sg === 'all' ? '전체' : sg}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 조회 버튼 */}
-        <button type="button" className={pageStyles.btnSearch} onClick={handleSearch}>
+        <button type="button" className={s.btnSearch} onClick={handleSearch}>
           <SearchIcon />
           조회
         </button>
       </div>
 
+      {/* 본문 */}
       {loading ? (
-        <Skeleton height="400px" />
+        <Skeleton height="360px" />
       ) : tab === 'error' ? (
         <ErrorLogTable logs={errorLogs} />
       ) : tab === 'registration' ? (
@@ -447,18 +397,20 @@ export function AdminLogPage() {
       )}
 
       {currentData && currentData.totalPages > 1 && (
-        <Pagination
-          page={page}
-          totalPages={currentData.totalPages}
-          onPageChange={handlePageChange}
-          disabled={loading}
-        />
+        <div className={s.pagination}>
+          <Pagination
+            page={page}
+            totalPages={currentData.totalPages}
+            onPageChange={handlePageChange}
+            disabled={loading}
+          />
+        </div>
       )}
     </div>
   )
 }
 
-// ─── 요약 카드 섹션 ───────────────────────────────────────────────────────────
+// ─── 인라인 통계 스트립 ───────────────────────────────────────────────────────
 
 const PROVIDER_ORDER = ['LOCAL', 'KAKAO', 'GOOGLE']
 const PROVIDER_LABEL: Record<string, string> = {
@@ -486,39 +438,24 @@ function normalizeProviders(byProvider: Record<string, number>): [string, number
     .map((k) => [k, merged[k]] as [string, number])
 }
 
-function StatCard({
-  label,
-  value,
-  tickClass,
-  valueClass,
-}: {
-  label: string
-  value: number
-  tickClass?: string
-  valueClass?: string
-}) {
+function Stat({ label, value, valueClass }: { label: string; value: number; valueClass?: string }) {
   return (
-    <div className={pageStyles.statCard}>
-      <span className={pageStyles.statLabel}>
-        {tickClass && <span className={`${pageStyles.statTick} ${tickClass}`} />}
-        {label}
-      </span>
-      <span className={`${pageStyles.statValue} ${valueClass ?? ''}`}>{value.toLocaleString()}</span>
-    </div>
+    <span className={s.stat}>
+      <span className={`${s.statValue} ${valueClass ?? ''}`}>{value.toLocaleString()}</span>
+      <span className={s.statLabel}>{label}</span>
+    </span>
   )
 }
 
-function ClickableStatCard({
+function ClickableStat({
   label,
   value,
-  tickClass,
   valueClass,
   active,
   onClick,
 }: {
   label: string
   value: number
-  tickClass?: string
   valueClass?: string
   active: boolean
   onClick: () => void
@@ -527,18 +464,19 @@ function ClickableStatCard({
     <button
       type="button"
       onClick={onClick}
-      className={`${pageStyles.statCard} ${pageStyles.statCardClickable} ${active ? pageStyles.statCardActive : ''}`}
+      className={`${s.statButton} ${active ? '' : s.statDim}`}
     >
-      <span className={pageStyles.statLabel}>
-        {tickClass && <span className={`${pageStyles.statTick} ${tickClass}`} />}
-        {label}
-      </span>
-      <span className={`${pageStyles.statValue} ${valueClass ?? ''}`}>{value.toLocaleString()}</span>
+      <span className={`${s.statValue} ${valueClass ?? ''}`}>{value.toLocaleString()}</span>
+      <span className={s.statLabel}>{label}</span>
     </button>
   )
 }
 
-function SummarySection({
+function Divider() {
+  return <span className={s.statDivider} aria-hidden="true" />
+}
+
+function StatStrip({
   tab,
   loading,
   errorSummary,
@@ -557,13 +495,12 @@ function SummarySection({
 }) {
   const summary = tab === 'error' ? errorSummary : tab === 'registration' ? regSummary : deleteSummary
 
-  // 최초 로딩(데이터 없음) 시에만 스켈레톤. 재조회 시에는 기존 값 유지.
   if (loading && !summary) {
     return (
-      <div className={pageStyles.statSkeletonGrid}>
-        {[0, 1, 2].map((i) => (
-          <Skeleton key={i} height="84px" />
-        ))}
+      <div className={s.statStripSkeleton}>
+        <Skeleton width="80px" height="40px" />
+        <Skeleton width="80px" height="40px" />
+        <Skeleton width="80px" height="40px" />
       </div>
     )
   }
@@ -571,27 +508,25 @@ function SummarySection({
   if (tab === 'error') {
     if (!errorSummary) return null
     return (
-      <div className={pageStyles.statGrid}>
-        <ClickableStatCard
+      <div className={s.statStrip}>
+        <ClickableStat
           label="전체"
           value={errorSummary.total}
-          tickClass={pageStyles.tickPrimary}
           active={statusGroup === 'all'}
           onClick={() => onStatusSelect('all')}
         />
-        <ClickableStatCard
+        <Divider />
+        <ClickableStat
           label="4xx 클라이언트"
           value={errorSummary.count4xx}
-          tickClass={pageStyles.tickWarn}
-          valueClass={pageStyles.statValueWarn}
           active={statusGroup === '4xx'}
           onClick={() => onStatusSelect('4xx')}
         />
-        <ClickableStatCard
+        <Divider />
+        <ClickableStat
           label="5xx 서버"
           value={errorSummary.count5xx}
-          tickClass={pageStyles.tickDanger}
-          valueClass={pageStyles.statValueDanger}
+          valueClass={s.statValueDanger}
           active={statusGroup === '5xx'}
           onClick={() => onStatusSelect('5xx')}
         />
@@ -603,37 +538,34 @@ function SummarySection({
     if (!regSummary) return null
     const providers = normalizeProviders(regSummary.byProvider)
     return (
-      <div className={pageStyles.statGrid}>
-        <StatCard label="총 가입" value={regSummary.total} tickClass={pageStyles.tickPrimary} />
+      <div className={s.statStrip}>
+        <Stat label="전체" value={regSummary.total} />
         {providers.map(([key, count]) => (
-          <StatCard key={key} label={PROVIDER_LABEL[key] ?? key} value={count} tickClass={pageStyles.tickMuted} />
+          <Fragment key={key}>
+            <Divider />
+            <Stat label={PROVIDER_LABEL[key] ?? key} value={count} />
+          </Fragment>
         ))}
       </div>
     )
   }
 
-  // delete
   if (!deleteSummary) return null
   const types = TARGET_ORDER.filter((t) => deleteSummary.byTargetType[t] != null).map(
     (t) => [t, deleteSummary.byTargetType[t]] as [string, number],
   )
   return (
-    <div className={pageStyles.statGrid}>
-      <StatCard label="총 삭제" value={deleteSummary.total} tickClass={pageStyles.tickPrimary} />
-      <StatCard
-        label="미복원"
-        value={deleteSummary.pending}
-        tickClass={pageStyles.tickWarn}
-        valueClass={pageStyles.statValueWarn}
-      />
-      <StatCard
-        label="복원됨"
-        value={deleteSummary.restored}
-        tickClass={pageStyles.tickSuccess}
-        valueClass={pageStyles.statValueSuccess}
-      />
+    <div className={s.statStrip}>
+      <Stat label="전체" value={deleteSummary.total} />
+      <Divider />
+      <Stat label="미복원" value={deleteSummary.pending} />
+      <Divider />
+      <Stat label="복원됨" value={deleteSummary.restored} />
       {types.map(([key, count]) => (
-        <StatCard key={key} label={targetTypeLabel(key)} value={count} tickClass={pageStyles.tickMuted} />
+        <Fragment key={key}>
+          <Divider />
+          <Stat label={targetTypeLabel(key)} value={count} />
+        </Fragment>
       ))}
     </div>
   )
@@ -643,12 +575,10 @@ function SummarySection({
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className={tableStyles.tableCard}>
-      <div className={pageStyles.emptyState}>
-        <InboxIcon />
-        <span className={pageStyles.emptyText}>{text}</span>
-        <span className={pageStyles.emptyHint}>다른 기간이나 필터로 조회해 보세요.</span>
-      </div>
+    <div className={s.emptyState}>
+      <InboxIcon />
+      <span className={s.emptyText}>{text}</span>
+      <span className={s.emptyHint}>다른 기간이나 필터로 조회해 보세요.</span>
     </div>
   )
 }
@@ -672,84 +602,81 @@ function ErrorLogTable({ logs }: { logs: LogPageResponse<ErrorLogEntry> | null }
   }
 
   return (
-    <div className={tableStyles.tableCard}>
-      <div className={tableStyles.totalCount}>총 {logs.totalElements.toLocaleString()}건</div>
-      <div className={tableStyles.tableWrap}>
-        <table className={tableStyles.table}>
-          <thead>
-            <tr>
-              <th>시각</th>
-              <th>메서드</th>
-              <th>경로</th>
-              <th>상태</th>
-              <th>IP</th>
-              <th>사용자</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.content.map((entry, i) => (
-              <Fragment key={i}>
-                <tr
-                  className={hasDetail(entry) ? pageStyles.rowClickable : undefined}
-                  onClick={() => handleRowClick(i, entry)}
-                >
-                  <td className={pageStyles.cellTime}>{formatDateTime(entry.timestamp)}</td>
-                  <td>
-                    <span className={methodBadgeClass(entry.method)}>{entry.method}</span>
+    <div className={s.tableWrap}>
+      <table className={s.table}>
+        <thead>
+          <tr>
+            <th>시각</th>
+            <th>메서드</th>
+            <th>경로</th>
+            <th>상태</th>
+            <th>IP</th>
+            <th>사용자</th>
+          </tr>
+        </thead>
+        <tbody>
+          {logs.content.map((entry, i) => (
+            <Fragment key={i}>
+              <tr
+                className={hasDetail(entry) ? s.rowClickable : undefined}
+                onClick={() => handleRowClick(i, entry)}
+              >
+                <td className={s.cellTime}>{formatDateTime(entry.timestamp)}</td>
+                <td>
+                  <span className={s.method}>{entry.method}</span>
+                </td>
+                <td className={s.cellPath} title={entry.path}>
+                  {entry.path}
+                </td>
+                <td>
+                  <StatusCell status={entry.status} />
+                  {hasDetail(entry) && (
+                    <span className={s.expandIcon}>{expandedIndex === i ? '▼' : '▶'}</span>
+                  )}
+                </td>
+                <td className={s.cellMono}>{entry.ip}</td>
+                <td className={s.cellMono}>{entry.username ?? entry.ip}</td>
+              </tr>
+              {hasDetail(entry) && expandedIndex === i && (
+                <tr className={s.detailRow}>
+                  <td colSpan={6}>
+                    <ErrorLogDetail entry={entry} />
                   </td>
-                  <td className={pageStyles.cellPath} title={entry.path}>
-                    {entry.path}
-                  </td>
-                  <td>
-                    <span className={statusBadgeClass(entry.status)}>{entry.status}</span>
-                    {hasDetail(entry) && (
-                      <span className={pageStyles.expandIcon}>{expandedIndex === i ? '▼' : '▶'}</span>
-                    )}
-                  </td>
-                  <td className={pageStyles.cellMono}>{entry.ip}</td>
-                  <td className={pageStyles.cellMono}>{entry.username ?? entry.ip}</td>
                 </tr>
-                {hasDetail(entry) && expandedIndex === i && (
-                  <tr className={pageStyles.stacktraceRow}>
-                    <td colSpan={6}>
-                      <ErrorLogDetail entry={entry} />
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </Fragment>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
 
 function ErrorLogDetail({ entry }: { entry: ErrorLogEntry }) {
   return (
-    <div className={pageStyles.detailPanel}>
+    <div className={s.detailPanel}>
       {entry.errorMessage && (
-        <div className={pageStyles.detailSection}>
-          <span className={pageStyles.detailLabel}>에러 메시지</span>
-          <pre className={pageStyles.detailMono}>{entry.errorMessage}</pre>
+        <div className={s.detailSection}>
+          <span className={s.detailLabel}>에러 메시지</span>
+          <pre className={s.detailMono}>{entry.errorMessage}</pre>
         </div>
       )}
       {entry.queryParams && (
-        <div className={pageStyles.detailSection}>
-          <span className={pageStyles.detailLabel}>쿼리 파라미터</span>
-          <pre className={pageStyles.detailMono}>{entry.queryParams}</pre>
+        <div className={s.detailSection}>
+          <span className={s.detailLabel}>쿼리 파라미터</span>
+          <pre className={s.detailMono}>{entry.queryParams}</pre>
         </div>
       )}
       {entry.requestBody && (
-        <div className={pageStyles.detailSection}>
-          <span className={pageStyles.detailLabel}>요청 바디</span>
-          <pre className={pageStyles.detailMono}>{prettyJson(entry.requestBody)}</pre>
+        <div className={s.detailSection}>
+          <span className={s.detailLabel}>요청 바디</span>
+          <pre className={s.detailMono}>{prettyJson(entry.requestBody)}</pre>
         </div>
       )}
       {entry.stacktrace && (
-        <div className={pageStyles.detailSection}>
-          <span className={pageStyles.detailLabel}>스택트레이스</span>
-          <pre className={pageStyles.stacktracePre}>{entry.stacktrace}</pre>
+        <div className={s.detailSection}>
+          <span className={s.detailLabel}>스택트레이스</span>
+          <pre className={s.stacktracePre}>{entry.stacktrace}</pre>
         </div>
       )}
     </div>
@@ -770,41 +697,36 @@ function RegistrationLogTable({ logs }: { logs: LogPageResponse<RegistrationLogE
     return <EmptyState text="회원가입 로그가 없습니다." />
   }
   return (
-    <div className={tableStyles.tableCard}>
-      <div className={tableStyles.totalCount}>총 {logs.totalElements.toLocaleString()}건</div>
-      <div className={tableStyles.tableWrap}>
-        <table className={tableStyles.table}>
-          <thead>
-            <tr>
-              <th>가입 시각</th>
-              <th>사용자명</th>
-              <th>이메일</th>
-              <th>가입 방식</th>
+    <div className={s.tableWrap}>
+      <table className={s.table}>
+        <thead>
+          <tr>
+            <th>가입 시각</th>
+            <th>사용자명</th>
+            <th>이메일</th>
+            <th>가입 방식</th>
+          </tr>
+        </thead>
+        <tbody>
+          {logs.content.map((entry, i) => (
+            <tr key={i}>
+              <td className={s.cellTime}>{formatDateTime(entry.timestamp)}</td>
+              <td className={s.cellMono}>{entry.username}</td>
+              <td className={s.cellEmail}>{entry.email}</td>
+              <td>
+                <span className={s.provider}>{providerLabel(entry.provider)}</span>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {logs.content.map((entry, i) => (
-              <tr key={i}>
-                <td className={pageStyles.cellTime}>{formatDateTime(entry.timestamp)}</td>
-                <td className={pageStyles.cellMono}>{entry.username}</td>
-                <td>{entry.email}</td>
-                <td>
-                  <span className={providerBadgeClass(entry.provider)}>{entry.provider}</span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
 
-function providerBadgeClass(provider: string): string {
+function providerLabel(provider: string): string {
   const p = (provider ?? '').toUpperCase()
-  if (p === 'KAKAO') return tableStyles.badgeKakao
-  if (p === 'GOOGLE') return tableStyles.badgeGoogle
-  return tableStyles.badgeLocal
+  return PROVIDER_LABEL[p] ?? provider
 }
 
 function DeleteLogTable({
@@ -831,69 +753,62 @@ function DeleteLogTable({
   }
 
   return (
-    <div className={tableStyles.tableCard}>
-      <div className={tableStyles.totalCount}>총 {logs.totalElements.toLocaleString()}건</div>
-      <div className={tableStyles.tableWrap}>
-        <table className={tableStyles.table}>
-          <thead>
-            <tr>
-              <th>삭제자</th>
-              <th>대상 유형</th>
-              <th>대상</th>
-              <th>삭제 사유</th>
-              <th>삭제 일시</th>
-              <th>복원 여부</th>
-              <th>관리</th>
+    <div className={s.tableWrap}>
+      <table className={s.table}>
+        <thead>
+          <tr>
+            <th>삭제자</th>
+            <th>대상 유형</th>
+            <th>대상</th>
+            <th>삭제 사유</th>
+            <th>삭제 일시</th>
+            <th>복원 여부</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          {logs.content.map((entry) => (
+            <tr key={entry.id}>
+              <td className={s.cellMono}>{entry.deletedBy}</td>
+              <td>
+                <span className={s.targetType}>{targetTypeLabel(entry.targetType)}</span>
+              </td>
+              <td className={s.cellSummary} title={entry.targetSummary}>
+                {entry.targetSummary}
+              </td>
+              <td className={s.cellReason} title={entry.reason ?? undefined}>
+                {entry.reason ?? '-'}
+              </td>
+              <td className={s.cellTime}>{formatDateTime(entry.deletedAt)}</td>
+              <td>
+                {entry.restored ? (
+                  <span className={s.restored}>복원됨</span>
+                ) : (
+                  <span className={s.pending}>미복원</span>
+                )}
+                {entry.restored && entry.restoredBy && (
+                  <span className={s.restoredMeta}>by {entry.restoredBy}</span>
+                )}
+              </td>
+              <td>
+                {entry.targetType !== 'IMAGE' && !entry.restored ? (
+                  <button
+                    type="button"
+                    className={s.btnRestore}
+                    disabled={restoringId === entry.id}
+                    onClick={() => handleRestore(entry.id)}
+                  >
+                    <RestoreIcon />
+                    {restoringId === entry.id ? '복원 중...' : '복원'}
+                  </button>
+                ) : (
+                  <span className={s.noAction}>{entry.targetType === 'IMAGE' ? '불가' : '-'}</span>
+                )}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {logs.content.map((entry) => (
-              <tr key={entry.id}>
-                <td className={pageStyles.cellMono}>{entry.deletedBy}</td>
-                <td>
-                  <span className={targetTypeBadgeClass(entry.targetType)}>
-                    {targetTypeLabel(entry.targetType)}
-                  </span>
-                </td>
-                <td className={pageStyles.cellSummary} title={entry.targetSummary}>
-                  {entry.targetSummary}
-                </td>
-                <td className={pageStyles.cellReason} title={entry.reason ?? undefined}>
-                  {entry.reason ?? '-'}
-                </td>
-                <td className={pageStyles.cellTime}>{formatDateTime(entry.deletedAt)}</td>
-                <td>
-                  {entry.restored ? (
-                    <span className={pageStyles.badgeRestored}>복원됨</span>
-                  ) : (
-                    <span className={pageStyles.badgePending}>미복원</span>
-                  )}
-                  {entry.restored && entry.restoredBy && (
-                    <span className={pageStyles.restoredMeta}> by {entry.restoredBy}</span>
-                  )}
-                </td>
-                <td>
-                  {entry.targetType !== 'IMAGE' && !entry.restored ? (
-                    <button
-                      type="button"
-                      className={pageStyles.btnRestore}
-                      disabled={restoringId === entry.id}
-                      onClick={() => handleRestore(entry.id)}
-                    >
-                      <RestoreIcon />
-                      {restoringId === entry.id ? '복원 중...' : '복원'}
-                    </button>
-                  ) : (
-                    <span className={pageStyles.noAction}>
-                      {entry.targetType === 'IMAGE' ? '불가' : '-'}
-                    </span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }
@@ -910,20 +825,5 @@ function targetTypeLabel(type: string): string {
       return '이미지'
     default:
       return type
-  }
-}
-
-function targetTypeBadgeClass(type: string): string {
-  switch (type) {
-    case 'USER':
-      return pageStyles.badgeUser
-    case 'GROUP':
-      return pageStyles.badgeGroup
-    case 'POST':
-      return pageStyles.badgePost
-    case 'IMAGE':
-      return pageStyles.badgeImage
-    default:
-      return pageStyles.badgePost
   }
 }
