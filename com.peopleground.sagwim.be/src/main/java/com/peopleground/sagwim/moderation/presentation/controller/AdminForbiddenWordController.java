@@ -4,6 +4,7 @@ import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.moderation.application.ForbiddenWordAdminService;
 import com.peopleground.sagwim.moderation.presentation.dto.request.ForbiddenWordRequest;
+import com.peopleground.sagwim.moderation.presentation.dto.request.ForbiddenWordStatusRequest;
 import com.peopleground.sagwim.moderation.presentation.dto.response.ForbiddenWordResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,9 +42,10 @@ public class AdminForbiddenWordController {
     @GetMapping
     public ResponseEntity<PageResponse<ForbiddenWordResponse>> getForbiddenWords(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String keyword
     ) {
-        return ResponseEntity.ok(forbiddenWordAdminService.getForbiddenWords(page, size));
+        return ResponseEntity.ok(forbiddenWordAdminService.getForbiddenWords(page, size, keyword));
     }
 
     /**
@@ -77,7 +79,20 @@ public class AdminForbiddenWordController {
     }
 
     /**
-     * 금지 단어 삭제 (소프트 삭제).
+     * 금지 단어 차단 상태 변경 (ACTIVE/INACTIVE).
+     *
+     * <p>PATCH /api/v1/admin/forbidden-words/{id}/status</p>
+     */
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ForbiddenWordResponse> changeStatus(
+        @PathVariable Long id,
+        @RequestBody @Valid ForbiddenWordStatusRequest request
+    ) {
+        return ResponseEntity.ok(forbiddenWordAdminService.changeStatus(id, request.status()));
+    }
+
+    /**
+     * 금지 단어 삭제 (하드 딜리트).
      *
      * <p>DELETE /api/v1/admin/forbidden-words/{id}</p>
      */
@@ -85,15 +100,5 @@ public class AdminForbiddenWordController {
     public ResponseEntity<Void> deleteForbiddenWord(@PathVariable Long id) {
         forbiddenWordAdminService.deleteForbiddenWord(id);
         return ResponseEntity.noContent().build();
-    }
-
-    /**
-     * 소프트 삭제된 금지 단어 복원.
-     *
-     * <p>POST /api/v1/admin/forbidden-words/{id}/restore</p>
-     */
-    @PostMapping("/{id}/restore")
-    public ResponseEntity<ForbiddenWordResponse> restoreForbiddenWord(@PathVariable Long id) {
-        return ResponseEntity.ok(forbiddenWordAdminService.restoreForbiddenWord(id));
     }
 }

@@ -29,6 +29,7 @@ import com.peopleground.sagwim.image.application.ImageUrlResolver;
 import com.peopleground.sagwim.image.application.service.ImageService;
 import com.peopleground.sagwim.image.domain.entity.ImageTargetType;
 import com.peopleground.sagwim.image.presentation.dto.response.ImageResponse;
+import com.peopleground.sagwim.moderation.application.ProfanityValidator;
 import com.peopleground.sagwim.notification.application.service.NotificationService;
 import com.peopleground.sagwim.notification.domain.entity.NotificationType;
 import com.peopleground.sagwim.schedule.domain.repository.ScheduleRepository;
@@ -70,10 +71,14 @@ public class GroupService {
     private final GeocodingClient geocodingClient;
     private final GeometryFactory geometryFactory;
     private final ScheduleRepository scheduleRepository;
+    private final ProfanityValidator profanityValidator;
 
     @Transactional
     public GroupResponse createGroup(GroupCreateRequest request, CustomUser customUser) {
         User leader = getUser(customUser.getUsername());
+
+        profanityValidator.validate(request.name());
+        profanityValidator.validate(request.description());
 
         if (request.meetingType() == GroupMeetingType.OFFLINE
                 && (leader.getAddress() == null || leader.getAddress().isBlank())) {
@@ -190,6 +195,9 @@ public class GroupService {
     public GroupResponse updateGroup(Long groupId, GroupUpdateRequest request, CustomUser customUser) {
         Group group = findGroup(groupId);
         validateLeader(group, customUser.getUsername());
+
+        profanityValidator.validate(request.name());
+        profanityValidator.validate(request.description());
 
         GroupJoinType joinType = request.joinType() != null ? request.joinType() : group.getJoinType();
         group.update(

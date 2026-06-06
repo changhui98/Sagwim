@@ -61,6 +61,15 @@ public interface ForbiddenWordRepository {
     Page<ForbiddenWord> findPage(Pageable pageable);
 
     /**
+     * 정규화된 키워드를 부분 포함하는 금지 단어를 최신 등록순으로 페이징 조회한다.
+     *
+     * @param keyword  정규화된 검색 키워드
+     * @param pageable 페이지 요청 정보
+     * @return 검색 결과 페이지
+     */
+    Page<ForbiddenWord> searchPage(String keyword, Pageable pageable);
+
+    /**
      * 지정 ID를 제외한 다른 row 에 동일 word 가 활성 상태로 존재하는지 확인한다.
      * 복원 시 중복 단어 검사에 사용한다.
      *
@@ -77,4 +86,11 @@ public interface ForbiddenWordRepository {
      * @return 저장된 엔티티
      */
     ForbiddenWord save(ForbiddenWord word);
+
+    /**
+     * 금지 단어 엔티티를 영구 삭제(하드 딜리트)한다.
+     *
+     * @param word 삭제할 엔티티
+     */
+    void delete(ForbiddenWord word);
 }

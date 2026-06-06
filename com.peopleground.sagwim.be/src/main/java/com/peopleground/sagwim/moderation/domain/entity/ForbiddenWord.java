@@ -3,6 +3,8 @@ package com.peopleground.sagwim.moderation.domain.entity;
 import com.peopleground.sagwim.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,6 +47,13 @@ public class ForbiddenWord extends BaseEntity {
     private String createdByUsername;
 
     /**
+     * 차단 활성 상태. ACTIVE 만 차단 검증 대상이며, INACTIVE 는 목록에 남되 차단되지 않는다.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private ForbiddenWordStatus status = ForbiddenWordStatus.ACTIVE;
+
+    /**
      * 정적 팩토리.
      *
      * @param normalizedWord    {@code ProfanityValidator#normalize(String)} 을 적용한 단어
@@ -54,7 +63,18 @@ public class ForbiddenWord extends BaseEntity {
         ForbiddenWord entity = new ForbiddenWord();
         entity.word = normalizedWord;
         entity.createdByUsername = adminUsername;
+        entity.status = ForbiddenWordStatus.ACTIVE;
         return entity;
+    }
+
+    /** 차단 활성화 */
+    public void activate() {
+        this.status = ForbiddenWordStatus.ACTIVE;
+    }
+
+    /** 차단 비활성화 (목록 유지, 차단 미적용) */
+    public void deactivate() {
+        this.status = ForbiddenWordStatus.INACTIVE;
     }
 
     /**

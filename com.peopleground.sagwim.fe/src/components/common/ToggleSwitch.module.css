@@ -1,0 +1,55 @@
+.track {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 78px;
+  height: 32px;
+  padding: 0 var(--sp-2) 0 0;
+  border: none;
+  border-radius: var(--r-full);
+  background: var(--clr-border-strong);
+  cursor: pointer;
+  transition: background var(--t-fast);
+  flex-shrink: 0;
+}
+
+.trackOn {
+  composes: track;
+  background: var(--clr-primary);
+  justify-content: flex-start;
+  padding: 0 0 0 var(--sp-2);
+}
+
+.track:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--clr-text-secondary);
+  user-select: none;
+}
+
+.trackOn .label {
+  color: #fff;
+}
+
+.knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-full);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--t-fast);
+}
+
+.trackOn .knob {
+  transform: translateX(46px);
+}

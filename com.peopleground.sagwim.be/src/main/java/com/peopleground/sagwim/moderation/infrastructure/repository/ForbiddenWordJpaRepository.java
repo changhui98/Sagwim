@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface ForbiddenWordJpaRepository extends JpaRepository<ForbiddenWord, Long> {
 
-    @Query("SELECT f.word FROM ForbiddenWord f WHERE f.deletedDate IS NULL")
+    @Query("SELECT f.word FROM ForbiddenWord f WHERE f.status = com.peopleground.sagwim.moderation.domain.entity.ForbiddenWordStatus.ACTIVE")
     List<String> findAllActiveWords();
 
     /**
@@ -36,6 +36,13 @@ public interface ForbiddenWordJpaRepository extends JpaRepository<ForbiddenWord,
      */
     @Query("SELECT f FROM ForbiddenWord f ORDER BY f.createdDate DESC")
     Page<ForbiddenWord> findPage(Pageable pageable);
+
+    /**
+     * 정규화된 키워드를 부분 포함하는 금지 단어를 최신 등록순으로 페이징 조회한다.
+     * keyword 는 호출 전 {@code ProfanityValidator#normalize} 로 정규화되어 있어야 한다.
+     */
+    @Query("SELECT f FROM ForbiddenWord f WHERE f.word LIKE CONCAT('%', :keyword, '%') ORDER BY f.createdDate DESC")
+    Page<ForbiddenWord> searchPage(String keyword, Pageable pageable);
 
     /**
      * 지정 ID를 제외한 다른 row 에 동일 word 가 활성 상태로 존재하는지 확인한다.
