@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   getMonthlyContentCreations,
   getMonthlyGroupCreations,
@@ -7,9 +7,62 @@ import {
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
-import { MonthlyChartCard } from '../../components/admin/MonthlyChartCard'
+import {
+  MultiSeriesChartCard,
+  type ChartSeries,
+  type MergedChartPoint,
+} from '../../components/admin/MultiSeriesChartCard'
 import type { MonthlyStatsPoint } from '../../types/adminStats'
 import styles from './AdminChartsPage.module.css'
+
+const SERIES: readonly ChartSeries[] = [
+  { key: 'signups', label: '회원수', unit: '명', color: '#10b981' },
+  { key: 'contents', label: '게시글수', unit: '건', color: '#3b82f6' },
+  { key: 'groups', label: '모임수', unit: '개', color: '#f59e0b' },
+] as const
+
+function formatMonthLabel(month: string): string {
+  const parts = month.split('-')
+  if (parts.length !== 2) return month
+  const m = Number(parts[1])
+  if (Number.isNaN(m)) return month
+  return `${m}월`
+}
+
+function formatFullLabel(month: string): string {
+  const parts = month.split('-')
+  if (parts.length !== 2) return month
+  return `${parts[0]}년 ${Number(parts[1])}월`
+}
+
+function mergeMonthlyStats(
+  signups: MonthlyStatsPoint[],
+  contents: MonthlyStatsPoint[],
+  groups: MonthlyStatsPoint[],
+): MergedChartPoint[] {
+  const map = new Map<string, MergedChartPoint>()
+  const ensure = (month: string): MergedChartPoint => {
+    let point = map.get(month)
+    if (!point) {
+      point = {
+        month,
+        label: formatMonthLabel(month),
+        fullLabel: formatFullLabel(month),
+        signups: 0,
+        contents: 0,
+        groups: 0,
+      }
+      map.set(month, point)
+    }
+    return point
+  }
+
+  signups.forEach((p) => (ensure(p.month).signups = p.count))
+  contents.forEach((p) => (ensure(p.month).contents = p.count))
+  groups.forEach((p) => (ensure(p.month).groups = p.count))
+
+  return [...map.values()].sort((a, b) => a.month.localeCompare(b.month))
+}
 
 export function AdminChartsPage() {
   const { token } = useAuth()
@@ -19,9 +72,7 @@ export function AdminChartsPage() {
   const [contentStats, setContentStats] = useState<MonthlyStatsPoint[]>([])
   const [groupStats, setGroupStats] = useState<MonthlyStatsPoint[]>([])
   const [statsLoading, setStatsLoading] = useState(true)
-  const [signupError, setSignupError] = useState<string | null>(null)
-  const [contentError, setContentError] = useState<string | null>(null)
-  const [groupError, setGroupError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const loadStats = useCallback(async () => {
     const describeError = (reason: unknown, fallback: string): string => {
@@ -36,23 +87,21 @@ export function AdminChartsPage() {
 
     try {
       setStatsLoading(true)
-      setSignupError(null)
-      setContentError(null)
-      setGroupError(null)
+      setError(null)
       const [signupRes, contentRes, groupRes] = await Promise.allSettled([
         getMonthlySignups(token, 12),
         getMonthlyContentCreations(token, 12),
         getMonthlyGroupCreations(token, 12),
       ])
 
+      const errors: string[] = []
+
       if (signupRes.status === 'fulfilled') {
         setSignupStats(signupRes.value.points)
       } else {
         console.error('[admin] 가입자 통계 로드 실패:', signupRes.reason)
         handleUnauthorized(signupRes.reason)
-        setSignupError(
-          describeError(signupRes.reason, '가입자 통계를 불러오지 못했습니다.'),
-        )
+        errors.push(describeError(signupRes.reason, '가입자 통계를 불러오지 못했습니다.'))
       }
 
       if (contentRes.status === 'fulfilled') {
@@ -60,9 +109,7 @@ export function AdminChartsPage() {
       } else {
         console.error('[admin] 게시글 통계 로드 실패:', contentRes.reason)
         handleUnauthorized(contentRes.reason)
-        setContentError(
-          describeError(contentRes.reason, '게시글 통계를 불러오지 못했습니다.'),
-        )
+        errors.push(describeError(contentRes.reason, '게시글 통계를 불러오지 못했습니다.'))
       }
 
       if (groupRes.status === 'fulfilled') {
@@ -70,10 +117,11 @@ export function AdminChartsPage() {
       } else {
         console.error('[admin] 모임 통계 로드 실패:', groupRes.reason)
         handleUnauthorized(groupRes.reason)
-        setGroupError(
-          describeError(groupRes.reason, '모임 통계를 불러오지 못했습니다.'),
-        )
+        errors.push(describeError(groupRes.reason, '모임 통계를 불러오지 못했습니다.'))
       }
+
+      // 세 시리즈 모두 실패했을 때만 에러 화면 표시 (부분 실패는 성공분으로 차트 렌더)
+      setError(errors.length === 3 ? errors.join('\n') : null)
     } finally {
       setStatsLoading(false)
     }
@@ -83,40 +131,20 @@ export function AdminChartsPage() {
     loadStats()
   }, [loadStats])
 
+  const mergedData = useMemo(
+    () => mergeMonthlyStats(signupStats, contentStats, groupStats),
+    [signupStats, contentStats, groupStats],
+  )
+
   return (
     <div className={styles.container}>
-      <div className={styles.chartsGrid}>
-        <MonthlyChartCard
-          title="월별 신규 가입자 수"
-          subtitle="최근 12개월 · KST 기준"
-          unit="명"
-          color="#10b981"
-          data={signupStats}
-          loading={statsLoading}
-          error={signupError}
-          onRetry={loadStats}
-        />
-        <MonthlyChartCard
-          title="월별 신규 게시글 수"
-          subtitle="최근 12개월 · KST 기준"
-          unit="건"
-          color="#10b981"
-          data={contentStats}
-          loading={statsLoading}
-          error={contentError}
-          onRetry={loadStats}
-        />
-        <MonthlyChartCard
-          title="월별 모임 생성 수"
-          subtitle="최근 3개월 · KST 기준"
-          unit="개"
-          color="#10b981"
-          data={groupStats}
-          loading={statsLoading}
-          error={groupError}
-          onRetry={loadStats}
-        />
-      </div>
+      <MultiSeriesChartCard
+        data={mergedData}
+        series={SERIES}
+        loading={statsLoading}
+        error={error}
+        onRetry={loadStats}
+      />
     </div>
   )
 }
