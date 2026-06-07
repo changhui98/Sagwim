@@ -26,9 +26,9 @@ class AdminReportControllerTest {
     @SuppressWarnings("unchecked")
     void getReports_success() {
         PageResponse<Object> page = new PageResponse<>(List.of(), 0, 20, 0L, 0, false);
-        given(reportService.getReportsForAdmin(0, 20)).willReturn((PageResponse) page);
+        given(reportService.getReportsForAdmin(0, 20, null, null)).willReturn((PageResponse) page);
 
-        ResponseEntity<?> res = controller.getReports(0, 20);
+        ResponseEntity<?> res = controller.getReports(0, 20, null, null);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
@@ -38,9 +38,9 @@ class AdminReportControllerTest {
     @SuppressWarnings("unchecked")
     void getReports_differentPageSize() {
         PageResponse<Object> page = new PageResponse<>(List.of(), 1, 10, 5L, 1, false);
-        given(reportService.getReportsForAdmin(1, 10)).willReturn((PageResponse) page);
+        given(reportService.getReportsForAdmin(1, 10, null, null)).willReturn((PageResponse) page);
 
-        ResponseEntity<?> res = controller.getReports(1, 10);
+        ResponseEntity<?> res = controller.getReports(1, 10, null, null);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }

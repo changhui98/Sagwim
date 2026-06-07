@@ -43,8 +43,8 @@ public interface GroupRepository {
      */
     List<GroupWithLiked> findByMemberUsername(String username, int page, int size, UUID userId);
 
-    // 관리자용: 소프트 삭제 제외, 상태 무관 전체 조회 (COUNT 쿼리 유지)
-    Page<Group> findAllForAdmin(Pageable pageable);
+    // 관리자용: 소프트 삭제 제외, 상태 무관 전체 조회 (COUNT 쿼리 유지). keyword+searchField로 모임명/모임장 닉네임 검색.
+    Page<Group> findAllForAdmin(String keyword, String searchField, Pageable pageable);
 
     // 복원용: 삭제된 그룹 포함 조회
     Optional<Group> findByIdIncludingDeleted(Long id);

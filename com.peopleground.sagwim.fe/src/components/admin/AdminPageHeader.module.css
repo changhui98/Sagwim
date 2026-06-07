@@ -1,0 +1,149 @@
+/* ── 관리자 페이지 공통 헤더: 제목 | 검색 | (선택) 액션 ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* ── 가운데 검색 영역 ── */
+.search {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/* 드롭다운 + 검색창을 하나로 묶은 박스 */
+.searchGroup {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 520px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--r-full);
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.searchGroup:focus-within {
+  border-color: var(--clr-accent);
+  box-shadow: 0 0 0 3px var(--clr-accent-muted);
+}
+
+/* 검색 대상 선택 커스텀 드롭다운 */
+.dropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.dropdownTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: 38px;
+  padding: 0 var(--sp-2) 0 var(--sp-4);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--clr-text);
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chevron {
+  color: var(--clr-text-muted);
+  transition: transform var(--t-fast);
+}
+
+.chevron[data-open='true'] {
+  transform: rotate(180deg);
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + var(--sp-2));
+  left: 0;
+  z-index: 30;
+  min-width: 140px;
+  margin: 0;
+  padding: var(--sp-1);
+  list-style: none;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-md);
+}
+
+.menuItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--clr-text);
+  background: transparent;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.menuItem:hover {
+  background: var(--clr-surface-2);
+}
+
+.menuItemActive {
+  composes: menuItem;
+  color: var(--clr-accent);
+  font-weight: 700;
+  background: var(--clr-accent-muted);
+}
+
+/* 드롭다운과 검색창 구분선 */
+.divider {
+  flex-shrink: 0;
+  width: 1px;
+  height: 20px;
+  background: var(--clr-border-strong);
+}
+
+.searchBox {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--sp-3);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--clr-text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3) var(--sp-2) 40px;
+  font-size: 0.9375rem;
+  color: var(--clr-text);
+  background: transparent;
+  border: none;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.searchInput::placeholder {
+  color: var(--clr-text-muted);
+}

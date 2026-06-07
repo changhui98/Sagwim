@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { getAdminReports } from '../../api/adminApi'
 import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue'
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { Skeleton } from '../../components/common/Skeleton'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Pagination } from '../../components/common/Pagination'
@@ -12,6 +14,12 @@ import tableStyles from '../../components/admin/adminTable.module.css'
 import pageStyles from './AdminReportListPage.module.css'
 
 const PAGE_SIZE = 20
+
+const SEARCH_FIELDS = [
+  { value: 'ALL', label: '통합' },
+  { value: 'REPORTER', label: '신고자' },
+  { value: 'REASON', label: '신고 사유' },
+] as const
 
 export function AdminReportListPage() {
   const { token } = useAuth()
@@ -24,13 +32,16 @@ export function AdminReportListPage() {
   const [loading, setLoading] = useState(true)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const [searchField, setSearchField] = useState('ALL')
+  const debouncedKeyword = useDebouncedValue(keyword)
 
   const loadReports = useCallback(
-    async (targetPage: number) => {
+    async (targetPage: number, searchKeyword: string, field: string) => {
       try {
         setLoading(true)
         setError('')
-        const response: PageResponse<AdminReportEntry> = await getAdminReports(token, targetPage, PAGE_SIZE)
+        const response: PageResponse<AdminReportEntry> = await getAdminReports(token, targetPage, PAGE_SIZE, searchKeyword, field)
         setReports(response.content)
         setTotalPages(response.totalPages)
         setTotalElements(response.totalElements)
@@ -47,16 +58,27 @@ export function AdminReportListPage() {
   )
 
   useEffect(() => {
-    loadReports(0)
-  }, [loadReports])
+    setPage(0)
+    loadReports(0, debouncedKeyword, searchField)
+  }, [debouncedKeyword, searchField, loadReports])
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
-    loadReports(nextPage)
+    loadReports(nextPage, debouncedKeyword, searchField)
   }
 
   return (
     <div className={pageStyles.container}>
+      <AdminPageHeader
+        title="신고 내역"
+        searchValue={keyword}
+        onSearchChange={setKeyword}
+        searchPlaceholder="검색어 입력"
+        searchFields={SEARCH_FIELDS}
+        searchField={searchField}
+        onSearchFieldChange={setSearchField}
+      />
+
       {error && <p className="alert alert-error" role="alert">{error}</p>}
 
       <div className={tableStyles.tableCard}>

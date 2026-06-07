@@ -33,9 +33,11 @@ public class AdminUserController {
     @GetMapping
     public ResponseEntity<PageResponse<AdminUserResponse>> getUsersForAdmin(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) String searchField
     ) {
-        PageResponse<AdminUserResponse> res = adminUserService.getUsersForAdmin(page, size);
+        PageResponse<AdminUserResponse> res = adminUserService.getUsersForAdmin(page, size, keyword, searchField);
 
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }

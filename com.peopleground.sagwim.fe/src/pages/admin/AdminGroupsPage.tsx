@@ -8,6 +8,8 @@ import {
 } from '../../api/adminApi'
 import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue'
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
@@ -20,6 +22,12 @@ import tableStyles from '../../components/admin/adminTable.module.css'
 import styles from './AdminGroupsPage.module.css'
 
 const PAGE_SIZE = 10
+
+const SEARCH_FIELDS = [
+  { value: 'ALL', label: '통합' },
+  { value: 'NAME', label: '모임명' },
+  { value: 'LEADER', label: '모임장' },
+] as const
 
 type ConfirmAction = 'approve' | 'reject' | 'delete'
 
@@ -49,6 +57,9 @@ export function AdminGroupsPage() {
   const [loading, setLoading] = useState(true)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const [searchField, setSearchField] = useState('ALL')
+  const debouncedKeyword = useDebouncedValue(keyword)
 
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
@@ -56,11 +67,11 @@ export function AdminGroupsPage() {
   const [deleteReason, setDeleteReason] = useState('')
 
   const loadGroups = useCallback(
-    async (targetPage: number) => {
+    async (targetPage: number, searchKeyword: string, field: string) => {
       try {
         setLoading(true)
         setError('')
-        const response = await getAdminGroups(token, targetPage, PAGE_SIZE)
+        const response = await getAdminGroups(token, targetPage, PAGE_SIZE, searchKeyword, field)
         setGroups(response.content)
         setTotalPages(response.totalPages)
         setTotalElements(response.totalElements)
@@ -77,12 +88,13 @@ export function AdminGroupsPage() {
   )
 
   useEffect(() => {
-    loadGroups(0)
-  }, [loadGroups])
+    setPage(0)
+    loadGroups(0, debouncedKeyword, searchField)
+  }, [debouncedKeyword, searchField, loadGroups])
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
-    loadGroups(nextPage)
+    loadGroups(nextPage, debouncedKeyword, searchField)
   }
 
   const handleConfirm = async () => {
@@ -100,7 +112,7 @@ export function AdminGroupsPage() {
       setConfirmState(null)
       setDeleteReason('')
       setSuccessAction(action)
-      loadGroups(page)
+      loadGroups(page, debouncedKeyword, searchField)
     } catch (err) {
       const label = action === 'approve' ? '승인' : action === 'reject' ? '거절' : '삭제'
       const message = err instanceof Error ? err.message : `모임 ${label} 실패`
@@ -113,6 +125,16 @@ export function AdminGroupsPage() {
 
   return (
     <div className={styles.container}>
+      <AdminPageHeader
+        title="모임 관리"
+        searchValue={keyword}
+        onSearchChange={setKeyword}
+        searchPlaceholder="검색어 입력"
+        searchFields={SEARCH_FIELDS}
+        searchField={searchField}
+        onSearchFieldChange={setSearchField}
+      />
+
       {error && <p className="alert alert-error" role="alert">{error}</p>}
 
       <div className={tableStyles.tableCard}>

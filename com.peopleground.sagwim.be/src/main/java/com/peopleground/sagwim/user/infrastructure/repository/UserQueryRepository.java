@@ -4,6 +4,7 @@ import com.peopleground.sagwim.user.domain.entity.QUser;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -47,12 +48,19 @@ public class UserQueryRepository {
         return new PageImpl<>(content, pageable, total != null ? total : 0);
     }
 
-    public Page<User> findAllUsersForAdmin(Pageable pageable) {
+    public Page<User> findAllUsersForAdmin(String keyword, String searchField, Pageable pageable) {
 
         QUser user = QUser.user;
 
+        // 관리자 검색: searchField에 따라 닉네임/이메일/아이디 개별 또는 통합(ALL) OR 부분일치 (대소문자 무시)
+        BooleanBuilder condition = new BooleanBuilder();
+        if (keyword != null && !keyword.isBlank()) {
+            condition.and(buildUserSearchCondition(user, keyword, searchField));
+        }
+
         List<User> content = queryFactory
             .selectFrom(user)
+            .where(condition)
             .orderBy(user.createdDate.desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -61,9 +69,22 @@ public class UserQueryRepository {
         Long total = queryFactory
             .select(user.count())
             .from(user)
+            .where(condition)
             .fetchOne();
 
         return new PageImpl<>(content, pageable, total != null ? total : 0);
+    }
+
+    // searchField: NICKNAME / EMAIL / USERNAME 개별, 그 외(ALL 등)는 통합 OR
+    private BooleanExpression buildUserSearchCondition(QUser user, String keyword, String searchField) {
+        return switch (searchField == null ? "ALL" : searchField) {
+            case "NICKNAME" -> user.nickname.containsIgnoreCase(keyword);
+            case "EMAIL" -> user.userEmail.containsIgnoreCase(keyword);
+            case "USERNAME" -> user.username.containsIgnoreCase(keyword);
+            default -> user.nickname.containsIgnoreCase(keyword)
+                .or(user.userEmail.containsIgnoreCase(keyword))
+                .or(user.username.containsIgnoreCase(keyword));
+        };
     }
 
     public Page<User> searchByKeyword(String keyword, Pageable pageable) {

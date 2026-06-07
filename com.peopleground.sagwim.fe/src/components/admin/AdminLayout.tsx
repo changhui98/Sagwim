@@ -19,12 +19,8 @@ function isAllowedRole(role: string): role is AllowedRole {
 /* 라우트별 페이지 제목 (사이드바 메뉴 라벨과 일치) */
 const PAGE_TITLES: Record<string, string> = {
   '/app/admin/charts': '차트',
-  '/app/admin/users': '사용자 관리',
-  '/app/admin/groups': '모임 관리',
-  '/app/admin/posts': '게시글 관리',
   '/app/admin/images': '이미지 관리',
-  '/app/admin/reports': '신고 내역',
-  // 금지 단어는 페이지가 제목+추가 버튼을 한 줄에 직접 렌더링한다.
+  // 사용자·모임·게시글·신고·금지 단어는 검색 헤더(AdminPageHeader)로 제목을 직접 렌더링한다.
   '/app/admin/inquiries': '서비스 관리',
   '/app/admin/logs': '로그',
 }

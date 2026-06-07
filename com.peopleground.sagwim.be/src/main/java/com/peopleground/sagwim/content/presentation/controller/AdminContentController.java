@@ -3,7 +3,6 @@ package com.peopleground.sagwim.content.presentation.controller;
 import com.peopleground.sagwim.content.application.service.AdminContentService;
 import com.peopleground.sagwim.content.presentation.dto.request.AdminContentUpdateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.AdminDeleteContentRequest;
-import com.peopleground.sagwim.content.presentation.dto.request.SearchType;
 import com.peopleground.sagwim.content.presentation.dto.response.AdminContentResponse;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
@@ -35,9 +34,9 @@ public class AdminContentController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) String keyword,
-        @RequestParam(required = false, defaultValue = "TITLE") SearchType searchType
+        @RequestParam(required = false) String searchField
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminContentService.getAllContents(page, size, keyword, searchType));
+        return ResponseEntity.status(HttpStatus.OK).body(adminContentService.getAllContents(page, size, keyword, searchField));
     }
 
     @GetMapping("/{contentId}")

@@ -52,7 +52,7 @@ public class ReportRepositoryImpl implements ReportRepository {
     }
 
     @Override
-    public Page<AdminReportResponse> findAllForAdmin(Pageable pageable) {
-        return reportQueryRepository.findAllForAdmin(pageable);
+    public Page<AdminReportResponse> findAllForAdmin(String keyword, String searchField, Pageable pageable) {
+        return reportQueryRepository.findAllForAdmin(keyword, searchField, pageable);
     }
 }

@@ -8,6 +8,8 @@ import {
 } from '../../api/adminApi'
 import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue'
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
@@ -33,6 +35,7 @@ export function AdminForbiddenWordsPage() {
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
   const [keyword, setKeyword] = useState('')
+  const debouncedKeyword = useDebouncedValue(keyword)
 
   const [createOpen, setCreateOpen] = useState(false)
   const [inputWord, setInputWord] = useState('')
@@ -69,14 +72,11 @@ export function AdminForbiddenWordsPage() {
     [token, handleUnauthorized],
   )
 
-  // 검색어 변경 시 300ms debounce 후 자동 검색 (첫 로드도 이 effect가 담당)
+  // 디바운스된 검색어로 자동 검색 (첫 로드도 이 effect가 담당)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPage(0)
-      loadWords(0, keyword)
-    }, 300)
-    return () => clearTimeout(timer)
-  }, [keyword, loadWords])
+    setPage(0)
+    loadWords(0, debouncedKeyword)
+  }, [debouncedKeyword, loadWords])
 
   // 등록 모달이 열릴 때 input에 포커스
   useEffect(() => {
@@ -163,40 +163,17 @@ export function AdminForbiddenWordsPage() {
 
   return (
     <div className={pageStyles.container}>
-      <div className={pageStyles.header}>
-        <h1 className={pageStyles.title}>금지 단어</h1>
-        <div className={pageStyles.search}>
-          <div className={pageStyles.searchBox}>
-            <svg
-              className={pageStyles.searchIcon}
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-            <input
-              type="text"
-              className={pageStyles.searchInput}
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="금지 단어 검색"
-              aria-label="금지 단어 검색"
-            />
-          </div>
-        </div>
+      <AdminPageHeader
+        title="금지 단어"
+        searchValue={keyword}
+        onSearchChange={setKeyword}
+        searchPlaceholder="금지 단어 검색"
+      >
         <button type="button" className={pageStyles.addButton} onClick={openCreate}>
           <span className={pageStyles.addButtonIcon}>+</span>
           금지 단어 추가
         </button>
-      </div>
+      </AdminPageHeader>
 
       {error && !modalOpen && (
         <p className="alert alert-error" role="alert">
