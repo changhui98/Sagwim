@@ -47,9 +47,9 @@ class AdminUserControllerTest {
     @SuppressWarnings("unchecked")
     void getUsersForAdmin_success() {
         PageResponse<Object> page = new PageResponse<>(List.of(), 0, 10, 0L, 0, false);
-        given(adminUserService.getUsersForAdmin(0, 10)).willReturn((PageResponse) page);
+        given(adminUserService.getUsersForAdmin(0, 10, null)).willReturn((PageResponse) page);
 
-        ResponseEntity<?> res = controller.getUsersForAdmin(0, 10);
+        ResponseEntity<?> res = controller.getUsersForAdmin(0, 10, null);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }

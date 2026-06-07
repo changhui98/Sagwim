@@ -31,9 +31,10 @@ public class AdminGroupController {
     @GetMapping
     public ResponseEntity<PageResponse<AdminGroupResponse>> getAllGroups(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String keyword
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminGroupService.getAllGroups(page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(adminGroupService.getAllGroups(page, size, keyword));
     }
 
     @PatchMapping("/{groupId}/approve")

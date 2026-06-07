@@ -7,6 +7,8 @@ import {
 } from '../../api/adminApi'
 import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue'
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
@@ -37,6 +39,8 @@ export function AdminPostListPage() {
   const [loading, setLoading] = useState(true)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const debouncedKeyword = useDebouncedValue(keyword)
 
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
@@ -44,11 +48,11 @@ export function AdminPostListPage() {
   const [deleteReason, setDeleteReason] = useState('')
 
   const loadContents = useCallback(
-    async (targetPage: number) => {
+    async (targetPage: number, searchKeyword: string) => {
       try {
         setLoading(true)
         setError('')
-        const response = await getAdminContents(token, targetPage, PAGE_SIZE)
+        const response = await getAdminContents(token, targetPage, PAGE_SIZE, searchKeyword)
         const sortedContents = [...response.content].sort((a, b) => {
           const aTime = a.createdDate ? new Date(a.createdDate).getTime() : 0
           const bTime = b.createdDate ? new Date(b.createdDate).getTime() : 0
@@ -70,12 +74,13 @@ export function AdminPostListPage() {
   )
 
   useEffect(() => {
-    loadContents(0)
-  }, [loadContents])
+    setPage(0)
+    loadContents(0, debouncedKeyword)
+  }, [debouncedKeyword, loadContents])
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
-    loadContents(nextPage)
+    loadContents(nextPage, debouncedKeyword)
   }
 
   const handleConfirm = async () => {
@@ -91,7 +96,7 @@ export function AdminPostListPage() {
       setConfirmState(null)
       setDeleteReason('')
       setSuccessAction(action)
-      loadContents(page)
+      loadContents(page, debouncedKeyword)
     } catch (err) {
       const label = action === 'delete' ? '삭제' : '복구'
       const message = err instanceof Error ? err.message : `게시글 ${label} 실패`
@@ -106,6 +111,13 @@ export function AdminPostListPage() {
 
   return (
     <div className={pageStyles.container}>
+      <AdminPageHeader
+        title="게시글 관리"
+        searchValue={keyword}
+        onSearchChange={setKeyword}
+        searchPlaceholder="내용·작성자 검색"
+      />
+
       {error && <p className="alert alert-error" role="alert">{error}</p>}
 
       <div className={tableStyles.tableCard}>

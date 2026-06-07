@@ -12,7 +12,6 @@ import static org.mockito.BDDMockito.willThrow;
 import com.peopleground.sagwim.content.application.service.AdminContentService;
 import com.peopleground.sagwim.content.presentation.dto.request.AdminContentUpdateRequest;
 import com.peopleground.sagwim.content.presentation.dto.request.AdminDeleteContentRequest;
-import com.peopleground.sagwim.content.presentation.dto.request.SearchType;
 import com.peopleground.sagwim.content.presentation.dto.response.AdminContentResponse;
 import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
@@ -53,9 +52,9 @@ class AdminContentControllerTest {
     @SuppressWarnings("unchecked")
     void getAllContents_success() {
         PageResponse<Object> page = new PageResponse<>(List.of(), 0, 10, 0L, 0, false);
-        given(adminContentService.getAllContents(0, 10, null, SearchType.TITLE)).willReturn((PageResponse) page);
+        given(adminContentService.getAllContents(0, 10, null)).willReturn((PageResponse) page);
 
-        ResponseEntity<?> res = controller.getAllContents(0, 10, null, SearchType.TITLE);
+        ResponseEntity<?> res = controller.getAllContents(0, 10, null);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }

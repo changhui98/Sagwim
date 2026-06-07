@@ -55,9 +55,9 @@ class AdminGroupControllerTest {
     @SuppressWarnings("unchecked")
     void getAllGroups_success() {
         PageResponse<Object> page = new PageResponse<>(List.of(), 0, 10, 0L, 0, false);
-        given(adminGroupService.getAllGroups(0, 10)).willReturn((PageResponse) page);
+        given(adminGroupService.getAllGroups(0, 10, null)).willReturn((PageResponse) page);
 
-        ResponseEntity<?> res = controller.getAllGroups(0, 10);
+        ResponseEntity<?> res = controller.getAllGroups(0, 10, null);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }

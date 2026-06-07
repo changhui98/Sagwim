@@ -187,11 +187,19 @@ public class ContentQueryRepository {
         return new PageImpl<>(contents, pageable, total != null ? total : 0);
     }
 
-    public Page<Content> searchContentsIncludingDeleted(String keyword, SearchType searchType, Pageable pageable) {
+    public Page<Content> searchContentsIncludingDeleted(String keyword, Pageable pageable) {
 
         QContent content = QContent.content;
         QUser user = QUser.user;
-        BooleanBuilder condition = buildSearchCondition(content, user, keyword, searchType);
+        // 관리자 통합 검색: 본문 + 작성자(아이디/닉네임) OR 부분일치 (대소문자 무시)
+        BooleanBuilder condition = new BooleanBuilder();
+        if (keyword != null && !keyword.isBlank()) {
+            condition.and(
+                content.body.containsIgnoreCase(keyword)
+                    .or(user.username.containsIgnoreCase(keyword))
+                    .or(user.nickname.containsIgnoreCase(keyword))
+            );
+        }
 
         List<Content> contents = queryFactory
             .selectFrom(content)

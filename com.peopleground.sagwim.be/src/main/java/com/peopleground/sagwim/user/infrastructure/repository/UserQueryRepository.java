@@ -47,12 +47,23 @@ public class UserQueryRepository {
         return new PageImpl<>(content, pageable, total != null ? total : 0);
     }
 
-    public Page<User> findAllUsersForAdmin(Pageable pageable) {
+    public Page<User> findAllUsersForAdmin(String keyword, Pageable pageable) {
 
         QUser user = QUser.user;
 
+        // 관리자 검색: 닉네임 / 이메일 / 아이디(username) 통합 OR 부분일치 (대소문자 무시)
+        BooleanBuilder condition = new BooleanBuilder();
+        if (keyword != null && !keyword.isBlank()) {
+            condition.and(
+                user.nickname.containsIgnoreCase(keyword)
+                    .or(user.userEmail.containsIgnoreCase(keyword))
+                    .or(user.username.containsIgnoreCase(keyword))
+            );
+        }
+
         List<User> content = queryFactory
             .selectFrom(user)
+            .where(condition)
             .orderBy(user.createdDate.desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -61,6 +72,7 @@ public class UserQueryRepository {
         Long total = queryFactory
             .select(user.count())
             .from(user)
+            .where(condition)
             .fetchOne();
 
         return new PageImpl<>(content, pageable, total != null ? total : 0);

@@ -31,8 +31,9 @@ public class AdminReportController {
     @GetMapping
     public ResponseEntity<PageResponse<AdminReportResponse>> getReports(
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String keyword
     ) {
-        return ResponseEntity.ok(reportService.getReportsForAdmin(page, size));
+        return ResponseEntity.ok(reportService.getReportsForAdmin(page, size, keyword));
     }
 }

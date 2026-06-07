@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { getAdminReports } from '../../api/adminApi'
 import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue'
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { Skeleton } from '../../components/common/Skeleton'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Pagination } from '../../components/common/Pagination'
@@ -24,13 +26,15 @@ export function AdminReportListPage() {
   const [loading, setLoading] = useState(true)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const debouncedKeyword = useDebouncedValue(keyword)
 
   const loadReports = useCallback(
-    async (targetPage: number) => {
+    async (targetPage: number, searchKeyword: string) => {
       try {
         setLoading(true)
         setError('')
-        const response: PageResponse<AdminReportEntry> = await getAdminReports(token, targetPage, PAGE_SIZE)
+        const response: PageResponse<AdminReportEntry> = await getAdminReports(token, targetPage, PAGE_SIZE, searchKeyword)
         setReports(response.content)
         setTotalPages(response.totalPages)
         setTotalElements(response.totalElements)
@@ -47,16 +51,24 @@ export function AdminReportListPage() {
   )
 
   useEffect(() => {
-    loadReports(0)
-  }, [loadReports])
+    setPage(0)
+    loadReports(0, debouncedKeyword)
+  }, [debouncedKeyword, loadReports])
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
-    loadReports(nextPage)
+    loadReports(nextPage, debouncedKeyword)
   }
 
   return (
     <div className={pageStyles.container}>
+      <AdminPageHeader
+        title="신고 내역"
+        searchValue={keyword}
+        onSearchChange={setKeyword}
+        searchPlaceholder="신고자 닉네임·신고 사유 검색"
+      />
+
       {error && <p className="alert alert-error" role="alert">{error}</p>}
 
       <div className={tableStyles.tableCard}>

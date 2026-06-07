@@ -4,6 +4,8 @@ import { changeUserRole, deleteAdminUser, getAdminUsers } from '../../api/adminA
 import { ApiError } from '../../api/ApiError'
 import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
+import { useDebouncedValue } from '../../hooks/useDebouncedValue'
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
@@ -80,6 +82,8 @@ export function AdminUserListPage() {
   const [loading, setLoading] = useState(true)
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const debouncedKeyword = useDebouncedValue(keyword)
 
   const [deleteTarget, setDeleteTarget] = useState<UserResponse | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
@@ -90,11 +94,11 @@ export function AdminUserListPage() {
   const [roleChangingUsername, setRoleChangingUsername] = useState<string | null>(null)
 
   const loadUsers = useCallback(
-    async (targetPage: number) => {
+    async (targetPage: number, searchKeyword: string) => {
       try {
         setLoading(true)
         setError('')
-        const response = await getAdminUsers(token, targetPage, PAGE_SIZE)
+        const response = await getAdminUsers(token, targetPage, PAGE_SIZE, searchKeyword)
         const sortedUsers = [...response.content].sort((a, b) => {
           const aTime = a.createdDate ? new Date(a.createdDate).getTime() : 0
           const bTime = b.createdDate ? new Date(b.createdDate).getTime() : 0
@@ -116,12 +120,13 @@ export function AdminUserListPage() {
   )
 
   useEffect(() => {
-    loadUsers(0)
-  }, [loadUsers])
+    setPage(0)
+    loadUsers(0, debouncedKeyword)
+  }, [debouncedKeyword, loadUsers])
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
-    loadUsers(nextPage)
+    loadUsers(nextPage, debouncedKeyword)
   }
 
   const handleDeleteConfirm = async () => {
@@ -132,7 +137,7 @@ export function AdminUserListPage() {
       setDeleteTarget(null)
       setDeleteReason('')
       setDeleteSuccess(true)
-      loadUsers(page)
+      loadUsers(page, debouncedKeyword)
     } catch (err) {
       const message = err instanceof Error ? err.message : '사용자 삭제 실패'
       setError(message)
@@ -166,6 +171,13 @@ export function AdminUserListPage() {
 
   return (
     <div className={pageStyles.container}>
+      <AdminPageHeader
+        title="사용자 관리"
+        searchValue={keyword}
+        onSearchChange={setKeyword}
+        searchPlaceholder="닉네임·이메일·아이디 검색"
+      />
+
       {error && <p className="alert alert-error" role="alert">{error}</p>}
 
       <div className={tableStyles.tableCard}>

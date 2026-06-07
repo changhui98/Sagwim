@@ -65,9 +65,9 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<User> findAllUserForAdmin(Pageable pageable) {
+    public Page<User> findAllUserForAdmin(String keyword, Pageable pageable) {
 
-        return userQueryRepository.findAllUsersForAdmin(pageable);
+        return userQueryRepository.findAllUsersForAdmin(keyword, pageable);
     }
 
     @Override

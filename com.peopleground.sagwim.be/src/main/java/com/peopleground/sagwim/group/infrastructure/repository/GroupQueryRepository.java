@@ -267,14 +267,26 @@ public class GroupQueryRepository {
      * 관리자용: 소프트 삭제된 모임 제외, 상태 무관 전체 조회 (id DESC 정렬)
      * COUNT 쿼리 유지 — 어드민 페이지 번호 UI 필요.
      */
-    public Page<Group> findAllForAdmin(Pageable pageable) {
+    public Page<Group> findAllForAdmin(String keyword, Pageable pageable) {
         QGroup group = QGroup.group;
         QUser leader = new QUser("leader");
+
+        // 기본 조건: 소프트 삭제 제외
+        BooleanBuilder condition = new BooleanBuilder();
+        condition.and(group.deletedDate.isNull());
+
+        // 관리자 검색: 모임명 / 모임장 닉네임 통합 OR 부분일치 (대소문자 무시)
+        if (keyword != null && !keyword.isBlank()) {
+            condition.and(
+                group.name.containsIgnoreCase(keyword)
+                    .or(leader.nickname.containsIgnoreCase(keyword))
+            );
+        }
 
         List<Group> groups = queryFactory
             .selectFrom(group)
             .join(group.leader, leader).fetchJoin()
-            .where(group.deletedDate.isNull())
+            .where(condition)
             .orderBy(group.id.desc())
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
@@ -283,7 +295,8 @@ public class GroupQueryRepository {
         Long total = queryFactory
             .select(group.count())
             .from(group)
-            .where(group.deletedDate.isNull())
+            .join(group.leader, leader)
+            .where(condition)
             .fetchOne();
 
         return new PageImpl<>(groups, pageable, total != null ? total : 0);

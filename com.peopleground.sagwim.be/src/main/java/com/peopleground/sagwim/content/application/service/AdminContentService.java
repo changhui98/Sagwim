@@ -4,7 +4,6 @@ import com.peopleground.sagwim.content.domain.ContentErrorCode;
 import com.peopleground.sagwim.content.domain.entity.Content;
 import com.peopleground.sagwim.content.domain.repository.ContentRepository;
 import com.peopleground.sagwim.content.presentation.dto.request.AdminContentUpdateRequest;
-import com.peopleground.sagwim.content.presentation.dto.request.SearchType;
 import com.peopleground.sagwim.content.presentation.dto.response.AdminContentResponse;
 import com.peopleground.sagwim.deletelog.application.service.DeleteLogService;
 import com.peopleground.sagwim.deletelog.domain.TargetType;
@@ -29,12 +28,12 @@ public class AdminContentService {
     private final DeleteLogService deleteLogService;
 
     @Transactional(readOnly = true)
-    public PageResponse<AdminContentResponse> getAllContents(int page, int size, String keyword, SearchType searchType) {
+    public PageResponse<AdminContentResponse> getAllContents(int page, int size, String keyword) {
         Pageable pageable = PageRequest.of(page, size);
 
         if (keyword != null && !keyword.isBlank()) {
             return PageResponse.from(
-                contentRepository.searchContentsIncludingDeleted(keyword, searchType, pageable)
+                contentRepository.searchContentsIncludingDeleted(keyword, pageable)
                     .map(AdminContentResponse::from)
             );
         }
