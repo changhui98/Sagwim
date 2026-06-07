@@ -4,65 +4,7 @@
   gap: var(--sp-6);
 }
 
-/* ── 페이지 헤더: 제목 | 검색 | 추가 버튼 ── */
-.header {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-4);
-}
-
-.title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--clr-text);
-  margin: 0;
-  flex-shrink: 0;
-}
-
-/* ── 가운데 검색 영역 ── */
-.search {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.searchBox {
-  position: relative;
-  width: 100%;
-  max-width: 420px;
-}
-
-.searchIcon {
-  position: absolute;
-  left: var(--sp-3);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--clr-text-muted);
-  pointer-events: none;
-}
-
-.searchInput {
-  width: 100%;
-  padding: var(--sp-2) var(--sp-3) var(--sp-2) 40px;
-  font-size: 0.9375rem;
-  color: var(--clr-text);
-  background: var(--input-bg);
-  border: 1px solid var(--input-border);
-  border-radius: var(--r-full);
-  box-sizing: border-box;
-  transition: border-color var(--t-fast), box-shadow var(--t-fast);
-}
-
-.searchInput::placeholder {
-  color: var(--clr-text-muted);
-}
-
-.searchInput:focus {
-  outline: none;
-  border-color: var(--clr-accent);
-  box-shadow: 0 0 0 3px var(--clr-accent-muted);
-}
-
+/* 페이지 헤더(제목·검색)는 공통 컴포넌트 AdminPageHeader로 이전됨. 여기서는 추가/삭제 버튼만 유지. */
 .addButton {
   display: inline-flex;
   align-items: center;
