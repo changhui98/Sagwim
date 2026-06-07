@@ -58,8 +58,8 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public Page<Group> findAllForAdmin(String keyword, Pageable pageable) {
-        return groupQueryRepository.findAllForAdmin(keyword, pageable);
+    public Page<Group> findAllForAdmin(String keyword, String searchField, Pageable pageable) {
+        return groupQueryRepository.findAllForAdmin(keyword, searchField, pageable);
     }
 
     @Override

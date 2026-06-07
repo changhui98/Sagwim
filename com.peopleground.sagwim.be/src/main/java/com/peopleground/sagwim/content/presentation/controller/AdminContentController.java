@@ -33,9 +33,10 @@ public class AdminContentController {
     public ResponseEntity<PageResponse<AdminContentResponse>> getAllContents(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "10") int size,
-        @RequestParam(required = false) String keyword
+        @RequestParam(required = false) String keyword,
+        @RequestParam(required = false) String searchField
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(adminContentService.getAllContents(page, size, keyword));
+        return ResponseEntity.status(HttpStatus.OK).body(adminContentService.getAllContents(page, size, keyword, searchField));
     }
 
     @GetMapping("/{contentId}")

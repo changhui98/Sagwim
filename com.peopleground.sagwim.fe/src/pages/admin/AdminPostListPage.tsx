@@ -21,6 +21,12 @@ import pageStyles from './AdminPostListPage.module.css'
 
 const PAGE_SIZE = 10
 
+const SEARCH_FIELDS = [
+  { value: 'ALL', label: '통합' },
+  { value: 'BODY', label: '내용' },
+  { value: 'AUTHOR', label: '작성자' },
+] as const
+
 type ConfirmAction = 'delete' | 'restore'
 
 interface ConfirmState {
@@ -40,6 +46,7 @@ export function AdminPostListPage() {
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
   const [keyword, setKeyword] = useState('')
+  const [searchField, setSearchField] = useState('ALL')
   const debouncedKeyword = useDebouncedValue(keyword)
 
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null)
@@ -48,11 +55,11 @@ export function AdminPostListPage() {
   const [deleteReason, setDeleteReason] = useState('')
 
   const loadContents = useCallback(
-    async (targetPage: number, searchKeyword: string) => {
+    async (targetPage: number, searchKeyword: string, field: string) => {
       try {
         setLoading(true)
         setError('')
-        const response = await getAdminContents(token, targetPage, PAGE_SIZE, searchKeyword)
+        const response = await getAdminContents(token, targetPage, PAGE_SIZE, searchKeyword, field)
         const sortedContents = [...response.content].sort((a, b) => {
           const aTime = a.createdDate ? new Date(a.createdDate).getTime() : 0
           const bTime = b.createdDate ? new Date(b.createdDate).getTime() : 0
@@ -75,12 +82,12 @@ export function AdminPostListPage() {
 
   useEffect(() => {
     setPage(0)
-    loadContents(0, debouncedKeyword)
-  }, [debouncedKeyword, loadContents])
+    loadContents(0, debouncedKeyword, searchField)
+  }, [debouncedKeyword, searchField, loadContents])
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
-    loadContents(nextPage, debouncedKeyword)
+    loadContents(nextPage, debouncedKeyword, searchField)
   }
 
   const handleConfirm = async () => {
@@ -96,7 +103,7 @@ export function AdminPostListPage() {
       setConfirmState(null)
       setDeleteReason('')
       setSuccessAction(action)
-      loadContents(page, debouncedKeyword)
+      loadContents(page, debouncedKeyword, searchField)
     } catch (err) {
       const label = action === 'delete' ? '삭제' : '복구'
       const message = err instanceof Error ? err.message : `게시글 ${label} 실패`
@@ -115,7 +122,10 @@ export function AdminPostListPage() {
         title="게시글 관리"
         searchValue={keyword}
         onSearchChange={setKeyword}
-        searchPlaceholder="내용·작성자 검색"
+        searchPlaceholder="검색어 입력"
+        searchFields={SEARCH_FIELDS}
+        searchField={searchField}
+        onSearchFieldChange={setSearchField}
       />
 
       {error && <p className="alert alert-error" role="alert">{error}</p>}

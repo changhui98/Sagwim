@@ -29,10 +29,10 @@ public class AdminGroupService {
     private final DeleteLogService deleteLogService;
 
     @Transactional(readOnly = true)
-    public PageResponse<AdminGroupResponse> getAllGroups(int page, int size, String keyword) {
+    public PageResponse<AdminGroupResponse> getAllGroups(int page, int size, String keyword, String searchField) {
         Pageable pageable = PageRequest.of(page, size);
         return PageResponse.from(
-            groupRepository.findAllForAdmin(keyword, pageable).map(AdminGroupResponse::from)
+            groupRepository.findAllForAdmin(keyword, searchField, pageable).map(AdminGroupResponse::from)
         );
     }
 

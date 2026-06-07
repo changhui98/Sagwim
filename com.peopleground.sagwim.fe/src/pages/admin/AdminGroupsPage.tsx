@@ -23,6 +23,12 @@ import styles from './AdminGroupsPage.module.css'
 
 const PAGE_SIZE = 10
 
+const SEARCH_FIELDS = [
+  { value: 'ALL', label: '통합' },
+  { value: 'NAME', label: '모임명' },
+  { value: 'LEADER', label: '모임장' },
+] as const
+
 type ConfirmAction = 'approve' | 'reject' | 'delete'
 
 interface ConfirmState {
@@ -52,6 +58,7 @@ export function AdminGroupsPage() {
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
   const [keyword, setKeyword] = useState('')
+  const [searchField, setSearchField] = useState('ALL')
   const debouncedKeyword = useDebouncedValue(keyword)
 
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null)
@@ -60,11 +67,11 @@ export function AdminGroupsPage() {
   const [deleteReason, setDeleteReason] = useState('')
 
   const loadGroups = useCallback(
-    async (targetPage: number, searchKeyword: string) => {
+    async (targetPage: number, searchKeyword: string, field: string) => {
       try {
         setLoading(true)
         setError('')
-        const response = await getAdminGroups(token, targetPage, PAGE_SIZE, searchKeyword)
+        const response = await getAdminGroups(token, targetPage, PAGE_SIZE, searchKeyword, field)
         setGroups(response.content)
         setTotalPages(response.totalPages)
         setTotalElements(response.totalElements)
@@ -82,12 +89,12 @@ export function AdminGroupsPage() {
 
   useEffect(() => {
     setPage(0)
-    loadGroups(0, debouncedKeyword)
-  }, [debouncedKeyword, loadGroups])
+    loadGroups(0, debouncedKeyword, searchField)
+  }, [debouncedKeyword, searchField, loadGroups])
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
-    loadGroups(nextPage, debouncedKeyword)
+    loadGroups(nextPage, debouncedKeyword, searchField)
   }
 
   const handleConfirm = async () => {
@@ -105,7 +112,7 @@ export function AdminGroupsPage() {
       setConfirmState(null)
       setDeleteReason('')
       setSuccessAction(action)
-      loadGroups(page, debouncedKeyword)
+      loadGroups(page, debouncedKeyword, searchField)
     } catch (err) {
       const label = action === 'approve' ? '승인' : action === 'reject' ? '거절' : '삭제'
       const message = err instanceof Error ? err.message : `모임 ${label} 실패`
@@ -122,7 +129,10 @@ export function AdminGroupsPage() {
         title="모임 관리"
         searchValue={keyword}
         onSearchChange={setKeyword}
-        searchPlaceholder="모임명·모임장 닉네임 검색"
+        searchPlaceholder="검색어 입력"
+        searchFields={SEARCH_FIELDS}
+        searchField={searchField}
+        onSearchFieldChange={setSearchField}
       />
 
       {error && <p className="alert alert-error" role="alert">{error}</p>}

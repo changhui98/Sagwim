@@ -8,6 +8,7 @@ import com.peopleground.sagwim.tag.domain.entity.QTag;
 import com.peopleground.sagwim.user.domain.entity.QUser;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -187,18 +188,14 @@ public class ContentQueryRepository {
         return new PageImpl<>(contents, pageable, total != null ? total : 0);
     }
 
-    public Page<Content> searchContentsIncludingDeleted(String keyword, Pageable pageable) {
+    public Page<Content> searchContentsIncludingDeleted(String keyword, String searchField, Pageable pageable) {
 
         QContent content = QContent.content;
         QUser user = QUser.user;
-        // 관리자 통합 검색: 본문 + 작성자(아이디/닉네임) OR 부분일치 (대소문자 무시)
+        // 관리자 검색: searchField에 따라 본문/작성자 개별 또는 통합(ALL) OR 부분일치 (대소문자 무시)
         BooleanBuilder condition = new BooleanBuilder();
         if (keyword != null && !keyword.isBlank()) {
-            condition.and(
-                content.body.containsIgnoreCase(keyword)
-                    .or(user.username.containsIgnoreCase(keyword))
-                    .or(user.nickname.containsIgnoreCase(keyword))
-            );
+            condition.and(buildAdminContentSearchCondition(content, user, keyword, searchField));
         }
 
         List<Content> contents = queryFactory
@@ -250,6 +247,18 @@ public class ContentQueryRepository {
                 (a, b) -> a,
                 LinkedHashMap::new
             ));
+    }
+
+    // 관리자 검색용: searchField 가 BODY / AUTHOR 개별, 그 외(ALL 등)는 통합 OR
+    private BooleanExpression buildAdminContentSearchCondition(QContent content, QUser user, String keyword, String searchField) {
+        return switch (searchField == null ? "ALL" : searchField) {
+            case "BODY" -> content.body.containsIgnoreCase(keyword);
+            case "AUTHOR" -> user.username.containsIgnoreCase(keyword)
+                .or(user.nickname.containsIgnoreCase(keyword));
+            default -> content.body.containsIgnoreCase(keyword)
+                .or(user.username.containsIgnoreCase(keyword))
+                .or(user.nickname.containsIgnoreCase(keyword));
+        };
     }
 
     private BooleanBuilder buildSearchCondition(QContent content, QUser user, String keyword, SearchType searchType) {

@@ -26,11 +26,11 @@ public class AdminUserService {
     private final DeleteLogService deleteLogService;
 
     @Transactional(readOnly = true)
-    public PageResponse<AdminUserResponse> getUsersForAdmin(int page, int size, String keyword) {
+    public PageResponse<AdminUserResponse> getUsersForAdmin(int page, int size, String keyword, String searchField) {
         Pageable pageable = PageRequest.of(page, size);
 
         return PageResponse.from(
-            userRepository.findAllUserForAdmin(keyword, pageable)
+            userRepository.findAllUserForAdmin(keyword, searchField, pageable)
                 .map(user -> AdminUserResponse.from(user, imageUrlResolver.resolve(user.getProfileImageUrl())))
         );
     }

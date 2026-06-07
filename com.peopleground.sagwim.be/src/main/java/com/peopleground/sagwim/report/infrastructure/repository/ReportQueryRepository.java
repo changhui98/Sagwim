@@ -11,6 +11,7 @@ import com.peopleground.sagwim.report.presentation.dto.response.AdminReportRespo
 import com.peopleground.sagwim.user.domain.entity.QUser;
 import com.peopleground.sagwim.user.domain.entity.User;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +50,9 @@ public class ReportQueryRepository {
      * 신고 목록 관리자 페이지 조회.
      * createdDate 내림차순 정렬로 최신 신고가 먼저 표시된다.
      */
-    public Page<AdminReportResponse> findAllForAdmin(String keyword, Pageable pageable) {
+    public Page<AdminReportResponse> findAllForAdmin(String keyword, String searchField, Pageable pageable) {
         // 1. Report 페이지 조회 (검색어 유무에 따라 분기)
-        org.springframework.data.domain.Page<Report> reportPage = fetchReportPage(keyword, pageable);
+        org.springframework.data.domain.Page<Report> reportPage = fetchReportPage(keyword, searchField, pageable);
 
         List<Report> reports = reportPage.getContent();
         if (reports.isEmpty()) {
@@ -112,7 +113,7 @@ public class ReportQueryRepository {
      * 신고 페이지 1차 조회.
      * 검색어가 없으면 단순 JPA 페이징, 있으면 신고 사유 + 신고자 닉네임 통합 OR 검색(QueryDSL).
      */
-    private org.springframework.data.domain.Page<Report> fetchReportPage(String keyword, Pageable pageable) {
+    private org.springframework.data.domain.Page<Report> fetchReportPage(String keyword, String searchField, Pageable pageable) {
         if (keyword == null || keyword.isBlank()) {
             return reportJpaRepository.findAllByOrderByCreatedDateDesc(pageable);
         }
@@ -122,10 +123,7 @@ public class ReportQueryRepository {
 
         // 신고자(reporterUserId)와 User를 명시적 join — 닉네임 검색용
         BooleanBuilder condition = new BooleanBuilder();
-        condition.and(
-            report.reason.containsIgnoreCase(keyword)
-                .or(user.nickname.containsIgnoreCase(keyword))
-        );
+        condition.and(buildReportSearchCondition(report, user, keyword, searchField));
 
         List<Report> content = queryFactory
             .selectFrom(report)
@@ -144,6 +142,16 @@ public class ReportQueryRepository {
             .fetchOne();
 
         return new PageImpl<>(content, pageable, total != null ? total : 0);
+    }
+
+    // searchField: REPORTER(신고자 닉네임) / REASON(신고 사유) 개별, 그 외(ALL 등)는 통합 OR
+    private BooleanExpression buildReportSearchCondition(QReport report, QUser user, String keyword, String searchField) {
+        return switch (searchField == null ? "ALL" : searchField) {
+            case "REPORTER" -> user.nickname.containsIgnoreCase(keyword);
+            case "REASON" -> report.reason.containsIgnoreCase(keyword);
+            default -> report.reason.containsIgnoreCase(keyword)
+                .or(user.nickname.containsIgnoreCase(keyword));
+        };
     }
 
     private String resolveTargetContent(

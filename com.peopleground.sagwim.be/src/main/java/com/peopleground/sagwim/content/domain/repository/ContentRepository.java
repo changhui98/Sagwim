@@ -47,7 +47,7 @@ public interface ContentRepository {
 
     Page<Content> findAllContentsIncludingDeleted(Pageable pageable);
 
-    Page<Content> searchContentsIncludingDeleted(String keyword, Pageable pageable);
+    Page<Content> searchContentsIncludingDeleted(String keyword, String searchField, Pageable pageable);
 
     List<Content> findAllByIds(List<Long> ids);
 

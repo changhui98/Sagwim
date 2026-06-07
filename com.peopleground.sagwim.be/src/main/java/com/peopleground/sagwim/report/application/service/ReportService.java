@@ -66,9 +66,9 @@ public class ReportService {
      * <p>N+1 방지: ReportQueryRepository에서 IN 배치 조회로 처리한다.</p>
      */
     @Transactional(readOnly = true)
-    public PageResponse<AdminReportResponse> getReportsForAdmin(int page, int size, String keyword) {
+    public PageResponse<AdminReportResponse> getReportsForAdmin(int page, int size, String keyword, String searchField) {
         Pageable pageable = PageRequest.of(page, size);
-        return PageResponse.from(reportRepository.findAllForAdmin(keyword, pageable));
+        return PageResponse.from(reportRepository.findAllForAdmin(keyword, searchField, pageable));
     }
 
     /**

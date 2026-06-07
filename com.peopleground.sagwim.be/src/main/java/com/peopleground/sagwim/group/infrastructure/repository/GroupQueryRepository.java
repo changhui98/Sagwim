@@ -267,7 +267,7 @@ public class GroupQueryRepository {
      * 관리자용: 소프트 삭제된 모임 제외, 상태 무관 전체 조회 (id DESC 정렬)
      * COUNT 쿼리 유지 — 어드민 페이지 번호 UI 필요.
      */
-    public Page<Group> findAllForAdmin(String keyword, Pageable pageable) {
+    public Page<Group> findAllForAdmin(String keyword, String searchField, Pageable pageable) {
         QGroup group = QGroup.group;
         QUser leader = new QUser("leader");
 
@@ -275,12 +275,9 @@ public class GroupQueryRepository {
         BooleanBuilder condition = new BooleanBuilder();
         condition.and(group.deletedDate.isNull());
 
-        // 관리자 검색: 모임명 / 모임장 닉네임 통합 OR 부분일치 (대소문자 무시)
+        // 관리자 검색: searchField에 따라 모임명/모임장 닉네임 개별 또는 통합(ALL) OR 부분일치 (대소문자 무시)
         if (keyword != null && !keyword.isBlank()) {
-            condition.and(
-                group.name.containsIgnoreCase(keyword)
-                    .or(leader.nickname.containsIgnoreCase(keyword))
-            );
+            condition.and(buildGroupSearchCondition(group, leader, keyword, searchField));
         }
 
         List<Group> groups = queryFactory
@@ -300,6 +297,16 @@ public class GroupQueryRepository {
             .fetchOne();
 
         return new PageImpl<>(groups, pageable, total != null ? total : 0);
+    }
+
+    // searchField: NAME / LEADER 개별, 그 외(ALL 등)는 통합 OR
+    private BooleanExpression buildGroupSearchCondition(QGroup group, QUser leader, String keyword, String searchField) {
+        return switch (searchField == null ? "ALL" : searchField) {
+            case "NAME" -> group.name.containsIgnoreCase(keyword);
+            case "LEADER" -> leader.nickname.containsIgnoreCase(keyword);
+            default -> group.name.containsIgnoreCase(keyword)
+                .or(leader.nickname.containsIgnoreCase(keyword));
+        };
     }
 
     /**

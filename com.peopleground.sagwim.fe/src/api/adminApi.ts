@@ -15,9 +15,11 @@ export const getAdminUsers = (
   page = 0,
   size = 10,
   keyword = '',
+  searchField = '',
 ): Promise<PageResponse<UserResponse>> => {
   const params = new URLSearchParams({ page: String(page), size: String(size) })
   if (keyword.trim()) params.set('keyword', keyword.trim())
+  if (searchField && searchField !== 'ALL') params.set('searchField', searchField)
   return fetch(`${API_BASE_URL}/admin/users?${params.toString()}`, {
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<PageResponse<UserResponse>>(response))
@@ -61,9 +63,11 @@ export const getAdminContents = (
   page = 0,
   size = 10,
   keyword = '',
+  searchField = '',
 ): Promise<PageResponse<AdminContentResponse>> => {
   const params = new URLSearchParams({ page: String(page), size: String(size) })
   if (keyword.trim()) params.set('keyword', keyword.trim())
+  if (searchField && searchField !== 'ALL') params.set('searchField', searchField)
   return fetch(`${API_BASE_URL}/admin/contents?${params.toString()}`, {
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<PageResponse<AdminContentResponse>>(response))
@@ -159,9 +163,11 @@ export const getAdminGroups = (
   page = 0,
   size = 10,
   keyword = '',
+  searchField = '',
 ): Promise<PageResponse<AdminGroupResponse>> => {
   const params = new URLSearchParams({ page: String(page), size: String(size) })
   if (keyword.trim()) params.set('keyword', keyword.trim())
+  if (searchField && searchField !== 'ALL') params.set('searchField', searchField)
   return fetch(`${API_BASE_URL}/admin/groups?${params.toString()}`, {
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<PageResponse<AdminGroupResponse>>(response))
@@ -238,9 +244,11 @@ export const getAdminReports = (
   page = 0,
   size = 20,
   keyword = '',
+  searchField = '',
 ): Promise<PageResponse<AdminReportEntry>> => {
   const params = new URLSearchParams({ page: String(page), size: String(size) })
   if (keyword.trim()) params.set('keyword', keyword.trim())
+  if (searchField && searchField !== 'ALL') params.set('searchField', searchField)
   return fetch(`${API_BASE_URL}/admin/reports?${params.toString()}`, {
     headers: createAuthHeaders(token),
   }).then((response) => parseResponse<PageResponse<AdminReportEntry>>(response))

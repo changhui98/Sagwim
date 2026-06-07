@@ -52,9 +52,9 @@ class AdminContentControllerTest {
     @SuppressWarnings("unchecked")
     void getAllContents_success() {
         PageResponse<Object> page = new PageResponse<>(List.of(), 0, 10, 0L, 0, false);
-        given(adminContentService.getAllContents(0, 10, null)).willReturn((PageResponse) page);
+        given(adminContentService.getAllContents(0, 10, null, null)).willReturn((PageResponse) page);
 
-        ResponseEntity<?> res = controller.getAllContents(0, 10, null);
+        ResponseEntity<?> res = controller.getAllContents(0, 10, null, null);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }

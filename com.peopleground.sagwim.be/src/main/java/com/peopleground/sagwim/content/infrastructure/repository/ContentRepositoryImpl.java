@@ -74,9 +74,9 @@ public class ContentRepositoryImpl implements ContentRepository {
     }
 
     @Override
-    public Page<Content> searchContentsIncludingDeleted(String keyword, Pageable pageable) {
+    public Page<Content> searchContentsIncludingDeleted(String keyword, String searchField, Pageable pageable) {
 
-        return contentQueryRepository.searchContentsIncludingDeleted(keyword, pageable);
+        return contentQueryRepository.searchContentsIncludingDeleted(keyword, searchField, pageable);
     }
 
     @Override

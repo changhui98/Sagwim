@@ -15,6 +15,12 @@ import pageStyles from './AdminReportListPage.module.css'
 
 const PAGE_SIZE = 20
 
+const SEARCH_FIELDS = [
+  { value: 'ALL', label: '통합' },
+  { value: 'REPORTER', label: '신고자' },
+  { value: 'REASON', label: '신고 사유' },
+] as const
+
 export function AdminReportListPage() {
   const { token } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
@@ -27,14 +33,15 @@ export function AdminReportListPage() {
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
   const [keyword, setKeyword] = useState('')
+  const [searchField, setSearchField] = useState('ALL')
   const debouncedKeyword = useDebouncedValue(keyword)
 
   const loadReports = useCallback(
-    async (targetPage: number, searchKeyword: string) => {
+    async (targetPage: number, searchKeyword: string, field: string) => {
       try {
         setLoading(true)
         setError('')
-        const response: PageResponse<AdminReportEntry> = await getAdminReports(token, targetPage, PAGE_SIZE, searchKeyword)
+        const response: PageResponse<AdminReportEntry> = await getAdminReports(token, targetPage, PAGE_SIZE, searchKeyword, field)
         setReports(response.content)
         setTotalPages(response.totalPages)
         setTotalElements(response.totalElements)
@@ -52,12 +59,12 @@ export function AdminReportListPage() {
 
   useEffect(() => {
     setPage(0)
-    loadReports(0, debouncedKeyword)
-  }, [debouncedKeyword, loadReports])
+    loadReports(0, debouncedKeyword, searchField)
+  }, [debouncedKeyword, searchField, loadReports])
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
-    loadReports(nextPage, debouncedKeyword)
+    loadReports(nextPage, debouncedKeyword, searchField)
   }
 
   return (
@@ -66,7 +73,10 @@ export function AdminReportListPage() {
         title="신고 내역"
         searchValue={keyword}
         onSearchChange={setKeyword}
-        searchPlaceholder="신고자 닉네임·신고 사유 검색"
+        searchPlaceholder="검색어 입력"
+        searchFields={SEARCH_FIELDS}
+        searchField={searchField}
+        onSearchFieldChange={setSearchField}
       />
 
       {error && <p className="alert alert-error" role="alert">{error}</p>}

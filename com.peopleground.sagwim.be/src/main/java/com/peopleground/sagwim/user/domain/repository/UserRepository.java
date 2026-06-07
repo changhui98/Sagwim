@@ -27,7 +27,7 @@ public interface UserRepository {
 
     Page<User> findAllUsers(Pageable pageable);
 
-    Page<User> findAllUserForAdmin(String keyword, Pageable pageable);
+    Page<User> findAllUserForAdmin(String keyword, String searchField, Pageable pageable);
 
     User updateProfile(User updateUser);
 
