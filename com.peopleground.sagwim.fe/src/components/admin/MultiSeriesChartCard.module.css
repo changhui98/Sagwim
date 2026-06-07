@@ -114,6 +114,74 @@
   color: #fff;
 }
 
+/* ── 선택 시리즈별 전월 대비 요약 카드 ── */
+.summaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-8);
+}
+
+.summaryCard {
+  flex: 0 0 auto;
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) 0;
+}
+
+.summaryHead {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.summaryLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--clr-text-muted);
+}
+
+.summaryValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  line-height: 1.1;
+}
+
+.summaryUnit {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--clr-text-muted);
+  margin-left: 3px;
+}
+
+.summaryDelta {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 2px var(--sp-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: var(--r-full);
+}
+
+.deltaUp {
+  color: var(--clr-success);
+  background: var(--clr-success-soft);
+}
+
+.deltaDown {
+  color: var(--clr-error);
+  background: var(--clr-error-soft);
+}
+
+.deltaFlat {
+  color: var(--clr-text-muted);
+  background: var(--clr-border);
+}
+
 /* ── Tooltip ── */
 .tooltip {
   background: var(--clr-surface);

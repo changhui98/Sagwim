@@ -38,6 +38,32 @@ interface TooltipRenderProps {
   payload?: ReadonlyArray<{ payload?: unknown }>
 }
 
+interface SeriesSummary {
+  current: number // 최신 달 값
+  delta: number | null // 전월 대비 증감 퍼센트 (정수), 계산 불가 시 null
+  isNew: boolean // 직전 달 0, 최신 달 > 0 (신규 진입)
+}
+
+function summarizeSeries(
+  key: string,
+  latest: MergedChartPoint | undefined,
+  prev: MergedChartPoint | undefined,
+): SeriesSummary {
+  const current = Number(latest?.[key] ?? 0)
+  if (!prev) {
+    return { current, delta: null, isNew: false }
+  }
+  const prevVal = Number(prev[key] ?? 0)
+  if (prevVal === 0) {
+    return { current, delta: null, isNew: current > 0 }
+  }
+  return {
+    current,
+    delta: Math.round(((current - prevVal) / prevVal) * 100),
+    isNew: false,
+  }
+}
+
 function renderTooltip(
   { active, payload }: TooltipRenderProps,
   series: readonly ChartSeries[],
@@ -81,6 +107,9 @@ export function MultiSeriesChartCard({
       return next
     })
   }
+
+  const latest = data.length > 0 ? data[data.length - 1] : undefined
+  const prev = data.length > 1 ? data[data.length - 2] : undefined
 
   return (
     <div className={styles.card}>
@@ -159,6 +188,52 @@ export function MultiSeriesChartCard({
           </ResponsiveContainer>
         )}
       </div>
+
+      {selected.size > 0 && !loading && !error && (
+        <div className={styles.summaryRow}>
+          {[...selected].map((key) => {
+            const s = series.find((x) => x.key === key)
+            if (!s) return null
+            const { current, delta, isNew } = summarizeSeries(key, latest, prev)
+            return (
+              <div key={s.key} className={styles.summaryCard}>
+                <div className={styles.summaryHead}>
+                  <span
+                    className={styles.legendDot}
+                    style={{ background: s.color, borderColor: s.color }}
+                  />
+                  <span className={styles.summaryLabel}>{s.label}</span>
+                </div>
+                <div className={styles.summaryValue}>
+                  {current.toLocaleString()}
+                  <span className={styles.summaryUnit}>{s.unit}</span>
+                </div>
+                {isNew ? (
+                  <span className={`${styles.summaryDelta} ${styles.deltaUp}`}>
+                    신규
+                  </span>
+                ) : delta === null ? (
+                  <span className={`${styles.summaryDelta} ${styles.deltaFlat}`}>
+                    – 비교 데이터 없음
+                  </span>
+                ) : delta > 0 ? (
+                  <span className={`${styles.summaryDelta} ${styles.deltaUp}`}>
+                    ▲ {delta}% 전월대비
+                  </span>
+                ) : delta < 0 ? (
+                  <span className={`${styles.summaryDelta} ${styles.deltaDown}`}>
+                    ▼ {Math.abs(delta)}% 전월대비
+                  </span>
+                ) : (
+                  <span className={`${styles.summaryDelta} ${styles.deltaFlat}`}>
+                    – 변동 없음
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
