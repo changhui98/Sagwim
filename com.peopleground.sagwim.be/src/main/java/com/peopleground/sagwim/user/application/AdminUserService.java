@@ -37,8 +37,9 @@ public class AdminUserService {
 
     @Transactional(readOnly = true)
     public AdminUserDetailResponse getUserForAdmin(String username) {
+        User user = getUser(username);
 
-        return AdminUserDetailResponse.from(getUser(username));
+        return AdminUserDetailResponse.from(user, imageUrlResolver.resolve(user.getProfileImageUrl()));
     }
 
     @Transactional
@@ -66,7 +67,7 @@ public class AdminUserService {
 
         user.restore();
         deleteLogService.markRestoredByTarget(TargetType.USER.name(), user.getUsername(), requesterUsername);
-        return AdminUserDetailResponse.from(user);
+        return AdminUserDetailResponse.from(user, imageUrlResolver.resolve(user.getProfileImageUrl()));
     }
 
     @Transactional

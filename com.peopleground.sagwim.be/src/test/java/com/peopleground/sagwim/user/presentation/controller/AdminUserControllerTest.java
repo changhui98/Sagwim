@@ -58,7 +58,8 @@ class AdminUserControllerTest {
     @DisplayName("관리자 사용자 상세 조회 성공")
     void getUserForAdmin_success() {
         AdminUserDetailResponse detail = new AdminUserDetailResponse(
-            UUID.randomUUID(), "testuser", "닉네임", "a@b.com", UserRole.USER, null, null, null, null, false, null
+            UUID.randomUUID(), "testuser", "닉네임", "a@b.com", UserRole.USER, null, null,
+            null, null, null, null, true, 1, null, null, false, null
         );
         given(adminUserService.getUserForAdmin("testuser")).willReturn(detail);
 
@@ -103,7 +104,8 @@ class AdminUserControllerTest {
     @DisplayName("관리자 사용자 복원 성공")
     void restoreUserForAdmin_success() {
         AdminUserDetailResponse detail = new AdminUserDetailResponse(
-            UUID.randomUUID(), "testuser", "닉네임", "a@b.com", UserRole.USER, null, null, null, null, false, null
+            UUID.randomUUID(), "testuser", "닉네임", "a@b.com", UserRole.USER, null, null,
+            null, null, null, null, true, 1, null, null, false, null
         );
         given(adminUserService.restoreUserForAdmin(anyString(), eq("testuser"))).willReturn(detail);
 
