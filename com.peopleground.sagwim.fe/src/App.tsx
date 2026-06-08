@@ -17,6 +17,7 @@ import { ProfileEditAddressPage } from './pages/ProfileEditAddressPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminChartsPage } from './pages/admin/AdminChartsPage'
 import { AdminUserListPage } from './pages/admin/AdminUserListPage'
+import { AdminUserDetailPage } from './pages/admin/AdminUserDetailPage'
 import { AdminGroupsPage } from './pages/admin/AdminGroupsPage'
 import { AdminPostListPage } from './pages/admin/AdminPostListPage'
 import { AdminImageListPage } from './pages/admin/AdminImageListPage'
@@ -95,6 +96,7 @@ function App() {
           <Route index element={<AdminDashboardPage />} />
           <Route path="charts" element={<AdminChartsPage />} />
           <Route path="users" element={<AdminUserListPage />} />
+          <Route path="users/:username" element={<AdminUserDetailPage />} />
           <Route path="groups" element={<AdminGroupsPage />} />
           <Route path="posts" element={<AdminPostListPage />} />
           <Route path="images" element={<AdminImageListPage />} />

@@ -1,0 +1,111 @@
+/* ── 역할 선택 드롭다운 ── */
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1);
+  min-height: 30px;
+  min-width: 96px;
+  padding: 4px 8px 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: var(--r-full);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    filter var(--t-fast),
+    box-shadow var(--t-fast);
+}
+
+.trigger:hover:not(:disabled) {
+  filter: brightness(0.97);
+}
+
+.trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.triggerUser {
+  background: var(--clr-surface-2, #f3f4f6);
+  color: var(--clr-text-secondary, #6b7280);
+  border-color: var(--clr-border, #e5e7eb);
+}
+
+.triggerManager {
+  background: #ffedd5;
+  color: #9a3412;
+  border-color: #fdba74;
+}
+
+.triggerAdmin {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+[data-theme='dark'] .triggerManager {
+  background: rgba(154, 52, 18, 0.3);
+  color: #fdba74;
+  border-color: rgba(253, 186, 116, 0.4);
+}
+
+[data-theme='dark'] .triggerAdmin {
+  background: rgba(153, 27, 27, 0.3);
+  color: #fca5a5;
+  border-color: rgba(252, 165, 165, 0.4);
+}
+
+.chevron {
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: transform var(--t-fast);
+}
+
+.chevron[data-open='true'] {
+  transform: rotate(180deg);
+}
+
+/* 메뉴 (portal로 document.body에 렌더 → position: fixed) */
+.menu {
+  position: fixed;
+  z-index: 1000;
+  margin: 0;
+  padding: var(--sp-1);
+  list-style: none;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border-strong);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-md);
+}
+
+.item,
+.itemActive {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--clr-text);
+  background: transparent;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--t-fast),
+    color var(--t-fast);
+}
+
+.item:hover {
+  background: var(--clr-surface-2);
+}
+
+.itemActive {
+  color: var(--clr-accent);
+  background: var(--clr-accent-muted);
+}
