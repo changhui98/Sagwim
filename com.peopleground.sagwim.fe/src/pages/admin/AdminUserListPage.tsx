@@ -1,16 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { changeUserRole, deleteAdminUser, getAdminUsers } from '../../api/adminApi'
-import { ApiError } from '../../api/ApiError'
+import { changeUserRole, getAdminUsers } from '../../api/adminApi'
 import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
+import { RoleDropdown } from '../../components/admin/RoleDropdown'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
-import { ConfirmDialog } from '../../components/common/ConfirmDialog'
-import confirmDialogStyles from '../../components/common/ConfirmDialog.module.css'
-import { SuccessDialog } from '../../components/common/SuccessDialog'
 import { Pagination } from '../../components/common/Pagination'
 import { getInitials } from '../../utils/stringUtils'
 import { formatDateTime } from '../../utils/dateUtils'
@@ -33,53 +30,9 @@ function RoleBadge({ role }: { role?: UserRole }) {
   return <span className={pageStyles.badgeRoleUser}>USER</span>
 }
 
-const ROLE_OPTIONS: UserRole[] = ['USER', 'MANAGER']
-
-function RoleToggle({
-  currentRole,
-  isChanging,
-  onRoleChange,
-}: {
-  currentRole: UserRole
-  isChanging: boolean
-  onRoleChange: (role: UserRole) => void
-}) {
-  return (
-    <div className={pageStyles.roleToggleGroup}>
-      {ROLE_OPTIONS.map((role) => {
-        const isActive = currentRole === role
-        const activeClass =
-          role === 'MANAGER'
-            ? pageStyles.roleToggleBtnActiveManager
-            : pageStyles.roleToggleBtnActiveUser
-        return (
-          <button
-            key={role}
-            type="button"
-            disabled={isChanging}
-            className={[
-              pageStyles.roleToggleBtn,
-              isActive ? activeClass : '',
-              isActive ? pageStyles.roleToggleBtnActive : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-            onClick={() => {
-              if (isActive) return
-              onRoleChange(role)
-            }}
-          >
-            {role}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 export function AdminUserListPage() {
   const navigate = useNavigate()
-  const { token, logout, meUsername, meRole, meProfileImageUrl } = useAuth()
+  const { token, meUsername, meRole, meProfileImageUrl } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
 
   const [users, setUsers] = useState<UserResponse[]>([])
@@ -92,12 +45,6 @@ export function AdminUserListPage() {
   const [keyword, setKeyword] = useState('')
   const [searchField, setSearchField] = useState('ALL')
   const debouncedKeyword = useDebouncedValue(keyword)
-
-  const [deleteTarget, setDeleteTarget] = useState<UserResponse | null>(null)
-  const [deleteLoading, setDeleteLoading] = useState(false)
-  const [deleteSuccess, setDeleteSuccess] = useState(false)
-  const [deleteReason, setDeleteReason] = useState('')
-  const deleteReasonRef = useRef<HTMLTextAreaElement>(null)
 
   const [roleChangingUsername, setRoleChangingUsername] = useState<string | null>(null)
 
@@ -135,29 +82,6 @@ export function AdminUserListPage() {
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
     loadUsers(nextPage, debouncedKeyword, searchField)
-  }
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteTarget) return
-    try {
-      setDeleteLoading(true)
-      await deleteAdminUser(token, deleteTarget.username, deleteReason)
-      setDeleteTarget(null)
-      setDeleteReason('')
-      setDeleteSuccess(true)
-      loadUsers(page, debouncedKeyword, searchField)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : '사용자 삭제 실패'
-      setError(message)
-      // 403은 삭제 권한 없음(세션 유효)이므로 로그아웃 처리하지 않고,
-      // 401(토큰 만료)에 대해서만 로그아웃 처리한다.
-      if (err instanceof ApiError && err.status === 401) {
-        logout()
-        navigate('/login', { replace: true })
-      }
-    } finally {
-      setDeleteLoading(false)
-    }
   }
 
   const handleRoleChange = async (user: UserResponse, newRole: UserRole) => {
@@ -212,13 +136,12 @@ export function AdminUserListPage() {
                     <th>가입일</th>
                     <th>수정일</th>
                     <th>상태</th>
-                    <th>관리</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.length === 0 ? (
                     <tr className={tableStyles.emptyRow}>
-                      <td colSpan={9}>등록된 사용자가 없습니다.</td>
+                      <td colSpan={8}>등록된 사용자가 없습니다.</td>
                     </tr>
                   ) : (
                     users.map((user) => {
@@ -228,10 +151,12 @@ export function AdminUserListPage() {
                       const isMyself = user.username === meUsername
                       const isRoleChanging = roleChangingUsername === user.username
                       const canChangeRole = meRole === 'ADMIN' && !isMyself && !user.isDeleted
-                      // MANAGER는 ADMIN 등급 유저를 삭제할 수 없다.
-                      const canDelete = !(meRole === 'MANAGER' && user.role === 'ADMIN')
                       return (
-                      <tr key={user.id}>
+                      <tr
+                        key={user.id}
+                        className={pageStyles.userRow}
+                        onClick={() => navigate(`/app/admin/users/${user.username}`)}
+                      >
                         <td>
                           <div className="flex items-center gap-2">
                             <span className="avatar avatar-md">
@@ -265,12 +190,12 @@ export function AdminUserListPage() {
                             <span className={tableStyles.badgeLocal}>일반</span>
                           )}
                         </td>
-                        <td>
+                        <td onClick={(e) => e.stopPropagation()}>
                           {canChangeRole ? (
-                            <RoleToggle
-                              currentRole={user.role ?? 'USER'}
-                              isChanging={isRoleChanging}
-                              onRoleChange={(newRole) => handleRoleChange(user, newRole)}
+                            <RoleDropdown
+                              role={user.role ?? 'USER'}
+                              disabled={isRoleChanging}
+                              onChange={(newRole) => handleRoleChange(user, newRole)}
                             />
                           ) : (
                             <RoleBadge role={user.role} />
@@ -284,22 +209,10 @@ export function AdminUserListPage() {
                         </td>
                         <td>
                           {user.isDeleted ? (
-                            <span className={`badge ${tableStyles.badgeDeleted}`}>
-                              탈퇴
-                            </span>
+                            <span className={tableStyles.badgeDeleted}>탈퇴</span>
                           ) : (
-                            <span className="badge badge-success">활성</span>
+                            <span className={tableStyles.badgeActive}>활성</span>
                           )}
-                        </td>
-                        <td>
-                          <button
-                            type="button"
-                            className={tableStyles.deleteButton}
-                            onClick={() => setDeleteTarget(user)}
-                            disabled={deleteLoading || !canDelete}
-                          >
-                            삭제
-                          </button>
                         </td>
                       </tr>
                       )
@@ -318,47 +231,6 @@ export function AdminUserListPage() {
           </>
         )}
       </div>
-
-      <ConfirmDialog
-        isOpen={deleteTarget !== null}
-        title="사용자 삭제"
-        message={
-          deleteTarget
-            ? `'${deleteTarget.nickname}' 사용자를 삭제하시겠습니까?`
-            : ''
-        }
-        confirmLabel="삭제"
-        confirmVariant="danger"
-        isLoading={deleteLoading}
-        confirmDisabled={deleteReason.trim() === ''}
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => {
-          setDeleteTarget(null)
-          setDeleteReason('')
-        }}
-      >
-        <div className={confirmDialogStyles.reasonField}>
-          <label htmlFor="user-delete-reason" className={confirmDialogStyles.reasonLabel}>
-            삭제 사유 <span aria-hidden="true">*</span>
-          </label>
-          <textarea
-            id="user-delete-reason"
-            ref={deleteReasonRef}
-            className={confirmDialogStyles.reasonTextarea}
-            placeholder="삭제 사유를 입력해주세요."
-            maxLength={500}
-            value={deleteReason}
-            onChange={(e) => setDeleteReason(e.target.value)}
-          />
-        </div>
-      </ConfirmDialog>
-
-      <SuccessDialog
-        isOpen={deleteSuccess}
-        title="사용자가 삭제되었습니다"
-        message="선택한 사용자를 삭제 처리했어요."
-        onClose={() => setDeleteSuccess(false)}
-      />
     </div>
   )
 }
