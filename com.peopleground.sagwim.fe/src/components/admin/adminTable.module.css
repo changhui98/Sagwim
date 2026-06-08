@@ -111,49 +111,60 @@
   border-bottom-color: var(--clr-primary, #6366f1);
 }
 
-/* ── 상태/프로바이더 뱃지 ── */
+/* ── 상태 뱃지 (박스형) ── */
+/* 관리자 테이블 공통 칩 기준 높이 (납작함 방지) */
+.badgeActive,
+.badgeDeleted {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+  white-space: nowrap;
+}
+
+.badgeActive {
+  background: var(--clr-success-soft);
+  color: var(--clr-success);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
 .badgeDeleted {
   background: var(--clr-error-soft);
   color: var(--clr-error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ── 가입 경로 (박스 없이 폰트 색으로만 구분) ── */
+.badgeLocal,
+.badgeKakao,
+.badgeGoogle {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .badgeLocal {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: var(--r-sm);
-  background: var(--clr-surface-2, #f3f4f6);
   color: var(--clr-text-secondary, #6b7280);
-  border: 1px solid var(--clr-border, #e5e7eb);
 }
 
 .badgeKakao {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: var(--r-sm);
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fde68a;
+  color: #a16207;
 }
 
 .badgeGoogle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: var(--r-sm);
-  background: #dbeafe;
-  color: #1e40af;
-  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+}
+
+[data-theme='dark'] .badgeKakao {
+  color: #fcd34d;
+}
+
+[data-theme='dark'] .badgeGoogle {
+  color: #93c5fd;
 }
 
 /* ── 액션 버튼 ── */
@@ -161,7 +172,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--sp-1) var(--sp-3);
+  min-height: 32px;
+  padding: var(--sp-2) var(--sp-3);
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--clr-error);
@@ -182,12 +194,16 @@
 }
 
 .refreshButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--clr-text-secondary);
   background: transparent;
   border: 1px solid var(--clr-border-strong);
-  padding: var(--sp-1) var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-md);
   cursor: pointer;
   transition: background var(--t-fast);
