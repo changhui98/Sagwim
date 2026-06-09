@@ -10,18 +10,20 @@ import type { GroupResponse } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
 import mapPinAltIcon from '../assets/map-pin-alt-svgrepo-com.svg'
 import arrowNarrowRightIcon from '../assets/arrow-narrow-right-svgrepo-com.svg'
-import sproutIcon from '../assets/sagwim-section-sprout.svg'
-import flameIcon from '../assets/sagwim-section-flame.svg'
-import deadlineIcon from '../assets/sagwim-section-deadline.svg'
-import thisweekIcon from '../assets/sagwim-section-thisweek.svg'
-import pinIcon from '../assets/sagwim-section-pin.svg'
 import { GroupSection } from '../components/group/GroupSection'
 import { MobileHeader } from '../components/MobileHeader'
+import { HomeTopBar } from '../components/home/HomeTopBar'
+import { CategoryChips } from '../components/home/CategoryChips'
+import { chipLabel, type CategoryChipKey } from '../components/home/categoryFilter'
+import { RecommendCarousel } from '../components/home/RecommendCarousel'
 import { extractLastRegionToken } from '../utils/stringUtils'
 import styles from './GroupListPage.module.css'
 
 // 메인 화면에서 노출할 최대 개수
 const PREVIEW_COUNT = 5
+
+// 카테고리 필터 시 조회할 개수
+const FILTER_FETCH_SIZE = 20
 
 export function GroupListPage() {
   const navigate = useNavigate()
@@ -56,6 +58,12 @@ export function GroupListPage() {
   // 좋아요 상태 (신규 + 인기 모임 통합 관리)
   const [likedMap, setLikedMap] = useState<Record<number, boolean>>({})
   const [likeCountMap, setLikeCountMap] = useState<Record<number, number>>({})
+
+  // 카테고리 칩 필터 상태
+  const [activeCategory, setActiveCategory] = useState<CategoryChipKey>('ALL')
+  const [filteredGroups, setFilteredGroups] = useState<GroupResponse[]>([])
+  const [filteredLoading, setFilteredLoading] = useState(false)
+  const [filteredError, setFilteredError] = useState('')
 
   const loadGroups = useCallback(
     async () => {
@@ -163,6 +171,42 @@ export function GroupListPage() {
       .finally(() => setProfileLoading(false))
   }, [token])
 
+  // 카테고리 칩 선택 시 해당 조건으로 모임 재조회 (전체는 기존 섹션 표시)
+  const loadFiltered = useCallback(
+    async (key: CategoryChipKey) => {
+      if (key === 'ALL') return
+      setFilteredLoading(true)
+      setFilteredError('')
+      try {
+        const res =
+          key === 'ONLINE'
+            ? await getGroups(token, 0, FILTER_FETCH_SIZE, undefined, undefined, 'ONLINE')
+            : await getGroups(token, 0, FILTER_FETCH_SIZE, undefined, key)
+        const incoming = res.content
+        setFilteredGroups(incoming)
+        const countMap: Record<number, number> = {}
+        const likedMapUpdate: Record<number, boolean> = {}
+        incoming.forEach((g) => {
+          countMap[g.id] = g.likeCount ?? 0
+          likedMapUpdate[g.id] = g.isLiked
+        })
+        setLikeCountMap((prev) => ({ ...prev, ...countMap }))
+        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
+      } catch (err) {
+        setFilteredError(err instanceof Error ? err.message : '모임 목록 조회 실패')
+        handleUnauthorized(err)
+      } finally {
+        setFilteredLoading(false)
+      }
+    },
+    [token, handleUnauthorized],
+  )
+
+  const handleCategoryChange = (key: CategoryChipKey) => {
+    setActiveCategory(key)
+    if (key !== 'ALL') loadFiltered(key)
+  }
+
   const handleLikeToggle = async (e: React.MouseEvent, groupId: number) => {
     e.stopPropagation()
     try {
@@ -174,10 +218,10 @@ export function GroupListPage() {
     }
   }
 
-  const renderContent = () => (
+  const renderSections = () => (
     <>
       <GroupSection
-        title={<><img src={pinIcon} alt="" width={22} height={22} />{extractLastRegionToken(myProfile?.address) ?? '우리 동네'} 모든 모임</>}
+        title={`${extractLastRegionToken(myProfile?.address) ?? '우리 동네'} 모든 모임`}
         subtitle="우리 동네 모임, 여기 다 있어요"
         groups={neighborhoodGroups}
         loading={neighborhoodLoading}
@@ -192,7 +236,7 @@ export function GroupListPage() {
       />
       <hr className={styles.divider} />
       <GroupSection
-        title={<><img src={sproutIcon} alt="" width={22} height={22} />갓 피어난 모임</>}
+        title="갓 피어난 모임"
         subtitle="당신이 첫 멤버가 될 수도 있어요"
         groups={groups.slice(0, PREVIEW_COUNT)}
         loading={loading}
@@ -207,7 +251,7 @@ export function GroupListPage() {
       />
       <hr className={styles.divider} />
       <GroupSection
-        title={<><img src={flameIcon} alt="" width={22} height={22} />요즘 북적이는 모임</>}
+        title="요즘 북적이는 모임"
         subtitle="모두가 모이는 데는 이유가 있죠"
         groups={popularGroups}
         loading={popularLoading}
@@ -222,7 +266,7 @@ export function GroupListPage() {
       />
       <hr className={styles.divider} />
       <GroupSection
-        title={<><img src={deadlineIcon} alt="" width={22} height={22} />마감 임박 모임</>}
+        title="마감 임박 모임"
         subtitle="곧 자리가 사라져요"
         groups={[]}
         loading={false}
@@ -236,7 +280,7 @@ export function GroupListPage() {
       />
       <hr className={styles.divider} />
       <GroupSection
-        title={<><img src={thisweekIcon} alt="" width={22} height={22} />이번 주에 만나요</>}
+        title="이번 주에 만나요"
         subtitle="가까운 약속이 기다리고 있어요"
         groups={thisWeekGroups}
         loading={thisWeekLoading}
@@ -249,6 +293,38 @@ export function GroupListPage() {
         emptyTitle="이번 주 모임이 없습니다."
         emptyDescription="이번 주 일정이 있는 모임이 여기에 표시됩니다."
       />
+    </>
+  )
+
+  const renderContent = () => (
+    <>
+      <HomeTopBar
+        regionLabel={extractLastRegionToken(myProfile?.address)}
+        onLocationClick={() => navigate('/app/profile/edit/address')}
+        onSearchClick={() => navigate('/app/search')}
+      />
+      <CategoryChips active={activeCategory} onChange={handleCategoryChange} />
+      <RecommendCarousel
+        groups={popularGroups.slice(0, 3)}
+        onNavigate={(groupId) => navigate(`/app/groups/${groupId}`)}
+      />
+      {activeCategory === 'ALL' ? (
+        renderSections()
+      ) : (
+        <GroupSection
+          title={`${chipLabel(activeCategory)} 모임`}
+          subtitle="선택한 카테고리의 우리 동네 모임이에요"
+          groups={filteredGroups}
+          loading={filteredLoading}
+          error={filteredError}
+          onRetry={() => loadFiltered(activeCategory)}
+          likedMap={likedMap}
+          likeCountMap={likeCountMap}
+          onLikeToggle={handleLikeToggle}
+          emptyTitle="해당 카테고리 모임이 없어요."
+          emptyDescription="다른 카테고리를 선택해 보세요."
+        />
+      )}
     </>
   )
 
