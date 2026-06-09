@@ -4,6 +4,7 @@ import com.peopleground.sagwim.global.configure.CustomUser;
 import com.peopleground.sagwim.global.dto.PageResponse;
 import com.peopleground.sagwim.group.application.service.GroupService;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
+import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupCreateRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinQuestionsUpdateRequest;
 import com.peopleground.sagwim.group.presentation.dto.request.GroupJoinRequest;
@@ -56,9 +57,10 @@ public class GroupController {
         @RequestParam(defaultValue = "10") int size,
         @RequestParam(required = false) String keyword,
         @RequestParam(required = false) GroupCategory category,
+        @RequestParam(required = false) GroupMeetingType meetingType,
         @AuthenticationPrincipal CustomUser customUser
     ) {
-        PageResponse<GroupResponse> response = groupService.getGroups(page, size, keyword, category, customUser);
+        PageResponse<GroupResponse> response = groupService.getGroups(page, size, keyword, category, meetingType, customUser);
         return ResponseEntity.ok(response);
     }
 

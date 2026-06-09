@@ -115,9 +115,9 @@ public class GroupService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<GroupResponse> getGroups(int page, int size, String keyword, GroupCategory category, CustomUser customUser) {
+    public PageResponse<GroupResponse> getGroups(int page, int size, String keyword, GroupCategory category, GroupMeetingType meetingType, CustomUser customUser) {
         User user = getUser(customUser.getUsername());
-        List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findAll(page, size, keyword, category, customUser.getId(), user.getLocation(), user.getExposureRangeKm()));
+        List<GroupWithLiked> raw = new ArrayList<>(groupRepository.findAll(page, size, keyword, category, meetingType, customUser.getId(), user.getLocation(), user.getExposureRangeKm()));
         boolean hasNext = PageResponse.trim(raw, size);
         List<GroupResponse> responses = raw.stream()
             .map(gw -> GroupResponse.from(gw.group(), imageUrlResolver.resolve(gw.group().getImageUrl()), gw.liked()))

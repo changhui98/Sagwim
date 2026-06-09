@@ -2,6 +2,7 @@ package com.peopleground.sagwim.group.domain.repository;
 
 import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
+import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
 import com.peopleground.sagwim.group.domain.GroupWithLiked;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +22,7 @@ public interface GroupRepository {
     /**
      * 무한스크롤용 모임 목록. COUNT 쿼리 없이 size+1 방식으로 hasNext를 판단한다.
      */
-    List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId, Point userLocation, int exposureRangeKm);
+    List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, GroupMeetingType meetingType, UUID userId, Point userLocation, int exposureRangeKm);
 
     /**
      * 무한스크롤용 신규 모임 목록. COUNT 쿼리 없이 size+1 방식.
