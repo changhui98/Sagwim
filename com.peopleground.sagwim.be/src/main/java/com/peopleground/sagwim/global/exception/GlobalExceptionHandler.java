@@ -11,6 +11,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 
 /**
  * 전역 예외 처리기.
@@ -103,6 +104,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse.from(ApiErrorCode.INTERNAL_SERVER_ERROR));
+    }
+
+    /**
+     * SSE 연결의 정상 만료(EMITTER_TIMEOUT 도달)다. 응답은 이미 커밋(text/event-stream)되어
+     * body 를 반환할 수 없으므로, ERROR 로깅/500/DB 기록 없이 조용히 종료한다.
+     * 전용 핸들러가 없으면 아래 {@code handleException} 이 가짜 500 으로 오인 처리한다.
+     */
+    @ExceptionHandler(AsyncRequestTimeoutException.class)
+    public ResponseEntity<Void> handleAsyncRequestTimeout(AsyncRequestTimeoutException e) {
+        log.debug("[SseTimeout] SSE 연결 정상 만료");
+        return null;
     }
 
     @ExceptionHandler(Exception.class)

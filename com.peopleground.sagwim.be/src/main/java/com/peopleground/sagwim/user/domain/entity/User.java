@@ -1,7 +1,9 @@
 package com.peopleground.sagwim.user.domain.entity;
 
 import com.peopleground.sagwim.global.entity.BaseEntity;
+import com.peopleground.sagwim.global.security.crypto.EmailEncryptConverter;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,6 +40,7 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String nickname;
 
+    @Convert(converter = EmailEncryptConverter.class)
     @Column(nullable = false, unique = true)
     private String userEmail;
 
