@@ -57,7 +57,7 @@ public class GroupQueryRepository {
      * 무한스크롤용 모임 목록 조회. COUNT 쿼리 없이 size+1 방식.
      * OFFLINE 모임은 사용자의 노출 범위(km) 이내인 것만 포함합니다.
      */
-    public List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId, Point userLocation, int exposureRangeKm) {
+    public List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, GroupMeetingType meetingType, UUID userId, Point userLocation, int exposureRangeKm) {
         QGroup group = QGroup.group;
         QUser leader = QUser.user;
         QGroupLike groupLike = new QGroupLike("groupLikeForStatus");
@@ -72,6 +72,9 @@ public class GroupQueryRepository {
         }
         if (category != null) {
             builder.and(group.category.eq(category));
+        }
+        if (meetingType != null) {
+            builder.and(group.meetingType.eq(meetingType));
         }
 
         List<Tuple> tuples = queryFactory

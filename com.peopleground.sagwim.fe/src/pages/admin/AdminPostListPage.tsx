@@ -162,7 +162,11 @@ export function AdminPostListPage() {
                       <tr key={content.id}>
                         <td className={tableStyles.tableDate}>{content.id}</td>
                         <td>
-                          <span className={tableStyles.tableUsername}>
+                          <span
+                            className={`${tableStyles.tableSecondary} ${tableStyles.truncateCell}`}
+                            style={{ maxWidth: 360 }}
+                            title={content.body}
+                          >
                             {content.body}
                           </span>
                         </td>

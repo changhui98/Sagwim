@@ -76,13 +76,14 @@ public class UserQueryRepository {
     }
 
     // searchField: NICKNAME / EMAIL / USERNAME 개별, 그 외(ALL 등)는 통합 OR
+    // 주의: userEmail 은 결정론적 AES 로 암호화되어 부분일치(LIKE)가 불가능하므로 정확 일치(eq)만 지원한다.
     private BooleanExpression buildUserSearchCondition(QUser user, String keyword, String searchField) {
         return switch (searchField == null ? "ALL" : searchField) {
             case "NICKNAME" -> user.nickname.containsIgnoreCase(keyword);
-            case "EMAIL" -> user.userEmail.containsIgnoreCase(keyword);
+            case "EMAIL" -> user.userEmail.eq(keyword);
             case "USERNAME" -> user.username.containsIgnoreCase(keyword);
             default -> user.nickname.containsIgnoreCase(keyword)
-                .or(user.userEmail.containsIgnoreCase(keyword))
+                .or(user.userEmail.eq(keyword))
                 .or(user.username.containsIgnoreCase(keyword));
         };
     }

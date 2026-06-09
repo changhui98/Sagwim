@@ -1,0 +1,81 @@
+/* ── HomeTopBar (위치 + 검색바) ── */
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.location {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-shrink: 0;
+  padding: var(--sp-2) var(--sp-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--clr-text);
+  border-radius: var(--r-md);
+  transition: background var(--t-fast);
+}
+
+.location:hover {
+  background: var(--clr-surface-2);
+}
+
+.pinIcon {
+  color: var(--clr-accent);
+  flex-shrink: 0;
+}
+
+.locationText {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chevron {
+  color: var(--clr-text-muted);
+  flex-shrink: 0;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--clr-surface-2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--t-fast), background var(--t-fast);
+}
+
+.search:hover {
+  border-color: var(--clr-border-strong);
+  background: var(--clr-surface-3);
+}
+
+.searchIcon {
+  color: var(--clr-text-muted);
+  flex-shrink: 0;
+}
+
+.searchPlaceholder {
+  font-size: 0.9375rem;
+  color: var(--clr-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 모바일에서는 MobileHeader가 상단을 담당하므로 중복 숨김 */
+@media (max-width: 640px) {
+  .topBar {
+    display: none;
+  }
+}

@@ -3,6 +3,7 @@ package com.peopleground.sagwim.group.infrastructure.repository;
 import com.peopleground.sagwim.group.domain.GroupWithLiked;
 import com.peopleground.sagwim.group.domain.entity.Group;
 import com.peopleground.sagwim.group.domain.entity.GroupCategory;
+import com.peopleground.sagwim.group.domain.entity.GroupMeetingType;
 import com.peopleground.sagwim.group.domain.repository.GroupRepository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,8 +34,8 @@ public class GroupRepositoryImpl implements GroupRepository {
     }
 
     @Override
-    public List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, UUID userId, Point userLocation, int exposureRangeKm) {
-        return groupQueryRepository.findAll(page, size, keyword, category, userId, userLocation, exposureRangeKm);
+    public List<GroupWithLiked> findAll(int page, int size, String keyword, GroupCategory category, GroupMeetingType meetingType, UUID userId, Point userLocation, int exposureRangeKm) {
+        return groupQueryRepository.findAll(page, size, keyword, category, meetingType, userId, userLocation, exposureRangeKm);
     }
 
     @Override

@@ -76,6 +76,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* 셀 1줄 말줄임 유틸 (셀 내부 span 에 적용) */
+.truncateCell {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── 탭 ── */
 .tabs {
   display: flex;

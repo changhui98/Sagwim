@@ -1,0 +1,123 @@
+/* ── CategoryChips ── */
+
+.wrapper {
+  position: relative;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 2px;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  padding: var(--sp-2) var(--sp-4);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--clr-text-secondary);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border-strong);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--t-fast);
+}
+
+.chip:hover {
+  border-color: var(--clr-accent);
+  color: var(--clr-accent);
+}
+
+.chipActive {
+  color: #ffffff;
+  background: var(--clr-accent);
+  border-color: var(--clr-accent);
+}
+
+.chipActive:hover {
+  color: #ffffff;
+  background: var(--clr-accent-hover);
+  border-color: var(--clr-accent-hover);
+}
+
+/* 더 스크롤할 수 있음을 알리는 양쪽 페이드 + 화살표 */
+.fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 56px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--t-fast);
+  z-index: 1;
+}
+
+.fadeVisible {
+  opacity: 1;
+}
+
+.fadeLeft {
+  left: 0;
+  background: linear-gradient(to left, transparent, var(--clr-bg) 70%);
+}
+
+.fadeRight {
+  right: 0;
+  background: linear-gradient(to right, transparent, var(--clr-bg) 70%);
+}
+
+.nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--clr-text);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-full);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-fast), background var(--t-fast);
+  z-index: 2;
+}
+
+.navVisible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav:hover {
+  background: var(--clr-surface-2);
+}
+
+.navLeft {
+  left: 0;
+}
+
+.navRight {
+  right: 0;
+}
+
+/* 터치 기기에서는 스와이프가 자연스러우므로 화살표는 숨기고 페이드만 노출 */
+@media (hover: none) {
+  .nav {
+    display: none;
+  }
+}
