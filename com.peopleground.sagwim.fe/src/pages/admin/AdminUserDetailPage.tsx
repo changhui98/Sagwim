@@ -165,7 +165,6 @@ export function AdminUserDetailPage() {
                 <h1 className={pageStyles.nickname}>{user.nickname}</h1>
                 <RoleBadge role={user.role} />
               </div>
-              <p className={pageStyles.username}>@{user.username}</p>
             </div>
           </div>
 

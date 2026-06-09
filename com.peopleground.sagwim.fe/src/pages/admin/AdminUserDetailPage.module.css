@@ -84,12 +84,6 @@
   color: var(--clr-text);
 }
 
-.username {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--clr-text-muted);
-}
-
 /* ── 섹션 (테두리/박스 없이) ── */
 .card {
   padding: 0;
@@ -124,6 +118,7 @@
 
 .infoItemWide {
   grid-column: 1 / -1;
+  border-bottom: none;
 }
 
 .infoItem dt {

@@ -179,7 +179,13 @@ export function AdminUserListPage() {
                           {user.username}
                         </td>
                         <td className={tableStyles.tableSecondary}>
-                          {user.userEmail}
+                          <span
+                            className={tableStyles.truncateCell}
+                            style={{ maxWidth: 200 }}
+                            title={user.userEmail}
+                          >
+                            {user.userEmail}
+                          </span>
                         </td>
                         <td>
                           {user.provider === 'KAKAO' ? (
