@@ -72,9 +72,9 @@ class GroupControllerTest {
     @SuppressWarnings("unchecked")
     void getGroups_success() {
         PageResponse<Object> page = new PageResponse<>(List.of(), 0, 10, 0L, 0, false);
-        given(groupService.getGroups(0, 10, null, null, user)).willReturn((PageResponse) page);
+        given(groupService.getGroups(0, 10, null, null, null, user)).willReturn((PageResponse) page);
 
-        ResponseEntity<?> res = controller.getGroups(0, 10, null, null, user);
+        ResponseEntity<?> res = controller.getGroups(0, 10, null, null, null, user);
 
         assertThat(res.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
