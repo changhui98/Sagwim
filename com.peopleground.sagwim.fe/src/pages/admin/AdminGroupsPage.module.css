@@ -6,20 +6,9 @@
   gap: var(--sp-6);
 }
 
-/* 설명 컬럼 셀 — 1줄 말줄임 */
-.groupDescCell {
-  color: var(--clr-text-muted);
-  font-size: 0.8125rem;
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* 승인/거절 버튼 그룹 */
-.actionButtons {
-  display: flex;
-  gap: var(--sp-2);
+/* 행 클릭 시 상세 이동 */
+.groupRow {
+  cursor: pointer;
 }
 
 /* 상태 배지 — 대기중 (노란 계열) */

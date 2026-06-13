@@ -16,3 +16,12 @@ export function extractLastRegionToken(region: string | null | undefined): strin
   const parts = trimmed.split(/\s+/)
   return parts[parts.length - 1] ?? null
 }
+
+/** region 문자열(예: "대한민국 서울특별시 강남구 삼성동")에서 구·동 2뎁스만 추출 ("강남구 삼성동") */
+export function extractLastTwoRegionTokens(region: string | null | undefined): string | null {
+  if (!region) return null
+  const trimmed = region.trim()
+  if (!trimmed) return null
+  const parts = trimmed.split(/\s+/)
+  return parts.slice(-2).join(' ') || null
+}

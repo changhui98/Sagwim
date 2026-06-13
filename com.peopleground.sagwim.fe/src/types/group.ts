@@ -137,6 +137,7 @@ export interface GroupMemberResponse {
   username: string
   role: GroupMemberRole
   joinedAt: string
+  profileImageUrl: string | null
 }
 
 export interface GroupDetailResponse extends GroupResponse {
