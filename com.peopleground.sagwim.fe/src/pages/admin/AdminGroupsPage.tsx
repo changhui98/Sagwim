@@ -1,21 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
-import confirmDialogStyles from '../../components/common/ConfirmDialog.module.css'
-import {
-  approveAdminGroup,
-  deleteAdminGroup,
-  getAdminGroups,
-  rejectAdminGroup,
-} from '../../api/adminApi'
+import { useNavigate } from 'react-router-dom'
+import { getAdminGroups } from '../../api/adminApi'
 import { useAuth } from '../../context/AuthContext'
 import { useHandleUnauthorized } from '../../hooks/useHandleUnauthorized'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader'
 import { LoadingSpinner } from '../../components/common/LoadingSpinner'
 import { Skeleton } from '../../components/common/Skeleton'
-import { ConfirmDialog } from '../../components/common/ConfirmDialog'
-import { SuccessDialog } from '../../components/common/SuccessDialog'
 import { Pagination } from '../../components/common/Pagination'
 import { formatDateTime } from '../../utils/dateUtils'
+import { extractLastTwoRegionTokens } from '../../utils/stringUtils'
 import type { AdminGroupResponse, GroupStatus } from '../../types/group'
 import { GROUP_CATEGORY_LABELS } from '../../types/group'
 import tableStyles from '../../components/admin/adminTable.module.css'
@@ -29,13 +23,6 @@ const SEARCH_FIELDS = [
   { value: 'LEADER', label: '모임장' },
 ] as const
 
-type ConfirmAction = 'approve' | 'reject' | 'delete'
-
-interface ConfirmState {
-  group: AdminGroupResponse
-  action: ConfirmAction
-}
-
 function StatusBadge({ status }: { status: GroupStatus }) {
   if (status === 'PENDING') {
     return <span className={styles.badgePending}>대기중</span>
@@ -48,6 +35,7 @@ function StatusBadge({ status }: { status: GroupStatus }) {
 
 export function AdminGroupsPage() {
   const { token } = useAuth()
+  const navigate = useNavigate()
   const handleUnauthorized = useHandleUnauthorized()
 
   const [groups, setGroups] = useState<AdminGroupResponse[]>([])
@@ -60,11 +48,6 @@ export function AdminGroupsPage() {
   const [keyword, setKeyword] = useState('')
   const [searchField, setSearchField] = useState('ALL')
   const debouncedKeyword = useDebouncedValue(keyword)
-
-  const [confirmState, setConfirmState] = useState<ConfirmState | null>(null)
-  const [actionLoading, setActionLoading] = useState(false)
-  const [successAction, setSuccessAction] = useState<ConfirmAction | null>(null)
-  const [deleteReason, setDeleteReason] = useState('')
 
   const loadGroups = useCallback(
     async (targetPage: number, searchKeyword: string, field: string) => {
@@ -97,32 +80,6 @@ export function AdminGroupsPage() {
     loadGroups(nextPage, debouncedKeyword, searchField)
   }
 
-  const handleConfirm = async () => {
-    if (!confirmState) return
-    const { action, group } = confirmState
-    try {
-      setActionLoading(true)
-      if (action === 'approve') {
-        await approveAdminGroup(token, group.id)
-      } else if (action === 'reject') {
-        await rejectAdminGroup(token, group.id)
-      } else if (action === 'delete') {
-        await deleteAdminGroup(token, group.id, deleteReason)
-      }
-      setConfirmState(null)
-      setDeleteReason('')
-      setSuccessAction(action)
-      loadGroups(page, debouncedKeyword, searchField)
-    } catch (err) {
-      const label = action === 'approve' ? '승인' : action === 'reject' ? '거절' : '삭제'
-      const message = err instanceof Error ? err.message : `모임 ${label} 실패`
-      setError(message)
-      handleUnauthorized(err)
-    } finally {
-      setActionLoading(false)
-    }
-  }
-
   return (
     <div className={styles.container}>
       <AdminPageHeader
@@ -152,35 +109,38 @@ export function AdminGroupsPage() {
                   <tr>
                     <th>번호</th>
                     <th>모임명</th>
-                    <th>설명</th>
+                    <th>지역</th>
                     <th>카테고리</th>
                     <th>개설자</th>
                     <th>상태</th>
                     <th>회원수</th>
                     <th>생성일</th>
-                    <th>관리</th>
                   </tr>
                 </thead>
                 <tbody>
                   {groups.length === 0 ? (
                     <tr className={tableStyles.emptyRow}>
-                      <td colSpan={9}>등록된 모임이 없습니다.</td>
+                      <td colSpan={8}>등록된 모임이 없습니다.</td>
                     </tr>
                   ) : (
                     groups.map((group) => (
-                      <tr key={group.id}>
+                      <tr
+                        key={group.id}
+                        className={styles.groupRow}
+                        onClick={() => navigate(`/app/admin/groups/${group.id}`)}
+                      >
                         <td className={tableStyles.tableDate}>{group.id}</td>
                         <td>
                           <span className={tableStyles.tableUsername}>{group.name}</span>
                         </td>
-                        <td className={styles.groupDescCell}>
-                          {group.description ?? '—'}
+                        <td className={tableStyles.tableSecondary}>
+                          {extractLastTwoRegionTokens(group.region) ?? '—'}
                         </td>
                         <td className={tableStyles.tableSecondary}>
                           {GROUP_CATEGORY_LABELS[group.category]}
                         </td>
                         <td className={tableStyles.tableSecondary}>
-                          @{group.leaderUsername}
+                          {group.leaderUsername}
                         </td>
                         <td>
                           <StatusBadge status={group.status} />
@@ -190,50 +150,6 @@ export function AdminGroupsPage() {
                         </td>
                         <td className={tableStyles.tableDate}>
                           {formatDateTime(group.createdDate)}
-                        </td>
-                        <td>
-                          <div className={styles.actionButtons}>
-                            {group.status === 'PENDING' && (
-                              <>
-                                <button
-                                  type="button"
-                                  className={tableStyles.refreshButton}
-                                  onClick={() => setConfirmState({ group, action: 'approve' })}
-                                  disabled={actionLoading}
-                                >
-                                  승인
-                                </button>
-                                <button
-                                  type="button"
-                                  className={tableStyles.deleteButton}
-                                  onClick={() => setConfirmState({ group, action: 'reject' })}
-                                  disabled={actionLoading}
-                                >
-                                  거절
-                                </button>
-                              </>
-                            )}
-                            {group.status === 'ACTIVE' && (
-                              <button
-                                type="button"
-                                className={tableStyles.deleteButton}
-                                onClick={() => setConfirmState({ group, action: 'delete' })}
-                                disabled={actionLoading}
-                              >
-                                삭제
-                              </button>
-                            )}
-                            {group.status === 'REJECTED' && (
-                              <button
-                                type="button"
-                                className={tableStyles.refreshButton}
-                                onClick={() => setConfirmState({ group, action: 'approve' })}
-                                disabled={actionLoading}
-                              >
-                                승인
-                              </button>
-                            )}
-                          </div>
                         </td>
                       </tr>
                     ))
@@ -251,76 +167,6 @@ export function AdminGroupsPage() {
           </>
         )}
       </div>
-
-      <ConfirmDialog
-        isOpen={confirmState !== null}
-        title={
-          confirmState?.action === 'approve'
-            ? '모임 승인'
-            : confirmState?.action === 'reject'
-              ? '모임 거절'
-              : '모임 삭제'
-        }
-        message={
-          confirmState
-            ? confirmState.action === 'approve'
-              ? `"${confirmState.group.name}" 모임을 승인하시겠습니까?`
-              : confirmState.action === 'reject'
-                ? `"${confirmState.group.name}" 모임을 거절하시겠습니까?`
-                : `"${confirmState.group.name}" 모임을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`
-            : ''
-        }
-        confirmLabel={
-          confirmState?.action === 'approve'
-            ? '승인'
-            : confirmState?.action === 'reject'
-              ? '거절'
-              : '삭제'
-        }
-        confirmVariant={confirmState?.action === 'approve' ? 'primary' : 'danger'}
-        isLoading={actionLoading}
-        confirmDisabled={confirmState?.action === 'delete' && deleteReason.trim() === ''}
-        onConfirm={handleConfirm}
-        onCancel={() => {
-          setConfirmState(null)
-          setDeleteReason('')
-        }}
-      >
-        {confirmState?.action === 'delete' && (
-          <div className={confirmDialogStyles.reasonField}>
-            <label htmlFor="group-delete-reason" className={confirmDialogStyles.reasonLabel}>
-              삭제 사유 <span aria-hidden="true">*</span>
-            </label>
-            <textarea
-              id="group-delete-reason"
-              className={confirmDialogStyles.reasonTextarea}
-              placeholder="삭제 사유를 입력해주세요."
-              maxLength={500}
-              value={deleteReason}
-              onChange={(e) => setDeleteReason(e.target.value)}
-            />
-          </div>
-        )}
-      </ConfirmDialog>
-
-      <SuccessDialog
-        isOpen={successAction !== null}
-        title={
-          successAction === 'approve'
-            ? '모임이 승인되었습니다'
-            : successAction === 'reject'
-              ? '모임이 거절되었습니다'
-              : '모임이 삭제되었습니다'
-        }
-        message={
-          successAction === 'approve'
-            ? '모임이 활성화되어 사용자에게 노출됩니다.'
-            : successAction === 'reject'
-              ? '모임 개설 요청을 거절했습니다.'
-              : '모임이 삭제되었습니다.'
-        }
-        onClose={() => setSuccessAction(null)}
-      />
     </div>
   )
 }

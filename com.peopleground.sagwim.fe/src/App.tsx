@@ -19,6 +19,7 @@ import { AdminChartsPage } from './pages/admin/AdminChartsPage'
 import { AdminUserListPage } from './pages/admin/AdminUserListPage'
 import { AdminUserDetailPage } from './pages/admin/AdminUserDetailPage'
 import { AdminGroupsPage } from './pages/admin/AdminGroupsPage'
+import { AdminGroupDetailPage } from './pages/admin/AdminGroupDetailPage'
 import { AdminPostListPage } from './pages/admin/AdminPostListPage'
 import { AdminImageListPage } from './pages/admin/AdminImageListPage'
 import { AdminLogPage } from './pages/admin/AdminLogPage'
@@ -98,6 +99,7 @@ function App() {
           <Route path="users" element={<AdminUserListPage />} />
           <Route path="users/:username" element={<AdminUserDetailPage />} />
           <Route path="groups" element={<AdminGroupsPage />} />
+          <Route path="groups/:groupId" element={<AdminGroupDetailPage />} />
           <Route path="posts" element={<AdminPostListPage />} />
           <Route path="images" element={<AdminImageListPage />} />
           <Route path="reports" element={<AdminReportListPage />} />

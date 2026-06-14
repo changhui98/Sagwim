@@ -1,0 +1,277 @@
+/* ── 관리자 모임 상세보기 페이지 ── */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  min-height: 36px;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--clr-text-secondary);
+  background: transparent;
+  border: 1px solid var(--clr-border-strong);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.backButton:hover {
+  background: var(--clr-surface-2);
+  color: var(--clr-text);
+}
+
+.loadingWrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-16) 0;
+}
+
+.emptyText {
+  padding: var(--sp-10) 0;
+  text-align: center;
+  color: var(--clr-text-muted);
+}
+
+/* ── 대표 사진 ── */
+.heroMedia {
+  width: 100%;
+  max-width: 340px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+}
+
+.heroImage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.heroImagePlaceholder {
+  aspect-ratio: 16 / 9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: linear-gradient(180deg, var(--clr-bg-alt) 0%, var(--clr-bg) 100%);
+}
+
+.placeholderIcon {
+  width: 32px;
+  height: 32px;
+  color: var(--clr-text-muted);
+  opacity: 0.8;
+}
+
+.placeholderText {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+  text-align: center;
+}
+
+/* ── 헤더 ── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.groupName {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+/* ── 섹션 ── */
+.card {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.cardTitle {
+  margin: 0 0 var(--sp-4);
+  padding-bottom: var(--sp-2);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  border-bottom: 1px solid var(--clr-border);
+}
+
+/* ── 정보 그리드 ── */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3) var(--sp-5);
+  margin: 0;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.infoItemWide {
+  grid-column: 1 / -1;
+  border-bottom: none;
+}
+
+.infoItem dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--clr-text-muted);
+}
+
+.infoItem dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--clr-text);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.questionList {
+  margin: 0;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── 회원 목록 (한 줄에 최대한 채우고 넘치면 다음 줄) ── */
+.memberList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: var(--sp-2) var(--sp-4);
+}
+
+.memberItem {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2);
+  border-radius: var(--r-md);
+  min-width: 0;
+}
+
+.memberAvatar {
+  width: 40px;
+  height: 40px;
+  font-size: 0.9375rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.memberAvatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.memberInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.memberName {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--clr-text);
+  min-width: 0;
+}
+
+.memberUsername {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--clr-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memberJoined {
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+}
+
+/* ── 관리 액션 ── */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+/* ── 상태 배지 ── */
+.badgePending,
+.badgeActive,
+.badgeRejected {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--r-sm);
+}
+
+.badgePending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badgeActive {
+  background: var(--clr-success-soft);
+  color: var(--clr-success);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.badgeRejected {
+  background: var(--clr-error-soft);
+  color: var(--clr-error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+[data-theme='dark'] .badgePending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+@media (max-width: 640px) {
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -9,16 +9,18 @@ public record GroupMemberResponse(
     String nickname,
     String username,
     GroupMemberRole role,
-    LocalDateTime joinedAt
+    LocalDateTime joinedAt,
+    String profileImageUrl
 ) {
 
-    public static GroupMemberResponse from(GroupMember groupMember) {
+    public static GroupMemberResponse from(GroupMember groupMember, String profileImageUrl) {
         return new GroupMemberResponse(
             groupMember.getUser().getId().toString(),
             groupMember.getUser().getNickname(),
             groupMember.getUser().getUsername(),
             groupMember.getRole(),
-            groupMember.getCreatedDate()
+            groupMember.getCreatedDate(),
+            profileImageUrl
         );
     }
 }

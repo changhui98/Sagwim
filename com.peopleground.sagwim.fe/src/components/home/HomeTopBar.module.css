@@ -50,7 +50,6 @@
   background: var(--clr-surface-2);
   border: 1px solid var(--clr-border);
   border-radius: var(--r-full);
-  cursor: pointer;
   text-align: left;
   transition: border-color var(--t-fast), background var(--t-fast);
 }
@@ -60,17 +59,52 @@
   background: var(--clr-surface-3);
 }
 
+.search:focus-within {
+  border-color: var(--clr-accent);
+  background: var(--clr-surface);
+}
+
 .searchIcon {
   color: var(--clr-text-muted);
   flex-shrink: 0;
 }
 
-.searchPlaceholder {
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
   font-size: 0.9375rem;
+  color: var(--clr-text);
+}
+
+.searchInput::placeholder {
   color: var(--clr-text-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+/* 검색 input 기본 clear(×) 아이콘 숨김 — 커스텀 버튼 사용 */
+.searchInput::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.searchClear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--clr-text-muted);
+  border-radius: var(--r-full);
+  transition: color var(--t-fast);
+}
+
+.searchClear:hover {
+  color: var(--clr-text);
 }
 
 /* 모바일에서는 MobileHeader가 상단을 담당하므로 중복 숨김 */

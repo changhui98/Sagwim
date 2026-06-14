@@ -435,7 +435,8 @@ public class GroupService {
         findGroup(groupId);
         Page<GroupMember> result =
             groupMemberRepository.findByGroupId(groupId, PageRequest.of(page, size));
-        return PageResponse.from(result.map(GroupMemberResponse::from));
+        return PageResponse.from(result.map(m ->
+            GroupMemberResponse.from(m, imageUrlResolver.resolve(m.getUser().getProfileImageUrl()))));
     }
 
     @Transactional(readOnly = true)

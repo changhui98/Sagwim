@@ -65,6 +65,12 @@ export function GroupListPage() {
   const [filteredLoading, setFilteredLoading] = useState(false)
   const [filteredError, setFilteredError] = useState('')
 
+  // 모임명 인라인 검색 상태
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<GroupResponse[]>([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [searchError, setSearchError] = useState('')
+
   const loadGroups = useCallback(
     async () => {
       setLoading(true)
@@ -207,6 +213,41 @@ export function GroupListPage() {
     if (key !== 'ALL') loadFiltered(key)
   }
 
+  // 모임명 검색 — 300ms 디바운스 후 keyword 조회 (페이지 전환 없이 인라인 렌더)
+  useEffect(() => {
+    const trimmed = searchQuery.trim()
+    if (!trimmed) {
+      setSearchResults([])
+      setSearchError('')
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      setSearchLoading(true)
+      setSearchError('')
+      try {
+        const res = await getGroups(token, 0, 20, trimmed)
+        const incoming = res.content
+        setSearchResults(incoming)
+        const countMap: Record<number, number> = {}
+        const likedMapUpdate: Record<number, boolean> = {}
+        incoming.forEach((g) => {
+          countMap[g.id] = g.likeCount ?? 0
+          likedMapUpdate[g.id] = g.isLiked
+        })
+        setLikeCountMap((prev) => ({ ...prev, ...countMap }))
+        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
+      } catch (err) {
+        setSearchError(err instanceof Error ? err.message : '모임 검색 실패')
+        handleUnauthorized(err)
+      } finally {
+        setSearchLoading(false)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery, token, handleUnauthorized])
+
   const handleLikeToggle = async (e: React.MouseEvent, groupId: number) => {
     e.stopPropagation()
     try {
@@ -296,34 +337,54 @@ export function GroupListPage() {
     </>
   )
 
+  const isSearching = searchQuery.trim().length > 0
+
   const renderContent = () => (
     <>
       <HomeTopBar
         regionLabel={extractLastRegionToken(myProfile?.address)}
         onLocationClick={() => navigate('/app/profile/edit/address')}
-        onSearchClick={() => navigate('/app/search')}
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
       />
-      <CategoryChips active={activeCategory} onChange={handleCategoryChange} />
-      <RecommendCarousel
-        groups={popularGroups.slice(0, 3)}
-        onNavigate={(groupId) => navigate(`/app/groups/${groupId}`)}
-      />
-      {activeCategory === 'ALL' ? (
-        renderSections()
-      ) : (
+      {isSearching ? (
         <GroupSection
-          title={`${chipLabel(activeCategory)} 모임`}
-          subtitle="선택한 카테고리의 우리 동네 모임이에요"
-          groups={filteredGroups}
-          loading={filteredLoading}
-          error={filteredError}
-          onRetry={() => loadFiltered(activeCategory)}
+          title={`'${searchQuery.trim()}' 검색 결과`}
+          subtitle="모임명으로 찾은 결과예요"
+          groups={searchResults}
+          loading={searchLoading}
+          error={searchError}
           likedMap={likedMap}
           likeCountMap={likeCountMap}
           onLikeToggle={handleLikeToggle}
-          emptyTitle="해당 카테고리 모임이 없어요."
-          emptyDescription="다른 카테고리를 선택해 보세요."
+          emptyTitle="검색 결과가 없어요."
+          emptyDescription="다른 검색어로 시도해 보세요."
         />
+      ) : (
+        <>
+          <CategoryChips active={activeCategory} onChange={handleCategoryChange} />
+          <RecommendCarousel
+            groups={popularGroups.slice(0, 3)}
+            onNavigate={(groupId) => navigate(`/app/groups/${groupId}`)}
+          />
+          {activeCategory === 'ALL' ? (
+            renderSections()
+          ) : (
+            <GroupSection
+              title={`${chipLabel(activeCategory)} 모임`}
+              subtitle="선택한 카테고리의 우리 동네 모임이에요"
+              groups={filteredGroups}
+              loading={filteredLoading}
+              error={filteredError}
+              onRetry={() => loadFiltered(activeCategory)}
+              likedMap={likedMap}
+              likeCountMap={likeCountMap}
+              onLikeToggle={handleLikeToggle}
+              emptyTitle="해당 카테고리 모임이 없어요."
+              emptyDescription="다른 카테고리를 선택해 보세요."
+            />
+          )}
+        </>
       )}
     </>
   )
