@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import { PasswordInput } from '../components/PasswordInput'
 import { PasswordChecklist } from '../components/PasswordChecklist'
 import { AlertDialog } from '../components/common/AlertDialog'
@@ -69,6 +70,7 @@ export function ChangePasswordPage() {
   return (
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
+      <Header role={meRole} onLogout={handleLogout} />
 
       <main className={pageStyles.main}>
         <div className={pageStyles.container}>

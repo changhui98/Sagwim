@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import styles from '../components/profile/ProfileEditModal.module.css'
 import pageStyles from './SettingsPage.module.css'
 import listStyles from './ProfileEditPage.module.css'
@@ -16,6 +17,7 @@ export function SettingsPage() {
   return (
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
+      <Header role={meRole} onLogout={handleLogout} />
 
       <main className={pageStyles.main}>
         <div className={pageStyles.container}>

@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import { extractErrorMessage } from '../utils/errorUtils'
 import type { LikedActivityResponse } from '../types/activity'
 import profileStyles from '../components/profile/ProfileEditModal.module.css'
@@ -66,6 +67,7 @@ export function MyActivityPage() {
   return (
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
+      <Header role={meRole} onLogout={handleLogout} />
       <main className={styles.main}>
         <div className={styles.container}>
           <header className={profileStyles.header}>

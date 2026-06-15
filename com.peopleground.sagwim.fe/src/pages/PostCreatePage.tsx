@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext'
 import { usePostList } from '../context/PostListContext'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import { ImageBoxPicker } from '../components/post/ImageBoxPicker'
 import type { UserDetailResponse } from '../types/user'
 import styles from './PostCreatePage.module.css'
@@ -72,10 +73,10 @@ export function PostCreatePage() {
 
   return (
     <>
-      <Navbar
-        role={myProfile?.role ?? null}
-        onLogout={handleLogout}
-      />
+      <Navbar role={myProfile?.role ?? null}
+        onLogout={handleLogout} />
+      <Header role={myProfile?.role ?? null}
+        onLogout={handleLogout} />
       <main className={styles.main}>
         <div className={styles.formWrapper}>
         <div className={styles.header}>

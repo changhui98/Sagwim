@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import { ImageBoxPicker } from '../components/post/ImageBoxPicker'
 import type { GroupCategory, GroupJoinType, GroupMeetingType } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
@@ -335,6 +336,7 @@ export function GroupCreatePage() {
   return (
     <>
       <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+      <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
 
       <main className={styles.main}>
         {/* ── 데스크톱: 뒤로가기 버튼 ── */}

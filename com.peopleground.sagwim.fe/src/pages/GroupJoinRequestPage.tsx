@@ -7,6 +7,7 @@ import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { extractErrorMessage } from '../utils/errorUtils'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import type { GroupDetailResponse } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
@@ -76,6 +77,7 @@ export function GroupJoinRequestPage() {
     return (
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={pageStyles.main}>
           <LoadingSpinner />
         </main>
@@ -88,6 +90,7 @@ export function GroupJoinRequestPage() {
   return (
     <>
       <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+      <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
 
       <main className={pageStyles.main}>
         <div className={pageStyles.container}>

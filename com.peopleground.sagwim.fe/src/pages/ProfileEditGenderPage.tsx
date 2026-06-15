@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import { AlertDialog } from '../components/common/AlertDialog'
 import { ConfirmDialog } from '../components/common/ConfirmDialog'
 import type { Gender, UserDetailResponse } from '../types/user'
@@ -101,6 +102,7 @@ export function ProfileEditGenderPage() {
     return (
       <>
         <Navbar role={null} onLogout={handleLogout} />
+        <Header role={null} onLogout={handleLogout} />
         <main className={pageStyles.main}>
           <p className={pageStyles.loading}>프로필을 불러오는 중…</p>
         </main>
@@ -113,6 +115,7 @@ export function ProfileEditGenderPage() {
   return (
     <>
       <Navbar role={profile.role ?? null} onLogout={handleLogout} />
+      <Header role={profile.role ?? null} onLogout={handleLogout} />
 
       <main className={pageStyles.main}>
         <div className={pageStyles.container}>

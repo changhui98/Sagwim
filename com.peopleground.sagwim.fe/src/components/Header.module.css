@@ -1,0 +1,196 @@
+/* ── 데스크톱 전용 상단 가로 헤더 ──────────────────────────── */
+.header {
+  display: none;
+}
+
+@media (min-width: 641px) {
+  .header {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--layout-header-h);
+    background: var(--clr-bg);
+    border-bottom: 1px solid var(--clr-border);
+  }
+}
+
+.inner {
+  height: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 var(--sp-6);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+/* ── 좌측: 로고 + 공개 네비 ─────────────────────────────────── */
+.left {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-shrink: 0;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.brandLogo {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
+
+[data-theme='dark'] .brandLogo rect,
+[data-theme='dark'] .brandLogo g {
+  stroke: #fafafa;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+/* ── 텍스트 메뉴 (좌측 공개 네비 + 우측 액션 공통) ──────────── */
+.navLink,
+.menuLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--clr-text-secondary);
+  text-decoration: none;
+  background: none;
+  border: none;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--t-fast), background var(--t-fast);
+}
+
+.navLink:hover,
+.menuLink:hover {
+  color: var(--clr-text);
+  background: var(--clr-surface-2);
+}
+
+.navLinkActive,
+.menuLinkActive {
+  color: var(--clr-text);
+}
+
+/* ── 미읽음 배지 (텍스트 옆 숫자) ───────────────────────────── */
+.badge {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--r-full);
+  background: var(--clr-error, #ef4444);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* ── 중앙: 검색 트리거 ──────────────────────────────────────── */
+.search {
+  flex: 1;
+  max-width: 360px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: 38px;
+  padding: 0 var(--sp-4);
+  background: var(--clr-surface-2);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-full);
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  transition: border-color var(--t-fast);
+}
+
+.search:hover {
+  border-color: var(--clr-border-strong);
+}
+
+.searchActive {
+  border-color: var(--clr-accent);
+}
+
+.searchText {
+  font-size: 0.9rem;
+}
+
+/* ── 우측: 텍스트 메뉴 + 아바타 ─────────────────────────────── */
+.right {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* 테마 토글 — 해/달 아이콘 버튼 */
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-full);
+  border: none;
+  background: none;
+  color: var(--clr-text-secondary);
+  cursor: pointer;
+  transition: color var(--t-fast), background var(--t-fast);
+}
+
+.iconBtn:hover {
+  color: var(--clr-text);
+  background: var(--clr-surface-2);
+}
+
+.avatarAnchor {
+  position: relative;
+  display: inline-flex;
+  margin-left: var(--sp-2);
+}
+
+.avatarBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--clr-border);
+  background: var(--clr-surface-2);
+  color: var(--clr-text-secondary);
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+  transition: border-color var(--t-fast);
+}
+
+.avatarBtn:hover,
+.avatarBtnOpen {
+  border-color: var(--clr-border-strong);
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
