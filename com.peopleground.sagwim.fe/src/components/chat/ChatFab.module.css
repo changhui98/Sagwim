@@ -18,7 +18,7 @@
 
 .fab:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 48px rgba(240, 128, 128, 0.35);
+  box-shadow: 0 16px 48px var(--clr-accent-glow);
 }
 
 .fab:active {

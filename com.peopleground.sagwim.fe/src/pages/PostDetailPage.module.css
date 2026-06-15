@@ -466,7 +466,7 @@
   border: none;
   border-radius: var(--r-full);
   background: var(--clr-accent);
-  color: #fff;
+  color: var(--clr-on-accent);
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -904,7 +904,7 @@
   border: none;
   border-radius: var(--r-full);
   background: var(--clr-accent);
-  color: #fff;
+  color: var(--clr-on-accent);
   font: inherit;
   font-size: 0.8125rem;
   font-weight: 600;

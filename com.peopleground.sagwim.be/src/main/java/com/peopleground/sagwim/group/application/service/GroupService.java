@@ -200,6 +200,7 @@ public class GroupService {
         profanityValidator.validate(request.description());
 
         GroupJoinType joinType = request.joinType() != null ? request.joinType() : group.getJoinType();
+        String previousRegion = group.getRegion();
         group.update(
             request.name(),
             request.description(),
@@ -211,7 +212,9 @@ public class GroupService {
             joinType
         );
 
-        if (group.getMeetingType() == GroupMeetingType.OFFLINE && group.getRegion() != null) {
+        if (group.getMeetingType() == GroupMeetingType.OFFLINE
+                && group.getRegion() != null
+                && !group.getRegion().equals(previousRegion)) {
             geocodeAndSetLocation(group, group.getRegion());
         } else if (group.getMeetingType() == GroupMeetingType.ONLINE) {
             group.updateLocation(null);

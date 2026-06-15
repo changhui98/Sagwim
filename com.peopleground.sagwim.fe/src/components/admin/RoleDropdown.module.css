@@ -34,28 +34,11 @@
   border-color: var(--clr-border, #e5e7eb);
 }
 
-.triggerManager {
-  background: #ffedd5;
-  color: #9a3412;
-  border-color: #fdba74;
-}
-
+.triggerManager,
 .triggerAdmin {
-  background: #fee2e2;
-  color: #991b1b;
-  border-color: #fca5a5;
-}
-
-[data-theme='dark'] .triggerManager {
-  background: rgba(154, 52, 18, 0.3);
-  color: #fdba74;
-  border-color: rgba(253, 186, 116, 0.4);
-}
-
-[data-theme='dark'] .triggerAdmin {
-  background: rgba(153, 27, 27, 0.3);
-  color: #fca5a5;
-  border-color: rgba(252, 165, 165, 0.4);
+  background: var(--clr-surface-2, #f3f4f6);
+  color: var(--clr-text-secondary, #6b7280);
+  border-color: var(--clr-border, #e5e7eb);
 }
 
 .chevron {

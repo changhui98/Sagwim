@@ -124,7 +124,7 @@
 
 .daySelected {
   background: var(--clr-accent);
-  color: #fff;
+  color: var(--clr-on-accent);
   font-weight: 700;
 }
 

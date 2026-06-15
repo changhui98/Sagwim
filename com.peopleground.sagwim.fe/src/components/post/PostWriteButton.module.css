@@ -8,7 +8,7 @@
   border-radius: var(--r-full);
   border: none;
   background: var(--clr-accent-gradient);
-  color: #ffffff;
+  color: var(--clr-on-accent);
   display: flex;
   align-items: center;
   justify-content: center;

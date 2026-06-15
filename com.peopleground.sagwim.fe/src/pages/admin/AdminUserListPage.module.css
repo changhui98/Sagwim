@@ -35,9 +35,9 @@
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: var(--r-sm);
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fca5a5;
+  background: var(--clr-surface-2, #f3f4f6);
+  color: var(--clr-text-secondary, #6b7280);
+  border: 1px solid var(--clr-border, #e5e7eb);
 }
 
 .badgeRoleManager {
@@ -49,9 +49,9 @@
   font-size: 0.75rem;
   font-weight: 600;
   border-radius: var(--r-sm);
-  background: #ffedd5;
-  color: #9a3412;
-  border: 1px solid #fdba74;
+  background: var(--clr-surface-2, #f3f4f6);
+  color: var(--clr-text-secondary, #6b7280);
+  border: 1px solid var(--clr-border, #e5e7eb);
 }
 
 .badgeRoleUser {

@@ -168,11 +168,11 @@
 }
 
 [data-theme='dark'] .badgeKakao {
-  color: #fcd34d;
+  color: #d4d4d4;
 }
 
 [data-theme='dark'] .badgeGoogle {
-  color: #93c5fd;
+  color: #d4d4d4;
 }
 
 /* ── 액션 버튼 ── */
@@ -269,7 +269,7 @@
 .pageButtonActive {
   composes: pageButton;
   background: var(--clr-accent-gradient);
-  color: #ffffff;
+  color: var(--clr-on-accent);
   border-color: transparent;
 }
 

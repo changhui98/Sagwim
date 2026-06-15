@@ -183,7 +183,7 @@
 .pageButtonActive {
   composes: pageButton;
   background: var(--clr-accent-gradient);
-  color: #ffffff;
+  color: var(--clr-on-accent);
   border-color: transparent;
 }
 

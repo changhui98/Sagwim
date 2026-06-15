@@ -98,7 +98,7 @@
 /* Primary — accent gradient */
 .btn-primary {
   background: var(--clr-accent-gradient);
-  color: #ffffff;
+  color: var(--clr-on-accent);
   box-shadow: 0 2px 12px var(--clr-accent-glow);
 }
 
