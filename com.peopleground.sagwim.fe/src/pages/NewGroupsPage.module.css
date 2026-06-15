@@ -2,7 +2,7 @@
 
 .main {
   width: 100%;
-  max-width: calc(1280px + var(--layout-sidebar-w));
+  max-width: calc(1080px + var(--layout-sidebar-w));
   margin: 0 auto;
   padding: var(--sp-8) var(--sp-6);
   padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
