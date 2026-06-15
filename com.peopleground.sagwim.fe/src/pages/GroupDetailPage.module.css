@@ -242,15 +242,15 @@
 }
 
 [data-theme='dark'] .meetingTypeBadgeOnline {
-  background: rgba(49, 130, 206, 0.15);
-  color: #63b3ed;
-  border-color: rgba(49, 130, 206, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  color: #d4d4d4;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 [data-theme='dark'] .meetingTypeBadgeOffline {
-  background: rgba(56, 161, 105, 0.15);
-  color: #68d391;
-  border-color: rgba(56, 161, 105, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  color: #d4d4d4;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 
@@ -270,9 +270,9 @@
 }
 
 [data-theme='dark'] .pendingBadge {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fcd34d;
-  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  color: #d4d4d4;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .groupName {
@@ -401,7 +401,7 @@
 .joinButton {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--clr-on-accent);
   background: var(--clr-accent-gradient);
   border: none;
   padding: var(--sp-2) var(--sp-5);
@@ -646,15 +646,15 @@
 }
 
 [data-theme='dark'] .editMeetingTypeBtnActive {
-  background: rgba(56, 161, 105, 0.15);
-  color: #68d391;
-  border-color: #38a169;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d4d4d4;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 [data-theme='dark'] .editMeetingTypeBtnOnline {
-  background: rgba(49, 130, 206, 0.15);
-  color: #63b3ed;
-  border-color: #3182ce;
+  background: rgba(255, 255, 255, 0.08);
+  color: #d4d4d4;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 /* ── EditForm Region Picker ── */
@@ -721,7 +721,7 @@
 .saveButton {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--clr-on-accent);
   background: var(--clr-accent-gradient);
   border: none;
   padding: var(--sp-2) var(--sp-5);

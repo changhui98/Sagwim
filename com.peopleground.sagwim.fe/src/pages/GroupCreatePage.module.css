@@ -216,6 +216,21 @@
   color: #c05050;
 }
 
+/* 다크모드 — 카테고리 칩을 모노톤으로 (밝은 핑크 누수 방지) */
+[data-theme='dark'] .categoryPill:hover:not(:disabled),
+[data-theme='dark'] .mobileCategoryBtn:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #f5f5f5;
+}
+
+[data-theme='dark'] .categoryPillSelected,
+[data-theme='dark'] .categoryPillSelected:hover:not(:disabled),
+[data-theme='dark'] .mobileCategoryBtnSelected {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #f5f5f5;
+}
+
 .categoryPill:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -251,7 +266,7 @@
 .meetingTypeBtnActive {
   background: var(--clr-accent);
   border-color: var(--clr-accent);
-  color: #ffffff;
+  color: var(--clr-on-accent);
   font-weight: 600;
 }
 
@@ -301,7 +316,7 @@
 .submitButton {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--clr-on-accent);
   background: var(--clr-accent-gradient);
   border: none;
   padding: var(--sp-2) var(--sp-5);
@@ -409,7 +424,7 @@
 .stepDot_done {
   background: var(--clr-accent);
   border: 2px solid var(--clr-accent);
-  color: #ffffff;
+  color: var(--clr-on-accent);
 }
 
 /* 진행 중 */
@@ -808,7 +823,7 @@ aside.desktopOnlyField {
     padding: var(--sp-4);
     font-size: 1rem;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--clr-on-accent);
     background: var(--clr-accent-gradient);
     border: none;
     border-radius: var(--r-lg);

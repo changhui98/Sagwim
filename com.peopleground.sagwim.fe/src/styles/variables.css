@@ -13,6 +13,7 @@
   --clr-accent-muted: rgba(240, 128, 128, 0.12);
   --clr-accent-glow: rgba(240, 128, 128, 0.25);
   --clr-accent-gradient: linear-gradient(135deg, #F08080 0%, #f5a0a0 100%);
+  --clr-on-accent: #ffffff;
   --clr-primary: var(--clr-accent);
 
   /* Semantic */
@@ -81,24 +82,25 @@
 }
 
 [data-theme='dark'] {
-  /* Surface */
-  --clr-bg: #07071a;
-  --clr-bg-alt: #0c0c24;
-  --clr-surface: #0f0f28;
-  --clr-surface-2: #151535;
-  --clr-surface-3: #1c1c44;
-  --clr-border: rgba(255, 255, 255, 0.07);
-  --clr-border-strong: rgba(255, 255, 255, 0.12);
-  --clr-text: #ededf8;
-  --clr-text-secondary: #a8a8cc;
-  --clr-text-muted: #6a6a90;
+  /* Surface — 뉴트럴 블랙, 평평 */
+  --clr-bg: #0a0a0a;
+  --clr-bg-alt: #0d0d0d;
+  --clr-surface: #0d0d0d;
+  --clr-surface-2: #161616;
+  --clr-surface-3: #202020;
+  --clr-border: rgba(255, 255, 255, 0.09);
+  --clr-border-strong: rgba(255, 255, 255, 0.16);
+  --clr-text: #f5f5f5;
+  --clr-text-secondary: #a3a3a3;
+  --clr-text-muted: #6e6e6e;
 
-  /* Accent adjustment */
-  --clr-accent: #F08080;
-  --clr-accent-hover: #e06060;
-  --clr-accent-muted: rgba(240, 128, 128, 0.18);
-  --clr-accent-glow: rgba(240, 128, 128, 0.28);
-  --clr-accent-gradient: linear-gradient(135deg, #F08080 0%, #f5a0a0 100%);
+  /* Accent — 모노톤(흰색 강조) */
+  --clr-accent: #fafafa;
+  --clr-accent-hover: #ffffff;
+  --clr-accent-muted: rgba(255, 255, 255, 0.12);
+  --clr-accent-glow: rgba(255, 255, 255, 0.16);
+  --clr-accent-gradient: linear-gradient(135deg, #fafafa 0%, #d4d4d4 100%);
+  --clr-on-accent: #0a0a0a;
 
   /* Shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);

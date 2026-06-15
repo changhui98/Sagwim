@@ -137,7 +137,7 @@
   padding: var(--sp-3) var(--sp-6);
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--clr-on-accent);
   background: var(--clr-accent);
   border: none;
   border-radius: var(--r-full);

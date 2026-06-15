@@ -36,7 +36,7 @@
   justify-content: center;
   padding: 10px var(--sp-5);
   background: var(--clr-accent-gradient);
-  color: #ffffff;
+  color: var(--clr-on-accent);
   border: none;
   border-radius: var(--r-full);
   font-size: 0.875rem;

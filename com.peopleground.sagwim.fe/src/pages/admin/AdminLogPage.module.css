@@ -259,7 +259,7 @@
   border: none;
   border-radius: var(--r-md);
   background: var(--clr-accent);
-  color: #fff;
+  color: var(--clr-on-accent);
   font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;

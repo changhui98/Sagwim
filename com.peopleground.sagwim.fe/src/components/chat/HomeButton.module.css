@@ -35,13 +35,13 @@
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-lg);
-  color: #fff;
+  color: var(--clr-on-accent);
   transition: transform var(--t-fast), box-shadow var(--t-fast);
 }
 
 .floating:hover {
   transform: translateY(-2px);
-  box-shadow: 0 16px 48px rgba(240, 128, 128, 0.35);
+  box-shadow: 0 16px 48px var(--clr-accent-glow);
 }
 
 .floating:active {

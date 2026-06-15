@@ -38,13 +38,13 @@
 }
 
 .chipActive {
-  color: #ffffff;
+  color: var(--clr-on-accent);
   background: var(--clr-accent);
   border-color: var(--clr-accent);
 }
 
 .chipActive:hover {
-  color: #ffffff;
+  color: var(--clr-on-accent);
   background: var(--clr-accent-hover);
   border-color: var(--clr-accent-hover);
 }

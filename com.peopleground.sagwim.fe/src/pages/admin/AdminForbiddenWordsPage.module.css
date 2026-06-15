@@ -12,7 +12,7 @@
   padding: var(--sp-2) var(--sp-4);
   font-size: 0.875rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--clr-on-accent);
   background: var(--clr-accent);
   border: none;
   border-radius: var(--r-md);

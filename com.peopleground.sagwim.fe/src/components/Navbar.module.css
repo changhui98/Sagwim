@@ -71,6 +71,12 @@
   color: var(--clr-accent);
 }
 
+/* 다크모드 — 로고를 두레식 흰색 모노톤으로 (인라인 stroke를 CSS가 오버라이드) */
+[data-theme='dark'] .brandLogo rect,
+[data-theme='dark'] .brandLogo g {
+  stroke: #fafafa;
+}
+
 /* ── Nav List ──────────────────────────────────────────────── */
 .navList {
   list-style: none;
