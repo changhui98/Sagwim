@@ -168,34 +168,12 @@
   border-radius: var(--r-sm);
 }
 
-.badgeAdmin {
-  background: #fee2e2;
-  color: #991b1b;
-  border: 1px solid #fca5a5;
-}
-
-.badgeManager {
-  background: #ffedd5;
-  color: #9a3412;
-  border: 1px solid #fdba74;
-}
-
+.badgeAdmin,
+.badgeManager,
 .badgeUser {
   background: var(--clr-surface-2, #f3f4f6);
   color: var(--clr-text-secondary, #6b7280);
   border: 1px solid var(--clr-border, #e5e7eb);
-}
-
-[data-theme='dark'] .badgeAdmin {
-  background: rgba(153, 27, 27, 0.3);
-  color: #fca5a5;
-  border-color: rgba(252, 165, 165, 0.4);
-}
-
-[data-theme='dark'] .badgeManager {
-  background: rgba(154, 52, 18, 0.3);
-  color: #fdba74;
-  border-color: rgba(253, 186, 116, 0.4);
 }
 
 @media (max-width: 640px) {
