@@ -180,6 +180,7 @@ export const updateGroup = async (
     description?: string
     category?: string
     meetingType?: string
+    region?: string | null
     maxMemberCount?: number
     joinType?: string
   },

@@ -27,9 +27,10 @@ import {
 import { fontSize, radius, spacing } from '../../src/constants/theme'
 import type { AppColors } from '../../src/constants/theme'
 import { useTheme } from '../../src/context/ThemeContext'
+import { AddressSearchInput } from '../../src/components/common/AddressSearchInput'
 import type { GroupDetailResponse, GroupJoinRequestResponse } from '../../src/types/group'
 
-type SubView = 'menu' | 'name' | 'description' | 'memberCount' | 'joinRequests' | 'joinType'
+type SubView = 'menu' | 'name' | 'description' | 'address' | 'memberCount' | 'joinRequests' | 'joinType'
 
 export default function GroupSettingsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -192,6 +193,22 @@ export default function GroupSettingsScreen() {
     )
   }
 
+  if (view === 'address' && group) {
+    return (
+      <AddressSubView
+        insets={insets}
+        group={group}
+        groupId={groupId}
+        onBack={(updatedRegion?: string) => {
+          if (updatedRegion !== undefined) {
+            setGroup(prev => prev ? { ...prev, region: updatedRegion } : prev)
+          }
+          setView('menu')
+        }}
+      />
+    )
+  }
+
   if (view === 'memberCount' && group) {
     return (
       <MemberCountSubView
@@ -303,6 +320,29 @@ export default function GroupSettingsScreen() {
                 </View>
                 <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
               </Pressable>
+
+              {/* 모임 위치 (오프라인 모임 전용) */}
+              {group?.meetingType === 'OFFLINE' && (
+                <>
+                  <View style={styles.menuDivider} />
+                  <Pressable
+                    style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
+                    onPress={() => setView('address')}
+                    accessibilityRole="button"
+                  >
+                    <View style={styles.menuItemLeft}>
+                      <Ionicons name="location-outline" size={20} color={colors.textSecondary} />
+                      <Text style={styles.menuItemText}>모임 위치</Text>
+                    </View>
+                    <View style={styles.menuItemRight}>
+                      <Text style={styles.menuItemValue} numberOfLines={1}>
+                        {group?.region ?? ''}
+                      </Text>
+                      <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                    </View>
+                  </Pressable>
+                </>
+              )}
 
               <View style={styles.menuDivider} />
 
@@ -432,6 +472,7 @@ function NameSubView({
         description: group.description ?? '',
         category: group.category,
         meetingType: group.meetingType,
+        region: group.region,
         maxMemberCount: group.maxMemberCount,
         joinType: group.joinType,
       })
@@ -525,6 +566,7 @@ function DescriptionSubView({
         description: trimmed,
         category: group.category,
         meetingType: group.meetingType,
+        region: group.region,
         maxMemberCount: group.maxMemberCount,
         joinType: group.joinType,
       })
@@ -589,6 +631,101 @@ function DescriptionSubView({
 }
 
 // ─────────────────────────────────────────────
+// SubView: 모임 위치 (오프라인 주소)
+// ─────────────────────────────────────────────
+function AddressSubView({
+  insets,
+  group,
+  groupId,
+  onBack,
+}: {
+  insets: { top: number; bottom: number }
+  group: GroupDetailResponse
+  groupId: number
+  onBack: (updatedRegion?: string) => void
+}) {
+  const { colors } = useTheme()
+  const [region, setRegion] = useState(group.region ?? '')
+  const [saving, setSaving] = useState(false)
+  const original = useRef(group.region ?? '')
+
+  const trimmed = region.trim()
+  const isDirty = trimmed !== original.current && trimmed !== ''
+
+  const handleBack = async () => {
+    if (!isDirty) {
+      onBack()
+      return
+    }
+    setSaving(true)
+    try {
+      await updateGroup(groupId, {
+        name: group.name,
+        description: group.description ?? '',
+        category: group.category,
+        meetingType: group.meetingType,
+        region: trimmed,
+        maxMemberCount: group.maxMemberCount,
+        joinType: group.joinType,
+      })
+      onBack(trimmed)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '저장에 실패했습니다.'
+      Alert.alert('오류', msg)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const subStyles = useMemo(() => buildSubStyles(colors), [colors])
+
+  return (
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <KeyboardAvoidingView
+        style={[subStyles.container, { paddingTop: insets.top }]}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={subStyles.header}>
+          <Pressable
+            style={subStyles.headerBtn}
+            onPress={handleBack}
+            disabled={saving}
+            hitSlop={8}
+            accessibilityRole="button"
+          >
+            {saving ? (
+              <ActivityIndicator size="small" color={colors.accent} />
+            ) : isDirty ? (
+              <Text style={subStyles.headerBtnTextAccent}>저장</Text>
+            ) : (
+              <Ionicons name="chevron-back" size={24} color={colors.text} />
+            )}
+          </Pressable>
+          <Text style={subStyles.headerTitle}>모임 위치</Text>
+          <View style={subStyles.headerBtn} />
+        </View>
+
+        <ScrollView
+          style={subStyles.scroll}
+          contentContainerStyle={[subStyles.bodyPadding, { paddingBottom: insets.bottom + spacing.sp8 }]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <AddressSearchInput
+            value={region}
+            onChange={setRegion}
+            disabled={saving}
+            autoFocus
+            hints={['동·읍·면 단위까지만 입력해 주세요.', '모임 위치는 추천·검색 노출에 활용됩니다.']}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </>
+  )
+}
+
+// ─────────────────────────────────────────────
 // SubView: 모임 인원 변경
 // ─────────────────────────────────────────────
 function MemberCountSubView({
@@ -623,6 +760,7 @@ function MemberCountSubView({
         description: group.description ?? '',
         category: group.category,
         meetingType: group.meetingType,
+        region: group.region,
         maxMemberCount: parsed,
         joinType: group.joinType,
       })
@@ -907,6 +1045,7 @@ function JoinTypeSubView({
         description: group.description ?? '',
         category: group.category,
         meetingType: group.meetingType,
+        region: group.region,
         maxMemberCount: group.maxMemberCount,
         joinType,
       })
