@@ -40,6 +40,7 @@ import { DeadlineGroupsPage } from './pages/DeadlineGroupsPage'
 import { ThisWeekGroupsPage } from './pages/ThisWeekGroupsPage'
 import { PostDetailPage } from './pages/PostDetailPage'
 import { MessagesPage } from './pages/MessagesPage'
+import { ServiceHomePage } from './pages/ServiceHomePage'
 import { SettingsPage } from './pages/SettingsPage'
 import { WithdrawPage } from './pages/WithdrawPage'
 import { ChangePasswordPage } from './pages/ChangePasswordPage'
@@ -63,7 +64,7 @@ function App() {
       />
       <Route path="/sign-up" element={<SignUpPage />} />
       <Route element={<ProtectedRoute />}>
-        <Route path="/app" element={<GroupListPage />} />
+        <Route path="/app" element={<ServiceHomePage />} />
         <Route path="/app/posts" element={<PostListPage />} />
         <Route path="/app/posts/new" element={<PostCreatePage />} />
         <Route path="/app/posts/:postId" element={<PostDetailPage />} />
