@@ -3,24 +3,24 @@ import { useLocation } from 'react-router-dom'
 
 declare global {
   interface Window {
-    dataLayer?: Record<string, unknown>[]
+    gtag?: (...args: unknown[]) => void
   }
 }
 
 /**
- * SPA 라우트 변경 시 GTM dataLayer에 가상 페이지뷰 이벤트를 push한다.
- * 문서가 새로 로드되지 않는 SPA에서도 화면 이동을 정확히 추적하기 위함.
- * GTM에서 'page_view' 커스텀 이벤트 트리거에 GA4 태그를 연결해 사용한다.
+ * SPA 라우트 변경 시 GA4(gtag.js)로 page_view 이벤트를 전송한다.
+ * index.html의 gtag config에서 자동 page_view(send_page_view)를 꺼 두었으므로,
+ * 첫 진입을 포함한 모든 라우트 이동을 이 훅이 명시적으로 전송한다(중복 없음).
  */
 export function usePageTracking() {
   const location = useLocation()
 
   useEffect(() => {
-    window.dataLayer = window.dataLayer || []
-    window.dataLayer.push({
-      event: 'page_view',
+    if (typeof window.gtag !== 'function') return
+    window.gtag('event', 'page_view', {
       page_path: location.pathname + location.search,
       page_title: document.title,
+      page_location: window.location.href,
     })
   }, [location])
 }
