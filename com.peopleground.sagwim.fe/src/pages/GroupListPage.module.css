@@ -9,7 +9,7 @@
   padding-bottom: calc(var(--sp-8) + var(--layout-bottom-bar-h));
   display: flex;
   flex-direction: column;
-  gap: var(--sp-6);
+  gap: var(--sp-8);
 }
 
 @media (max-width: 767px) {
@@ -17,6 +17,7 @@
     padding: var(--sp-4);
     padding-left: calc(var(--layout-sidebar-w) + var(--sp-4));
     padding-bottom: calc(var(--sp-4) + var(--layout-bottom-bar-h));
+    gap: var(--sp-6);
   }
 }
 
