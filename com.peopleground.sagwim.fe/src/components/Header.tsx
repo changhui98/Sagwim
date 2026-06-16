@@ -9,7 +9,7 @@ import { usePostCreateModal } from '../context/PostCreateModalContext'
 import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
 import { SidePanel, type SidePanelType } from './SidePanel'
 import { MoreMenuPopover } from './MoreMenuPopover'
-import { MoonIcon, SearchIcon, SunIcon, UserCircleIcon } from './NavIcons'
+import { MoonIcon, SunIcon, UserCircleIcon } from './NavIcons'
 
 const ADMIN_ROLES = new Set(['ADMIN', 'MANAGER'])
 
@@ -46,7 +46,7 @@ export function Header({ role, onLogout }: HeaderProps) {
   const closePanel = useCallback(() => setActivePanel(null), [])
 
   const path = location.pathname
-  const isHome = path === '/app' || path.startsWith('/app/groups')
+  const isGroups = path.startsWith('/app/groups')
   const isPosts = path.startsWith('/app/posts')
   const isMessages = path.startsWith('/app/messages')
   const isSettings = path.startsWith('/app/settings')
@@ -67,21 +67,10 @@ export function Header({ role, onLogout }: HeaderProps) {
               </svg>
             </Link>
             <nav className={styles.nav}>
-              <Link to="/app" className={`${styles.navLink} ${isHome ? styles.navLinkActive : ''}`} aria-current={isHome ? 'page' : undefined}>홈</Link>
+              <Link to="/app/groups" className={`${styles.navLink} ${isGroups ? styles.navLinkActive : ''}`} aria-current={isGroups ? 'page' : undefined}>모임</Link>
               <Link to="/app/posts" className={`${styles.navLink} ${isPosts ? styles.navLinkActive : ''}`} aria-current={isPosts ? 'page' : undefined}>게시글</Link>
             </nav>
           </div>
-
-          {/* 중앙: 전역 검색 트리거 */}
-          <button
-            type="button"
-            className={`${styles.search} ${activePanel === 'search' ? styles.searchActive : ''}`}
-            onClick={() => togglePanel('search')}
-            aria-label="검색"
-          >
-            <SearchIcon width={16} height={16} />
-            <span className={styles.searchText}>검색</span>
-          </button>
 
           {/* 우측: 텍스트 메뉴 + 아바타 */}
           <div className={styles.right}>
