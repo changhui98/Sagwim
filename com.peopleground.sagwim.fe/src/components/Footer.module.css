@@ -47,6 +47,12 @@
   color: var(--clr-text);
 }
 
+/* 강조 링크 — 개인정보처리방침처럼 굵게 잘 보여야 하는 항목 */
+.linkStrong {
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
 .divider {
   height: 1px;
   margin: var(--sp-10) 0 var(--sp-6);
