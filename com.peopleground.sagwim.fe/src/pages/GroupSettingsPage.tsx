@@ -18,6 +18,7 @@ import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { extractErrorMessage } from '../utils/errorUtils'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import type { GroupDetailResponse, GroupJoinRequestResponse, GroupJoinType } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
@@ -335,6 +336,7 @@ export function GroupSettingsPage() {
     return (
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={styles.loadingWrapper}>
             <LoadingSpinner />
@@ -348,6 +350,7 @@ export function GroupSettingsPage() {
     return (
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <p style={{ color: 'var(--clr-error)' }}>{error || '모임을 찾을 수 없습니다.'}</p>
         </main>
@@ -359,6 +362,7 @@ export function GroupSettingsPage() {
     return (
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <p style={{ color: 'var(--clr-error)' }}>설정 페이지에 접근 권한이 없습니다.</p>
         </main>
@@ -371,6 +375,7 @@ export function GroupSettingsPage() {
     return (
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={profileStyles.container}>
             <header className={modalStyles.header}>
@@ -411,6 +416,7 @@ export function GroupSettingsPage() {
     return (
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={profileStyles.container}>
             <header className={modalStyles.header}>
@@ -451,6 +457,7 @@ export function GroupSettingsPage() {
     return (
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={profileStyles.container}>
             <header className={modalStyles.header}>
@@ -492,6 +499,7 @@ export function GroupSettingsPage() {
     return (
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={profileStyles.container}>
             <header className={modalStyles.header}>
@@ -588,6 +596,7 @@ export function GroupSettingsPage() {
     return (
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={profileStyles.container}>
             <header className={modalStyles.header}>
@@ -726,6 +735,7 @@ export function GroupSettingsPage() {
   return (
     <>
       <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
+      <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
       <main className={styles.main}>
         <div className={profileStyles.container}>
           <header className={modalStyles.header}>

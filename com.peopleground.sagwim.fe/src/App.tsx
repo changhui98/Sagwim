@@ -4,6 +4,7 @@ import { AdminRoute } from './components/AdminRoute'
 import { AdminLayout } from './components/admin/AdminLayout'
 import { useAuth } from './context/AuthContext'
 import { useDevToolsProtection } from './hooks/useDevToolsProtection'
+import { usePageTracking } from './hooks/usePageTracking'
 import { HomePage } from './pages/HomePage'
 import { SignUpPage } from './pages/SignUpPage'
 import { PostListPage } from './pages/PostListPage'
@@ -50,6 +51,7 @@ function App() {
   const { isAuthenticated } = useAuth()
   const location = useLocation()
   useDevToolsProtection()
+  usePageTracking()
 
   return (
     <div className="page-transition">

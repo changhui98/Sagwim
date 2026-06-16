@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import type { Gender, UserDetailResponse } from '../types/user'
 
 function genderLabel(gender?: Gender): string {
@@ -141,6 +142,7 @@ export function ProfileEditPage() {
     return (
       <>
         <Navbar role={null} onLogout={handleLogout} />
+        <Header role={null} onLogout={handleLogout} />
         <main className={pageStyles.main}>
           <p className={pageStyles.loading}>프로필을 불러오는 중…</p>
         </main>
@@ -153,6 +155,7 @@ export function ProfileEditPage() {
   return (
     <>
       <Navbar role={profile.role ?? null} onLogout={handleLogout} />
+      <Header role={profile.role ?? null} onLogout={handleLogout} />
 
       <main className={pageStyles.main}>
         <div className={pageStyles.container}>

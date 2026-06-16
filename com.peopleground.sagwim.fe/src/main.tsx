@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import { PostCreateModalProvider } from './context/PostCreateModalContext'
 import { PostListProvider } from './context/PostListContext'
 import { NotificationCountProvider } from './context/NotificationCountContext'
+import { MessageCountProvider } from './context/MessageCountContext'
 import './styles/variables.css'
 import './styles/base.css'
 import './styles/components.css'
@@ -20,11 +21,13 @@ createRoot(document.getElementById('root')!).render(
       <ThemeProvider>
         <AuthProvider>
           <NotificationCountProvider>
-            <PostCreateModalProvider>
-              <PostListProvider>
-                <App />
-              </PostListProvider>
-            </PostCreateModalProvider>
+            <MessageCountProvider>
+              <PostCreateModalProvider>
+                <PostListProvider>
+                  <App />
+                </PostListProvider>
+              </PostCreateModalProvider>
+            </MessageCountProvider>
           </NotificationCountProvider>
         </AuthProvider>
       </ThemeProvider>

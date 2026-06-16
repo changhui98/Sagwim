@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import { deleteMyAccount } from '../api/userApi'
 import styles from '../components/profile/ProfileEditModal.module.css'
 import pageStyles from './WithdrawPage.module.css'
@@ -64,6 +65,7 @@ export function WithdrawPage() {
   return (
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
+      <Header role={meRole} onLogout={handleLogout} />
 
       <main className={pageStyles.main}>
         <div className={pageStyles.container}>

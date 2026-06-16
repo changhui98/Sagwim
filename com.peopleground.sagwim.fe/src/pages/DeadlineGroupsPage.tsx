@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
+import { Footer } from '../components/Footer'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { EmptyState } from '../components/common/EmptyState'
 import { extractLastRegionToken } from '../utils/stringUtils'
@@ -201,6 +203,7 @@ export function DeadlineGroupsPage() {
   return (
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
+      <Header role={meRole} onLogout={handleLogout} />
 
       <main className={styles.main}>
         <div className={styles.pageHeader}>
@@ -223,6 +226,7 @@ export function DeadlineGroupsPage() {
 
         {renderContent()}
       </main>
+      <Footer />
     </>
   )
 }

@@ -1,6 +1,5 @@
 import {
   useCallback,
-  useEffect,
   useRef,
   useState,
   type ReactNode,
@@ -10,6 +9,7 @@ import styles from './Navbar.module.css'
 import { usePostCreateModal } from '../context/PostCreateModalContext'
 import { useAuth } from '../context/AuthContext'
 import { useNotificationCount } from '../context/NotificationCountContext'
+import { useMessageCount } from '../context/MessageCountContext'
 import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
 import { SidePanel, type SidePanelType } from './SidePanel'
 import { MoreMenuPopover } from './MoreMenuPopover'
@@ -24,7 +24,6 @@ import {
   ShieldIcon,
   UserCircleIcon,
 } from './NavIcons'
-import { fetchRooms } from '../api/chatApi'
 
 const ADMIN_ROLES = new Set(['ADMIN', 'MANAGER'])
 
@@ -45,40 +44,14 @@ interface NavItem {
 }
 
 export function Navbar({ role, onLogout }: NavbarProps) {
-  const { meRole, meProfileImageUrl, token } = useAuth()
+  const { meRole, meProfileImageUrl } = useAuth()
   const { unreadCount } = useNotificationCount()
+  const { unreadMessageCount } = useMessageCount()
   const effectiveRole = role ?? meRole ?? null
   const isAdmin = effectiveRole !== null && ADMIN_ROLES.has(effectiveRole)
   const location = useLocation()
   const navigate = useNavigate()
   const { open: openPostCreateModal, isOpen: isPostCreateModalOpen } = usePostCreateModal()
-
-  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
-  const isOnMessagesPage = location.pathname.startsWith('/app/messages')
-
-  useEffect(() => {
-    if (isOnMessagesPage || !token) return
-
-    let cancelled = false
-
-    const load = async () => {
-      try {
-        const res = await fetchRooms(token, undefined, 50)
-        if (!cancelled) {
-          const total = res.content.reduce((sum, r) => sum + r.unreadCount, 0)
-          setUnreadMessageCount(total)
-        }
-      } catch {
-        // 배지 로딩 실패는 무시
-      }
-    }
-
-    void load()
-
-    return () => {
-      cancelled = true
-    }
-  }, [token, isOnMessagesPage])
 
   const [moreOpen, setMoreOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)

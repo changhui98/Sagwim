@@ -6,6 +6,8 @@ import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
+import { Footer } from '../components/Footer'
 import type { GroupResponse } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
 import mapPinAltIcon from '../assets/map-pin-alt-svgrepo-com.svg'
@@ -392,6 +394,7 @@ export function GroupListPage() {
   return (
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
+      <Header role={meRole} onLogout={handleLogout} />
       <MobileHeader onLogout={handleLogout} />
 
       <main className={styles.main}>
@@ -420,6 +423,7 @@ export function GroupListPage() {
             </div>
           )}
       </main>
+      <Footer />
     </>
   )
 }

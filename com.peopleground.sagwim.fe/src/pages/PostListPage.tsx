@@ -5,6 +5,8 @@ import { usePostCreatedSubscription } from '../context/PostCreateModalContext'
 import { usePostList } from '../context/PostListContext'
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
+import { Footer } from '../components/Footer'
 import { MobileHeader } from '../components/MobileHeader'
 import { PostCard } from '../components/post/PostCard'
 import { InfiniteScrollLoader } from '../components/post/InfiniteScrollLoader'
@@ -130,15 +132,16 @@ export function PostListPage() {
 
   return (
     <>
-      <Navbar
-        role={meRole}
-        onLogout={handleLogout}
-      />
+      <Navbar role={meRole}
+        onLogout={handleLogout} />
+      <Header role={meRole}
+        onLogout={handleLogout} />
       <MobileHeader onLogout={handleLogout} />
 
       <main className={styles.main}>
         {renderContent()}
       </main>
+      <Footer />
     </>
   )
 }

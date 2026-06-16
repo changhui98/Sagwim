@@ -2,11 +2,14 @@
    Layout Utilities — Sagwim
    ============================================================ */
 
-/* ── Sidebar width tokens ──────────────────────────────────── */
-/* 사이드바는 기본 collapsed(72px) 상태이며, hover 시에만 overlay 방식으로
-   244px로 확장되므로 콘텐츠 padding은 항상 collapsed 너비로 고정합니다. */
+/* ── Layout width tokens ───────────────────────────────────── */
+/* 데스크톱은 상단 가로 헤더(--layout-header-h) 구조이므로 사이드바 폭은 0.
+   --layout-sidebar-w를 0으로 두면 각 페이지 .main의
+   padding-left: calc(var(--layout-sidebar-w) + var(--sp-6)) 산식이 자동 정상화된다.
+   모바일(≤640px)은 하단 탭바(--layout-bottom-bar-h) 구조를 유지한다. */
 :root {
-  --layout-sidebar-w: 88px;
+  --layout-sidebar-w: 0px;
+  --layout-header-h: 64px;
   --layout-bottom-bar-h: 0px;
 }
 

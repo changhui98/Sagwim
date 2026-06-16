@@ -8,6 +8,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
 import { deletePost, getPost, toggleContentLike, updatePost } from '../api/postApi'
 import { MeatballMenu } from '../components/common/MeatballMenu'
 import { ReportModal } from '../components/common/ReportModal'
@@ -446,6 +447,7 @@ export function PostDetailPage() {
     return (
       <>
         <Navbar role={meRole} onLogout={handleLogout} />
+        <Header role={meRole} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={styles.page}>
             <div className={styles.post}>
@@ -470,6 +472,7 @@ export function PostDetailPage() {
     return (
       <>
         <Navbar role={meRole} onLogout={handleLogout} />
+        <Header role={meRole} onLogout={handleLogout} />
         <main className={styles.main}>
           <div className={styles.page}>
             <div className={styles.errorBanner}>
@@ -516,6 +519,7 @@ export function PostDetailPage() {
   return (
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
+      <Header role={meRole} onLogout={handleLogout} />
       <main className={styles.main}>
       <div className={styles.page}>
       <article className={styles.post}>

@@ -5,6 +5,8 @@ import { ApiError } from '../api/ApiError'
 import { useAuth } from '../context/AuthContext'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
+import { Header } from '../components/Header'
+import { Footer } from '../components/Footer'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Skeleton } from '../components/common/Skeleton'
 import { EmptyState } from '../components/common/EmptyState'
@@ -193,10 +195,10 @@ export function UserGridPage() {
 
   return (
     <>
-      <Navbar
-        role={myProfile?.role ?? null}
-        onLogout={handleLogout}
-      />
+      <Navbar role={myProfile?.role ?? null}
+        onLogout={handleLogout} />
+      <Header role={myProfile?.role ?? null}
+        onLogout={handleLogout} />
 
       <main className={styles.main}>
         <div className={styles.pageHeader}>
@@ -218,6 +220,7 @@ export function UserGridPage() {
 
         {renderContent()}
       </main>
+      <Footer />
     </>
   )
 }

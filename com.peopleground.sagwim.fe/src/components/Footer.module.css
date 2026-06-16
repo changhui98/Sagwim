@@ -1,0 +1,90 @@
+/* ── 두레식 4컬럼 푸터 ──────────────────────────────────────── */
+.footer {
+  margin-top: var(--sp-12);
+  border-top: 1px solid var(--clr-border);
+  background: var(--clr-bg);
+}
+
+.inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--sp-12) var(--sp-6) var(--sp-8);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-8);
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.colTitle {
+  margin: 0 0 var(--sp-2);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+.link {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.875rem;
+  color: var(--clr-text-secondary);
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+
+.link:hover {
+  color: var(--clr-text);
+}
+
+.divider {
+  height: 1px;
+  margin: var(--sp-10) 0 var(--sp-6);
+  background: var(--clr-border);
+}
+
+/* ── 회사 정보 ──────────────────────────────────────────────── */
+.company {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.brandRow {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--clr-text);
+}
+
+.company p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--clr-text-muted);
+}
+
+.copyright {
+  margin-top: var(--sp-3) !important;
+}
+
+/* ── 반응형 ─────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .inner {
+    padding: var(--sp-8) var(--sp-4) calc(var(--sp-6) + var(--layout-bottom-bar-h));
+  }
+
+  .columns {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-6);
+  }
+}

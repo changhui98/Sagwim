@@ -32,8 +32,11 @@ export function SidePanel({ type, onClose }: SidePanelProps) {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node
       if (panelRef.current?.contains(target)) return
+      // 사이드바(모바일 탭바) 또는 데스크톱 헤더 클릭은 외부 클릭으로 보지 않음
       const sidebar = document.querySelector('aside[aria-label="주 메뉴"]')
       if (sidebar?.contains(target)) return
+      const header = document.querySelector('header[data-app-header]')
+      if (header?.contains(target)) return
       onClose()
     }
 
