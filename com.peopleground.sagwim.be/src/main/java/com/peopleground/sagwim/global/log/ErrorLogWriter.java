@@ -1,7 +1,6 @@
 package com.peopleground.sagwim.global.log;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;

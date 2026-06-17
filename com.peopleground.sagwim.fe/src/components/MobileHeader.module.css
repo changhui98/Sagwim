@@ -86,6 +86,21 @@
     background: var(--clr-surface-3);
   }
 
+  /* 비로그인 — 로그인 버튼 */
+  .loginBtn {
+    display: inline-flex;
+    align-items: center;
+    height: 36px;
+    padding: 0 var(--sp-4);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--clr-on-accent);
+    background: var(--clr-accent);
+    border-radius: var(--r-full);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
   .notifIconWrap {
     position: relative;
     display: inline-flex;

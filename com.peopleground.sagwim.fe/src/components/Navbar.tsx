@@ -39,12 +39,13 @@ interface NavItem {
   onClick?: () => void
   match?: (pathname: string) => boolean
   adminOnly?: boolean
+  authOnly?: boolean
   mobileHidden?: boolean
   desktopHidden?: boolean
 }
 
 export function Navbar({ role, onLogout }: NavbarProps) {
-  const { meRole, meProfileImageUrl } = useAuth()
+  const { meRole, meProfileImageUrl, isAuthenticated } = useAuth()
   const { unreadCount } = useNotificationCount()
   const { unreadMessageCount } = useMessageCount()
   const effectiveRole = role ?? meRole ?? null
@@ -98,6 +99,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
       onClick: () => setCreateFlow('selecting'),
       match: () => isPostCreateModalOpen || createFlow === 'selecting',
       mobileHidden: true,
+      authOnly: true,
     },
     {
       to: '/app/messages',
@@ -116,6 +118,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
         </span>
       ),
       match: (p) => p.startsWith('/app/messages'),
+      authOnly: true,
     },
     {
       to: '/app/profile',
@@ -128,6 +131,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
         <UserCircleIcon />
       ),
       match: (p) => p.startsWith('/app/profile'),
+      authOnly: true,
     },
     {
       label: '알림',
@@ -149,6 +153,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
       },
       match: () => activePanel === 'notifications',
       mobileHidden: true,
+      authOnly: true,
     },
   ]
 
@@ -161,6 +166,10 @@ export function Navbar({ role, onLogout }: NavbarProps) {
       adminOnly: true,
     })
   }
+
+  const visibleNavItems = isAuthenticated
+    ? navItems
+    : navItems.filter((item) => !item.authOnly)
 
   const isActive = (item: NavItem) => {
     if (item.match) return item.match(location.pathname)
@@ -188,7 +197,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
 
         <nav className={styles.nav}>
           <ul className={styles.navList}>
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const active = isActive(item)
               const itemClassName = `${styles.navItem} ${active ? styles.navItemActive : ''}`
               const itemContent = (
@@ -231,25 +240,36 @@ export function Navbar({ role, onLogout }: NavbarProps) {
         </nav>
 
         <div className={styles.footer} ref={menuRef}>
-          <MoreMenuPopover
-            isOpen={moreOpen}
-            onClose={() => setMoreOpen(false)}
-            onLogout={onLogout}
-            anchorRef={menuRef}
-            placement="sidebar"
-          />
-          <button
-            type="button"
-            className={`${styles.navItem} ${styles.moreButton} ${moreOpen ? styles.moreButtonOpen : ''}`}
-            onClick={() => setMoreOpen((v) => !v)}
-            aria-haspopup="menu"
-            aria-expanded={moreOpen}
-          >
-            <span className={styles.navIcon}>
-              <GridEvenMoreIcon />
-            </span>
-            <span className={styles.navLabel}>더 보기</span>
-          </button>
+          {isAuthenticated ? (
+            <>
+              <MoreMenuPopover
+                isOpen={moreOpen}
+                onClose={() => setMoreOpen(false)}
+                onLogout={onLogout}
+                anchorRef={menuRef}
+                placement="sidebar"
+              />
+              <button
+                type="button"
+                className={`${styles.navItem} ${styles.moreButton} ${moreOpen ? styles.moreButtonOpen : ''}`}
+                onClick={() => setMoreOpen((v) => !v)}
+                aria-haspopup="menu"
+                aria-expanded={moreOpen}
+              >
+                <span className={styles.navIcon}>
+                  <GridEvenMoreIcon />
+                </span>
+                <span className={styles.navLabel}>더 보기</span>
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className={`${styles.navItem} ${styles.moreButton}`}>
+              <span className={styles.navIcon}>
+                <UserCircleIcon />
+              </span>
+              <span className={styles.navLabel}>로그인</span>
+            </Link>
+          )}
         </div>
       </div>
       <CreateTypeSelectorModal

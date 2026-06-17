@@ -9,7 +9,7 @@ import { usePostCreateModal } from '../context/PostCreateModalContext'
 import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
 import { SidePanel, type SidePanelType } from './SidePanel'
 import { MoreMenuPopover } from './MoreMenuPopover'
-import { MoonIcon, SearchIcon, SunIcon, UserCircleIcon } from './NavIcons'
+import { MoonIcon, SunIcon, UserCircleIcon } from './NavIcons'
 
 const ADMIN_ROLES = new Set(['ADMIN', 'MANAGER'])
 
@@ -23,7 +23,7 @@ interface HeaderProps {
  * 모바일(≤640px)에서는 CSS로 숨기고 MobileHeader + 하단 탭바(Navbar)가 네비를 담당한다.
  */
 export function Header({ role, onLogout }: HeaderProps) {
-  const { meRole, meProfileImageUrl } = useAuth()
+  const { meRole, meProfileImageUrl, isAuthenticated } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const { unreadCount } = useNotificationCount()
   const { unreadMessageCount } = useMessageCount()
@@ -46,7 +46,7 @@ export function Header({ role, onLogout }: HeaderProps) {
   const closePanel = useCallback(() => setActivePanel(null), [])
 
   const path = location.pathname
-  const isHome = path === '/app' || path.startsWith('/app/groups')
+  const isGroups = path.startsWith('/app/groups')
   const isPosts = path.startsWith('/app/posts')
   const isMessages = path.startsWith('/app/messages')
   const isSettings = path.startsWith('/app/settings')
@@ -67,53 +67,46 @@ export function Header({ role, onLogout }: HeaderProps) {
               </svg>
             </Link>
             <nav className={styles.nav}>
-              <Link to="/app" className={`${styles.navLink} ${isHome ? styles.navLinkActive : ''}`} aria-current={isHome ? 'page' : undefined}>홈</Link>
+              <Link to="/app/groups" className={`${styles.navLink} ${isGroups ? styles.navLinkActive : ''}`} aria-current={isGroups ? 'page' : undefined}>모임</Link>
               <Link to="/app/posts" className={`${styles.navLink} ${isPosts ? styles.navLinkActive : ''}`} aria-current={isPosts ? 'page' : undefined}>게시글</Link>
             </nav>
           </div>
 
-          {/* 중앙: 전역 검색 트리거 */}
-          <button
-            type="button"
-            className={`${styles.search} ${activePanel === 'search' ? styles.searchActive : ''}`}
-            onClick={() => togglePanel('search')}
-            aria-label="검색"
-          >
-            <SearchIcon width={16} height={16} />
-            <span className={styles.searchText}>검색</span>
-          </button>
-
           {/* 우측: 텍스트 메뉴 + 아바타 */}
           <div className={styles.right}>
-            <button type="button" className={styles.menuLink} onClick={() => setCreateFlow('selecting')}>
-              만들기
-            </button>
+            {isAuthenticated && (
+              <>
+                <button type="button" className={styles.menuLink} onClick={() => setCreateFlow('selecting')}>
+                  만들기
+                </button>
 
-            <Link to="/app/messages" className={`${styles.menuLink} ${isMessages ? styles.menuLinkActive : ''}`}>
-              메시지
-              {unreadMessageCount > 0 && (
-                <span className={styles.badge} aria-label={`읽지 않은 메시지 ${unreadMessageCount}건`}>
-                  {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
-                </span>
-              )}
-            </Link>
+                <Link to="/app/messages" className={`${styles.menuLink} ${isMessages ? styles.menuLinkActive : ''}`}>
+                  메시지
+                  {unreadMessageCount > 0 && (
+                    <span className={styles.badge} aria-label={`읽지 않은 메시지 ${unreadMessageCount}건`}>
+                      {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
+                    </span>
+                  )}
+                </Link>
 
-            <button
-              type="button"
-              className={`${styles.menuLink} ${activePanel === 'notifications' ? styles.menuLinkActive : ''}`}
-              onClick={() => togglePanel('notifications')}
-            >
-              알림
-              {unreadCount > 0 && (
-                <span className={styles.badge} aria-label={`읽지 않은 알림 ${unreadCount}건`}>
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </button>
+                <button
+                  type="button"
+                  className={`${styles.menuLink} ${activePanel === 'notifications' ? styles.menuLinkActive : ''}`}
+                  onClick={() => togglePanel('notifications')}
+                >
+                  알림
+                  {unreadCount > 0 && (
+                    <span className={styles.badge} aria-label={`읽지 않은 알림 ${unreadCount}건`}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
 
-            <Link to="/app/settings" className={`${styles.menuLink} ${isSettings ? styles.menuLinkActive : ''}`}>
-              설정
-            </Link>
+                <Link to="/app/settings" className={`${styles.menuLink} ${isSettings ? styles.menuLinkActive : ''}`}>
+                  설정
+                </Link>
+              </>
+            )}
 
             <button
               type="button"
@@ -124,32 +117,38 @@ export function Header({ role, onLogout }: HeaderProps) {
               {theme === 'dark' ? <SunIcon width={20} height={20} /> : <MoonIcon width={20} height={20} />}
             </button>
 
-            <div className={styles.avatarAnchor} ref={avatarRef}>
-              <button
-                type="button"
-                className={`${styles.avatarBtn} ${moreOpen ? styles.avatarBtnOpen : ''}`}
-                onClick={() => setMoreOpen((v) => !v)}
-                aria-label="내 메뉴"
-                aria-haspopup="menu"
-                aria-expanded={moreOpen}
-              >
-                {meProfileImageUrl ? (
-                  <img src={meProfileImageUrl} alt="" className={styles.avatarImg} />
-                ) : (
-                  <UserCircleIcon width={26} height={26} />
-                )}
-              </button>
-              <MoreMenuPopover
-                isOpen={moreOpen}
-                onClose={() => setMoreOpen(false)}
-                onLogout={onLogout}
-                anchorRef={avatarRef}
-                placement="header"
-                compact
-                showProfile
-                isAdmin={isAdmin}
-              />
-            </div>
+            {isAuthenticated ? (
+              <div className={styles.avatarAnchor} ref={avatarRef}>
+                <button
+                  type="button"
+                  className={`${styles.avatarBtn} ${moreOpen ? styles.avatarBtnOpen : ''}`}
+                  onClick={() => setMoreOpen((v) => !v)}
+                  aria-label="내 메뉴"
+                  aria-haspopup="menu"
+                  aria-expanded={moreOpen}
+                >
+                  {meProfileImageUrl ? (
+                    <img src={meProfileImageUrl} alt="" className={styles.avatarImg} />
+                  ) : (
+                    <UserCircleIcon width={26} height={26} />
+                  )}
+                </button>
+                <MoreMenuPopover
+                  isOpen={moreOpen}
+                  onClose={() => setMoreOpen(false)}
+                  onLogout={onLogout}
+                  anchorRef={avatarRef}
+                  placement="header"
+                  compact
+                  showProfile
+                  isAdmin={isAdmin}
+                />
+              </div>
+            ) : (
+              <Link to="/login" className={styles.loginBtn}>
+                로그인
+              </Link>
+            )}
           </div>
         </div>
       </header>

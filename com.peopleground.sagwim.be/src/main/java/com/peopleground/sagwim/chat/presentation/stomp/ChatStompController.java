@@ -1,7 +1,6 @@
 package com.peopleground.sagwim.chat.presentation.stomp;
 
 import com.peopleground.sagwim.chat.application.service.ChatService;
-import com.peopleground.sagwim.chat.infrastructure.websocket.StompHandlerInterceptor;
 import com.peopleground.sagwim.chat.presentation.dto.request.SendMessageRequest;
 import java.util.Map;
 import java.util.UUID;

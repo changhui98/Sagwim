@@ -90,12 +90,18 @@ export function PostListProvider({ children }: { children: ReactNode }) {
     [token, handleUnauthorized],
   )
 
-  // 최초 1회만 fetch — 이후 navigates 에서는 기존 데이터 유지
+  // 최초 1회만 fetch — 이후 navigates 에서는 기존 데이터 유지.
+  // 비로그인 상태에서는 fetch 시 401 → /login 리다이렉트가 발생하므로 건너뛴다
+  // (공개 홈에서 로그인 페이지로 튕기는 것을 방지). 로그인 시 token 변화로 재실행된다.
   useEffect(() => {
+    if (!token) {
+      setLoading(false)
+      return
+    }
     if (initializedRef.current) return
     initializedRef.current = true
     fetchPage(0, '', 'TITLE', false)
-  }, [fetchPage])
+  }, [token, fetchPage])
 
   const loadMore = useCallback(() => {
     if (!hasMore || isFetchingMore) return
