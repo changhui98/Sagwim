@@ -57,14 +57,14 @@ function App() {
   return (
     <div className="page-transition">
     <Routes location={location}>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<ServiceHomePage />} />
       <Route
         path="/login"
         element={isAuthenticated ? <Navigate to="/app" replace /> : <HomePage />}
       />
       <Route path="/sign-up" element={<SignUpPage />} />
+      <Route path="/app" element={<ServiceHomePage />} />
       <Route element={<ProtectedRoute />}>
-        <Route path="/app" element={<ServiceHomePage />} />
         <Route path="/app/posts" element={<PostListPage />} />
         <Route path="/app/posts/new" element={<PostCreatePage />} />
         <Route path="/app/posts/:postId" element={<PostDetailPage />} />
