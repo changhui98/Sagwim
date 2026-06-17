@@ -13,7 +13,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
