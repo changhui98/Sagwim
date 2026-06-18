@@ -6,8 +6,6 @@ import styles from './Footer.module.css'
  * 실제 라우트가 있는 항목만 Link로 연결하고, 미구현 항목은 "준비 중" 안내.
  */
 export function Footer() {
-  const notice = (label: string) => window.alert(`${label} 기능은 준비 중입니다.`)
-
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
@@ -21,21 +19,21 @@ export function Footer() {
 
           <div className={styles.col}>
             <h3 className={styles.colTitle}>Sagwim</h3>
-            <button type="button" className={styles.link} onClick={() => notice('회사 소개')}>회사 소개</button>
-            <button type="button" className={styles.link} onClick={() => notice('공지사항')}>공지사항</button>
+            <Link to="/about" className={styles.link}>회사 소개</Link>
+            <Link to="/notice" className={styles.link}>공지사항</Link>
           </div>
 
           <div className={styles.col}>
             <h3 className={styles.colTitle}>고객지원</h3>
-            <button type="button" className={styles.link} onClick={() => notice('고객센터')}>고객센터</button>
-            <button type="button" className={styles.link} onClick={() => notice('자주 묻는 질문')}>자주 묻는 질문</button>
-            <button type="button" className={styles.link} onClick={() => notice('1:1 문의')}>1:1 문의</button>
+            <Link to="/support" className={styles.link}>고객센터</Link>
+            <Link to="/faq" className={styles.link}>자주 묻는 질문</Link>
+            <Link to="/inquiry" className={styles.link}>1:1 문의</Link>
           </div>
 
           <div className={styles.col}>
             <h3 className={styles.colTitle}>약관·정책</h3>
-            <button type="button" className={styles.link} onClick={() => notice('이용약관')}>이용약관</button>
-            <button type="button" className={`${styles.link} ${styles.linkStrong}`} onClick={() => notice('개인정보처리방침')}>개인정보처리방침</button>
+            <Link to="/terms" className={styles.link}>이용약관</Link>
+            <Link to="/privacy" className={`${styles.link} ${styles.linkStrong}`}>개인정보처리방침</Link>
           </div>
         </div>
 
