@@ -161,26 +161,27 @@
   background: var(--clr-surface-2);
 }
 
-/* 비로그인 — 로그인 버튼 */
+/* 비로그인 — 로그인 (텍스트 링크) */
 .loginBtn {
   display: inline-flex;
   align-items: center;
-  margin-left: var(--sp-2);
-  padding: var(--sp-2) var(--sp-4);
+  margin-left: var(--sp-1);
+  padding: var(--sp-2) var(--sp-3);
   font-size: 0.9375rem;
   font-weight: 600;
-  color: var(--clr-on-accent);
-  background: var(--clr-accent);
+  color: var(--clr-text-secondary);
+  background: none;
   border: none;
-  border-radius: var(--r-full);
+  border-radius: var(--r-md);
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: opacity var(--t-fast);
+  transition: color var(--t-fast), background var(--t-fast);
 }
 
 .loginBtn:hover {
-  opacity: 0.9;
+  color: var(--clr-text);
+  background: var(--clr-surface-2);
 }
 
 .avatarAnchor {
