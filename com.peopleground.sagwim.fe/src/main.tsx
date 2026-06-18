@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider } from './context/ThemeContext'
 import { PostCreateModalProvider } from './context/PostCreateModalContext'
+import { AuthGateProvider } from './context/AuthGateContext'
 import { PostListProvider } from './context/PostListContext'
 import { NotificationCountProvider } from './context/NotificationCountContext'
 import { MessageCountProvider } from './context/MessageCountContext'
@@ -24,7 +25,9 @@ createRoot(document.getElementById('root')!).render(
             <MessageCountProvider>
               <PostCreateModalProvider>
                 <PostListProvider>
-                  <App />
+                  <AuthGateProvider>
+                    <App />
+                  </AuthGateProvider>
                 </PostListProvider>
               </PostCreateModalProvider>
             </MessageCountProvider>
