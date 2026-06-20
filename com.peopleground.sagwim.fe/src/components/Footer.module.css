@@ -67,10 +67,11 @@
 }
 
 .brandRow {
-  font-size: 1.125rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--clr-text);
+  font-family: var(--font-brand), cursive;
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--clr-accent);
 }
 
 .company p {
