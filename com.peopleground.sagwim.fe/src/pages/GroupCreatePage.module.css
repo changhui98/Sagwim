@@ -74,18 +74,18 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-5);
+  gap: var(--sp-6);
 }
 
 .fieldGroup {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
 
 /* Step 5 내부 필드 간격 */
 .step5Field {
-  margin-bottom: var(--sp-5);
+  margin-bottom: var(--sp-6);
 }
 
 .step5Field:last-of-type {

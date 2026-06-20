@@ -672,7 +672,8 @@ export function GroupCreatePage() {
                 데스크톱 Progressive Disclosure 폼
             ══════════════════════════════════ */}
 
-            <form onSubmit={handleSubmit} className={`${styles.form} ${styles.desktopOnlyField}`} noValidate>
+            <div className={styles.desktopOnlyField}>
+            <form onSubmit={handleSubmit} className={styles.form} noValidate>
 
               {/* Step 1: 모임 이름 */}
               <div className={styles.fieldGroup}>
@@ -932,6 +933,7 @@ export function GroupCreatePage() {
                 </div>
               )}
             </form>
+            </div>
           </div>
 
           {/* ── 오른쪽: 스텝 인디케이터 (데스크톱) ── */}

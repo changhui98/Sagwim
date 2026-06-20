@@ -1,49 +1,9 @@
-/* ── ServiceHomePage (개편 중 안내) ── */
+/* ── ServiceHomePage (서비스 소개 랜딩) ── */
 
 .main {
   width: 100%;
-  max-width: calc(1080px + var(--layout-sidebar-w));
-  margin: 0 auto;
-  padding: var(--sp-8) var(--sp-6);
-  padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
-  padding-bottom: calc(var(--sp-8) + var(--layout-bottom-bar-h));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-}
-
-@media (max-width: 767px) {
-  .main {
-    padding: var(--sp-4);
-    padding-left: calc(var(--layout-sidebar-w) + var(--sp-4));
-    padding-bottom: calc(var(--sp-4) + var(--layout-bottom-bar-h));
-  }
-}
-
-.notice {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-3);
-  text-align: center;
-}
-
-.title {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--clr-text);
-}
-
-.brand {
-  color: #e06060;
-}
-
-.subtitle {
-  margin: 0;
-  font-size: 0.9375rem;
-  color: var(--clr-text-secondary);
+  /* 섹션들이 각자 풀폭 배경/패딩을 관리하므로 main 은 폭 제한 없이 둔다.
+     데스크톱 사이드바가 있을 경우만 좌측 여백을 확보한다. */
+  margin-left: var(--layout-sidebar-w);
+  width: calc(100% - var(--layout-sidebar-w));
 }

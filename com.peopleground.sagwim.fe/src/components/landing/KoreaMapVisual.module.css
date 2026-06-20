@@ -1,0 +1,120 @@
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+/* 한반도 실루엣 */
+.land {
+  fill: var(--clr-accent-muted);
+  stroke: var(--clr-accent);
+  stroke-width: 1.5;
+  stroke-opacity: 0.35;
+  stroke-linejoin: round;
+}
+
+/* 연결선 — 그려지는 애니메이션 */
+.line {
+  fill: none;
+  stroke: var(--clr-accent);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-opacity: 0.55;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: drawLine 0.9s var(--ease, ease) forwards;
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* 사람 실루엣 */
+.person {
+  fill: var(--clr-text-secondary);
+  opacity: 0;
+  animation: personIn 0.5s var(--ease, ease) forwards;
+}
+
+/* 위치 핀 */
+.pin {
+  fill: var(--clr-accent);
+  opacity: 0;
+  transform: translateY(-7px);
+  animation: pinDrop 0.5s var(--ease, ease) forwards;
+  filter: drop-shadow(0 2px 3px var(--clr-accent-glow));
+}
+
+.pinDot {
+  fill: var(--clr-on-accent);
+}
+
+@keyframes personIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 0.9;
+    transform: none;
+  }
+}
+
+@keyframes pinDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 발밑 펄스 */
+.pulse {
+  fill: var(--clr-accent);
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: groundPulse 2.6s var(--ease, ease) infinite;
+}
+
+@keyframes groundPulse {
+  0% {
+    opacity: 0.45;
+    transform: scale(0.5);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+/* 모션 최소화 선호 시: 애니메이션 없이 완성 상태로 고정 */
+@media (prefers-reduced-motion: reduce) {
+  .line {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .person {
+    opacity: 0.9;
+    animation: none;
+  }
+  .pin {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+  .pulse {
+    animation: none;
+    opacity: 0;
+  }
+}
