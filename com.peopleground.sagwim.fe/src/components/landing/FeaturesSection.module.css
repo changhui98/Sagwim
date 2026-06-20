@@ -1,0 +1,262 @@
+.section {
+  padding: clamp(var(--sp-10), 7vw, var(--sp-16)) var(--sp-6);
+  background: var(--clr-surface-2);
+}
+
+.inner {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.head {
+  text-align: center;
+  margin-bottom: clamp(var(--sp-8), 6vw, var(--sp-12));
+}
+
+.title {
+  margin: 0 0 var(--sp-3);
+  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--clr-text);
+}
+
+.lead {
+  margin: 0 auto;
+  max-width: 34rem;
+  font-size: clamp(0.95rem, 1.6vw, 1.0625rem);
+  line-height: 1.7;
+  color: var(--clr-text-secondary);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--sp-10), 8vw, var(--sp-16));
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(var(--sp-6), 6vw, var(--sp-12));
+  /* 등장 전 */
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s var(--ease, ease),
+    transform 0.7s var(--ease, ease);
+}
+
+.row.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* 짝수 행: 비주얼을 왼쪽으로 */
+.flip .text {
+  order: 2;
+}
+.flip .mock {
+  order: 1;
+}
+
+.tag {
+  display: inline-block;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-full);
+  background: var(--clr-accent-muted);
+  color: var(--clr-accent);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  margin-bottom: var(--sp-3);
+}
+
+.rowTitle {
+  margin: 0 0 var(--sp-3);
+  font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: var(--clr-text);
+}
+
+.rowDesc {
+  margin: 0;
+  font-size: clamp(0.9375rem, 1.6vw, 1.0625rem);
+  line-height: 1.7;
+  color: var(--clr-text-secondary);
+}
+
+.mock {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── 목업 공통 ── */
+.mockCard {
+  width: 100%;
+  max-width: 320px;
+  padding: var(--sp-4);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.mockLine {
+  height: 9px;
+  border-radius: var(--r-full);
+  background: var(--clr-surface-3);
+}
+.mockLine.muted {
+  background: var(--clr-surface-3);
+  opacity: 0.6;
+}
+.w40 {
+  width: 40%;
+}
+.w60 {
+  width: 60%;
+}
+.w70 {
+  width: 70%;
+}
+.w90 {
+  width: 90%;
+}
+
+/* 모임 목업 */
+.mockThumb {
+  display: block;
+  width: 100%;
+  height: 96px;
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-3);
+  overflow: hidden;
+}
+.mockBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.mockBadge {
+  align-self: flex-start;
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-full);
+  background: var(--clr-accent-muted);
+  color: var(--clr-accent);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+.mockAvatars {
+  display: flex;
+  align-items: center;
+  margin-top: var(--sp-1);
+}
+.mockAvatars span {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-full);
+  background: var(--clr-surface-3);
+  border: 2px solid var(--clr-surface);
+  margin-left: -6px;
+}
+.mockAvatars span:first-child {
+  margin-left: 0;
+}
+.mockMore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--clr-text-secondary);
+  background: var(--clr-surface-3) !important;
+}
+
+/* 게시판 목업 */
+.mockPost {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--clr-border);
+}
+.mockPost:last-child {
+  border-bottom: none;
+}
+.mockAvatar {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent-muted);
+}
+.mockPostBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.mockHeart {
+  color: var(--clr-accent);
+  font-size: 0.9375rem;
+}
+
+/* 채팅 목업 */
+.mockChat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.bubble {
+  max-width: 80%;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 0.875rem;
+  line-height: 1.4;
+  border-radius: var(--r-lg);
+}
+.bubbleIn {
+  align-self: flex-start;
+  background: var(--clr-surface-3);
+  color: var(--clr-text);
+  border-bottom-left-radius: var(--r-sm);
+}
+.bubbleOut {
+  align-self: flex-end;
+  background: var(--clr-accent);
+  color: var(--clr-on-accent);
+  border-bottom-right-radius: var(--r-sm);
+}
+
+@media (max-width: 767px) {
+  .row {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+    text-align: center;
+  }
+  /* 모바일에서는 항상 비주얼이 아래로 통일 */
+  .flip .text,
+  .text {
+    order: 1;
+  }
+  .flip .mock,
+  .mock {
+    order: 2;
+  }
+  .tag {
+    margin-inline: auto;
+  }
+  .mockCard {
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

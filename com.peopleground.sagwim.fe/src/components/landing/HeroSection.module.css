@@ -1,0 +1,156 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 부드러운 배경 글로우 (따뜻한 코랄) */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 55% at 78% 30%, var(--clr-accent-muted), transparent 60%),
+    radial-gradient(ellipse 50% 50% at 12% 80%, var(--clr-accent-muted), transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(var(--sp-8), 6vw, var(--sp-16)) var(--sp-6);
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: var(--sp-10);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  animation: heroCopyIn 0.6s var(--ease, ease) both;
+}
+
+.eyebrow {
+  display: inline-block;
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-full);
+  background: var(--clr-accent-muted);
+  color: var(--clr-accent);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.9rem, 4.6vw, 3rem);
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.03em;
+  color: var(--clr-text);
+}
+
+.accent {
+  color: var(--clr-accent);
+}
+
+.brand {
+  font-family: var(--font-brand), cursive;
+  color: var(--clr-accent);
+  font-weight: 400;
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 30rem;
+  font-size: clamp(0.95rem, 1.6vw, 1.0625rem);
+  line-height: 1.7;
+  color: var(--clr-text-secondary);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
+}
+
+.btn {
+  text-decoration: none;
+}
+
+.visual {
+  display: flex;
+  justify-content: center;
+  animation: heroVisualIn 0.7s var(--ease, ease) both;
+  animation-delay: 0.1s;
+}
+
+.visual :global(svg) {
+  max-width: 300px;
+}
+
+@keyframes heroCopyIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes heroVisualIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 태블릿 이하: 세로 스택, 비주얼이 위로 */
+@media (max-width: 767px) {
+  .inner {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+    text-align: center;
+  }
+
+  .copy {
+    align-items: center;
+    order: 2;
+  }
+
+  .subtitle {
+    margin-inline: auto;
+  }
+
+  .visual {
+    order: 1;
+  }
+
+  .visual :global(svg) {
+    max-width: 210px;
+  }
+
+  .actions {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy,
+  .visual {
+    animation: none;
+  }
+}
