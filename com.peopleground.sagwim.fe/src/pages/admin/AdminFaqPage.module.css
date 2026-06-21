@@ -1,0 +1,152 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  margin: 0;
+}
+
+.subtitle {
+  margin: 0 0 var(--sp-2);
+  font-size: 0.875rem;
+  color: var(--clr-text-muted);
+}
+
+/* ── 추가 버튼 ── */
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-4);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--clr-on-accent);
+  background: var(--clr-accent);
+  border: none;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: filter var(--t-fast);
+}
+
+.addButton:hover {
+  filter: brightness(1.06);
+}
+
+.addButtonIcon {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+/* ── 답변 셀: 길면 말줄임 ── */
+.answerCell {
+  color: var(--clr-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── 관리(수정/삭제) 버튼 그룹 ── */
+.actions {
+  display: inline-flex;
+  gap: var(--sp-2);
+}
+
+.editButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-1) var(--sp-3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--clr-accent);
+  background: transparent;
+  border: 1px solid var(--clr-accent);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.editButton:hover:not(:disabled) {
+  background: var(--clr-accent);
+  color: var(--clr-on-accent);
+}
+
+.deleteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-1) var(--sp-3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--clr-error);
+  background: transparent;
+  border: 1px solid var(--clr-error);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.deleteButton:hover:not(:disabled) {
+  background: var(--clr-error);
+  color: #fff;
+}
+
+.deleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── 등록/수정 모달 폼 ── */
+.formBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  text-align: left;
+}
+
+.formRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-6);
+}
+
+.publishedField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.field {
+  width: 100%;
+  padding: var(--sp-3);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-md);
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  margin-top: var(--sp-1);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--clr-accent);
+  box-shadow: 0 0 0 3px var(--clr-accent-muted);
+}

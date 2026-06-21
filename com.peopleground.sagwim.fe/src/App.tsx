@@ -27,6 +27,7 @@ import { AdminLogPage } from './pages/admin/AdminLogPage'
 import { AdminReportListPage } from './pages/admin/AdminReportListPage'
 import { AdminInquiryListPage } from './pages/admin/AdminInquiryListPage'
 import { AdminForbiddenWordsPage } from './pages/admin/AdminForbiddenWordsPage'
+import { AdminFaqPage } from './pages/admin/AdminFaqPage'
 import { PostCreatePage } from './pages/PostCreatePage'
 import { GroupListPage } from './pages/GroupListPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
@@ -48,6 +49,7 @@ import { SearchPage } from './pages/SearchPage'
 import { NotificationsPage } from './pages/NotificationsPage'
 import { MyActivityPage } from './pages/MyActivityPage'
 import { ComingSoonPage } from './pages/ComingSoonPage'
+import { FaqPage } from './pages/FaqPage'
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -109,13 +111,14 @@ function App() {
           <Route path="reports" element={<AdminReportListPage />} />
           <Route path="forbidden-words" element={<AdminForbiddenWordsPage />} />
           <Route path="inquiries" element={<AdminInquiryListPage />} />
+          <Route path="faqs" element={<AdminFaqPage />} />
           <Route path="logs" element={<AdminLogPage />} />
         </Route>
       </Route>
       <Route path="/about" element={<ComingSoonPage title="회사 소개" />} />
       <Route path="/notice" element={<ComingSoonPage title="공지사항" />} />
       <Route path="/support" element={<ComingSoonPage title="고객센터" />} />
-      <Route path="/faq" element={<ComingSoonPage title="자주 묻는 질문" />} />
+      <Route path="/faq" element={<FaqPage />} />
       <Route path="/inquiry" element={<ComingSoonPage title="1:1 문의" />} />
       <Route path="/terms" element={<ComingSoonPage title="이용약관" />} />
       <Route path="/privacy" element={<ComingSoonPage title="개인정보처리방침" />} />

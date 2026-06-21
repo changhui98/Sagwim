@@ -7,6 +7,7 @@ import type { DeleteLogEntry, DeleteLogSummary } from '../types/deleteLog'
 import type { AdminReportEntry } from '../types/report'
 import type { AdminInquiryEntry } from '../types/inquiry'
 import type { ForbiddenWordResponse, ForbiddenWordStatus } from '../types/moderation'
+import type { AdminFaqResponse, FaqRequest } from '../types/faq'
 import { API_BASE_URL } from './config'
 import { createAuthHeaders, parseResponse } from './apiUtils'
 
@@ -320,4 +321,57 @@ export const setForbiddenWordStatus = (
     headers: createAuthHeaders(token),
     body: JSON.stringify({ status }),
   }).then((response) => parseResponse<ForbiddenWordResponse>(response))
+}
+
+// ── FAQ 관리 ────────────────────────────────────────────────────────────────
+
+export const getAdminFaqs = (
+  token: string,
+  page = 0,
+  size = 20,
+): Promise<PageResponse<AdminFaqResponse>> => {
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  return fetch(`${API_BASE_URL}/admin/faqs?${params.toString()}`, {
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<PageResponse<AdminFaqResponse>>(response))
+}
+
+export const createAdminFaq = (
+  token: string,
+  body: FaqRequest,
+): Promise<AdminFaqResponse> => {
+  return fetch(`${API_BASE_URL}/admin/faqs`, {
+    method: 'POST',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify(body),
+  }).then((response) => parseResponse<AdminFaqResponse>(response))
+}
+
+export const updateAdminFaq = (
+  token: string,
+  id: number,
+  body: FaqRequest,
+): Promise<AdminFaqResponse> => {
+  return fetch(`${API_BASE_URL}/admin/faqs/${id}`, {
+    method: 'PATCH',
+    headers: createAuthHeaders(token),
+    body: JSON.stringify(body),
+  }).then((response) => parseResponse<AdminFaqResponse>(response))
+}
+
+export const toggleAdminFaqPublished = (
+  token: string,
+  id: number,
+): Promise<AdminFaqResponse> => {
+  return fetch(`${API_BASE_URL}/admin/faqs/${id}/published`, {
+    method: 'PATCH',
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<AdminFaqResponse>(response))
+}
+
+export const deleteAdminFaq = (token: string, id: number): Promise<void> => {
+  return fetch(`${API_BASE_URL}/admin/faqs/${id}`, {
+    method: 'DELETE',
+    headers: createAuthHeaders(token),
+  }).then((response) => parseResponse<void>(response))
 }
