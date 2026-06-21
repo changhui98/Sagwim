@@ -118,6 +118,8 @@ public class SecurityConfig {
                     // 이미지 조회 공개 API (비로그인 사용자도 이미지 조회 가능)
                     .requestMatchers(HttpMethod.GET, "/api/v1/images").permitAll()
                     .requestMatchers("/images/**").permitAll()
+                    // FAQ 공개 조회 API (비로그인 사용자도 자주 묻는 질문 조회 가능)
+                    .requestMatchers(HttpMethod.GET, "/api/v1/faqs").permitAll()
                     // 모임 일정 목록 조회 공개 API (비로그인 사용자도 조회 가능, attendingByMe는 false 반환)
                     .requestMatchers(HttpMethod.GET, "/api/v1/groups/*/schedules").permitAll()
                     // 이번 주 일정 모임 조회 공개 API (비로그인 사용자도 조회 가능, isLiked는 false 반환)

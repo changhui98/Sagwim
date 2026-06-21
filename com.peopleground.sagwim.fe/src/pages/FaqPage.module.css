@@ -1,0 +1,158 @@
+/* ── FaqPage (클라이언트 자주 묻는 질문) ── */
+
+.main {
+  width: 100%;
+  max-width: calc(840px + var(--layout-sidebar-w));
+  margin: 0 auto;
+  padding: var(--sp-10) var(--sp-6);
+  padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
+  padding-bottom: calc(var(--sp-12) + var(--layout-bottom-bar-h));
+  min-height: 60vh;
+}
+
+@media (max-width: 767px) {
+  .main {
+    padding: var(--sp-6) var(--sp-4);
+    padding-left: calc(var(--layout-sidebar-w) + var(--sp-4));
+    padding-bottom: calc(var(--sp-8) + var(--layout-bottom-bar-h));
+  }
+}
+
+/* ── 히어로 ── */
+.hero {
+  text-align: center;
+  margin-bottom: var(--sp-10);
+}
+
+.eyebrow {
+  margin: 0 0 var(--sp-2);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--clr-accent);
+}
+
+.title {
+  margin: 0 0 var(--sp-3);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--clr-text);
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--clr-text-secondary);
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-12) 0;
+}
+
+/* ── 아코디언 목록 ── */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.item {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.item:hover {
+  border-color: var(--clr-border-strong);
+}
+
+.item:has(.question[aria-expanded='true']) {
+  border-color: var(--clr-accent);
+  box-shadow: 0 0 0 3px var(--clr-accent-muted);
+}
+
+/* ── 질문(토글 버튼) ── */
+.question {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-4) var(--sp-5);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+.qMark {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-full, 999px);
+  background: var(--clr-accent);
+  color: var(--clr-on-accent);
+  font-weight: 800;
+  font-size: 0.9375rem;
+}
+
+.qText {
+  flex: 1;
+  line-height: 1.5;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--clr-text-muted);
+  transition: transform var(--t-fast);
+}
+
+.chevron[data-open='true'] {
+  transform: rotate(180deg);
+  color: var(--clr-accent);
+}
+
+/* ── 답변(접힘/펼침) ── */
+.answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--t-mid, 0.25s) ease;
+}
+
+.answerOpen {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--t-mid, 0.25s) ease;
+}
+
+.answer > .answerInner,
+.answerOpen > .answerInner {
+  overflow: hidden;
+}
+
+.answerInner {
+  padding: 0 var(--sp-5) 0 calc(var(--sp-5) + 28px + var(--sp-3));
+  color: var(--clr-text-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.answerOpen > .answerInner {
+  padding-top: 0;
+  padding-bottom: var(--sp-4);
+}

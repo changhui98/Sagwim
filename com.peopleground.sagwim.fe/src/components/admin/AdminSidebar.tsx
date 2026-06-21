@@ -89,6 +89,13 @@ const ICONS = {
       <circle cx="4" cy="18" r="1" />
     </svg>
   ),
+  faq: (
+    <svg {...iconProps}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9a2.5 2.5 0 0 1 4.5 1.5c0 1.6-2 2-2 3.2" />
+      <path d="M12 17h.01" />
+    </svg>
+  ),
 } satisfies Record<string, ReactNode>
 
 interface MenuItem {
@@ -138,6 +145,7 @@ const MENU_SECTIONS: readonly MenuSection[] = [
         label: '서비스 관리',
         icon: ICONS.service,
       },
+      { path: '/app/admin/faqs', label: 'FAQ 관리', icon: ICONS.faq },
       { path: '/app/admin/logs', label: '로그', icon: ICONS.log },
     ],
   },
