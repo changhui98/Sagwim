@@ -1,12 +1,15 @@
 /* ── AdminLayout ── */
 
 .wrapper {
-  /* 관리자 페이지 전용 테마 색상 (#87CEFA) */
-  --clr-accent: #87CEFA;
-  --clr-accent-hover: #5fb4ef;
-  --clr-accent-muted: rgba(135, 206, 250, 0.14);
-  --clr-accent-glow: rgba(135, 206, 250, 0.28);
-  --clr-accent-gradient: linear-gradient(135deg, #87CEFA 0%, #a6d8fc 100%);
+  /* 관리자 페이지 전용 테마 색상 (Indigo) */
+  --clr-accent: #6366f1;
+  --clr-accent-hover: #818cf8;
+  --clr-accent-muted: rgba(99, 102, 241, 0.14);
+  --clr-accent-glow: rgba(99, 102, 241, 0.28);
+  --clr-accent-gradient: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+  /* 버튼 글자색을 흰색으로 고정 — 다크 테마에서 어두운 on-accent를 상속해
+     인디고 배경 위에서 글자가 안 보이는 문제 방지 (다크/라이트 공통) */
+  --clr-on-accent: #ffffff;
   --clr-primary: var(--clr-accent);
 
   display: flex;
