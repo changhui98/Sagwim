@@ -1,4 +1,4 @@
-/* ── SettingsPage — SaaS 스타일 재설계 ── */
+/* ── SettingsPage — SaaS 스타일 레이아웃 셸 ── */
 
 /* ── 페이지 래퍼 ── */
 .main {
@@ -174,7 +174,7 @@
   width: 6px;
   height: 6px;
   border-radius: var(--r-full);
-  background: var(--clr-accent);
+  background: currentColor;
   flex-shrink: 0;
 }
 
@@ -190,11 +190,11 @@
   color: var(--clr-text-muted);
 }
 
-/* ── 우측 콘텐츠 ── */
+/* ── 우측 콘텐츠 (Outlet) ── */
 .content {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-6);
+  gap: var(--sp-5);
   min-width: 0;
 }
 
@@ -227,14 +227,25 @@
   line-height: 1.5;
 }
 
-/* ── 기능 카드 그리드 ── */
+/* ── 폼 카드 (우측 패널 안 폼 컨테이너) ── */
+.formCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-8);
+}
+
+/* ── 개요 기능 카드 그리드 ── */
 .cardGrid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--sp-3);
 }
 
-/* 기능 카드 공통 */
 .featureCard {
   display: flex;
   align-items: center;
@@ -267,7 +278,6 @@
   box-shadow: var(--shadow-focus), var(--shadow-sm);
 }
 
-/* 아이콘 래퍼 */
 .featureCardIconWrap {
   display: flex;
   align-items: center;
@@ -341,7 +351,6 @@
   text-transform: uppercase;
 }
 
-/* 위험 카드 — error 색상 계열 */
 .dangerCard {
   display: flex;
   align-items: center;
@@ -513,6 +522,10 @@
 
   .tabActiveIndicator {
     display: none;
+  }
+
+  .formCard {
+    padding: var(--sp-5);
   }
 
   .featureCard,
