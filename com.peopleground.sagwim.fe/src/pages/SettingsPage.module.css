@@ -1,40 +1,534 @@
-/* ── SettingsPage ── */
+/* ── SettingsPage — SaaS 스타일 재설계 ── */
+
+/* ── 페이지 래퍼 ── */
 .main {
-  display: flex;
-  justify-content: center;
-  min-height: 100dvh;
-  padding: var(--sp-8) var(--sp-6);
-  padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
-  padding-bottom: calc(var(--sp-8) + var(--layout-bottom-bar-h));
+  width: 100%;
+  min-height: calc(100dvh - var(--layout-header-h));
+  padding-bottom: calc(var(--sp-16) + var(--layout-bottom-bar-h));
 }
 
-.container {
-  width: 100%;
-  max-width: 600px;
+/* ── 히어로 배너 (헤더와 동일한 1080px 컨테이너에 정렬) ── */
+.hero {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-top: var(--sp-8);
+  padding-right: var(--sp-6);
+  padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
+}
+
+.heroInner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: var(--sp-6) var(--sp-8);
+  background:
+    linear-gradient(135deg, var(--clr-accent-muted) 0%, transparent 60%),
+    var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.heroIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-xl);
+  background: var(--clr-accent-gradient);
+  color: var(--clr-on-accent);
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px var(--clr-accent-glow);
+}
+
+.heroEyebrow {
+  margin: 0 0 var(--sp-1);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--clr-accent);
+}
+
+.heroTitle {
+  margin: 0 0 var(--sp-2);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--clr-text);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--clr-text-secondary);
+  line-height: 1.5;
+}
+
+/* ── 본문 레이아웃 (헤더와 동일한 1080px 컨테이너) ── */
+.layout {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: var(--sp-6);
+  padding-top: var(--sp-6);
+  padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: var(--sp-6);
+  align-items: flex-start;
+}
+
+/* ── 좌측 사이드바 탭 ── */
+.sidebar {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-4) var(--sp-3);
   display: flex;
   flex-direction: column;
-  background: var(--clr-surface);
-  border-radius: var(--r-xl);
-  border: 1px solid var(--clr-border);
-  overflow: hidden;
+  gap: var(--sp-2);
+  position: sticky;
+  top: calc(var(--layout-header-h) + var(--sp-4));
 }
 
-.body {
+.sidebarHeading {
+  margin: 0 0 var(--sp-1);
+  padding: 0 var(--sp-2);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--clr-text-muted);
+}
+
+.tabList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 탭 아이템 공통 */
+.tabItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3);
+  background: transparent;
+  border: none;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--clr-text-secondary);
+  transition: background var(--t-fast), color var(--t-fast);
+  text-align: left;
+}
+
+.tabItem:hover {
+  background: var(--clr-surface-2);
+  color: var(--clr-text);
+}
+
+.tabItem:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* 활성 탭 — 코랄 muted 배경 */
+.tabItemActive {
+  composes: tabItem;
+  background: var(--clr-accent-muted);
+  color: var(--clr-accent);
+  font-weight: 700;
+}
+
+.tabItemActive:hover {
+  background: var(--clr-accent-muted);
+  color: var(--clr-accent);
+}
+
+.tabIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  transition: color var(--t-fast);
+}
+
+.tabLabel {
   flex: 1;
 }
 
-@media (max-width: 767px) {
+/* 활성 탭 우측 도트 인디케이터 */
+.tabActiveIndicator {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent);
+  flex-shrink: 0;
+}
+
+/* 사이드바 하단 장식 */
+.sidebarFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-2) var(--sp-1);
+  margin-top: auto;
+  border-top: 1px solid var(--clr-border);
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+}
+
+/* ── 우측 콘텐츠 ── */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+
+/* 패널 헤더 */
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+.panelTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--clr-text);
+  letter-spacing: -0.01em;
+}
+
+.panelSubtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--clr-text-secondary);
+  line-height: 1.5;
+}
+
+/* ── 기능 카드 그리드 ── */
+.cardGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-3);
+}
+
+/* 기능 카드 공통 */
+.featureCard {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  width: 100%;
+  padding: var(--sp-5) var(--sp-6);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast),
+    transform var(--t-fast);
+}
+
+.featureCard:hover {
+  border-color: var(--clr-accent);
+  box-shadow: 0 0 0 3px var(--clr-accent-muted), var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.featureCard:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.featureCard:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus), var(--shadow-sm);
+}
+
+/* 아이콘 래퍼 */
+.featureCardIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-lg);
+  background: var(--clr-accent-muted);
+  color: var(--clr-accent);
+  flex-shrink: 0;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.featureCard:hover .featureCardIconWrap {
+  background: var(--clr-accent);
+  color: var(--clr-on-accent);
+}
+
+.featureCardBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.featureCardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+.featureCardDesc {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--clr-text-secondary);
+  line-height: 1.5;
+}
+
+.featureCardArrow {
+  display: inline-flex;
+  color: var(--clr-text-muted);
+  flex-shrink: 0;
+  transition: color var(--t-fast), transform var(--t-fast);
+}
+
+.featureCard:hover .featureCardArrow {
+  color: var(--clr-accent);
+  transform: translateX(2px);
+}
+
+/* ── 위험 구역 ── */
+.dangerZone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.dangerZoneHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--clr-error);
+}
+
+.dangerZoneLabel {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* 위험 카드 — error 색상 계열 */
+.dangerCard {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  width: 100%;
+  padding: var(--sp-5) var(--sp-6);
+  background: var(--clr-surface);
+  border: 1px solid color-mix(in srgb, var(--clr-error) 22%, transparent);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast),
+    transform var(--t-fast);
+}
+
+.dangerCard:hover {
+  border-color: var(--clr-error);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--clr-error) 14%, transparent),
+    var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.dangerCard:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.dangerCard:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--clr-error) 24%, transparent),
+    0 0 0 1px var(--clr-error);
+}
+
+.dangerCardIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-lg);
+  background: var(--clr-error-soft);
+  color: var(--clr-error);
+  flex-shrink: 0;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.dangerCard:hover .dangerCardIconWrap {
+  background: var(--clr-error);
+  color: #ffffff;
+}
+
+.dangerCardBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.dangerCardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clr-error);
+}
+
+.dangerCardDesc {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--clr-text-secondary);
+  line-height: 1.5;
+}
+
+.dangerCardArrow {
+  display: inline-flex;
+  color: var(--clr-error);
+  opacity: 0.5;
+  flex-shrink: 0;
+  transition: opacity var(--t-fast), transform var(--t-fast);
+}
+
+.dangerCard:hover .dangerCardArrow {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* ── 반응형 ── */
+
+/* 태블릿: 사이드바 폭만 축소(좌우 패딩은 헤더와 동일 유지) */
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 180px 1fr;
+    gap: var(--sp-4);
+  }
+}
+
+/* 모바일: 좌측 탭 → 상단 수평 스크롤 pill 탭바 */
+@media (max-width: 640px) {
   .main {
-    padding: 0;
-    padding-left: var(--layout-sidebar-w);
-    padding-bottom: var(--layout-bottom-bar-h);
-    align-items: flex-start;
+    padding-bottom: calc(var(--sp-12) + var(--layout-bottom-bar-h));
   }
 
-  .container {
-    max-width: none;
-    border-radius: 0;
-    border: none;
-    min-height: calc(100dvh - var(--layout-bottom-bar-h));
+  .hero {
+    padding: var(--sp-6) var(--sp-4) 0;
+  }
+
+  .heroInner {
+    gap: var(--sp-4);
+    padding: var(--sp-5);
+    align-items: center;
+  }
+
+  .heroIconWrap {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--r-lg);
+  }
+
+  .heroTitle {
+    font-size: 1.5rem;
+  }
+
+  .heroSubtitle {
+    font-size: 0.875rem;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    padding: var(--sp-4);
+    padding-left: calc(var(--layout-sidebar-w) + var(--sp-4));
+    gap: var(--sp-4);
+  }
+
+  .sidebar {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-radius: var(--r-lg);
+  }
+
+  .sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebarHeading,
+  .sidebarFooter {
+    display: none;
+  }
+
+  .tabList {
+    flex-direction: row;
+    gap: var(--sp-2);
+    flex-shrink: 0;
+  }
+
+  .tabItem,
+  .tabItemActive {
+    white-space: nowrap;
+    padding: var(--sp-2) var(--sp-3);
+    font-size: 0.875rem;
+    border-radius: var(--r-full);
+  }
+
+  .tabActiveIndicator {
+    display: none;
+  }
+
+  .featureCard,
+  .dangerCard {
+    padding: var(--sp-4);
+    gap: var(--sp-3);
+  }
+
+  .featureCardIconWrap,
+  .dangerCardIconWrap {
+    width: 40px;
+    height: 40px;
+  }
+
+  .featureCardTitle,
+  .dangerCardTitle {
+    font-size: 0.9375rem;
   }
 }
