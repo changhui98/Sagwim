@@ -1,13 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
-import { useLogout } from '../hooks/useLogout'
-import { Navbar } from '../components/Navbar'
-import { Header } from '../components/Header'
 import { deleteMyAccount } from '../api/userApi'
-import styles from '../components/profile/ProfileEditModal.module.css'
-import pageStyles from './WithdrawPage.module.css'
+import panelStyles from './SettingsPage.module.css'
+import styles from './WithdrawPage.module.css'
 
 const NOTICES = [
   '가입된 모든 모임에서 자동으로 탈퇴돼요. 다시 가입하려면 모임 가입 절차를 처음부터 다시 거쳐야 해요.',
@@ -21,9 +17,7 @@ const AGREEMENT_LABEL = '회원 탈퇴 유의사항을 모두 확인하였으며
 
 export function WithdrawPage() {
   const navigate = useNavigate()
-  const { logout, meRole, meNickname, token } = useAuth()
-  useHandleUnauthorized()
-  const handleLogout = useLogout()
+  const { logout, meNickname, token } = useAuth()
 
   const [checked, setChecked] = useState<boolean[]>(() => NOTICES.map(() => false))
   const [agreed, setAgreed] = useState(false)
@@ -60,92 +54,104 @@ export function WithdrawPage() {
       alert('탈퇴에 실패했습니다. 잠시 후 다시 시도해주세요.')
       setIsSubmitting(false)
     }
-  }, [canSubmit, token, logout, navigate])
+  }, [canSubmit, token, reason, logout, navigate])
 
   return (
     <>
-      <Navbar role={meRole} onLogout={handleLogout} />
-      <Header role={meRole} onLogout={handleLogout} />
-
-      <main className={pageStyles.main}>
-        <div className={pageStyles.container}>
-          <header className={styles.header}>
-            <button
-              type="button"
-              className={styles.headerBtn}
-              onClick={() => navigate(-1)}
+      <div className={panelStyles.panelHeader}>
+        <div className={panelStyles.panelTitleGroup}>
+          <button
+            type="button"
+            className={styles.backLink}
+            onClick={() => navigate('/app/settings')}
+            aria-label="계정 보안 개요로 돌아가기"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
             >
-              돌아가기
-            </button>
-            <h1 className={styles.title}>회원 탈퇴</h1>
-            <span style={{ minWidth: '4rem' }} />
-          </header>
-
-          <div className={pageStyles.body}>
-            <p className={pageStyles.message}>
-              {meNickname ? `${meNickname}님` : ''}
-              <br />
-              정말 탈퇴하시겠어요?
-            </p>
-
-            <ul className={pageStyles.checkList}>
-              {NOTICES.map((text, index) => {
-                const visible = index === 0 || checked[index - 1]
-                if (!visible) return null
-                return (
-                  <li key={index} className={pageStyles.checkItem}>
-                    <label className={pageStyles.checkLabel}>
-                      <input
-                        type="checkbox"
-                        className={pageStyles.checkInput}
-                        checked={checked[index]}
-                        onChange={() => toggleNotice(index)}
-                      />
-                      <span className={pageStyles.checkText}>{text}</span>
-                    </label>
-                  </li>
-                )
-              })}
-
-              {allNoticesChecked && (
-                <li className={`${pageStyles.checkItem} ${pageStyles.agreementItem}`}>
-                  <label className={pageStyles.checkLabel}>
-                    <input
-                      type="checkbox"
-                      className={pageStyles.checkInput}
-                      checked={agreed}
-                      onChange={(e) => setAgreed(e.target.checked)}
-                    />
-                    <span className={pageStyles.checkText}>{AGREEMENT_LABEL}</span>
-                  </label>
-                </li>
-              )}
-            </ul>
-
-            {allNoticesChecked && (
-              <section className={pageStyles.reasonSection}>
-                <h2 className={pageStyles.reasonLabel}>떠나시는 이유를 알려주세요.</h2>
-                <textarea
-                  className={pageStyles.reasonTextarea}
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder={'서비스 탈퇴 사유에 대해 알려주세요.\n고객님의 소중한 피드백을 담아\n더 나은 서비스로 보답 드리도록 하겠습니다.'}
-                  maxLength={500}
-                />
-              </section>
-            )}
-
-            <button
-              type="button"
-              className={pageStyles.submitBtn}
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-            >
-              {isSubmitting ? '탈퇴 처리 중…' : '회원 탈퇴'}
-            </button>
-          </div>
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+            계정 보안
+          </button>
+          <h2 className={panelStyles.panelTitle}>회원 탈퇴</h2>
+          <p className={panelStyles.panelSubtitle}>
+            탈퇴 전 유의사항을 확인하고 신중하게 결정해 주세요
+          </p>
         </div>
-      </main>
+      </div>
+
+      <div className={panelStyles.formCard}>
+        <p className={styles.message}>
+          {meNickname ? `${meNickname}님` : ''}
+          <br />
+          정말 탈퇴하시겠어요?
+        </p>
+
+        <ul className={styles.checkList}>
+          {NOTICES.map((text, index) => {
+            const visible = index === 0 || checked[index - 1]
+            if (!visible) return null
+            return (
+              <li key={index} className={styles.checkItem}>
+                <label className={styles.checkLabel}>
+                  <input
+                    type="checkbox"
+                    className={styles.checkInput}
+                    checked={checked[index]}
+                    onChange={() => toggleNotice(index)}
+                  />
+                  <span className={styles.checkText}>{text}</span>
+                </label>
+              </li>
+            )
+          })}
+
+          {allNoticesChecked && (
+            <li className={`${styles.checkItem} ${styles.agreementItem}`}>
+              <label className={styles.checkLabel}>
+                <input
+                  type="checkbox"
+                  className={styles.checkInput}
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                />
+                <span className={styles.checkText}>{AGREEMENT_LABEL}</span>
+              </label>
+            </li>
+          )}
+        </ul>
+
+        {allNoticesChecked && (
+          <section className={styles.reasonSection}>
+            <h2 className={styles.reasonLabel}>떠나시는 이유를 알려주세요.</h2>
+            <textarea
+              className={styles.reasonTextarea}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder={'서비스 탈퇴 사유에 대해 알려주세요.\n고객님의 소중한 피드백을 담아\n더 나은 서비스로 보답 드리도록 하겠습니다.'}
+              maxLength={500}
+            />
+          </section>
+        )}
+
+        <button
+          type="button"
+          className={`btn btn-danger btn-lg btn-full ${styles.submitBtn}`}
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          aria-disabled={!canSubmit}
+        >
+          {isSubmitting ? '탈퇴 처리 중…' : '회원 탈퇴'}
+        </button>
+      </div>
     </>
   )
 }

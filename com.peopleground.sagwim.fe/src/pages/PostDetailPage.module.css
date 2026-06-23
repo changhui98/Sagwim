@@ -20,6 +20,35 @@
   padding-bottom: var(--sp-16);
 }
 
+/* ── 목록으로 버튼 ── */
+
+.backToList {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-2) 0;
+  background: none;
+  border: none;
+  color: var(--clr-text-secondary);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+
+.backToList:hover {
+  color: var(--clr-accent);
+}
+
+.backToList svg {
+  transition: transform var(--t-fast);
+}
+
+.backToList:hover svg {
+  transform: translateX(-2px);
+}
+
 /* ── 게시글 원문 ── */
 
 .post {

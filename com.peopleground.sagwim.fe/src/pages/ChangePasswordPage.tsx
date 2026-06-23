@@ -1,10 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
-import { useLogout } from '../hooks/useLogout'
-import { Navbar } from '../components/Navbar'
-import { Header } from '../components/Header'
 import { PasswordInput } from '../components/PasswordInput'
 import { PasswordChecklist } from '../components/PasswordChecklist'
 import { AlertDialog } from '../components/common/AlertDialog'
@@ -12,14 +8,12 @@ import { SuccessDialog } from '../components/common/SuccessDialog'
 import { updateMyProfile } from '../api/userApi'
 import { isPasswordValid, isConfirmPasswordValid } from '../utils/passwordRules'
 import { ApiError } from '../api/ApiError'
-import styles from '../components/profile/ProfileEditModal.module.css'
-import pageStyles from './ChangePasswordPage.module.css'
+import panelStyles from './SettingsPage.module.css'
+import styles from './ChangePasswordPage.module.css'
 
 export function ChangePasswordPage() {
   const navigate = useNavigate()
-  const { token, meRole } = useAuth()
-  useHandleUnauthorized()
-  const handleLogout = useLogout()
+  const { token } = useAuth()
 
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -64,83 +58,94 @@ export function ChangePasswordPage() {
 
   const handleSuccessClose = useCallback(() => {
     setSuccessOpen(false)
-    navigate(-1)
-  }, [navigate])
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
+  }, [])
 
   return (
     <>
-      <Navbar role={meRole} onLogout={handleLogout} />
-      <Header role={meRole} onLogout={handleLogout} />
-
-      <main className={pageStyles.main}>
-        <div className={pageStyles.container}>
-          <header className={styles.header}>
-            <button
-              type="button"
-              className={styles.headerBtn}
-              onClick={() => navigate(-1)}
+      <div className={panelStyles.panelHeader}>
+        <div className={panelStyles.panelTitleGroup}>
+          <button
+            type="button"
+            className={styles.backLink}
+            onClick={() => navigate('/app/settings')}
+            aria-label="계정 보안 개요로 돌아가기"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
             >
-              돌아가기
-            </button>
-            <h1 className={styles.title}>비밀번호 변경</h1>
-            <span style={{ minWidth: '4rem' }} />
-          </header>
-
-          <div className={pageStyles.body}>
-            <div className={pageStyles.fieldGroup}>
-              <label className={pageStyles.label} htmlFor="current-password">
-                현재 비밀번호
-              </label>
-              <PasswordInput
-                id="current-password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="현재 비밀번호를 입력하세요"
-                autoComplete="current-password"
-              />
-            </div>
-
-            <div className={pageStyles.fieldGroup}>
-              <label className={pageStyles.label} htmlFor="new-password">
-                새 비밀번호
-              </label>
-              <PasswordInput
-                id="new-password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="새 비밀번호를 입력하세요"
-                autoComplete="new-password"
-              />
-              <PasswordChecklist
-                password={newPassword}
-                confirmPassword={confirmPassword}
-              />
-            </div>
-
-            <div className={pageStyles.fieldGroup}>
-              <label className={pageStyles.label} htmlFor="confirm-password">
-                새 비밀번호 확인
-              </label>
-              <PasswordInput
-                id="confirm-password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="새 비밀번호를 다시 입력하세요"
-                autoComplete="new-password"
-              />
-            </div>
-
-            <button
-              type="button"
-              className={pageStyles.submitBtn}
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-            >
-              {isSubmitting ? '변경 중…' : '비밀번호 변경'}
-            </button>
-          </div>
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+            계정 보안
+          </button>
+          <h2 className={panelStyles.panelTitle}>비밀번호 변경</h2>
+          <p className={panelStyles.panelSubtitle}>
+            정기적인 비밀번호 변경으로 계정을 안전하게 보호하세요
+          </p>
         </div>
-      </main>
+      </div>
+
+      <div className={panelStyles.formCard}>
+        <div className={styles.fieldGroup}>
+          <label className={styles.label} htmlFor="current-password">
+            현재 비밀번호
+          </label>
+          <PasswordInput
+            id="current-password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            placeholder="현재 비밀번호를 입력하세요"
+            autoComplete="current-password"
+          />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label className={styles.label} htmlFor="new-password">
+            새 비밀번호
+          </label>
+          <PasswordInput
+            id="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="새 비밀번호를 입력하세요"
+            autoComplete="new-password"
+          />
+          <PasswordChecklist password={newPassword} confirmPassword={confirmPassword} />
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <label className={styles.label} htmlFor="confirm-password">
+            새 비밀번호 확인
+          </label>
+          <PasswordInput
+            id="confirm-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="새 비밀번호를 다시 입력하세요"
+            autoComplete="new-password"
+          />
+        </div>
+
+        <button
+          type="button"
+          className={`btn btn-primary btn-lg btn-full ${styles.submitBtn}`}
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+          aria-disabled={!canSubmit}
+        >
+          {isSubmitting ? '변경 중…' : '비밀번호 변경'}
+        </button>
+      </div>
 
       <AlertDialog
         isOpen={alertOpen}

@@ -43,6 +43,7 @@ import { PostDetailPage } from './pages/PostDetailPage'
 import { MessagesPage } from './pages/MessagesPage'
 import { ServiceHomePage } from './pages/ServiceHomePage'
 import { SettingsPage } from './pages/SettingsPage'
+import { SettingsOverviewPage } from './pages/SettingsOverviewPage'
 import { WithdrawPage } from './pages/WithdrawPage'
 import { ChangePasswordPage } from './pages/ChangePasswordPage'
 import { SearchPage } from './pages/SearchPage'
@@ -86,9 +87,11 @@ function App() {
         <Route path="/app/groups/:groupId/settings" element={<GroupSettingsPage />} />
         <Route path="/app/profile" element={<ProfilePage />} />
         <Route path="/app/profile/edit" element={<ProfileEditPage />} />
-        <Route path="/app/settings" element={<SettingsPage />} />
-        <Route path="/app/settings/change-password" element={<ChangePasswordPage />} />
-        <Route path="/app/settings/withdraw" element={<WithdrawPage />} />
+        <Route path="/app/settings" element={<SettingsPage />}>
+          <Route index element={<SettingsOverviewPage />} />
+          <Route path="change-password" element={<ChangePasswordPage />} />
+          <Route path="withdraw" element={<WithdrawPage />} />
+        </Route>
         <Route path="/app/search" element={<SearchPage />} />
         <Route path="/app/notifications" element={<NotificationsPage />} />
         <Route path="/app/activity" element={<MyActivityPage />} />

@@ -9,6 +9,8 @@ import { useAuth } from '../context/AuthContext'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { Header } from '../components/Header'
+import { Footer } from '../components/Footer'
+import { ChevronLeftIcon } from '../components/NavIcons'
 import { deletePost, getPost, toggleContentLike, updatePost } from '../api/postApi'
 import { MeatballMenu } from '../components/common/MeatballMenu'
 import { ReportModal } from '../components/common/ReportModal'
@@ -464,6 +466,7 @@ export function PostDetailPage() {
             </div>
           </div>
         </main>
+        <Footer />
       </>
     )
   }
@@ -488,6 +491,7 @@ export function PostDetailPage() {
             </button>
           </div>
         </main>
+        <Footer />
       </>
     )
   }
@@ -522,6 +526,14 @@ export function PostDetailPage() {
       <Header role={meRole} onLogout={handleLogout} />
       <main className={styles.main}>
       <div className={styles.page}>
+      <button
+        type="button"
+        className={styles.backToList}
+        onClick={() => navigate('/app/posts')}
+      >
+        <ChevronLeftIcon width={18} height={18} />
+        <span>목록으로</span>
+      </button>
       <article className={styles.post}>
         <div className={styles.header}>
           <Link to={profilePath} aria-label={`${displayName} 프로필 보기`}>
@@ -830,6 +842,7 @@ export function PostDetailPage() {
           }
         }}
       />
+      <Footer />
     </>
   )
 }
