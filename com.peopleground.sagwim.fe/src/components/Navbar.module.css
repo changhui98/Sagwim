@@ -128,7 +128,17 @@
   color: var(--clr-text);
 }
 
-.navIcon img {
+/* SVG에 명시적 크기를 부여 — flex intrinsic 사이징에만 의존하면
+   WebKit(Safari)에서 일부 아이콘(navIconWrap에 중첩된 ChatIcon 등)이
+   0 크기로 collapse되어 보이지 않는 문제를 방지한다. */
+.navIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* 모노톤 아이콘 이미지에만 다크모드 반전 필터 적용.
+   프로필 사진(.navAvatarImg)은 원본 색상을 유지해야 하므로 제외한다. */
+.navIcon img:not(.navAvatarImg) {
   filter: var(--_icon-filter);
 }
 
@@ -144,6 +154,8 @@
 .navIconWrap {
   position: relative;
   display: inline-flex;
+  width: 100%;
+  height: 100%;
 }
 
 .unreadBadge {

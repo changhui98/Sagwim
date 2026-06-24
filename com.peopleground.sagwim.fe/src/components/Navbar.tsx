@@ -19,7 +19,7 @@ import {
   HeartIcon,
   HomeIcon,
   PlusSquareIcon,
-  SavedIcon,
+  PostsIcon,
   SearchIcon,
   ShieldIcon,
   UserCircleIcon,
@@ -90,7 +90,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
     {
       to: '/app/posts',
       label: '게시글',
-      icon: <SavedIcon />,
+      icon: <PostsIcon />,
       match: (p) => p.startsWith('/app/posts'),
     },
     {

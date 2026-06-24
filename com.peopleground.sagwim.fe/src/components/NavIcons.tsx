@@ -79,6 +79,18 @@ export function SavedIcon(props: IconProps) {
   )
 }
 
+/** 게시판/글 — 문서에 텍스트 줄이 들어간 형태 */
+export function PostsIcon(props: IconProps) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden focusable={false} {...props}>
+      <rect x="5" y="3" width="14" height="18" rx="2" />
+      <line x1="8.5" y1="8" x2="15.5" y2="8" />
+      <line x1="8.5" y1="12" x2="15.5" y2="12" />
+      <line x1="8.5" y1="16" x2="13" y2="16" />
+    </svg>
+  )
+}
+
 export function IdeaIcon(props: IconProps) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
