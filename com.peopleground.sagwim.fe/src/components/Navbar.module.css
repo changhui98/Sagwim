@@ -136,7 +136,9 @@
   height: 100%;
 }
 
-.navIcon img {
+/* 모노톤 아이콘 이미지에만 다크모드 반전 필터 적용.
+   프로필 사진(.navAvatarImg)은 원본 색상을 유지해야 하므로 제외한다. */
+.navIcon img:not(.navAvatarImg) {
   filter: var(--_icon-filter);
 }
 
