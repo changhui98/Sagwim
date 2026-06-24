@@ -128,6 +128,14 @@
   color: var(--clr-text);
 }
 
+/* SVG에 명시적 크기를 부여 — flex intrinsic 사이징에만 의존하면
+   WebKit(Safari)에서 일부 아이콘(navIconWrap에 중첩된 ChatIcon 등)이
+   0 크기로 collapse되어 보이지 않는 문제를 방지한다. */
+.navIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
 .navIcon img {
   filter: var(--_icon-filter);
 }
@@ -144,6 +152,8 @@
 .navIconWrap {
   position: relative;
   display: inline-flex;
+  width: 100%;
+  height: 100%;
 }
 
 .unreadBadge {
