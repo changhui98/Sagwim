@@ -133,7 +133,9 @@ export function AdminImageListPage() {
                           />
                         </td>
                         <td className={tableStyles.tableSecondary}>
-                          {image.targetLabel}
+                          <span className={tableStyles.sourceCell} title={image.targetLabel}>
+                            {image.targetLabel}
+                          </span>
                         </td>
                         <td className={tableStyles.tableSecondary}>
                           {image.uploaderUsername}
@@ -151,7 +153,7 @@ export function AdminImageListPage() {
                           <span className="badge badge-success">활성</span>
                         </td>
                         <td>
-                          {meRole === 'ADMIN' && (
+                          {(meRole === 'ADMIN' || meRole === 'MANAGER') && (
                             <button
                               type="button"
                               className={tableStyles.deleteButton}

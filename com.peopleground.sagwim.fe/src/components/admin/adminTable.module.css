@@ -84,6 +84,15 @@
   white-space: nowrap;
 }
 
+/* 출처 컬럼 1줄 말줄임 */
+.sourceCell {
+  display: block;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── 탭 ── */
 .tabs {
   display: flex;

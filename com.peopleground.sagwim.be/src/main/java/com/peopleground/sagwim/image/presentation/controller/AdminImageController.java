@@ -35,7 +35,7 @@ public class AdminImageController {
     }
 
     @DeleteMapping("/{imageId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Void> deleteImage(
         @PathVariable Long imageId,
         @RequestBody @Valid AdminDeleteImageRequest request,
