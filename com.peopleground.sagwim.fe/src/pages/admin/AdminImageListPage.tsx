@@ -151,7 +151,7 @@ export function AdminImageListPage() {
                           <span className="badge badge-success">활성</span>
                         </td>
                         <td>
-                          {meRole === 'ADMIN' && (
+                          {(meRole === 'ADMIN' || meRole === 'MANAGER') && (
                             <button
                               type="button"
                               className={tableStyles.deleteButton}
