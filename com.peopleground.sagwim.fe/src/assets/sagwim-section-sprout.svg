@@ -1,13 +1,13 @@
 <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <path d="M 128 156 L 128 220"
-        stroke="#f08080" stroke-width="14"
+        stroke="#91A8D0" stroke-width="14"
         stroke-linecap="round" fill="none"/>
   <path d="M 128 156
            Q 64 130 50 64
            Q 92 92 128 156 Z"
-        fill="#f08080"/>
+        fill="#91A8D0"/>
   <path d="M 128 156
            Q 192 130 206 64
            Q 164 92 128 156 Z"
-        fill="#f08080"/>
+        fill="#91A8D0"/>
 </svg>
