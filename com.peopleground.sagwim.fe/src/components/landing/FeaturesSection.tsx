@@ -22,26 +22,26 @@ function ScenePhoto() {
     >
       <defs>
         <linearGradient id="scene-sky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#ffd9a8" />
-          <stop offset="0.55" stopColor="#ffb69a" />
-          <stop offset="1" stopColor="#f59a96" />
+          <stop offset="0" stopColor="#C6D5EC" />
+          <stop offset="0.55" stopColor="#A8BDDE" />
+          <stop offset="1" stopColor="#91A8D0" />
         </linearGradient>
         <linearGradient id="scene-water" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#f7a59b" />
-          <stop offset="1" stopColor="#e98a8e" />
+          <stop offset="0" stopColor="#A8BDDE" />
+          <stop offset="1" stopColor="#7E97C9" />
         </linearGradient>
       </defs>
       {/* 하늘 */}
       <rect width="320" height="104" fill="url(#scene-sky)" />
       {/* 해 */}
-      <circle cx="232" cy="40" r="17" fill="#fff1dd" opacity="0.95" />
+      <circle cx="232" cy="40" r="17" fill="#eef3fa" opacity="0.95" />
       {/* 먼 산 */}
-      <path d="M0,64 L54,40 L104,60 L150,34 L210,62 L268,42 L320,66 L320,80 L0,80 Z" fill="#e98f8b" opacity="0.8" />
+      <path d="M0,64 L54,40 L104,60 L150,34 L210,62 L268,42 L320,66 L320,80 L0,80 Z" fill="#8FA6CF" opacity="0.8" />
       {/* 가까운 산 */}
-      <path d="M0,78 L70,54 L128,74 L182,52 L246,76 L320,58 L320,104 L0,104 Z" fill="#c96f73" />
+      <path d="M0,78 L70,54 L128,74 L182,52 L246,76 L320,58 L320,104 L0,104 Z" fill="#6E88BE" />
       {/* 물 반사 */}
       <rect y="86" width="320" height="18" fill="url(#scene-water)" opacity="0.85" />
-      <circle cx="232" cy="92" r="9" fill="#fff1dd" opacity="0.45" />
+      <circle cx="232" cy="92" r="9" fill="#eef3fa" opacity="0.45" />
     </svg>
   )
 }

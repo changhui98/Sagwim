@@ -8,11 +8,11 @@
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   /* Accent */
-  --clr-accent: #F08080;
-  --clr-accent-hover: #e06060;
-  --clr-accent-muted: rgba(240, 128, 128, 0.12);
-  --clr-accent-glow: rgba(240, 128, 128, 0.25);
-  --clr-accent-gradient: linear-gradient(135deg, #F08080 0%, #f5a0a0 100%);
+  --clr-accent: #91A8D0;
+  --clr-accent-hover: #7B92BC;
+  --clr-accent-muted: rgba(145, 168, 208, 0.12);
+  --clr-accent-glow: rgba(145, 168, 208, 0.25);
+  --clr-accent-gradient: linear-gradient(135deg, #91A8D0 0%, #B3C4E0 100%);
   --clr-on-accent: #ffffff;
   --clr-primary: var(--clr-accent);
 

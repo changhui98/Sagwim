@@ -348,7 +348,7 @@ export function GroupListPage() {
           : !profileLoading && (
             <div className={styles.noAddress}>
               <p className={`${styles.noAddressText} ${styles.animItem} ${styles.animDelay1}`}>
-                <span style={{ color: '#E06060' }}>사귐</span>은 동네에서 시작돼요
+                <span style={{ color: '#7B92BC' }}>사귐</span>은 동네에서 시작돼요
               </p>
               <p className={`${styles.noAddressSubText} ${styles.animItem} ${styles.animDelay2}`}>
                 먼저 우리 동네를 알려주세요.

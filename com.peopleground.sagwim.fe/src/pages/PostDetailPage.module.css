@@ -357,7 +357,7 @@
   align-items: center;
   gap: var(--sp-2);
   background: transparent;
-  border: 1px solid rgba(240, 128, 128, 0.35);
+  border: 1px solid rgba(145, 168, 208, 0.35);
   border-radius: var(--r-lg);
   padding: 0 var(--sp-3) 0 var(--sp-4);
   height: 44px;
@@ -471,13 +471,13 @@
   display: block;
 }
 
-/* 전송 버튼 이미지: 검정 SVG를 살몬/핑크 계열로 필터 변환 */
+/* 전송 버튼 이미지: 검정 SVG를 세레니티 블루 계열로 필터 변환 */
 .iconBtnImgSend {
   width: 26px;
   height: 26px;
   display: block;
-  /* #F08080(살몬) 근사 필터: 원본이 검정(#000)인 SVG 기준 */
-  filter: invert(60%) sepia(40%) saturate(600%) hue-rotate(310deg) brightness(105%);
+  /* #91A8D0(세레니티) 근사 필터: 원본이 검정(#000)인 SVG 기준 (loss 0.07) */
+  filter: invert(69%) sepia(13%) saturate(687%) hue-rotate(179deg) brightness(92%) contrast(102%);
 }
 
 /* 이미지 첨부 버튼: muted 컬러 */
@@ -1050,7 +1050,7 @@
   left: -3px;
   font-size: 0.875rem;
   line-height: 1;
-  color: #e63e5c;
+  color: #5E78B0;
   pointer-events: none;
 }
 

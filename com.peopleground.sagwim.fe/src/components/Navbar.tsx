@@ -186,8 +186,8 @@ export function Navbar({ role, onLogout }: NavbarProps) {
         <Link to="/app" className={styles.brand} aria-label="Sagwim 홈">
           <span className={styles.brandLogoWrap}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" className={styles.brandLogo} aria-hidden focusable={false}>
-              <rect x="4" y="4" width="248" height="248" rx="56" fill="none" stroke="#f08080" strokeWidth="4" />
-              <g stroke="#f08080" strokeWidth="26" strokeLinecap="round" fill="none">
+              <rect x="4" y="4" width="248" height="248" rx="56" fill="none" stroke="#91A8D0" strokeWidth="4" />
+              <g stroke="#91A8D0" strokeWidth="26" strokeLinecap="round" fill="none">
                 <path d="M128 78 L72 184" />
                 <path d="M128 78 L184 184" />
               </g>

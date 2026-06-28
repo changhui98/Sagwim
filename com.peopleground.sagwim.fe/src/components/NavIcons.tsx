@@ -28,13 +28,13 @@ export function BrandLogo(props: IconProps) {
     >
       <defs>
         <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#FF9580" />
-          <stop offset="55%" stopColor="#FF6B6B" />
-          <stop offset="100%" stopColor="#E63E5C" />
+          <stop offset="0%" stopColor="#A8C0E0" />
+          <stop offset="55%" stopColor="#91A8D0" />
+          <stop offset="100%" stopColor="#6E88BE" />
         </linearGradient>
       </defs>
       <rect x="4" y="4" width="248" height="248" rx="56"
-        fill="none" stroke="#f08080" strokeWidth="4" />
+        fill="none" stroke="#91A8D0" strokeWidth="4" />
       <g stroke={`url(#${gradId})`} strokeWidth="26" strokeLinecap="round" fill="none">
         <path d="M128 78 L72 184" />
         <path d="M128 78 L184 184" />
