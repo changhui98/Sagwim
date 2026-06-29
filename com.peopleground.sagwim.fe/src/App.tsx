@@ -44,6 +44,7 @@ import { MessagesPage } from './pages/MessagesPage'
 import { ServiceHomePage } from './pages/ServiceHomePage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SettingsOverviewPage } from './pages/SettingsOverviewPage'
+import { SettingsProfilePage } from './pages/SettingsProfilePage'
 import { WithdrawPage } from './pages/WithdrawPage'
 import { ChangePasswordPage } from './pages/ChangePasswordPage'
 import { SearchPage } from './pages/SearchPage'
@@ -89,6 +90,7 @@ function App() {
         <Route path="/app/profile/edit" element={<ProfileEditPage />} />
         <Route path="/app/settings" element={<SettingsPage />}>
           <Route index element={<SettingsOverviewPage />} />
+          <Route path="profile" element={<SettingsProfilePage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
           <Route path="withdraw" element={<WithdrawPage />} />
         </Route>

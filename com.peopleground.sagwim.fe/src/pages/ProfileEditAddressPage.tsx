@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getMyProfile, searchAddress, updateMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
@@ -66,6 +66,8 @@ function isTooDetailedAddress(addr: string): boolean {
 
 export function ProfileEditAddressPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo ?? '/app/profile/edit'
   const { token } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
   const handleLogout = useLogout()
@@ -133,12 +135,12 @@ export function ProfileEditAddressPage() {
       setShowConfirm(true)
       return
     }
-    navigate('/app/profile/edit', { replace: true })
-  }, [hasChanges, navigate])
+    navigate(returnTo, { replace: true })
+  }, [hasChanges, navigate, returnTo])
 
   const handleConfirmDiscard = () => {
     setShowConfirm(false)
-    navigate('/app/profile/edit', { replace: true })
+    navigate(returnTo, { replace: true })
   }
 
   const handleSave = useCallback(async () => {
@@ -157,7 +159,7 @@ export function ProfileEditAddressPage() {
         isSearchable: profile.isSearchable,
         exposureRangeKm: Number(exposureRange),
       })
-      navigate('/app/profile/edit', { replace: true })
+      navigate(returnTo, { replace: true })
     } catch (err) {
       handleUnauthorized(err)
       setAlertVariant('error')
@@ -166,7 +168,7 @@ export function ProfileEditAddressPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [navigate, hasChanges, address, profile, token, handleUnauthorized, exposureRange])
+  }, [navigate, returnTo, hasChanges, address, profile, token, handleUnauthorized, exposureRange])
 
   if (profileLoading) {
     return (
