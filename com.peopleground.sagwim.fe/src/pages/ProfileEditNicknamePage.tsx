@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getMyProfile, updateMyProfile } from '../api/userApi'
 import { checkNickname } from '../api/authApi'
 import { useAuth } from '../context/AuthContext'
@@ -15,6 +15,8 @@ import pageStyles from './ProfileEditPage.module.css'
 
 export function ProfileEditNicknamePage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo ?? '/app/profile/edit'
   const { token, setMeProfile } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
   const handleLogout = useLogout()
@@ -87,12 +89,12 @@ export function ProfileEditNicknamePage() {
       setShowConfirm(true)
       return
     }
-    navigate('/app/profile/edit', { replace: true })
-  }, [isNicknameChanged, navigate])
+    navigate(returnTo, { replace: true })
+  }, [isNicknameChanged, navigate, returnTo])
 
   const handleConfirmDiscard = () => {
     setShowConfirm(false)
-    navigate('/app/profile/edit', { replace: true })
+    navigate(returnTo, { replace: true })
   }
 
   const handleSave = async () => {
@@ -109,7 +111,7 @@ export function ProfileEditNicknamePage() {
         bio: profile.bio ?? '',
       })
       setMeProfile(updated)
-      navigate('/app/profile/edit', { replace: true })
+      navigate(returnTo, { replace: true })
     } catch (err) {
       handleUnauthorized(err)
       setAlertVariant('error')

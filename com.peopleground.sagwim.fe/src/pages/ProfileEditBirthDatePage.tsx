@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getMyProfile, updateMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
@@ -111,6 +111,8 @@ function parseDateToIndices(dateStr: string): { yearIdx: number; monthIdx: numbe
 
 export function ProfileEditBirthDatePage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo ?? '/app/profile/edit'
   const { token, setMeProfile } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
   const handleLogout = useLogout()
@@ -179,12 +181,12 @@ export function ProfileEditBirthDatePage() {
       setShowConfirm(true)
       return
     }
-    navigate('/app/profile/edit', { replace: true })
-  }, [isChanged, isPickerOpen, navigate])
+    navigate(returnTo, { replace: true })
+  }, [isChanged, isPickerOpen, navigate, returnTo])
 
   const handleConfirmDiscard = () => {
     setShowConfirm(false)
-    navigate('/app/profile/edit', { replace: true })
+    navigate(returnTo, { replace: true })
   }
 
   const handleSave = useCallback(async () => {
@@ -202,7 +204,7 @@ export function ProfileEditBirthDatePage() {
         birthDate: selectedDate || null,
       })
       setMeProfile(updated)
-      navigate('/app/profile/edit', { replace: true })
+      navigate(returnTo, { replace: true })
     } catch (err) {
       handleUnauthorized(err)
       setAlertMessage('생년월일 저장에 실패했습니다. 다시 시도해주세요.')
@@ -210,7 +212,7 @@ export function ProfileEditBirthDatePage() {
     } finally {
       setIsSaving(false)
     }
-  }, [navigate, profile, isChanged, isPickerOpen, token, selectedDate, setMeProfile, handleUnauthorized])
+  }, [navigate, returnTo, profile, isChanged, isPickerOpen, token, selectedDate, setMeProfile, handleUnauthorized])
 
   if (profileLoading) {
     return (

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getMyProfile, updateMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
@@ -20,6 +20,8 @@ const GENDER_OPTIONS: { value: Gender; label: string }[] = [
 
 export function ProfileEditGenderPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo ?? '/app/profile/edit'
   const { token, setMeProfile } = useAuth()
   const handleUnauthorized = useHandleUnauthorized()
   const handleLogout = useLogout()
@@ -60,12 +62,12 @@ export function ProfileEditGenderPage() {
       setShowConfirm(true)
       return
     }
-    navigate('/app/profile/edit', { replace: true })
-  }, [isGenderChanged, navigate])
+    navigate(returnTo, { replace: true })
+  }, [isGenderChanged, navigate, returnTo])
 
   const handleConfirmDiscard = () => {
     setShowConfirm(false)
-    navigate('/app/profile/edit', { replace: true })
+    navigate(returnTo, { replace: true })
   }
 
   const handleSelectGender = (value: Gender) => {
@@ -88,7 +90,7 @@ export function ProfileEditGenderPage() {
         birthDate: profile.birthDate ?? null,
       })
       setMeProfile(updated)
-      navigate('/app/profile/edit', { replace: true })
+      navigate(returnTo, { replace: true })
     } catch (err) {
       handleUnauthorized(err)
       setAlertMessage('성별 저장에 실패했습니다. 다시 시도해주세요.')

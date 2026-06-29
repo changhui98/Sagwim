@@ -16,8 +16,9 @@ export function SettingsPage() {
   useHandleUnauthorized()
   const handleLogout = useLogout()
 
-  // 설정 영역(개요/하위 폼) 어디에 있든 "계정 보안" 카테고리는 항상 활성
-  const isActive = pathname.startsWith('/app/settings')
+  // "프로필 수정" 영역과 "계정 보안" 영역을 구분해 활성 탭을 판정
+  const isProfile = pathname.startsWith('/app/settings/profile')
+  const isSecurity = pathname.startsWith('/app/settings') && !isProfile
 
   return (
     <>
@@ -35,7 +36,7 @@ export function SettingsPage() {
             <div>
               <p className={styles.heroEyebrow}>내 계정</p>
               <h1 className={styles.heroTitle}>설정</h1>
-              <p className={styles.heroSubtitle}>계정과 보안을 관리하세요</p>
+              <p className={styles.heroSubtitle}>프로필과 계정 보안을 관리하세요</p>
             </div>
           </div>
         </header>
@@ -49,15 +50,30 @@ export function SettingsPage() {
                 <button
                   type="button"
                   role="tab"
-                  aria-selected={isActive}
-                  className={isActive ? styles.tabItemActive : styles.tabItem}
+                  aria-selected={isProfile}
+                  className={isProfile ? styles.tabItemActive : styles.tabItem}
+                  onClick={() => navigate('/app/settings/profile')}
+                >
+                  <span className={styles.tabIcon} aria-hidden="true">
+                    <UserCircleIcon width={18} height={18} />
+                  </span>
+                  <span className={styles.tabLabel}>프로필 수정</span>
+                  {isProfile && <span className={styles.tabActiveIndicator} aria-hidden="true" />}
+                </button>
+              </li>
+              <li role="none">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={isSecurity}
+                  className={isSecurity ? styles.tabItemActive : styles.tabItem}
                   onClick={() => navigate('/app/settings')}
                 >
                   <span className={styles.tabIcon} aria-hidden="true">
                     <ShieldIcon width={18} height={18} />
                   </span>
                   <span className={styles.tabLabel}>계정 보안</span>
-                  {isActive && <span className={styles.tabActiveIndicator} aria-hidden="true" />}
+                  {isSecurity && <span className={styles.tabActiveIndicator} aria-hidden="true" />}
                 </button>
               </li>
             </ul>
