@@ -80,6 +80,12 @@
   opacity: 0.5;
 }
 
+/* ── 하단 저장 버튼 영역 (인라인/풀스크린 편집 폼 공용) ────────── */
+.editFooter {
+  padding: var(--sp-5);
+  border-top: 1px solid var(--clr-border);
+}
+
 /* ── Body ────────────────────────────────────────────────────── */
 .form {
   display: flex;
