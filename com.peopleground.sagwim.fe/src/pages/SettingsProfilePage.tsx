@@ -14,8 +14,6 @@ function genderLabel(gender?: Gender): string {
   return '선택 안 함'
 }
 
-const RETURN_TO = '/app/settings/profile'
-
 function ChevronRight() {
   return (
     <svg
@@ -141,8 +139,8 @@ export function SettingsProfilePage() {
   }, [profile, token, isSearchable, profileImageUrl, handleUnauthorized])
 
   const goEdit = useCallback(
-    (path: string) => {
-      navigate(path, { state: { returnTo: RETURN_TO } })
+    (slug: string) => {
+      navigate(`/app/settings/profile/${slug}`)
     },
     [navigate],
   )
@@ -168,8 +166,8 @@ export function SettingsProfilePage() {
         <p className={pageStyles.loading}>프로필을 불러오는 중…</p>
       ) : (
         <>
-          {/* ── 프로필 사진 카드 ── */}
-          <div className={styles.profileAvatarCard}>
+          {/* ── 프로필 히어로 (큰 아바타 + 이름) ── */}
+          <div className={styles.profileHero}>
             <div className={styles.profileAvatar}>
               {currentImageSrc && !avatarImgError ? (
                 <img
@@ -189,6 +187,8 @@ export function SettingsProfilePage() {
                 </div>
               )}
             </div>
+            <p className={styles.profileHeroName}>{profile.nickname}</p>
+            <p className={styles.profileHeroUsername}>@{profile.username}</p>
             <button
               type="button"
               className={`btn btn-secondary ${styles.profileImageChangeBtn}`}
@@ -211,25 +211,57 @@ export function SettingsProfilePage() {
             )}
           </div>
 
-          {/* ── 기본 정보 카드 ── */}
-          <ul className={styles.profileFieldCard}>
-            <li className={styles.profileRowStatic}>
-              <span className={styles.profileLabel}>아이디</span>
-              <span className={styles.profileValue}>{profile.username}</span>
-            </li>
-            <li
-              className={styles.profileRow}
-              onClick={() => goEdit('/app/profile/edit/nickname')}
+          {/* ── 기본 정보 2열 카드 그리드 ── */}
+          <div className={styles.profileGrid}>
+            <button
+              type="button"
+              className={styles.profileCard}
+              onClick={() => goEdit('nickname')}
             >
-              <span className={styles.profileLabel}>닉네임</span>
-              <span className={styles.profileValue}>{profile.nickname}</span>
-              <span className={styles.profileChevron}>
+              <span className={styles.profileCardLabel}>닉네임</span>
+              <span className={styles.profileCardValue}>{profile.nickname}</span>
+              <span className={styles.profileCardChevron}>
                 <ChevronRight />
               </span>
-            </li>
-            <li className={styles.profileRowStatic}>
-              <span className={styles.profileLabel}>닉네임 검색 허용</span>
-              <label className={pageStyles.toggleLabel} style={{ marginLeft: 'auto' }}>
+            </button>
+            <button
+              type="button"
+              className={styles.profileCard}
+              onClick={() => goEdit('gender')}
+            >
+              <span className={styles.profileCardLabel}>성별</span>
+              <span className={styles.profileCardValue}>{genderLabel(profile.gender)}</span>
+              <span className={styles.profileCardChevron}>
+                <ChevronRight />
+              </span>
+            </button>
+            <button
+              type="button"
+              className={styles.profileCard}
+              onClick={() => goEdit('birthdate')}
+            >
+              <span className={styles.profileCardLabel}>생년월일</span>
+              <span className={styles.profileCardValue}>{profile.birthDate ?? '설정 안 됨'}</span>
+              <span className={styles.profileCardChevron}>
+                <ChevronRight />
+              </span>
+            </button>
+            <button
+              type="button"
+              className={styles.profileCard}
+              onClick={() => goEdit('address')}
+            >
+              <span className={styles.profileCardLabel}>주소</span>
+              <span className={styles.profileCardValue}>{profile.address || '설정 안 됨'}</span>
+              <span className={styles.profileCardChevron}>
+                <ChevronRight />
+              </span>
+            </button>
+
+            {/* 닉네임 검색 허용 토글 (전체 폭) */}
+            <div className={`${styles.profileCardStatic} ${styles.profileCardFull}`}>
+              <span className={styles.profileCardLabel}>닉네임 검색 허용</span>
+              <label className={pageStyles.toggleLabel}>
                 <input
                   type="checkbox"
                   checked={isSearchable}
@@ -238,44 +270,20 @@ export function SettingsProfilePage() {
                 />
                 <span className={pageStyles.toggleSlider} />
               </label>
-            </li>
-            <li
-              className={styles.profileRow}
-              onClick={() => goEdit('/app/profile/edit/gender')}
-            >
-              <span className={styles.profileLabel}>성별</span>
-              <span className={styles.profileValue}>{genderLabel(profile.gender)}</span>
-              <span className={styles.profileChevron}>
-                <ChevronRight />
-              </span>
-            </li>
-            <li
-              className={styles.profileRow}
-              onClick={() => goEdit('/app/profile/edit/birthdate')}
-            >
-              <span className={styles.profileLabel}>생년월일</span>
-              <span className={styles.profileValue}>{profile.birthDate ?? '설정 안 됨'}</span>
-              <span className={styles.profileChevron}>
-                <ChevronRight />
-              </span>
-            </li>
-            <li
-              className={styles.profileRow}
-              onClick={() => goEdit('/app/profile/edit/address')}
-            >
-              <span className={styles.profileLabel}>주소</span>
-              <span className={styles.profileValue}>{profile.address || '설정 안 됨'}</span>
-              <span className={styles.profileChevron}>
-                <ChevronRight />
-              </span>
-            </li>
-            <li className={styles.profileRowStatic}>
-              <span className={styles.profileLabel}>모임 노출 범위</span>
-              <span className={styles.profileValue}>
+            </div>
+
+            {/* 읽기 전용 */}
+            <div className={styles.profileCardStatic}>
+              <span className={styles.profileCardLabel}>아이디</span>
+              <span className={styles.profileCardValue}>{profile.username}</span>
+            </div>
+            <div className={styles.profileCardStatic}>
+              <span className={styles.profileCardLabel}>모임 노출 범위</span>
+              <span className={styles.profileCardValue}>
                 {profile.exposureRangeKm != null ? `${profile.exposureRangeKm}km` : '1km'}
               </span>
-            </li>
-          </ul>
+            </div>
+          </div>
         </>
       )}
     </>

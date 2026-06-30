@@ -331,13 +331,17 @@
 }
 
 /* ── 프로필 수정 섹션 ── */
-.profileAvatarCard {
+
+/* 히어로 헤더 (큰 아바타 + 이름) */
+.profileHero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-1);
   padding: var(--sp-8);
-  background: var(--clr-surface);
+  background:
+    linear-gradient(135deg, var(--clr-accent-muted) 0%, transparent 55%),
+    var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--r-xl);
   box-shadow: var(--shadow-sm);
@@ -345,11 +349,13 @@
 
 .profileAvatar {
   position: relative;
-  width: 96px;
-  height: 96px;
+  width: 120px;
+  height: 120px;
   border-radius: var(--r-full);
   overflow: hidden;
   flex-shrink: 0;
+  border: 3px solid var(--clr-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .profileAvatarImg {
@@ -363,7 +369,7 @@
   height: 100%;
   background: var(--clr-accent-muted);
   color: var(--clr-accent);
-  font-size: 2.25rem;
+  font-size: 2.75rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -385,6 +391,20 @@
   font-weight: 600;
 }
 
+.profileHeroName {
+  margin: var(--sp-3) 0 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--clr-text);
+  letter-spacing: -0.01em;
+}
+
+.profileHeroUsername {
+  margin: 0 0 var(--sp-3);
+  font-size: 0.875rem;
+  color: var(--clr-text-secondary);
+}
+
 .profileImageChangeBtn {
   font-size: 0.875rem;
   padding: var(--sp-1) var(--sp-4);
@@ -395,7 +415,7 @@
 }
 
 .profileImageError {
-  margin: 0;
+  margin: var(--sp-2) 0 0;
   width: 100%;
   padding: var(--sp-3);
   background: var(--clr-error-soft);
@@ -405,68 +425,102 @@
   text-align: center;
 }
 
-/* 기본 정보 리스트 카드 */
-.profileFieldCard {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* 기본 정보 2열 카드 그리드 */
+.profileGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+/* 편집 가능 카드 (label 위 / value 아래 / chevron 우상단) */
+.profileCard {
+  position: relative;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  min-height: 84px;
+  padding: var(--sp-4) var(--sp-5);
+  text-align: left;
   background: var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--r-xl);
   box-shadow: var(--shadow-sm);
-  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
 }
 
-.profileRow {
+.profileCard:hover {
+  border-color: var(--clr-accent);
+  box-shadow: 0 0 0 3px var(--clr-accent-muted), var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.profileCard:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.profileCard:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus), var(--shadow-sm);
+}
+
+/* 읽기 전용 / 토글 카드 (가로 배치) */
+.profileCardStatic {
   display: flex;
   align-items: center;
-  min-height: 60px;
-  padding: var(--sp-4) var(--sp-5);
+  justify-content: space-between;
   gap: var(--sp-3);
-  cursor: pointer;
-  border-bottom: 1px solid var(--clr-border);
-  transition: background var(--t-fast);
+  min-height: 84px;
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
 }
 
-.profileRowStatic {
-  composes: profileRow;
-  cursor: default;
+/* 전체 폭 카드 */
+.profileCardFull {
+  grid-column: 1 / -1;
 }
 
-.profileRow:last-child,
-.profileRowStatic:last-child {
-  border-bottom: none;
-}
-
-.profileRow:hover {
-  background: var(--clr-surface-2);
-}
-
-.profileLabel {
+.profileCardLabel {
+  font-size: 0.8125rem;
   font-weight: 600;
-  font-size: 0.9375rem;
-  color: var(--clr-text);
-  flex-shrink: 0;
-  min-width: 80px;
+  color: var(--clr-text-secondary);
 }
 
-.profileValue {
-  flex: 1;
-  text-align: right;
-  font-size: 0.9375rem;
-  color: var(--clr-text-muted, var(--clr-text-secondary));
+.profileCardValue {
+  align-self: stretch;
+  max-width: 100%;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clr-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.profileChevron {
+/* static 카드 안의 값은 우측 정렬 */
+.profileCardStatic .profileCardValue {
+  align-self: auto;
+  text-align: right;
+}
+
+.profileCardChevron {
+  position: absolute;
+  top: var(--sp-4);
+  right: var(--sp-4);
   display: inline-flex;
   align-items: center;
   color: var(--clr-text-muted);
-  flex-shrink: 0;
+}
+
+/* 인라인 편집 패널 (박스 없이 설정 배경 위에 미니멀하게 표시) */
+.editPanelCard {
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── 위험 구역 ── */
@@ -682,5 +736,9 @@
   .featureCardTitle,
   .dangerCardTitle {
     font-size: 0.9375rem;
+  }
+
+  .profileGrid {
+    grid-template-columns: 1fr;
   }
 }
