@@ -15,11 +15,20 @@
 .sectionTitle {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   font-size: 1.375rem;
   font-weight: 700;
   color: var(--clr-text);
   margin: 0;
+}
+
+.sectionTitle::before {
+  content: '';
+  width: 4px;
+  height: 1.125em;
+  background: var(--clr-accent);
+  border-radius: var(--r-full);
+  flex-shrink: 0;
 }
 
 .sectionSubtitle {
@@ -30,17 +39,22 @@
 
 .sectionViewAll {
   font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--clr-text-muted);
   background: none;
-  border: none;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-full);
   cursor: pointer;
-  padding: 0;
+  padding: var(--sp-1) var(--sp-3);
   flex-shrink: 0;
   align-self: center;
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
 }
 
 .sectionViewAll:hover {
-  color: var(--clr-text-secondary);
+  color: var(--clr-text);
+  background: var(--clr-accent-muted);
+  border-color: transparent;
 }
 
 .loadingWrapper {
@@ -136,6 +150,11 @@
     font-size: 0.625rem;
     padding: 1px 5px;
   }
+
+  .imageBadgeAlmostFull {
+    font-size: 0.625rem;
+    padding: 1px 5px;
+  }
 }
 
 /* ── GroupCard ── */
@@ -154,7 +173,15 @@
 }
 
 .card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+}
+
+.card:hover .imageWrap {
+  box-shadow: var(--shadow-md);
+}
+
+.card:hover .image {
+  transform: scale(1.04);
 }
 
 .imageWrap {
@@ -164,12 +191,14 @@
   border-radius: var(--r-xl);
   overflow: hidden;
   background: var(--clr-surface-2);
+  transition: box-shadow var(--t-base);
 }
 
 .image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform var(--t-base);
 }
 
 .imagePlaceholder {
@@ -310,4 +339,61 @@
   border-radius: var(--r-full);
   backdrop-filter: blur(4px);
   pointer-events: none;
+}
+
+/* 마감 임박 배지 (이미지 위 오른쪽 상단, 정원 70%+) */
+.imageBadgeAlmostFull {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  background: rgba(239, 68, 68, 0.88);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--r-full);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+/* 세부 카테고리 태그 행 (한 줄, 넘치면 잘림) */
+.tagRow {
+  display: flex;
+  gap: var(--sp-1);
+  overflow: hidden;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.tagPill {
+  background: var(--clr-surface-2);
+  color: var(--clr-text-secondary);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 모임장 표시 행 */
+.leaderRow {
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 모바일: 3카드 가로스크롤 밀도 유지를 위해 보조 정보 행 숨김
+   (.tagRow/.leaderRow 정의보다 뒤에 있어야 display 규칙이 덮이지 않음) */
+@media (max-width: 767px) {
+  .tagRow {
+    display: none;
+  }
+
+  .leaderRow {
+    display: none;
+  }
 }
