@@ -106,9 +106,24 @@
   filter: brightness(0) invert(1);
 }
 
-.divider {
-  border: none;
+/* 섹션 묶음 — 숨김 섹션과 무관하게 인접 섹션 사이에만 구분선 */
+.sectionsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+.sectionsWrap > section + section {
   border-top: 1px solid var(--clr-border);
-  margin: 0;
-  opacity: 0.5;
+  padding-top: var(--sp-8);
+}
+
+@media (max-width: 767px) {
+  .sectionsWrap {
+    gap: var(--sp-6);
+  }
+
+  .sectionsWrap > section + section {
+    padding-top: var(--sp-6);
+  }
 }
