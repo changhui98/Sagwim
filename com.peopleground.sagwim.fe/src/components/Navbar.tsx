@@ -6,11 +6,9 @@ import {
 } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import styles from './Navbar.module.css'
-import { usePostCreateModal } from '../context/PostCreateModalContext'
 import { useAuth } from '../context/AuthContext'
 import { useNotificationCount } from '../context/NotificationCountContext'
 import { useMessageCount } from '../context/MessageCountContext'
-import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
 import { SidePanel, type SidePanelType } from './SidePanel'
 import { MoreMenuPopover } from './MoreMenuPopover'
 import {
@@ -52,11 +50,9 @@ export function Navbar({ role, onLogout }: NavbarProps) {
   const isAdmin = effectiveRole !== null && ADMIN_ROLES.has(effectiveRole)
   const location = useLocation()
   const navigate = useNavigate()
-  const { open: openPostCreateModal, isOpen: isPostCreateModalOpen } = usePostCreateModal()
 
   const [moreOpen, setMoreOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  const [createFlow, setCreateFlow] = useState<'idle' | 'selecting'>('idle')
   const [activePanel, setActivePanel] = useState<SidePanelType | null>(null)
 
   const togglePanel = useCallback((panel: SidePanelType) => {
@@ -94,10 +90,10 @@ export function Navbar({ role, onLogout }: NavbarProps) {
       match: (p) => p.startsWith('/app/posts'),
     },
     {
+      to: '/app/create',
       label: '만들기',
       icon: <PlusSquareIcon />,
-      onClick: () => setCreateFlow('selecting'),
-      match: () => isPostCreateModalOpen || createFlow === 'selecting',
+      match: (p) => p.startsWith('/app/create'),
       mobileHidden: true,
       authOnly: true,
     },
@@ -272,12 +268,6 @@ export function Navbar({ role, onLogout }: NavbarProps) {
           )}
         </div>
       </div>
-      <CreateTypeSelectorModal
-        isOpen={createFlow === 'selecting'}
-        onClose={() => setCreateFlow('idle')}
-        onSelectPost={() => { setCreateFlow('idle'); openPostCreateModal() }}
-        onSelectGroup={() => { setCreateFlow('idle'); navigate('/app/groups/new') }}
-      />
     </aside>
     <SidePanel
       type={activePanel}
