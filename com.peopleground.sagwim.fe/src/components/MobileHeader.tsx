@@ -1,9 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PlusSquareIcon, HeartIcon, GridEvenMoreIcon, MoonIcon, SunIcon } from './NavIcons'
-import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
 import { MoreMenuPopover } from './MoreMenuPopover'
-import { usePostCreateModal } from '../context/PostCreateModalContext'
 import { useNotificationCount } from '../context/NotificationCountContext'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
@@ -15,11 +13,9 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ onLogout }: MobileHeaderProps) {
   const navigate = useNavigate()
-  const { open: openPostCreateModal } = usePostCreateModal()
   const { unreadCount } = useNotificationCount()
   const { isAuthenticated } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const [createFlow, setCreateFlow] = useState<'idle' | 'selecting'>('idle')
   const [moreOpen, setMoreOpen] = useState(false)
   const moreAnchorRef = useRef<HTMLDivElement>(null)
 
@@ -35,8 +31,8 @@ export function MobileHeader({ onLogout }: MobileHeaderProps) {
           <button
             type="button"
             className={styles.plusButton}
-            onClick={() => setCreateFlow('selecting')}
-            aria-label="새 모임 만들기"
+            onClick={() => navigate('/app/create')}
+            aria-label="만들기"
           >
             <PlusSquareIcon width={22} height={22} />
           </button>
@@ -107,13 +103,6 @@ export function MobileHeader({ onLogout }: MobileHeaderProps) {
           )}
         </div>
       </header>
-
-      <CreateTypeSelectorModal
-        isOpen={createFlow === 'selecting'}
-        onClose={() => setCreateFlow('idle')}
-        onSelectPost={() => { setCreateFlow('idle'); openPostCreateModal() }}
-        onSelectGroup={() => { setCreateFlow('idle'); navigate('/app/groups/new') }}
-      />
     </>
   )
 }

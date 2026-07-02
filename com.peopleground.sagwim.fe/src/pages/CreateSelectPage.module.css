@@ -1,0 +1,186 @@
+/* ── CreateSelectPage (만들기 유형 선택) ── */
+
+.main {
+  width: 100%;
+  max-width: calc(1080px + var(--layout-sidebar-w));
+  margin: 0 auto;
+  padding: var(--sp-8) var(--sp-6);
+  padding-left: calc(var(--layout-sidebar-w) + var(--sp-6));
+  padding-bottom: calc(var(--sp-8) + var(--layout-bottom-bar-h));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-10);
+  min-height: 60vh;
+}
+
+/* ── 히어로 ── */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  text-align: center;
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--clr-text-secondary);
+  word-break: keep-all;
+}
+
+/* ── 선택 카드 ── */
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-5);
+  width: 100%;
+  max-width: 720px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-10) var(--sp-8);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+  text-decoration: none;
+  transition: border-color var(--t-base), box-shadow var(--t-base),
+    transform var(--t-base);
+}
+
+.card:hover {
+  border-color: var(--clr-accent);
+  box-shadow: 0 0 0 3px var(--clr-accent-muted), var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.card:active {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px var(--clr-accent-muted), var(--shadow-md);
+}
+
+.card:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus), var(--shadow-sm);
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--r-lg);
+  background: var(--clr-accent-muted);
+  margin-bottom: var(--sp-2);
+  transition: background var(--t-base);
+}
+
+.card:hover .iconWrap {
+  background: var(--clr-accent-glow);
+}
+
+.icon {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+  opacity: 0.8;
+  /* 라이트 모드: 그대로, 다크 모드: --icon-filter CSS 변수 활용 */
+  filter: var(--_icon-filter, none);
+}
+
+.cardLabel {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+.cardDesc {
+  font-size: 0.875rem;
+  color: var(--clr-text-muted);
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.cardCta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin-top: var(--sp-4);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--clr-accent);
+  opacity: 0.85;
+  transition: opacity var(--t-base);
+}
+
+.card:hover .cardCta {
+  opacity: 1;
+}
+
+.cardCtaArrow {
+  transition: transform var(--t-base);
+}
+
+.card:hover .cardCtaArrow {
+  transform: translateX(3px);
+}
+
+/* ── 반응형 ── */
+
+@media (max-width: 767px) {
+  .main {
+    padding: var(--sp-4);
+    padding-left: calc(var(--layout-sidebar-w) + var(--sp-4));
+    padding-bottom: calc(var(--sp-4) + var(--layout-bottom-bar-h));
+    gap: var(--sp-8);
+  }
+}
+
+@media (max-width: 640px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+  }
+
+  .card {
+    padding: var(--sp-8) var(--sp-6);
+  }
+
+  .heroTitle {
+    font-size: 1.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .cardCtaArrow {
+    transition: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+
+  .card:hover .cardCtaArrow {
+    transform: none;
+  }
+}

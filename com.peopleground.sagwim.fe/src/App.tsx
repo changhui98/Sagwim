@@ -29,6 +29,7 @@ import { AdminInquiryListPage } from './pages/admin/AdminInquiryListPage'
 import { AdminForbiddenWordsPage } from './pages/admin/AdminForbiddenWordsPage'
 import { AdminFaqPage } from './pages/admin/AdminFaqPage'
 import { PostCreatePage } from './pages/PostCreatePage'
+import { CreateSelectPage } from './pages/CreateSelectPage'
 import { GroupListPage } from './pages/GroupListPage'
 import { GroupDetailPage } from './pages/GroupDetailPage'
 import { GroupJoinRequestPage } from './pages/GroupJoinRequestPage'
@@ -76,6 +77,7 @@ function App() {
       <Route path="/sign-up" element={<SignUpPage />} />
       <Route path="/app" element={<ServiceHomePage />} />
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/create" element={<CreateSelectPage />} />
         <Route path="/app/posts" element={<PostListPage />} />
         <Route path="/app/posts/new" element={<PostCreatePage />} />
         <Route path="/app/posts/:postId" element={<PostDetailPage />} />

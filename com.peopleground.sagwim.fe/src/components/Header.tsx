@@ -1,12 +1,10 @@
 import { useCallback, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import styles from './Header.module.css'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useNotificationCount } from '../context/NotificationCountContext'
 import { useMessageCount } from '../context/MessageCountContext'
-import { usePostCreateModal } from '../context/PostCreateModalContext'
-import { CreateTypeSelectorModal } from './common/CreateTypeSelectorModal'
 import { SidePanel, type SidePanelType } from './SidePanel'
 import { MoreMenuPopover } from './MoreMenuPopover'
 import { MoonIcon, SunIcon, UserCircleIcon } from './NavIcons'
@@ -27,15 +25,12 @@ export function Header({ role, onLogout }: HeaderProps) {
   const { theme, toggleTheme } = useTheme()
   const { unreadCount } = useNotificationCount()
   const { unreadMessageCount } = useMessageCount()
-  const { open: openPostCreateModal } = usePostCreateModal()
   const location = useLocation()
-  const navigate = useNavigate()
 
   const effectiveRole = role ?? meRole ?? null
   const isAdmin = effectiveRole !== null && ADMIN_ROLES.has(effectiveRole)
 
   const [activePanel, setActivePanel] = useState<SidePanelType | null>(null)
-  const [createFlow, setCreateFlow] = useState<'idle' | 'selecting'>('idle')
   const [moreOpen, setMoreOpen] = useState(false)
   const avatarRef = useRef<HTMLDivElement>(null)
 
@@ -48,6 +43,7 @@ export function Header({ role, onLogout }: HeaderProps) {
   const path = location.pathname
   const isGroups = path.startsWith('/app/groups')
   const isPosts = path.startsWith('/app/posts')
+  const isCreate = path.startsWith('/app/create')
   const isMessages = path.startsWith('/app/messages')
   const isSettings = path.startsWith('/app/settings')
 
@@ -76,9 +72,9 @@ export function Header({ role, onLogout }: HeaderProps) {
           <div className={styles.right}>
             {isAuthenticated && (
               <>
-                <button type="button" className={styles.menuLink} onClick={() => setCreateFlow('selecting')}>
+                <Link to="/app/create" className={`${styles.menuLink} ${isCreate ? styles.menuLinkActive : ''}`}>
                   만들기
-                </button>
+                </Link>
 
                 <Link to="/app/messages" className={`${styles.menuLink} ${isMessages ? styles.menuLinkActive : ''}`}>
                   메시지
@@ -153,12 +149,6 @@ export function Header({ role, onLogout }: HeaderProps) {
         </div>
       </header>
 
-      <CreateTypeSelectorModal
-        isOpen={createFlow === 'selecting'}
-        onClose={() => setCreateFlow('idle')}
-        onSelectPost={() => { setCreateFlow('idle'); openPostCreateModal() }}
-        onSelectGroup={() => { setCreateFlow('idle'); navigate('/app/groups/new') }}
-      />
       <SidePanel type={activePanel} onClose={closePanel} />
     </>
   )
