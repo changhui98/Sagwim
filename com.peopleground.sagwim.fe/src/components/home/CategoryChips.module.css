@@ -1,14 +1,57 @@
 /* ── CategoryChips ── */
 
+.chipsWrap {
+  position: relative;
+}
+
 .chips {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-2);
+  overflow-x: auto;
+  /* scroll-snap은 사용하지 않음: 스냅 지점 보정이 scrollIntoView의 최소 이동을
+     무효화해 선택 칩 자동 스크롤이 동작하지 않게 됨 (Chromium 검증됨) */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* hover 리프트·그림자가 잘리지 않도록 위아래 여유 */
+  padding: var(--sp-1) 0;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+/* 스크롤 가능함을 암시하는 양끝 페이드 (끝에 닿으면 숨김) */
+.fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: var(--sp-8);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--t-fast);
+  z-index: 1;
+}
+
+.fadeLeft {
+  left: 0;
+  background: linear-gradient(to right, var(--clr-bg), transparent);
+}
+
+.fadeRight {
+  right: 0;
+  background: linear-gradient(to left, var(--clr-bg), transparent);
+}
+
+.fadeVisible {
+  opacity: 1;
 }
 
 .chip {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
   padding: var(--sp-2) var(--sp-4);
   font-size: 0.9375rem;
   font-weight: 600;
@@ -24,16 +67,25 @@
 .chip:hover {
   border-color: var(--clr-accent);
   color: var(--clr-accent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-xs);
+}
+
+.chipEmoji {
+  font-size: 1.0625rem;
+  line-height: 1;
 }
 
 .chipActive {
   color: var(--clr-on-accent);
   background: var(--clr-accent);
   border-color: var(--clr-accent);
+  box-shadow: 0 2px 10px var(--clr-accent-glow);
 }
 
 .chipActive:hover {
   color: var(--clr-on-accent);
   background: var(--clr-accent-hover);
   border-color: var(--clr-accent-hover);
+  transform: none;
 }
