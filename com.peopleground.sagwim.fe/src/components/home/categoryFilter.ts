@@ -18,3 +18,10 @@ export const chipLabel = (key: CategoryChipKey): string => {
   if (key === 'ONLINE') return '온라인'
   return stripEmoji(GROUP_CATEGORY_LABELS[key])
 }
+
+/** 칩 키별 이모지 (원본 라벨의 선행 이모지 재사용, 칩 전용) */
+export const chipEmoji = (key: CategoryChipKey): string => {
+  if (key === 'ALL') return '✨'
+  if (key === 'ONLINE') return '💻'
+  return GROUP_CATEGORY_LABELS[key].split(/\s+/)[0]
+}

@@ -1,6 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getGroups, getNewGroups, getPopularGroups, toggleGroupLike } from '../api/groupApi'
+import {
+  getDeadlineGroups,
+  getGroups,
+  getNewGroups,
+  getPopularGroups,
+  getThisWeekGroups,
+  toggleGroupLike,
+} from '../api/groupApi'
 import { getMyProfile } from '../api/userApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
@@ -18,6 +25,8 @@ import { HomeTopBar } from '../components/home/HomeTopBar'
 import { CategoryChips } from '../components/home/CategoryChips'
 import { chipLabel, type CategoryChipKey } from '../components/home/categoryFilter'
 import { RecommendCarousel } from '../components/home/RecommendCarousel'
+import { buildRecommendSlides } from '../components/home/recommendSlides'
+import { CreateGroupCta } from '../components/home/CreateGroupCta'
 import { extractLastRegionToken } from '../utils/stringUtils'
 import styles from './GroupListPage.module.css'
 
@@ -48,11 +57,19 @@ export function GroupListPage() {
   const [neighborhoodLoading, setNeighborhoodLoading] = useState(true)
   const [neighborhoodError, setNeighborhoodError] = useState('')
 
+  // 마감 임박 모임 상태 (실패 시 조용히 숨김)
+  const [deadlineGroups, setDeadlineGroups] = useState<GroupResponse[]>([])
+  const [deadlineLoading, setDeadlineLoading] = useState(true)
+
+  // 이번 주 일정 모임 상태 (실패 시 조용히 숨김)
+  const [thisWeekGroups, setThisWeekGroups] = useState<GroupResponse[]>([])
+  const [thisWeekLoading, setThisWeekLoading] = useState(true)
+
   // 프로필 상태
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
   const [profileLoading, setProfileLoading] = useState(true)
 
-  // 좋아요 상태 (신규 + 인기 모임 통합 관리)
+  // 좋아요 상태 (전 섹션 통합 관리)
   const [likedMap, setLikedMap] = useState<Record<number, boolean>>({})
   const [likeCountMap, setLikeCountMap] = useState<Record<number, number>>({})
 
@@ -68,78 +85,76 @@ export function GroupListPage() {
   const [searchLoading, setSearchLoading] = useState(false)
   const [searchError, setSearchError] = useState('')
 
+  // 목록 응답의 좋아요 상태를 통합 맵에 병합
+  const ingestLikes = useCallback((incoming: GroupResponse[]) => {
+    const countMap: Record<number, number> = {}
+    const likedMapUpdate: Record<number, boolean> = {}
+    incoming.forEach((g) => {
+      countMap[g.id] = g.likeCount ?? 0
+      likedMapUpdate[g.id] = g.isLiked
+    })
+    setLikeCountMap((prev) => ({ ...prev, ...countMap }))
+    setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
+  }, [])
+
   const loadGroups = useCallback(
     async () => {
       setLoading(true)
       setPopularLoading(true)
       setNeighborhoodLoading(true)
+      setDeadlineLoading(true)
+      setThisWeekLoading(true)
       setError('')
       setPopularError('')
       setNeighborhoodError('')
 
-      // 신규 모임·인기 모임·동네 모든 모임을 병렬로 조회
-      const [newResult, popularResult, neighborhoodResult] = await Promise.allSettled([
-        getNewGroups(token),
-        getPopularGroups(token, 0, PREVIEW_COUNT),
-        getGroups(token, 0, PREVIEW_COUNT),
-      ])
+      // 5개 섹션 데이터를 병렬 조회 (배너는 이 결과를 재활용하므로 추가 호출 없음)
+      const [newResult, popularResult, neighborhoodResult, deadlineResult, thisWeekResult] =
+        await Promise.allSettled([
+          getNewGroups(token).then((res) => res.content),
+          getPopularGroups(token, 0, PREVIEW_COUNT).then((res) => res.content),
+          getGroups(token, 0, PREVIEW_COUNT).then((res) => res.content),
+          getDeadlineGroups(token, 0, PREVIEW_COUNT).then((res) => res.content),
+          getThisWeekGroups(token),
+        ])
 
-      // 신규 모임 처리
-      if (newResult.status === 'fulfilled') {
-        const incoming = newResult.value.content
-        setGroups(incoming)
-        const countMap: Record<number, number> = {}
-        const likedMapUpdate: Record<number, boolean> = {}
-        incoming.forEach((g) => {
-          countMap[g.id] = g.likeCount ?? 0
-          likedMapUpdate[g.id] = g.isLiked
-        })
-        setLikeCountMap((prev) => ({ ...prev, ...countMap }))
-        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
-      } else {
-        const message = newResult.reason instanceof Error ? newResult.reason.message : '모임 목록 조회 실패'
-        setError(message)
-        handleUnauthorized(newResult.reason)
+      const applyResult = (
+        result: PromiseSettledResult<GroupResponse[]>,
+        setData: (list: GroupResponse[]) => void,
+        setErrorMessage: ((message: string) => void) | null,
+        fallbackMessage: string,
+      ) => {
+        if (result.status === 'fulfilled') {
+          setData(result.value)
+          ingestLikes(result.value)
+        } else if (setErrorMessage) {
+          setErrorMessage(
+            result.reason instanceof Error ? result.reason.message : fallbackMessage,
+          )
+        }
       }
+
+      applyResult(newResult, setGroups, setError, '모임 목록 조회 실패')
       setLoading(false)
 
-      // 인기 모임 처리
-      if (popularResult.status === 'fulfilled') {
-        const incoming = popularResult.value.content
-        setPopularGroups(incoming)
-        const countMap: Record<number, number> = {}
-        const likedMapUpdate: Record<number, boolean> = {}
-        incoming.forEach((g) => {
-          countMap[g.id] = g.likeCount ?? 0
-          likedMapUpdate[g.id] = g.isLiked
-        })
-        setLikeCountMap((prev) => ({ ...prev, ...countMap }))
-        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
-      } else {
-        const message = popularResult.reason instanceof Error ? popularResult.reason.message : '인기 모임 목록 조회 실패'
-        setPopularError(message)
-      }
+      applyResult(popularResult, setPopularGroups, setPopularError, '인기 모임 목록 조회 실패')
       setPopularLoading(false)
 
-      // 동네 모든 모임 처리
-      if (neighborhoodResult.status === 'fulfilled') {
-        const incoming = neighborhoodResult.value.content
-        setNeighborhoodGroups(incoming)
-        const countMap: Record<number, number> = {}
-        const likedMapUpdate: Record<number, boolean> = {}
-        incoming.forEach((g) => {
-          countMap[g.id] = g.likeCount ?? 0
-          likedMapUpdate[g.id] = g.isLiked
-        })
-        setLikeCountMap((prev) => ({ ...prev, ...countMap }))
-        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
-      } else {
-        const message = neighborhoodResult.reason instanceof Error ? neighborhoodResult.reason.message : '동네 모임 목록 조회 실패'
-        setNeighborhoodError(message)
-      }
+      applyResult(neighborhoodResult, setNeighborhoodGroups, setNeighborhoodError, '동네 모임 목록 조회 실패')
       setNeighborhoodLoading(false)
+
+      applyResult(deadlineResult, setDeadlineGroups, null, '')
+      setDeadlineLoading(false)
+
+      applyResult(thisWeekResult, setThisWeekGroups, null, '')
+      setThisWeekLoading(false)
+
+      // 인증 만료는 어떤 호출이 실패했든 동일하므로 첫 실패에 대해 1회만 처리
+      const firstRejected = [newResult, popularResult, neighborhoodResult, deadlineResult, thisWeekResult]
+        .find((r): r is PromiseRejectedResult => r.status === 'rejected')
+      if (firstRejected) handleUnauthorized(firstRejected.reason)
     },
-    [token, handleUnauthorized],
+    [token, handleUnauthorized, ingestLikes],
   )
 
   useEffect(() => {
@@ -164,16 +179,8 @@ export function GroupListPage() {
           key === 'ONLINE'
             ? await getGroups(token, 0, FILTER_FETCH_SIZE, undefined, undefined, 'ONLINE')
             : await getGroups(token, 0, FILTER_FETCH_SIZE, undefined, key)
-        const incoming = res.content
-        setFilteredGroups(incoming)
-        const countMap: Record<number, number> = {}
-        const likedMapUpdate: Record<number, boolean> = {}
-        incoming.forEach((g) => {
-          countMap[g.id] = g.likeCount ?? 0
-          likedMapUpdate[g.id] = g.isLiked
-        })
-        setLikeCountMap((prev) => ({ ...prev, ...countMap }))
-        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
+        setFilteredGroups(res.content)
+        ingestLikes(res.content)
       } catch (err) {
         setFilteredError(err instanceof Error ? err.message : '모임 목록 조회 실패')
         handleUnauthorized(err)
@@ -181,7 +188,7 @@ export function GroupListPage() {
         setFilteredLoading(false)
       }
     },
-    [token, handleUnauthorized],
+    [token, handleUnauthorized, ingestLikes],
   )
 
   const handleCategoryChange = (key: CategoryChipKey) => {
@@ -203,16 +210,8 @@ export function GroupListPage() {
       setSearchError('')
       try {
         const res = await getGroups(token, 0, 20, trimmed)
-        const incoming = res.content
-        setSearchResults(incoming)
-        const countMap: Record<number, number> = {}
-        const likedMapUpdate: Record<number, boolean> = {}
-        incoming.forEach((g) => {
-          countMap[g.id] = g.likeCount ?? 0
-          likedMapUpdate[g.id] = g.isLiked
-        })
-        setLikeCountMap((prev) => ({ ...prev, ...countMap }))
-        setLikedMap((prev) => ({ ...prev, ...likedMapUpdate }))
+        setSearchResults(res.content)
+        ingestLikes(res.content)
       } catch (err) {
         setSearchError(err instanceof Error ? err.message : '모임 검색 실패')
         handleUnauthorized(err)
@@ -222,7 +221,7 @@ export function GroupListPage() {
     }, 300)
 
     return () => clearTimeout(timer)
-  }, [searchQuery, token, handleUnauthorized])
+  }, [searchQuery, token, handleUnauthorized, ingestLikes])
 
   const handleLikeToggle = async (e: React.MouseEvent, groupId: number) => {
     e.stopPropagation()
@@ -235,8 +234,67 @@ export function GroupListPage() {
     }
   }
 
+  // 배너 슬라이드: 인기 → 마감임박 → 신규 → 동네 전체 폴백, 전부 비면 정적 서비스 배너
+  const bannerSlides = useMemo(
+    () => buildRecommendSlides(popularGroups, deadlineGroups, groups, neighborhoodGroups),
+    [popularGroups, deadlineGroups, groups, neighborhoodGroups],
+  )
+  const bannerLoading = loading || popularLoading || neighborhoodLoading || deadlineLoading
+
   const renderSections = () => (
-    <>
+    <div className={styles.sectionsWrap}>
+      <GroupSection
+        title="곧 마감돼요"
+        subtitle="지금 아니면 자리가 없을지도 몰라요"
+        groups={deadlineGroups.slice(0, PREVIEW_COUNT)}
+        loading={deadlineLoading}
+        error=""
+        onRetry={loadGroups}
+        onViewAll={() => navigate('/app/groups/deadline')}
+        likedMap={likedMap}
+        likeCountMap={likeCountMap}
+        onLikeToggle={handleLikeToggle}
+        hideWhenEmpty
+      />
+      <GroupSection
+        title="이번 주에 만나요"
+        subtitle="이번 주 일정이 잡힌 모임이에요"
+        groups={thisWeekGroups.slice(0, PREVIEW_COUNT)}
+        loading={thisWeekLoading}
+        error=""
+        onRetry={loadGroups}
+        onViewAll={() => navigate('/app/groups/thisweek')}
+        likedMap={likedMap}
+        likeCountMap={likeCountMap}
+        onLikeToggle={handleLikeToggle}
+        hideWhenEmpty
+      />
+      <GroupSection
+        title="요즘 북적이는 모임"
+        subtitle="모두가 모이는 데는 이유가 있죠"
+        groups={popularGroups}
+        loading={popularLoading}
+        error={popularError}
+        onRetry={loadGroups}
+        onViewAll={() => navigate('/app/groups/popular')}
+        likedMap={likedMap}
+        likeCountMap={likeCountMap}
+        onLikeToggle={handleLikeToggle}
+        hideWhenEmpty
+      />
+      <GroupSection
+        title="갓 피어난 모임"
+        subtitle="당신이 첫 멤버가 될 수도 있어요"
+        groups={groups.slice(0, PREVIEW_COUNT)}
+        loading={loading}
+        error={error}
+        onRetry={loadGroups}
+        onViewAll={() => navigate('/app/groups/recent')}
+        likedMap={likedMap}
+        likeCountMap={likeCountMap}
+        onLikeToggle={handleLikeToggle}
+        hideWhenEmpty
+      />
       <GroupSection
         title={`${extractLastRegionToken(myProfile?.address) ?? '우리 동네'} 모든 모임`}
         subtitle="우리 동네 모임, 여기 다 있어요"
@@ -249,39 +307,10 @@ export function GroupListPage() {
         likeCountMap={likeCountMap}
         onLikeToggle={handleLikeToggle}
         emptyTitle="노출 범위 내 모임이 아직 없어요."
-        emptyDescription="주변 모임이 생기면 여기에 표시됩니다."
+        emptyDescription="첫 모임을 만들어 이웃을 초대해보세요."
+        emptyAction={{ label: '모임 만들기', onClick: () => navigate('/app/create') }}
       />
-      <hr className={styles.divider} />
-      <GroupSection
-        title="갓 피어난 모임"
-        subtitle="당신이 첫 멤버가 될 수도 있어요"
-        groups={groups.slice(0, PREVIEW_COUNT)}
-        loading={loading}
-        error={error}
-        onRetry={loadGroups}
-        onViewAll={() => navigate('/app/groups/recent')}
-        likedMap={likedMap}
-        likeCountMap={likeCountMap}
-        onLikeToggle={handleLikeToggle}
-        emptyTitle="최근 7일 내 생성된 모임이 없습니다."
-        emptyDescription="첫 번째 모임을 만들어보세요."
-      />
-      <hr className={styles.divider} />
-      <GroupSection
-        title="요즘 북적이는 모임"
-        subtitle="모두가 모이는 데는 이유가 있죠"
-        groups={popularGroups}
-        loading={popularLoading}
-        error={popularError}
-        onRetry={loadGroups}
-        onViewAll={() => navigate('/app/groups/popular')}
-        likedMap={likedMap}
-        likeCountMap={likeCountMap}
-        onLikeToggle={handleLikeToggle}
-        emptyTitle="아직 인기 모임이 없습니다."
-        emptyDescription="좋아요를 많이 받은 모임이 여기에 표시됩니다."
-      />
-    </>
+    </div>
   )
 
   const isSearching = searchQuery.trim().length > 0
@@ -311,8 +340,9 @@ export function GroupListPage() {
         <>
           <CategoryChips active={activeCategory} onChange={handleCategoryChange} />
           <RecommendCarousel
-            groups={popularGroups.slice(0, 3)}
-            onNavigate={(groupId) => navigate(`/app/groups/${groupId}`)}
+            slides={bannerSlides}
+            loading={bannerLoading}
+            onNavigate={navigate}
           />
           {activeCategory === 'ALL' ? (
             renderSections()
@@ -331,6 +361,7 @@ export function GroupListPage() {
               emptyDescription="다른 카테고리를 선택해 보세요."
             />
           )}
+          <CreateGroupCta />
         </>
       )}
     </>

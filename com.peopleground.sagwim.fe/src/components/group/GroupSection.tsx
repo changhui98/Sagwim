@@ -8,6 +8,9 @@ import { extractLastRegionToken } from '../../utils/stringUtils'
 import userAlt1Icon from '../../assets/user-alt-1-svgrepo-com.svg'
 import styles from './GroupSection.module.css'
 
+/** 정원 대비 이 비율 이상 차면 "마감 임박" 배지를 노출 */
+const ALMOST_FULL_RATIO = 0.7
+
 interface GroupCardProps {
   group: GroupResponse
   liked: boolean
@@ -18,6 +21,10 @@ interface GroupCardProps {
 
 function GroupCard({ group, liked, likeCount, onNavigate, onLikeToggle }: GroupCardProps) {
   const regionTag = extractLastRegionToken(group.region)
+  const isAlmostFull =
+    group.status === 'ACTIVE' &&
+    group.currentMemberCount < group.maxMemberCount &&
+    group.currentMemberCount / group.maxMemberCount >= ALMOST_FULL_RATIO
   return (
     <div
       role="button"
@@ -44,9 +51,11 @@ function GroupCard({ group, liked, likeCount, onNavigate, onLikeToggle }: GroupC
             {GROUP_MEETING_TYPE_LABELS[group.meetingType]}
           </span>
         </div>
-        {group.status === 'PENDING' && (
+        {group.status === 'PENDING' ? (
           <span className={styles.imageBadgePending}>승인 대기중</span>
-        )}
+        ) : isAlmostFull ? (
+          <span className={styles.imageBadgeAlmostFull}>마감 임박</span>
+        ) : null}
       </div>
       <div className={styles.cardInfo}>
         <div className={styles.cardNameRow}>
@@ -56,6 +65,13 @@ function GroupCard({ group, liked, likeCount, onNavigate, onLikeToggle }: GroupC
             <span>{group.currentMemberCount}/{group.maxMemberCount}</span>
           </div>
         </div>
+        {group.subCategories.length > 0 && (
+          <div className={styles.tagRow}>
+            {group.subCategories.slice(0, 2).map((tag) => (
+              <span key={tag} className={styles.tagPill}>{tag}</span>
+            ))}
+          </div>
+        )}
         <div className={styles.cardDescRow}>
           <p className={styles.cardDesc}>{group.description ?? ''}</p>
           <button
@@ -68,6 +84,7 @@ function GroupCard({ group, liked, likeCount, onNavigate, onLikeToggle }: GroupC
             <span>{likeCount}</span>
           </button>
         </div>
+        <p className={styles.leaderRow}>모임장 {group.leaderNickname}</p>
       </div>
     </div>
   )
@@ -87,6 +104,10 @@ interface GroupSectionProps {
   emptyIcon?: ReactNode
   emptyTitle?: string
   emptyDescription?: string
+  /** 빈 상태 EmptyState에 노출할 액션 버튼 */
+  emptyAction?: { label: string; onClick: () => void }
+  /** true면 결과가 비었거나 에러일 때 섹션 자체를 렌더하지 않음 (발견용 옵션 섹션) */
+  hideWhenEmpty?: boolean
 }
 
 export function GroupSection({
@@ -103,8 +124,14 @@ export function GroupSection({
   emptyIcon,
   emptyTitle,
   emptyDescription,
+  emptyAction,
+  hideWhenEmpty = false,
 }: GroupSectionProps) {
   const navigate = useNavigate()
+
+  if (hideWhenEmpty && !loading && (error || groups.length === 0)) {
+    return null
+  }
 
   const renderBody = () => {
     if (loading) {
@@ -132,6 +159,7 @@ export function GroupSection({
             icon={emptyIcon}
             title={emptyTitle}
             description={emptyDescription}
+            action={emptyAction}
           />
         </div>
       )
@@ -166,7 +194,7 @@ export function GroupSection({
             className={styles.sectionViewAll}
             onClick={onViewAll}
           >
-            전체 보기
+            전체 보기 ›
           </button>
         )}
       </div>
