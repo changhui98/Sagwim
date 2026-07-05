@@ -319,7 +319,7 @@ export function GroupListPage() {
     <>
       <HomeTopBar
         regionLabel={extractLastRegionToken(myProfile?.address)}
-        onLocationClick={() => navigate('/app/profile/edit/address')}
+        onLocationClick={() => navigate('/app/settings/profile/address')}
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
       />
@@ -391,7 +391,7 @@ export function GroupListPage() {
               <button
                 type="button"
                 className={`${styles.noAddressButton} ${styles.animItem} ${styles.animDelay4}`}
-                onClick={() => navigate('/app/profile/edit/address')}
+                onClick={() => navigate('/app/settings/profile/address')}
               >
                 등록하기
                 <img src={arrowNarrowRightIcon} alt="" width={16} height={16} className={styles.noAddressButtonIcon} />

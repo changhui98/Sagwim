@@ -28,7 +28,7 @@ export const STATIC_SLIDES: RecommendSlide[] = [
     title: '노출 범위를 넓혀보세요',
     description: '조금 더 멀리 보면 새로운 모임이 보여요',
     ctaLabel: '범위 설정',
-    to: '/app/profile/edit/address',
+    to: '/app/settings/profile/address',
   },
 ]
 
