@@ -34,6 +34,9 @@ interface MyPostsSectionProps {
   username?: string
   isOwner?: boolean
   onUnauthorized?: (err: unknown) => void
+  /** 로드된 게시글 수와 추가 페이지 존재 여부를 상위로 전달.
+      (백엔드가 slice 응답이라 totalElements 를 주지 않음 — count 는 지금까지 로드된 개수) */
+  onCountChange?: (count: number, hasMore: boolean) => void
 }
 
 export interface MyPostsSectionHandle {
@@ -53,7 +56,7 @@ const readInitialViewMode = (): ViewMode => {
 }
 
 export const MyPostsSection = forwardRef<MyPostsSectionHandle, MyPostsSectionProps>(
-  function MyPostsSection({ username, isOwner = true, onUnauthorized }, ref) {
+  function MyPostsSection({ username, isOwner = true, onUnauthorized, onCountChange }, ref) {
     const { token } = useAuth()
     const navigate = useNavigate()
 
@@ -119,6 +122,12 @@ export const MyPostsSection = forwardRef<MyPostsSectionHandle, MyPostsSectionPro
       },
       [token, onUnauthorized, username],
     )
+
+    // 로드된 게시글 수를 상위(프로필 통계)로 전달한다.
+    useEffect(() => {
+      if (initialLoad) return
+      onCountChange?.(posts.length, hasMore)
+    }, [posts.length, hasMore, initialLoad, onCountChange])
 
     // 최초 1회 로드
     useEffect(() => {
