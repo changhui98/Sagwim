@@ -21,43 +21,30 @@
   align-self: center;
 }
 
-/* ── 프로필 헤더 카드: 커버 배너 + 오버랩 아바타 ───────────── */
+/* ── 프로필 헤더: 오픈 히어로 (커버·박스 없이 여백 구성) ───── */
 .profileHeader {
-  background: var(--clr-surface);
-  border-radius: var(--r-2xl);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-}
-
-.coverBanner {
-  height: 140px;
-  background: var(--clr-accent-gradient);
-}
-
-.headerBody {
   display: flex;
   flex-direction: column;
-  padding: 0 var(--sp-6) var(--sp-6);
+  padding-top: var(--sp-4);
 }
 
 .avatarWrap {
   flex-shrink: 0;
-  /* 아바타가 커버 하단에 절반 걸치도록 끌어올린다. */
-  margin-top: -52px;
 }
 
 .avatarButton {
-  width: 104px;
-  height: 104px;
-  border: 4px solid var(--clr-surface);
+  width: 112px;
+  height: 112px;
+  /* 페이지 배경과 같은 안쪽 링 + accent 바깥 링 이중 구성 (다크 토큰 자동 대응) */
+  border: 3px solid var(--clr-bg);
   border-radius: var(--r-full);
   padding: 0;
-  background: var(--clr-surface);
+  background: var(--clr-bg);
   cursor: pointer;
   overflow: hidden;
-  position: relative;
-  z-index: 1;
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 0 0 2px var(--clr-accent),
+    0 8px 24px var(--clr-accent-glow);
 }
 
 .avatarButton:disabled {
@@ -82,8 +69,8 @@
 }
 
 .avatarLg {
-  width: 96px;
-  height: 96px;
+  width: 100%;
+  height: 100%;
   font-size: 1.875rem;
 }
 
@@ -220,26 +207,16 @@
     gap: var(--sp-5);
   }
 
-  .coverBanner {
-    height: 110px;
-  }
-
-  .headerBody {
-    padding: 0 var(--sp-4) var(--sp-5);
-  }
-
-  .avatarWrap {
-    margin-top: -40px;
+  .profileHeader {
+    padding-top: var(--sp-2);
   }
 
   .avatarButton {
-    width: 80px;
-    height: 80px;
+    width: 88px;
+    height: 88px;
   }
 
   .avatarLg {
-    width: 72px;
-    height: 72px;
     font-size: 1.5rem;
   }
 
