@@ -10,11 +10,6 @@ import { SignUpPage } from './pages/SignUpPage'
 import { PostListPage } from './pages/PostListPage'
 import { UserGridPage } from './pages/UserGridPage'
 import { ProfilePage } from './pages/ProfilePage'
-import { ProfileEditPage } from './pages/ProfileEditPage'
-import { ProfileEditNicknamePage } from './pages/ProfileEditNicknamePage'
-import { ProfileEditGenderPage } from './pages/ProfileEditGenderPage'
-import { ProfileEditBirthDatePage } from './pages/ProfileEditBirthDatePage'
-import { ProfileEditAddressPage } from './pages/ProfileEditAddressPage'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminChartsPage } from './pages/admin/AdminChartsPage'
 import { AdminUserListPage } from './pages/admin/AdminUserListPage'
@@ -95,7 +90,8 @@ function App() {
         <Route path="/app/groups/:groupId/join" element={<GroupJoinRequestPage />} />
         <Route path="/app/groups/:groupId/settings" element={<GroupSettingsPage />} />
         <Route path="/app/profile" element={<ProfilePage />} />
-        <Route path="/app/profile/edit" element={<ProfileEditPage />} />
+        {/* 구 프로필 편집 화면은 설정의 프로필 편집으로 통합 — 직접 접근 시 리다이렉트 */}
+        <Route path="/app/profile/edit" element={<Navigate to="/app/settings/profile" replace />} />
         <Route path="/app/settings" element={<SettingsPage />}>
           <Route index element={<SettingsOverviewPage />} />
           <Route path="profile" element={<SettingsProfilePage />} />
@@ -109,10 +105,10 @@ function App() {
         <Route path="/app/search" element={<SearchPage />} />
         <Route path="/app/notifications" element={<NotificationsPage />} />
         <Route path="/app/activity" element={<MyActivityPage />} />
-        <Route path="/app/profile/edit/nickname" element={<ProfileEditNicknamePage />} />
-        <Route path="/app/profile/edit/gender" element={<ProfileEditGenderPage />} />
-        <Route path="/app/profile/edit/birthdate" element={<ProfileEditBirthDatePage />} />
-        <Route path="/app/profile/edit/address" element={<ProfileEditAddressPage />} />
+        <Route path="/app/profile/edit/nickname" element={<Navigate to="/app/settings/profile/nickname" replace />} />
+        <Route path="/app/profile/edit/gender" element={<Navigate to="/app/settings/profile/gender" replace />} />
+        <Route path="/app/profile/edit/birthdate" element={<Navigate to="/app/settings/profile/birthdate" replace />} />
+        <Route path="/app/profile/edit/address" element={<Navigate to="/app/settings/profile/address" replace />} />
         <Route path="/app/profile/:username" element={<ProfilePage />} />
         <Route path="/app/messages" element={<MessagesPage />} />
         <Route path="/app/messages/:roomId" element={<MessagesPage />} />

@@ -11,6 +11,16 @@ export function formatDateTime(value: string | null | undefined): string {
   return `${y}-${m}-${d} ${hh}:${mm}`
 }
 
+export function formatYearMonth(value: string | null | undefined): string {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  return `${y}.${m}`
+}
+
 export function formatDate(value: string | null | undefined): string {
   if (!value) return '-'
   const date = new Date(value)
