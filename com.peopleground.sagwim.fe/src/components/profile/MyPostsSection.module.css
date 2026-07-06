@@ -16,20 +16,23 @@
   gap: var(--sp-3);
 }
 
-/* ── View toggle ── */
+/* ── View toggle (아이콘+라벨 언더라인 탭) ── */
 .viewToggle {
   display: inline-flex;
   align-items: center;
   width: 100%;
   max-width: 360px;
   justify-content: space-around;
+  border-bottom: 1px solid var(--clr-border);
 }
 
 .toggleBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 0 8px;
+  gap: 6px;
+  position: relative;
+  padding: 10px 0 12px;
   color: var(--clr-text-muted);
   background: transparent;
   border: none;
@@ -38,19 +41,41 @@
   flex: 1 1 0;
 }
 
+/* 활성 탭 하단 accent 인디케이터 바 */
+.toggleBtn::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background var(--t-fast);
+}
+
 .toggleBtn:hover:not([aria-selected='true']) {
   color: var(--clr-text);
 }
 
 .toggleBtnActive {
-  color: var(--clr-text);
+  color: var(--clr-accent);
+}
+
+.toggleBtnActive::after {
+  background: var(--clr-accent);
 }
 
 .toggleIcon {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   fill: currentColor;
   stroke: currentColor;
+}
+
+.toggleLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 /* ── Body ── */

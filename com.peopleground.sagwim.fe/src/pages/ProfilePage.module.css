@@ -82,6 +82,21 @@
   margin-top: var(--sp-3);
 }
 
+/* 닉네임과 액션 버튼(편집 / 팔로우·메시지)을 한 줄에 배치 */
+.nameRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.nameActions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
 .displayName {
   font-size: 1.5rem;
   font-weight: 700;
@@ -89,6 +104,7 @@
   margin: 0;
   line-height: 1.2;
   word-break: break-word;
+  min-width: 0;
 }
 
 .bio {
@@ -128,23 +144,17 @@
   color: var(--clr-text-muted);
 }
 
-/* ── 액션 버튼 행 ─────────────────────────────────────────── */
-.headerActions {
-  display: flex;
-  gap: var(--sp-3);
-  margin-top: var(--sp-5);
-}
-
+/* ── 액션 버튼 (닉네임 행 우측 컴팩트 pill) ───────────────── */
 .editButton {
-  flex: 1;
-  height: 40px;
+  height: 34px;
   padding: 0 var(--sp-4);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-full);
   border: 1px solid var(--clr-border);
   background: var(--clr-surface-2);
   color: var(--clr-text);
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
   transition:
     background var(--t-fast),
@@ -165,37 +175,53 @@
   cursor: not-allowed;
 }
 
-.socialButton {
-  flex: 1;
-  height: 44px;
-  border: 1px solid var(--clr-border);
-  border-radius: var(--r-lg);
-  background: var(--clr-surface-2);
-  color: var(--clr-text);
-  font-size: 0.9375rem;
+.followButton {
+  height: 34px;
+  padding: 0 var(--sp-4);
+  border-radius: var(--r-full);
+  border: 1px solid var(--clr-accent);
+  background: var(--clr-accent);
+  color: var(--clr-on-accent);
+  font-size: 0.8125rem;
   font-weight: 700;
+  white-space: nowrap;
   cursor: pointer;
   transition:
     background var(--t-fast),
-    border-color var(--t-fast),
-    color var(--t-fast);
-}
-
-.socialButton:hover {
-  border-color: var(--clr-accent);
-  color: var(--clr-accent);
-}
-
-.followButton {
-  background: var(--clr-accent);
-  border-color: var(--clr-accent);
-  color: var(--clr-on-accent);
+    border-color var(--t-fast);
 }
 
 .followButton:hover {
   background: var(--clr-accent-hover);
   border-color: var(--clr-accent-hover);
-  color: var(--clr-on-accent);
+}
+
+.msgIconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--clr-border);
+  background: var(--clr-surface-2);
+  color: var(--clr-text);
+  cursor: pointer;
+  transition:
+    border-color var(--t-fast),
+    color var(--t-fast);
+}
+
+.msgIconButton:hover {
+  border-color: var(--clr-accent);
+  color: var(--clr-accent);
+}
+
+.msgIcon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
@@ -222,5 +248,10 @@
 
   .displayName {
     font-size: 1.25rem;
+  }
+
+  .editButton,
+  .followButton {
+    padding: 0 var(--sp-3);
   }
 }

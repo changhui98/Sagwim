@@ -384,6 +384,7 @@ export const MyPostsSection = forwardRef<MyPostsSectionHandle, MyPostsSectionPro
                 <circle cx="8" cy="8" r="1.4" />
                 <path d="M5.5 14.5l3.2-3.6 2.5 2 2.4-2.9 1.4 1.6" fill="none" strokeWidth="1.6" />
               </svg>
+              <span className={styles.toggleLabel}>사진</span>
             </button>
             <button
               type="button"
@@ -401,6 +402,7 @@ export const MyPostsSection = forwardRef<MyPostsSectionHandle, MyPostsSectionPro
               >
                 <path d="M4.5 4.5h11a1.5 1.5 0 0 1 1.5 1.5v6.6a1.5 1.5 0 0 1-1.5 1.5H9.4l-3.6 3v-3H4.5A1.5 1.5 0 0 1 3 12.6V6a1.5 1.5 0 0 1 1.5-1.5z" fill="none" strokeWidth="1.6" />
               </svg>
+              <span className={styles.toggleLabel}>글</span>
             </button>
           </div>
         </header>

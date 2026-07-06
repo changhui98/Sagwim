@@ -213,9 +213,53 @@ export function ProfilePage() {
           </div>
 
           <div className={styles.headerInfo}>
-            <h1 className={styles.displayName}>
-              {myProfile?.nickname ?? ' '}
-            </h1>
+            <div className={styles.nameRow}>
+              <h1 className={styles.displayName}>
+                {myProfile?.nickname ?? ' '}
+              </h1>
+
+              <div className={styles.nameActions}>
+                {isOwner ? (
+                  <button
+                    type="button"
+                    className={styles.editButton}
+                    onClick={goProfileEdit}
+                    disabled={!myProfile || profileLoading}
+                  >
+                    프로필 편집
+                  </button>
+                ) : myProfile && viewerProfile ? (
+                  <>
+                    <button type="button" className={styles.followButton}>
+                      팔로우
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.msgIconButton}
+                      aria-label="메시지 보내기"
+                      title="메시지 보내기"
+                      onClick={async () => {
+                        try {
+                          const room = await createDirectRoom(token, myProfile.id)
+                          navigate(`/app/messages/${room.roomId}`)
+                        } catch {
+                          // 에러 무시 (이미 방이 존재하면 그 방으로 이동)
+                        }
+                      }}
+                    >
+                      <svg
+                        className={styles.msgIcon}
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                      >
+                        <path d="M4.5 4.5h11a1.5 1.5 0 0 1 1.5 1.5v6.6a1.5 1.5 0 0 1-1.5 1.5H9.4l-3.6 3v-3H4.5A1.5 1.5 0 0 1 3 12.6V6a1.5 1.5 0 0 1 1.5-1.5z" fill="none" strokeWidth="1.6" />
+                      </svg>
+                    </button>
+                  </>
+                ) : null}
+              </div>
+            </div>
 
             <p
               className={`${styles.bio} ${isOwner ? styles.bioClickable : ''}`}
@@ -250,39 +294,6 @@ export function ProfilePage() {
                 </>
               )}
             </div>
-          </div>
-
-          <div className={styles.headerActions}>
-            {isOwner ? (
-              <button
-                type="button"
-                className={styles.editButton}
-                onClick={goProfileEdit}
-                disabled={!myProfile || profileLoading}
-              >
-                프로필 편집
-              </button>
-            ) : myProfile && viewerProfile ? (
-              <>
-                <button type="button" className={`${styles.socialButton} ${styles.followButton}`}>
-                  팔로우
-                </button>
-                <button
-                  type="button"
-                  className={styles.socialButton}
-                  onClick={async () => {
-                    try {
-                      const room = await createDirectRoom(token, myProfile.id)
-                      navigate(`/app/messages/${room.roomId}`)
-                    } catch {
-                      // 에러 무시 (이미 방이 존재하면 그 방으로 이동)
-                    }
-                  }}
-                >
-                  메시지 보내기
-                </button>
-              </>
-            ) : null}
           </div>
         </section>
 
