@@ -1,0 +1,81 @@
+/* ── TabHome ── */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+.moreBtn {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--clr-text-muted);
+  background: transparent;
+  border: none;
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: color var(--t-fast);
+}
+
+.moreBtn:hover {
+  color: var(--clr-accent);
+}
+
+.description {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--clr-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.emptyText {
+  margin: 0;
+  padding: var(--sp-5) 0;
+  font-size: 0.875rem;
+  color: var(--clr-text-muted);
+  text-align: center;
+}
+
+.scheduleList,
+.postList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.scheduleList li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.upcomingDate {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--clr-pastel-0-fg, var(--clr-accent));
+}

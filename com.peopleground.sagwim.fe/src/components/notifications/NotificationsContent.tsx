@@ -8,7 +8,27 @@ import {
   markNotificationAsRead,
 } from '../../api/notificationApi'
 import type { NotificationResponse } from '../../types/notification'
+import { getPastelTone } from '../../utils/stringUtils'
 import styles from './NotificationsContent.module.css'
+
+/** 알림 타입 → 아바타 우하단 미니 배지(이모지 + 파스텔 톤) */
+function notificationTypeBadge(type: NotificationResponse['type']): { emoji: string; tone: number } | null {
+  switch (type) {
+    case 'CONTENT_LIKED':
+    case 'COMMENT_LIKED':
+    case 'MEETING_LIKED':
+      return { emoji: '❤️', tone: 2 } // 로즈
+    case 'COMMENT_ADDED':
+      return { emoji: '💬', tone: 0 } // 세레니티
+    case 'MEETING_MEMBER_JOINED':
+    case 'MEETING_JOIN_REQUESTED':
+      return { emoji: '👥', tone: 3 } // 세이지
+    case 'MEETING_SCHEDULE_ADDED':
+      return { emoji: '📅', tone: 4 } // 아프리콧
+    default:
+      return null
+  }
+}
 
 /**
  * 알림 메시지 템플릿. 백엔드 NotificationType 별로 분기한다.
@@ -204,6 +224,7 @@ export function NotificationsContent({ onClose }: NotificationsContentProps) {
             const itemClassName = `${styles.notificationItem} ${
               notification.read ? '' : styles.notificationItemUnread
             }`.trim()
+            const typeBadge = notificationTypeBadge(notification.type)
             return (
               <li key={notification.id}>
                 <button
@@ -211,16 +232,26 @@ export function NotificationsContent({ onClose }: NotificationsContentProps) {
                   className={itemClassName}
                   onClick={() => void handleItemClick(notification)}
                 >
-                  <div className={styles.avatar}>
-                    {notification.actorProfileImageUrl ? (
-                      <AvatarImage
-                        src={notification.actorProfileImageUrl}
-                        alt={notification.actorNickname}
-                        fallback={notification.actorNickname[0]}
-                      />
-                    ) : (
-                      <span className={styles.avatarFallback}>
-                        {notification.actorNickname[0]}
+                  <div className={styles.avatarWrap}>
+                    <div className={`${styles.avatar} tone-${getPastelTone(notification.actorNickname)}`}>
+                      {notification.actorProfileImageUrl ? (
+                        <AvatarImage
+                          src={notification.actorProfileImageUrl}
+                          alt={notification.actorNickname}
+                          fallback={notification.actorNickname[0]}
+                        />
+                      ) : (
+                        <span className={styles.avatarFallback}>
+                          {notification.actorNickname[0]}
+                        </span>
+                      )}
+                    </div>
+                    {typeBadge && (
+                      <span
+                        className={`${styles.typeBadge} tone-${typeBadge.tone}`}
+                        aria-hidden="true"
+                      >
+                        {typeBadge.emoji}
                       </span>
                     )}
                   </div>

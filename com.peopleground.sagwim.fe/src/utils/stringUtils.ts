@@ -2,6 +2,13 @@ export function getInitials(name: string): string {
   return name.slice(0, 2).toUpperCase()
 }
 
+/** 이름 → 파스텔 톤 인덱스(0~5). 같은 이름은 항상 같은 색 (전역 .tone-N 클래스와 매칭) */
+export function getPastelTone(name: string): number {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0
+  return Math.abs(hash) % 6
+}
+
 /** UI 표시 시 "대한민국 " prefix를 제거합니다. DB 저장 값은 변경하지 않습니다. */
 export function removeKoreaPrefix(region: string | null | undefined): string | null {
   if (!region) return region ?? null

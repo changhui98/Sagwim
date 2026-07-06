@@ -177,114 +177,122 @@ export function ProfilePage() {
           <p className="alert alert-error" role="alert">{profileError}</p>
         )}
 
-        {/* ── 프로필 헤더 카드: 커버 배너 + 오버랩 아바타 ── */}
+        {/* ── 프로필 헤더: 오픈 히어로 (큰 아바타 + accent 링) ── */}
         <section className={styles.profileHeader} aria-label={isOwner ? '내 프로필' : '사용자 프로필'}>
-          <div className={styles.coverBanner} aria-hidden="true" />
-          <div className={styles.headerBody}>
-            <div className={styles.avatarWrap}>
-              <button
-                type="button"
-                className={styles.avatarButton}
-                onClick={handleAvatarPick}
-                disabled={!isOwner || avatarUploading || !myProfile}
-                aria-label={isOwner ? '프로필 사진 변경' : '프로필 사진'}
-              >
-                {myProfile?.profileImageUrl && !avatarImgError ? (
-                  <img
-                    src={myProfile.profileImageUrl}
-                    alt={`${myProfile.nickname} 프로필 이미지`}
-                    className={styles.avatarImage}
-                    onError={() => setAvatarImgError(true)}
-                  />
-                ) : (
-                  <span className={`avatar ${styles.avatarLg}`}>
-                    {myProfile ? getInitials(myProfile.nickname) : '··'}
-                  </span>
-                )}
-              </button>
-              {isOwner && (
-                <input
-                  ref={avatarInputRef}
-                  type="file"
-                  accept="image/*"
-                  className={styles.avatarInput}
-                  onChange={handleAvatarChange}
-                  disabled={avatarUploading}
+          <div className={styles.avatarWrap}>
+            <button
+              type="button"
+              className={styles.avatarButton}
+              onClick={handleAvatarPick}
+              disabled={!isOwner || avatarUploading || !myProfile}
+              aria-label={isOwner ? '프로필 사진 변경' : '프로필 사진'}
+            >
+              {myProfile?.profileImageUrl && !avatarImgError ? (
+                <img
+                  src={myProfile.profileImageUrl}
+                  alt={`${myProfile.nickname} 프로필 이미지`}
+                  className={styles.avatarImage}
+                  onError={() => setAvatarImgError(true)}
                 />
+              ) : (
+                <span className={`avatar ${styles.avatarLg}`}>
+                  {myProfile ? getInitials(myProfile.nickname) : '··'}
+                </span>
               )}
-            </div>
+            </button>
+            {isOwner && (
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className={styles.avatarInput}
+                onChange={handleAvatarChange}
+                disabled={avatarUploading}
+              />
+            )}
+          </div>
 
-            <div className={styles.headerInfo}>
+          <div className={styles.headerInfo}>
+            <div className={styles.nameRow}>
               <h1 className={styles.displayName}>
                 {myProfile?.nickname ?? ' '}
               </h1>
 
-              <p
-                className={`${styles.bio} ${isOwner ? styles.bioClickable : ''}`}
-                onClick={isOwner ? goProfileEdit : undefined}
-                title={isOwner ? '클릭하여 한 줄 소개 수정' : undefined}
-              >
-                {myProfile?.bio
-                  ? myProfile.bio
-                  : isOwner
-                    ? '한 줄 소개를 작성해보세요.'
-                    : ''}
-              </p>
-
-              <div className={styles.statsRow}>
-                <span className={styles.stat}>
-                  게시글 <strong>{postStats ? `${postStats.count}${postStats.hasMore ? '+' : ''}` : '–'}</strong>
-                </span>
-                {isOwner && myGroups.length > 0 && (
+              <div className={styles.nameActions}>
+                {isOwner ? (
+                  <button
+                    type="button"
+                    className={styles.editButton}
+                    onClick={goProfileEdit}
+                    disabled={!myProfile || profileLoading}
+                  >
+                    프로필 편집
+                  </button>
+                ) : myProfile && viewerProfile ? (
                   <>
-                    <span className={styles.statDot} aria-hidden="true">·</span>
-                    <span className={styles.stat}>
-                      모임 <strong>{`${myGroups.length}${groupsHaveMore ? '+' : ''}`}</strong>
-                    </span>
+                    <button type="button" className={styles.followButton}>
+                      팔로우
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.msgIconButton}
+                      aria-label="메시지 보내기"
+                      title="메시지 보내기"
+                      onClick={async () => {
+                        try {
+                          const room = await createDirectRoom(token, myProfile.id)
+                          navigate(`/app/messages/${room.roomId}`)
+                        } catch {
+                          // 에러 무시 (이미 방이 존재하면 그 방으로 이동)
+                        }
+                      }}
+                    >
+                      <svg
+                        className={styles.msgIcon}
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                      >
+                        <path d="M4.5 4.5h11a1.5 1.5 0 0 1 1.5 1.5v6.6a1.5 1.5 0 0 1-1.5 1.5H9.4l-3.6 3v-3H4.5A1.5 1.5 0 0 1 3 12.6V6a1.5 1.5 0 0 1 1.5-1.5z" fill="none" strokeWidth="1.6" />
+                      </svg>
+                    </button>
                   </>
-                )}
-                {myProfile?.createdAt && (
-                  <>
-                    <span className={styles.statDot} aria-hidden="true">·</span>
-                    <span className={styles.stat}>
-                      가입일 <strong>{formatYearMonth(myProfile.createdAt)}</strong>
-                    </span>
-                  </>
-                )}
+                ) : null}
               </div>
             </div>
 
-            <div className={styles.headerActions}>
-              {isOwner ? (
-                <button
-                  type="button"
-                  className={styles.editButton}
-                  onClick={goProfileEdit}
-                  disabled={!myProfile || profileLoading}
-                >
-                  프로필 편집
-                </button>
-              ) : myProfile && viewerProfile ? (
+            <p
+              className={`${styles.bio} ${isOwner ? styles.bioClickable : ''}`}
+              onClick={isOwner ? goProfileEdit : undefined}
+              title={isOwner ? '클릭하여 한 줄 소개 수정' : undefined}
+            >
+              {myProfile?.bio
+                ? myProfile.bio
+                : isOwner
+                  ? '한 줄 소개를 작성해보세요.'
+                  : ''}
+            </p>
+
+            <div className={styles.statsRow}>
+              <span className={styles.stat}>
+                게시글 <strong>{postStats ? `${postStats.count}${postStats.hasMore ? '+' : ''}` : '–'}</strong>
+              </span>
+              {isOwner && myGroups.length > 0 && (
                 <>
-                  <button type="button" className={`${styles.socialButton} ${styles.followButton}`}>
-                    팔로우
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.socialButton}
-                    onClick={async () => {
-                      try {
-                        const room = await createDirectRoom(token, myProfile.id)
-                        navigate(`/app/messages/${room.roomId}`)
-                      } catch {
-                        // 에러 무시 (이미 방이 존재하면 그 방으로 이동)
-                      }
-                    }}
-                  >
-                    메시지 보내기
-                  </button>
+                  <span className={styles.statDot} aria-hidden="true">·</span>
+                  <span className={styles.stat}>
+                    모임 <strong>{`${myGroups.length}${groupsHaveMore ? '+' : ''}`}</strong>
+                  </span>
                 </>
-              ) : null}
+              )}
+              {myProfile?.createdAt && (
+                <>
+                  <span className={styles.statDot} aria-hidden="true">·</span>
+                  <span className={styles.stat}>
+                    가입일 <strong>{formatYearMonth(myProfile.createdAt)}</strong>
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </section>

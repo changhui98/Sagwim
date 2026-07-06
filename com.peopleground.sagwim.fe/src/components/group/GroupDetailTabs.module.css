@@ -3,7 +3,7 @@
 .tabNav {
   display: flex;
   gap: 0;
-  border-bottom: none;
+  border-bottom: 1px solid var(--clr-border);
   background: transparent;
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   overflow: hidden;
@@ -11,6 +11,7 @@
 }
 
 .tabBtn {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
@@ -42,6 +43,18 @@
   background: transparent;
 }
 
+/* 활성 탭 하단 accent 인디케이터 바 */
+.tabBtnActive::after {
+  content: '';
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 0;
+  height: 2px;
+  background: var(--clr-accent);
+  border-radius: var(--r-full) var(--r-full) 0 0;
+}
+
 .tabBtnActive:hover {
   color: var(--clr-accent);
 }
@@ -64,16 +77,22 @@
 
 .tabLabel {
   line-height: 1;
+  white-space: nowrap;
 }
 
 @media (max-width: 480px) {
   .tabBtn {
     gap: var(--sp-1);
-    padding: var(--sp-3) var(--sp-2);
-    font-size: 0.8125rem;
+    padding: var(--sp-3) var(--sp-1);
+    font-size: 0.75rem;
   }
 
   .tabIcon {
     font-size: 0.9375rem;
+  }
+
+  .tabImageIcon {
+    width: 16px;
+    height: 16px;
   }
 }

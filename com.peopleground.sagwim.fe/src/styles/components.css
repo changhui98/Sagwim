@@ -248,9 +248,17 @@
   border-radius: var(--r-full);
   font-weight: 700;
   flex-shrink: 0;
-  background: var(--clr-accent-muted);
-  color: var(--clr-accent);
+  background: var(--tone-bg, var(--clr-accent-muted));
+  color: var(--tone-fg, var(--clr-accent));
 }
+
+/* ── Pastel tone — 이니셜 아바타 등 구분용 색 브리지 (tone 클래스 없으면 accent 폴백) ── */
+.tone-0 { --tone-bg: var(--clr-pastel-0-bg); --tone-fg: var(--clr-pastel-0-fg); }
+.tone-1 { --tone-bg: var(--clr-pastel-1-bg); --tone-fg: var(--clr-pastel-1-fg); }
+.tone-2 { --tone-bg: var(--clr-pastel-2-bg); --tone-fg: var(--clr-pastel-2-fg); }
+.tone-3 { --tone-bg: var(--clr-pastel-3-bg); --tone-fg: var(--clr-pastel-3-fg); }
+.tone-4 { --tone-bg: var(--clr-pastel-4-bg); --tone-fg: var(--clr-pastel-4-fg); }
+.tone-5 { --tone-bg: var(--clr-pastel-5-bg); --tone-fg: var(--clr-pastel-5-fg); }
 
 .avatar-md {
   width: 36px;

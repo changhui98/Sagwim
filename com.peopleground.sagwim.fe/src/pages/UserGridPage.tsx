@@ -10,7 +10,7 @@ import { Footer } from '../components/Footer'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { Skeleton } from '../components/common/Skeleton'
 import { EmptyState } from '../components/common/EmptyState'
-import { getInitials } from '../utils/stringUtils'
+import { getInitials, getPastelTone } from '../utils/stringUtils'
 import type { UserDetailResponse, UserResponse } from '../types/user'
 import styles from './UserGridPage.module.css'
 
@@ -138,7 +138,7 @@ export function UserGridPage() {
           {loading && <LoadingSpinner overlay />}
           {users.map((user) => (
             <div key={user.id} className={styles.userCard}>
-              <span className={`avatar ${styles.userAvatar}`}>
+              <span className={`avatar tone-${getPastelTone(user.nickname)} ${styles.userAvatar}`}>
                 {getInitials(user.nickname)}
               </span>
               <p className={styles.userNickname}>{user.nickname}</p>

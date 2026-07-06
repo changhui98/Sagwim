@@ -17,8 +17,7 @@ import { Header } from '../components/Header'
 import { Footer } from '../components/Footer'
 import type { GroupResponse } from '../types/group'
 import type { UserDetailResponse } from '../types/user'
-import mapPinAltIcon from '../assets/map-pin-alt-svgrepo-com.svg'
-import arrowNarrowRightIcon from '../assets/arrow-narrow-right-svgrepo-com.svg'
+import sagwimPinIcon from '../assets/sagwim-section-pin.svg'
 import { GroupSection } from '../components/group/GroupSection'
 import { MobileHeader } from '../components/MobileHeader'
 import { HomeTopBar } from '../components/home/HomeTopBar'
@@ -378,24 +377,50 @@ export function GroupListPage() {
           ? renderContent()
           : !profileLoading && (
             <div className={styles.noAddress}>
-              <p className={`${styles.noAddressText} ${styles.animItem} ${styles.animDelay1}`}>
-                <span style={{ color: '#7B92BC' }}>사귐</span>은 동네에서 시작돼요
-              </p>
-              <p className={`${styles.noAddressSubText} ${styles.animItem} ${styles.animDelay2}`}>
-                먼저 우리 동네를 알려주세요.
-              </p>
-              <div className={`${styles.animItem} ${styles.animDelay3}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                <img src={mapPinAltIcon} alt="" width={48} height={48} className={styles.noAddressIcon} />
-                <p className={styles.noAddressHint}>내 동네를 등록하면 가까운 모임이 열려요</p>
+              <div className={`${styles.noAddressHero} ${styles.animItem} ${styles.animDelay1}`}>
+                <img src={sagwimPinIcon} alt="" width={56} height={56} className={styles.noAddressHeroIcon} />
               </div>
+              <h2 className={`${styles.noAddressTitle} ${styles.animItem} ${styles.animDelay2}`}>
+                <span className={styles.noAddressBrand}>사귐</span>은 동네에서 시작돼요
+              </h2>
+              <p className={`${styles.noAddressSubText} ${styles.animItem} ${styles.animDelay2}`}>
+                내 동네를 등록하면 가까운 이웃과의 모임이 열려요
+              </p>
               <button
                 type="button"
-                className={`${styles.noAddressButton} ${styles.animItem} ${styles.animDelay4}`}
+                className={`${styles.noAddressButton} ${styles.animItem} ${styles.animDelay3}`}
                 onClick={() => navigate('/app/settings/profile/address')}
               >
-                등록하기
-                <img src={arrowNarrowRightIcon} alt="" width={16} height={16} className={styles.noAddressButtonIcon} />
+                내 동네 등록하기
+                <span className={styles.noAddressButtonArrow} aria-hidden="true">→</span>
               </button>
+
+              <p className={`${styles.benefitCaption} ${styles.animItem} ${styles.animDelay4}`}>
+                동네를 등록하면 이런 게 열려요
+              </p>
+              <ul className={`${styles.benefitGrid} ${styles.animItem} ${styles.animDelay4}`}>
+                <li className={styles.benefitCard}>
+                  <span className={`${styles.benefitEmoji} ${styles.benefitTone0}`} aria-hidden="true">🏘️</span>
+                  <div className={styles.benefitTextCol}>
+                    <span className={styles.benefitTitle}>가까운 모임 추천</span>
+                    <span className={styles.benefitDesc}>걸어서 만날 수 있는 이웃 모임을 추천해요</span>
+                  </div>
+                </li>
+                <li className={styles.benefitCard}>
+                  <span className={`${styles.benefitEmoji} ${styles.benefitTone5}`} aria-hidden="true">🎯</span>
+                  <div className={styles.benefitTextCol}>
+                    <span className={styles.benefitTitle}>취향 카테고리 탐색</span>
+                    <span className={styles.benefitDesc}>운동·취미·스터디, 관심사별로 골라봐요</span>
+                  </div>
+                </li>
+                <li className={styles.benefitCard}>
+                  <span className={`${styles.benefitEmoji} ${styles.benefitTone4}`} aria-hidden="true">📅</span>
+                  <div className={styles.benefitTextCol}>
+                    <span className={styles.benefitTitle}>이웃과 일정 공유</span>
+                    <span className={styles.benefitDesc}>이번 주 열리는 모임 일정을 한눈에 봐요</span>
+                  </div>
+                </li>
+              </ul>
             </div>
           )}
       </main>

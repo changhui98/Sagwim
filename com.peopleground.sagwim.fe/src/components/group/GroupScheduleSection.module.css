@@ -1,0 +1,30 @@
+/* ── GroupScheduleSection ── */
+
+.wrapper {
+  background: transparent;
+  border: none;
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+  padding: var(--sp-3) 0 0;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+/* 사이드바 배치용 축소 변형 */
+.wrapperCompact {
+  padding-top: 0;
+  gap: var(--sp-4);
+  font-size: 0.9375rem;
+}
+
+.loadingText {
+  font-size: 0.9375rem;
+  color: var(--clr-text-muted);
+}
+
+.loadingInline {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--sp-1);
+}

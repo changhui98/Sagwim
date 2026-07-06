@@ -64,9 +64,17 @@
   transition: all var(--t-fast);
 }
 
+/* 카테고리별 파스텔 톤 (data-tone 0~5 순환, rest 상태는 중립 유지) */
+.chip[data-tone='0'] { --chip-bg: var(--clr-pastel-0-bg); --chip-fg: var(--clr-pastel-0-fg); }
+.chip[data-tone='1'] { --chip-bg: var(--clr-pastel-1-bg); --chip-fg: var(--clr-pastel-1-fg); }
+.chip[data-tone='2'] { --chip-bg: var(--clr-pastel-2-bg); --chip-fg: var(--clr-pastel-2-fg); }
+.chip[data-tone='3'] { --chip-bg: var(--clr-pastel-3-bg); --chip-fg: var(--clr-pastel-3-fg); }
+.chip[data-tone='4'] { --chip-bg: var(--clr-pastel-4-bg); --chip-fg: var(--clr-pastel-4-fg); }
+.chip[data-tone='5'] { --chip-bg: var(--clr-pastel-5-bg); --chip-fg: var(--clr-pastel-5-fg); }
+
 .chip:hover {
-  border-color: var(--clr-accent);
-  color: var(--clr-accent);
+  border-color: var(--chip-fg, var(--clr-accent));
+  color: var(--chip-fg, var(--clr-accent));
   transform: translateY(-1px);
   box-shadow: var(--shadow-xs);
 }
@@ -77,15 +85,25 @@
 }
 
 .chipActive {
-  color: var(--clr-on-accent);
-  background: var(--clr-accent);
-  border-color: var(--clr-accent);
-  box-shadow: 0 2px 10px var(--clr-accent-glow);
+  color: var(--chip-fg, var(--clr-accent));
+  background: var(--chip-bg, var(--clr-accent-muted));
+  border-color: var(--chip-fg, var(--clr-accent));
+  box-shadow: none;
 }
 
 .chipActive:hover {
-  color: var(--clr-on-accent);
-  background: var(--clr-accent-hover);
-  border-color: var(--clr-accent-hover);
+  color: var(--chip-fg, var(--clr-accent));
+  background: var(--chip-bg, var(--clr-accent-muted));
+  border-color: var(--chip-fg, var(--clr-accent));
+  filter: brightness(0.98);
   transform: none;
+}
+
+/* 다크는 기존 반전 강조 유지 (파스텔이 흐려 활성 구분이 약해지는 것 방지) */
+[data-theme='dark'] .chipActive,
+[data-theme='dark'] .chipActive:hover {
+  color: var(--clr-on-accent);
+  background: var(--clr-accent);
+  border-color: var(--clr-accent);
+  filter: none;
 }

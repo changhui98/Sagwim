@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CHIP_KEYS, chipEmoji, chipLabel, type CategoryChipKey } from './categoryFilter'
+import { CHIP_KEYS, chipEmoji, chipLabel, chipTone, type CategoryChipKey } from './categoryFilter'
 import styles from './CategoryChips.module.css'
 
 interface CategoryChipsProps {
@@ -52,6 +52,7 @@ export function CategoryChips({ active, onChange }: CategoryChipsProps) {
             type="button"
             role="tab"
             aria-selected={active === key}
+            data-tone={chipTone(key)}
             className={`${styles.chip} ${active === key ? styles.chipActive : ''}`}
             onClick={() => onChange(key)}
           >
