@@ -64,17 +64,22 @@ export function useGroupSchedules(groupId: number): UseGroupSchedulesResult {
     [token, groupId],
   )
 
+  const fetchDisplayedMonth = useCallback(
+    async (year: number, month: number) => {
+      setLoading(true)
+      try {
+        await fetchMonth(year, month)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [fetchMonth],
+  )
+
   // 표시 월은 진입/월 이동 시마다 재조회해 최신 상태를 유지한다 (기존 TabSchedule 동작)
   useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    void fetchMonth(displayedYear, displayedMonth).finally(() => {
-      if (!cancelled) setLoading(false)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [fetchMonth, displayedYear, displayedMonth])
+    void fetchDisplayedMonth(displayedYear, displayedMonth)
+  }, [fetchDisplayedMonth, displayedYear, displayedMonth])
 
   /** 홈 탭 미리보기용 — 실제 오늘 기준 이번 달·다음 달 캐시를 보장한다. */
   const ensureUpcomingLoaded = useCallback(() => {
@@ -86,15 +91,15 @@ export function useGroupSchedules(groupId: number): UseGroupSchedulesResult {
     void fetchMonth(next.getFullYear(), next.getMonth())
   }, [fetchMonth])
 
-  const handleMonthChange = useCallback((year: number, month: number) => {
+  const handleMonthChange = (year: number, month: number) => {
     setDisplayedYear(year)
     setDisplayedMonth(month)
     setSelectedDate(null)
-  }, [])
+  }
 
-  const handleDateSelect = useCallback((date: string) => {
+  const handleDateSelect = (date: string) => {
     setSelectedDate(date)
-  }, [])
+  }
 
   const handleAttendanceToggle = useCallback(
     async (scheduleId: number) => {
@@ -157,8 +162,8 @@ export function useGroupSchedules(groupId: number): UseGroupSchedulesResult {
     upcomingSchedules,
     loading,
     isCreateModalOpen,
-    openCreateModal: useCallback(() => setIsCreateModalOpen(true), []),
-    closeCreateModal: useCallback(() => setIsCreateModalOpen(false), []),
+    openCreateModal: () => setIsCreateModalOpen(true),
+    closeCreateModal: () => setIsCreateModalOpen(false),
     handleMonthChange,
     handleDateSelect,
     handleAttendanceToggle,

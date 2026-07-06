@@ -14,7 +14,10 @@ import { GroupDetailTabs } from '../components/group/GroupDetailTabs'
 import { TabMemberList } from '../components/group/TabMemberList'
 import { TabPostList } from '../components/group/TabPostList'
 import { GroupScheduleSection } from '../components/group/GroupScheduleSection'
+import { TabHome } from '../components/group/TabHome'
+import { GroupDetailSidebar } from '../components/group/GroupDetailSidebar'
 import { useGroupSchedules } from '../hooks/useGroupSchedules'
+import { useMediaQuery } from '../hooks/useMediaQuery'
 import photoCameraIcon from '../assets/photo-camera-photograph-svgrepo-com.svg'
 import userAlt1Icon from '../assets/user-alt-1-svgrepo-com.svg'
 import type { GroupTab } from '../components/group/GroupDetailTabs'
@@ -40,8 +43,17 @@ export function GroupDetailPage() {
   const [actionLoading, setActionLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const [activeTab, setActiveTab] = useState<GroupTab>('schedule')
+  const [activeTab, setActiveTab] = useState<GroupTab>('home')
   const scheduleState = useGroupSchedules(Number(groupId))
+  // 데스크톱(≥1024px)은 사이드바에 달력이 상시 노출되므로 일정 탭을 숨긴다 — CSS 브레이크포인트와 동일 값
+  const isDesktop = useMediaQuery('(min-width: 1024px)')
+
+  // 모바일에서 일정 탭을 보던 중 데스크톱으로 확장되면 숨겨진 탭에 남지 않도록 홈으로 폴백
+  useEffect(() => {
+    if (isDesktop && activeTab === 'schedule') {
+      setActiveTab('home')
+    }
+  }, [isDesktop, activeTab])
   const [imageUploading, setImageUploading] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
 
@@ -272,46 +284,6 @@ export function GroupDetailPage() {
           >
             &larr; 모임 목록
           </button>
-
-          {!isLeader && (
-            <div className={styles.actionRow}>
-              {isMember ? (
-                <button
-                  type="button"
-                  className={styles.topTextAction}
-                  onClick={handleLeave}
-                  disabled={actionLoading}
-                >
-                  {actionLoading ? '처리 중...' : '모임 탈퇴'}
-                </button>
-              ) : hasPendingRequest ? (
-                <button
-                  type="button"
-                  className={styles.topTextAction}
-                  onClick={handleCancelJoinRequest}
-                  disabled={actionLoading}
-                >
-                  {actionLoading ? '처리 중...' : '신청 취소'}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className={styles.topTextAction}
-                  onClick={handleJoinClick}
-                  disabled={actionLoading || group.currentMemberCount >= group.maxMemberCount}
-                >
-                  {actionLoading
-                    ? '처리 중...'
-                    : group.currentMemberCount >= group.maxMemberCount
-                      ? '정원 초과'
-                      : group.joinType === 'APPROVAL_REQUIRED'
-                        ? '가입 신청'
-                        : '모임 가입'}
-                </button>
-              )}
-              {actionError && <p className={styles.actionErrorText}>{actionError}</p>}
-            </div>
-          )}
         </div>
 
         <div className={styles.groupHeader}>
@@ -383,58 +355,125 @@ export function GroupDetailPage() {
             {group.status === 'PENDING' && (
               <div className={styles.pendingBadge}>승인 대기중 — 관리자 승인 후 활성화됩니다.</div>
             )}
-            <h1 className={styles.groupName}>{group.name}</h1>
-            <div className={styles.memberCountBox}>
+
+            <div className={styles.nameRow}>
+              <h1 className={styles.groupName}>{group.name}</h1>
+              <div className={styles.nameActions}>
+                <div className={styles.likePill}>
+                  <button
+                    type="button"
+                    className={`${styles.likeHeartButton} ${liked ? styles.likeButtonActive : ''}`}
+                    onClick={handleLikeToggle}
+                    disabled={likeLoading}
+                    aria-label={liked ? '좋아요 취소' : '좋아요'}
+                  >
+                    <span className={styles.likeIcon}>{liked ? '♥' : '♡'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.likeCountButton} ${liked ? styles.likeButtonActive : ''}`}
+                    onClick={() => setLikersModalOpen(true)}
+                    aria-label={`좋아요 ${likeCount}명 보기`}
+                  >
+                    <span className={styles.likeCount}>{likeCount}</span>
+                  </button>
+                </div>
+
+                {!isLeader && (
+                  isMember ? (
+                    <button
+                      type="button"
+                      className={styles.leavePillButton}
+                      onClick={handleLeave}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? '처리 중...' : '모임 탈퇴'}
+                    </button>
+                  ) : hasPendingRequest ? (
+                    <button
+                      type="button"
+                      className={styles.leavePillButton}
+                      onClick={handleCancelJoinRequest}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? '처리 중...' : '신청 취소'}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.joinPillButton}
+                      onClick={handleJoinClick}
+                      disabled={actionLoading || group.currentMemberCount >= group.maxMemberCount}
+                    >
+                      {actionLoading
+                        ? '처리 중...'
+                        : group.currentMemberCount >= group.maxMemberCount
+                          ? '정원 초과'
+                          : group.joinType === 'APPROVAL_REQUIRED'
+                            ? '가입 신청'
+                            : '모임 가입'}
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+            {actionError && <p className={styles.actionErrorText}>{actionError}</p>}
+
+            <div className={styles.statsRow}>
               <img src={userAlt1Icon} alt="" aria-hidden="true" className={styles.memberCountIcon} />
-              <span className={styles.memberCountValue}>
-                {group.currentMemberCount} / {group.maxMemberCount}
+              <span>
+                멤버 <strong>{group.currentMemberCount}</strong> / {group.maxMemberCount}
               </span>
             </div>
 
             {group.description && (
               <p className={styles.groupDescription}>{group.description}</p>
             )}
-            <div className={styles.likeArea}>
-              <button
-                type="button"
-                className={`${styles.likeHeartButton} ${liked ? styles.likeButtonActive : ''}`}
-                onClick={handleLikeToggle}
-                disabled={likeLoading}
-                aria-label={liked ? '좋아요 취소' : '좋아요'}
-              >
-                <span className={styles.likeIcon}>{liked ? '♥' : '♡'}</span>
-              </button>
-              <button
-                type="button"
-                className={`${styles.likeCountButton} ${liked ? styles.likeButtonActive : ''}`}
-                onClick={() => setLikersModalOpen(true)}
-                aria-label={`좋아요 ${likeCount}명 보기`}
-              >
-                <span className={styles.likeCount}>{likeCount}</span>
-              </button>
-            </div>
           </div>
         </div>
 
-        <div className={styles.contentDivider} aria-hidden="true" />
-
-        {/* 탭 네비게이션 */}
-        <div className={styles.tabSection}>
-          <GroupDetailTabs activeTab={activeTab} onChange={handleTabChange} isLeader={isLeader} />
-
-          {activeTab === 'posts' && (
-            <TabPostList groupId={Number(groupId)} isMember={isMember} />
-          )}
-          {activeTab === 'members' && (
-            <TabMemberList
-              members={members}
+        <div className={styles.layoutGrid}>
+          {/* 탭 네비게이션 + 콘텐츠 */}
+          <div className={styles.tabSection}>
+            <GroupDetailTabs
+              activeTab={activeTab}
+              onChange={handleTabChange}
               isLeader={isLeader}
-              actionLoading={actionLoading}
-              onKick={handleKick}
+              hideScheduleTab={isDesktop}
             />
-          )}
-          {activeTab === 'schedule' && (
-            <GroupScheduleSection groupId={Number(groupId)} isMember={isMember} schedule={scheduleState} />
+
+            {activeTab === 'home' && (
+              <TabHome
+                group={group}
+                isMember={isMember}
+                schedule={scheduleState}
+                onNavigateTab={handleTabChange}
+                isDesktop={isDesktop}
+              />
+            )}
+            {activeTab === 'posts' && (
+              <TabPostList groupId={Number(groupId)} isMember={isMember} />
+            )}
+            {activeTab === 'members' && (
+              <TabMemberList
+                members={members}
+                isLeader={isLeader}
+                actionLoading={actionLoading}
+                onKick={handleKick}
+              />
+            )}
+            {activeTab === 'schedule' && !isDesktop && (
+              <GroupScheduleSection groupId={Number(groupId)} isMember={isMember} schedule={scheduleState} />
+            )}
+          </div>
+
+          {isDesktop && (
+            <GroupDetailSidebar
+              group={group}
+              likeCount={likeCount}
+              isMember={isMember}
+              schedule={scheduleState}
+            />
           )}
         </div>
       </main>

@@ -1,0 +1,64 @@
+/* ── GroupDetailSidebar (데스크톱 전용) ── */
+
+.sidebar {
+  position: sticky;
+  top: calc(var(--layout-header-h) + var(--sp-6));
+  max-height: calc(100vh - var(--layout-header-h) - var(--sp-12));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  /* sticky 스크롤 시 카드 그림자가 잘리지 않게 여유 패딩 */
+  padding: var(--sp-1);
+  margin: calc(-1 * var(--sp-1));
+}
+
+.summaryCard {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-4) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.badgeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.categoryBadge {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--clr-accent);
+  background: var(--clr-accent-muted);
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-full);
+}
+
+.statsRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  font-size: 0.875rem;
+  color: var(--clr-text-muted);
+}
+
+.statsRow strong {
+  color: var(--clr-text);
+  font-weight: 700;
+}
+
+.statDot {
+  color: var(--clr-text-muted);
+}
+
+.calendarCard {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-4) var(--sp-5) var(--sp-5);
+}

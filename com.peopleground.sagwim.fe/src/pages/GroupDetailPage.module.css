@@ -12,6 +12,24 @@
   gap: var(--sp-6);
 }
 
+/* ── 데스크톱 2컬럼: 좌측 탭 콘텐츠 + 우측 sticky 사이드바 ── */
+.layoutGrid {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .main {
+    max-width: calc(1200px + var(--layout-sidebar-w));
+  }
+
+  .layoutGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: var(--sp-8);
+    align-items: start;
+  }
+}
+
 .loadingWrapper {
   display: flex;
   justify-content: center;
@@ -113,6 +131,13 @@
   object-fit: cover;
 }
 
+/* 데스크톱에서 본문 폭이 넓어져도 히어로가 화면을 압도하지 않게 높이 제한 */
+@media (min-width: 1024px) {
+  .heroImage {
+    max-height: 480px;
+  }
+}
+
 /* 모임장 전용: 사진 영역 클릭 가능 표시 */
 .heroMediaLeader {
   cursor: pointer;
@@ -191,16 +216,13 @@
 }
 
 .groupSummary {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  column-gap: var(--sp-4);
-  row-gap: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-2) var(--sp-1);
-  align-items: center;
 }
 
 .badgeRow {
-  grid-column: 1;
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -256,21 +278,45 @@
   width: fit-content;
 }
 
+/* ── 이름 행: 모임명 + 우측 액션 pill (ProfilePage nameRow 패턴) ── */
+.nameRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
 .groupName {
-  grid-column: 1;
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--clr-text);
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-/* ── 좋아요 영역: 하트 + 숫자를 나란히 배치 ── */
-.likeArea {
-  grid-column: 2;
-  justify-self: end;
+.nameActions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-shrink: 0;
+}
+
+/* 좋아요 pill: 하트(토글) + 숫자(모달) 를 하나의 pill로 묶는다 */
+.likePill {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-1);
+  height: 34px;
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-full);
+  background: var(--clr-surface);
+  transition: border-color var(--t-fast);
+}
+
+.likePill:hover {
+  border-color: var(--clr-accent);
 }
 
 /* 하트 버튼 (토글) */
@@ -317,32 +363,76 @@
 }
 
 .likeIcon {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   line-height: 1;
 }
 
 .likeCount {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 
-.groupDescription {
-  grid-column: 1;
-  font-size: 0.9375rem;
-  color: var(--clr-text-secondary);
-  margin: 0;
-  line-height: 1.6;
+/* 가입 pill: accent 채움 (ProfilePage followButton 톤) */
+.joinPillButton {
+  height: 38px;
+  padding: 0 var(--sp-5);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--clr-on-accent);
+  background: var(--clr-accent-gradient);
+  border: none;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: filter var(--t-fast);
 }
 
-.memberCountBox {
-  grid-column: 2;
-  justify-self: end;
+.joinPillButton:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.joinPillButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 탈퇴/신청취소 pill: 보더형 (hover 시 error 톤) */
+.leavePillButton {
+  height: 34px;
+  padding: 0 var(--sp-4);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--clr-text-secondary);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition:
+    color var(--t-fast),
+    border-color var(--t-fast);
+}
+
+.leavePillButton:hover:not(:disabled) {
+  color: var(--clr-error);
+  border-color: var(--clr-error);
+}
+
+.leavePillButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── 통계 행 (ProfilePage statsRow 패턴) ── */
+.statsRow {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  background: transparent;
-  border-radius: var(--r-md);
-  padding: var(--sp-2) 0;
+  font-size: 0.875rem;
+  color: var(--clr-text-muted);
+}
+
+.statsRow strong {
+  color: var(--clr-text);
+  font-weight: 700;
 }
 
 .memberCountIcon {
@@ -352,16 +442,11 @@
   opacity: 1;
 }
 
-.memberCountValue {
+.groupDescription {
   font-size: 0.9375rem;
-  font-weight: 700;
-  color: var(--clr-text);
-}
-
-.contentDivider {
-  width: 100%;
-  height: 1px;
-  background: var(--clr-border-strong);
+  color: var(--clr-text-secondary);
+  margin: 0;
+  line-height: 1.6;
 }
 
 /* ── Action Row ── */
@@ -786,4 +871,7 @@
     min-height: 220px;
   }
 
+  .nameRow {
+    flex-wrap: wrap;
+  }
 }

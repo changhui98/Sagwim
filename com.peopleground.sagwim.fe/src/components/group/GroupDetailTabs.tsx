@@ -1,18 +1,41 @@
-export type GroupTab = 'posts' | 'members' | 'schedule' | 'settings'
+export type GroupTab = 'home' | 'posts' | 'members' | 'schedule' | 'settings'
 
 interface GroupDetailTabsProps {
   activeTab: GroupTab
   onChange: (tab: GroupTab) => void
   isLeader?: boolean
+  /** 데스크톱 2컬럼에서는 사이드바에 달력이 상시 노출되므로 일정 탭을 숨긴다 */
+  hideScheduleTab?: boolean
 }
 
 import styles from './GroupDetailTabs.module.css'
 
-const TABS: { key: GroupTab; label: string; icon: string }[] = [
-  { key: 'schedule', label: '일정', icon: 'calendar-custom' },
-  { key: 'posts', label: '게시글', icon: 'posts-custom' },
-  { key: 'members', label: '멤버', icon: 'members-custom' },
+const TABS: { key: GroupTab; label: string }[] = [
+  { key: 'home', label: '홈' },
+  { key: 'schedule', label: '일정' },
+  { key: 'posts', label: '게시글' },
+  { key: 'members', label: '멤버' },
 ]
+
+function HomeTabIcon() {
+  return (
+    <svg
+      className={styles.tabImageIcon}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M3 10.5L12 3L21 10.5M5 9V19C5 19.5523 5.44772 20 6 20H9.5V14.5C9.5 13.9477 9.94772 13.5 10.5 13.5H13.5C14.0523 13.5 14.5 13.9477 14.5 14.5V20H18C18.5523 20 19 19.5523 19 19V9"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
 
 function ScheduleTabIcon() {
   return (
@@ -101,10 +124,12 @@ function SettingsTabIcon() {
   )
 }
 
-export function GroupDetailTabs({ activeTab, onChange, isLeader }: GroupDetailTabsProps) {
+export function GroupDetailTabs({ activeTab, onChange, isLeader, hideScheduleTab }: GroupDetailTabsProps) {
+  const visibleTabs = hideScheduleTab ? TABS.filter((tab) => tab.key !== 'schedule') : TABS
+
   return (
     <nav className={styles.tabNav} role="tablist" aria-label="모임 상세 탭">
-      {TABS.map((tab) => (
+      {visibleTabs.map((tab) => (
         <button
           key={tab.key}
           type="button"
@@ -114,9 +139,11 @@ export function GroupDetailTabs({ activeTab, onChange, isLeader }: GroupDetailTa
           className={`${styles.tabBtn} ${activeTab === tab.key ? styles.tabBtnActive : ''}`}
           onClick={() => onChange(tab.key)}
         >
+          {tab.key === 'home' && <HomeTabIcon />}
           {tab.key === 'schedule' && <ScheduleTabIcon />}
           {tab.key === 'posts' && <PostsTabIcon />}
           {tab.key === 'members' && <MembersTabIcon />}
+          <span className={styles.tabLabel}>{tab.label}</span>
         </button>
       ))}
       {isLeader && (
@@ -129,6 +156,7 @@ export function GroupDetailTabs({ activeTab, onChange, isLeader }: GroupDetailTa
           onClick={() => onChange('settings')}
         >
           <SettingsTabIcon />
+          <span className={styles.tabLabel}>설정</span>
         </button>
       )}
     </nav>
