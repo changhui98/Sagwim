@@ -25,3 +25,7 @@ export const chipEmoji = (key: CategoryChipKey): string => {
   if (key === 'ONLINE') return '💻'
   return GROUP_CATEGORY_LABELS[key].split(/\s+/)[0]
 }
+
+/** 칩 키별 파스텔 톤 인덱스(0~5 순환, --clr-pastel-* 토큰과 매칭) */
+export const chipTone = (key: CategoryChipKey): number =>
+  Math.max(CHIP_KEYS.indexOf(key), 0) % 6

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { getGroupLikers } from '../../api/groupApi'
 import type { GroupLikerResponse } from '../../api/groupApi'
+import { getPastelTone } from '../../utils/stringUtils'
 import styles from './GroupLikersModal.module.css'
 
 const PAGE_SIZE = 20
@@ -145,7 +146,7 @@ export function GroupLikersModal({ isOpen, groupId, token, onClose }: GroupLiker
                         className={styles.avatarImg}
                       />
                     ) : (
-                      <span className={`avatar ${styles.avatarFallback}`}>
+                      <span className={`avatar tone-${getPastelTone(liker.nickname)} ${styles.avatarFallback}`}>
                         {liker.nickname.charAt(0).toUpperCase()}
                       </span>
                     )}

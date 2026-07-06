@@ -28,7 +28,7 @@ const PAGE_SIZE = 12
 const VIEW_MODE_STORAGE_KEY = 'sagwim.profile.myPosts.viewMode'
 
 const myPostsEmptyIcon = <MenuMeatballsIcon />
-const MY_POSTS_EMPTY_ICON_COLOR = 'var(--clr-accent)'
+const MY_POSTS_EMPTY_ICON_COLOR = 'var(--clr-lavender-strong)'
 
 interface MyPostsSectionProps {
   username?: string

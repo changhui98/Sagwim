@@ -93,9 +93,9 @@
   }
 }
 
-/* 정적 서비스 배너 슬라이드 */
+/* 정적 서비스 배너 슬라이드 — 세레니티→라벤더 듀오 */
 .slideStatic {
-  background: var(--clr-accent-gradient);
+  background: var(--clr-duo-gradient);
 }
 
 .staticContent {

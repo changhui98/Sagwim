@@ -63,7 +63,7 @@
 }
 
 .toggleBtnActive::after {
-  background: var(--clr-accent);
+  background: var(--clr-duo-gradient);
 }
 
 .toggleIcon {

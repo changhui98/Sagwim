@@ -10,6 +10,7 @@ import type { ContentResponse } from '../../types/post'
 import type { GroupResponse } from '../../types/group'
 import { GROUP_CATEGORY_LABELS } from '../../types/group'
 import type { SearchHistoryResponse } from '../../types/searchHistory'
+import { getPastelTone } from '../../utils/stringUtils'
 import styles from './SearchContent.module.css'
 
 interface SearchResults {
@@ -167,7 +168,7 @@ export function SearchContent({ onClose }: SearchContentProps) {
                   onClick={() => handleRecentClick(item)}
                 >
                   {item.type === 'USER' && (
-                    <div className={styles.avatar}>
+                    <div className={`${styles.avatar} tone-${getPastelTone(item.label)}`}>
                       {item.profileImageUrl ? (
                         <AvatarImage
                           src={item.profileImageUrl}
@@ -218,7 +219,7 @@ export function SearchContent({ onClose }: SearchContentProps) {
                   className={styles.resultItem}
                   onClick={() => handleUserClick(user.username)}
                 >
-                  <div className={styles.avatar}>
+                  <div className={`${styles.avatar} tone-${getPastelTone(user.nickname)}`}>
                     {user.profileImageUrl ? (
                       <AvatarImage
                         src={user.profileImageUrl}
@@ -285,7 +286,7 @@ export function SearchContent({ onClose }: SearchContentProps) {
                   className={styles.resultItem}
                   onClick={() => handleGroupClick(group.id)}
                 >
-                  <div className={styles.avatar}>
+                  <div className={`${styles.avatar} tone-${getPastelTone(group.name)}`}>
                     {group.imageUrl ? (
                       <img
                         src={group.imageUrl}
