@@ -18,14 +18,15 @@
 }
 
 @media (min-width: 1024px) {
+  /* Header .inner(max-width 1080px)와 동일 기준으로 정렬 */
   .main {
-    max-width: calc(1200px + var(--layout-sidebar-w));
+    max-width: calc(1080px + var(--layout-sidebar-w));
   }
 
   .layoutGrid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    gap: var(--sp-8);
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: var(--sp-6);
     align-items: start;
   }
 }
@@ -124,17 +125,20 @@
   position: relative;
 }
 
+/* 원본 비율 보존 레터박스 — 게시글 이미지(PostCard .image)와 동일 패턴 */
 .heroImage {
   display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  max-height: 480px;
+  margin: 0 auto;
+  object-fit: contain;
 }
 
-/* 데스크톱에서 본문 폭이 넓어져도 히어로가 화면을 압도하지 않게 높이 제한 */
 @media (min-width: 1024px) {
   .heroImage {
-    max-height: 480px;
+    max-height: 560px;
   }
 }
 
