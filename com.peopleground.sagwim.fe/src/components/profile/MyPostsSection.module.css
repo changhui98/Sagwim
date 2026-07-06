@@ -237,7 +237,7 @@
 .photoEmptyEmoji {
   width: 44px;
   height: 44px;
-  fill: #91A8D0;
+  fill: var(--clr-accent);
 }
 
 .errorBox {

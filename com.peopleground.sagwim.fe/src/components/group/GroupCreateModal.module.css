@@ -184,27 +184,20 @@
 
 /* 오프라인 선택 시: 초록 계열 */
 .meetingTypeBtnActive {
-  border-color: #38a169;
-  background: #f0fff4;
-  color: #276749;
+  border-color: var(--clr-success);
+  background: var(--clr-success-soft-bg);
+  color: var(--clr-success-strong);
 }
 
 /* 온라인 선택 시: 파란 계열 (Active + Online 조합) */
 .meetingTypeBtnOnline {
-  border-color: #3182ce;
-  background: #ebf8ff;
-  color: #2b6cb0;
+  border-color: var(--clr-info);
+  background: var(--clr-info-soft);
+  color: var(--clr-info-strong);
 }
 
-[data-theme='dark'] .meetingTypeBtnActive {
-  background: rgba(255, 255, 255, 0.08);
-  color: #d4d4d4;
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
+[data-theme='dark'] .meetingTypeBtnActive,
 [data-theme='dark'] .meetingTypeBtnOnline {
-  background: rgba(255, 255, 255, 0.08);
-  color: #d4d4d4;
   border-color: rgba(255, 255, 255, 0.18);
 }
 

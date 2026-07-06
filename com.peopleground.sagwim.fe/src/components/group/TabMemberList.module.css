@@ -111,8 +111,8 @@
   right: var(--sp-2);
   font-size: 0.625rem;
   font-weight: 700;
-  color: #6366f1;
-  background: rgba(99, 102, 241, 0.12);
+  color: var(--clr-lavender-strong);
+  background: var(--clr-lavender-muted);
   padding: 1px var(--sp-2);
   border-radius: var(--r-full);
   line-height: 1.4;

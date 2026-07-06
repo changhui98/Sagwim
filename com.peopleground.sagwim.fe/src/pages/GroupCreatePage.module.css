@@ -200,20 +200,20 @@
 }
 
 .categoryPill:hover:not(:disabled) {
-  border-color: #91A8D0;
-  color: #5E78B0;
+  border-color: var(--clr-accent);
+  color: var(--clr-pastel-0-fg);
 }
 
 .categoryPillSelected {
-  background: #e8eef7;
-  border-color: #91A8D0;
-  color: #5E78B0;
+  background: var(--clr-pastel-0-bg);
+  border-color: var(--clr-accent);
+  color: var(--clr-pastel-0-fg);
   font-weight: 600;
 }
 
 .categoryPillSelected:hover:not(:disabled) {
-  background: #e8eef7;
-  color: #5E78B0;
+  background: var(--clr-pastel-0-bg);
+  color: var(--clr-pastel-0-fg);
 }
 
 /* 다크모드 — 카테고리 칩을 모노톤으로 (밝은 핑크 누수 방지) */
@@ -677,14 +677,14 @@ aside.desktopOnlyField {
 }
 
 .mobileCategoryBtn:hover:not(:disabled) {
-  border-color: #91A8D0;
-  color: #5E78B0;
+  border-color: var(--clr-accent);
+  color: var(--clr-pastel-0-fg);
 }
 
 .mobileCategoryBtnSelected {
-  background: #e8eef7;
-  border-color: #91A8D0;
-  color: #5E78B0;
+  background: var(--clr-pastel-0-bg);
+  border-color: var(--clr-accent);
+  color: var(--clr-pastel-0-fg);
   font-weight: 600;
 }
 

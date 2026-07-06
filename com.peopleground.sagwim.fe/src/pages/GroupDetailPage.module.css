@@ -217,42 +217,29 @@
   width: fit-content;
 }
 
-/* 온라인 뱃지: 파란 계열 */
+/* 온라인 뱃지: 파란 계열 (다크는 토큰이 무채색으로 반전) */
 .meetingTypeBadgeOnline {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #2b6cb0;
-  background: #ebf8ff;
+  color: var(--clr-info-strong);
+  background: var(--clr-info-soft);
   padding: 2px var(--sp-2);
   border-radius: var(--r-full);
   width: fit-content;
-  border: 1px solid #bee3f8;
+  border: 1px solid var(--clr-info-border);
 }
 
 /* 오프라인 뱃지: 초록 계열 */
 .meetingTypeBadgeOffline {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #276749;
-  background: #f0fff4;
+  color: var(--clr-success-strong);
+  background: var(--clr-success-soft-bg);
   padding: 2px var(--sp-2);
   border-radius: var(--r-full);
   width: fit-content;
-  border: 1px solid #c6f6d5;
+  border: 1px solid var(--clr-success-border);
 }
-
-[data-theme='dark'] .meetingTypeBadgeOnline {
-  background: rgba(255, 255, 255, 0.08);
-  color: #d4d4d4;
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
-[data-theme='dark'] .meetingTypeBadgeOffline {
-  background: rgba(255, 255, 255, 0.08);
-  color: #d4d4d4;
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
 
 /* 승인 대기중 안내 배지 */
 .pendingBadge {
@@ -261,18 +248,12 @@
   gap: var(--sp-2);
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #92400e;
-  background: #fef3c7;
-  border: 1px solid #fde68a;
+  color: var(--clr-warning-strong);
+  background: var(--clr-warning-soft);
+  border: 1px solid var(--clr-warning-border);
   padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-md);
   width: fit-content;
-}
-
-[data-theme='dark'] .pendingBadge {
-  background: rgba(255, 255, 255, 0.08);
-  color: #d4d4d4;
-  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .groupName {
@@ -514,8 +495,8 @@
 .subLeaderBadge {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6366f1;
-  background: rgba(99, 102, 241, 0.12);
+  color: var(--clr-lavender-strong);
+  background: var(--clr-lavender-muted);
   padding: 2px var(--sp-2);
   border-radius: var(--r-full);
   flex-shrink: 0;
@@ -634,26 +615,19 @@
 }
 
 .editMeetingTypeBtnActive {
-  border-color: #38a169;
-  background: #f0fff4;
-  color: #276749;
+  border-color: var(--clr-success);
+  background: var(--clr-success-soft-bg);
+  color: var(--clr-success-strong);
 }
 
 .editMeetingTypeBtnOnline {
-  border-color: #3182ce;
-  background: #ebf8ff;
-  color: #2b6cb0;
+  border-color: var(--clr-info);
+  background: var(--clr-info-soft);
+  color: var(--clr-info-strong);
 }
 
-[data-theme='dark'] .editMeetingTypeBtnActive {
-  background: rgba(255, 255, 255, 0.08);
-  color: #d4d4d4;
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
+[data-theme='dark'] .editMeetingTypeBtnActive,
 [data-theme='dark'] .editMeetingTypeBtnOnline {
-  background: rgba(255, 255, 255, 0.08);
-  color: #d4d4d4;
   border-color: rgba(255, 255, 255, 0.18);
 }
 

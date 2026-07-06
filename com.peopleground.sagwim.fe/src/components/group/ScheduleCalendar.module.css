@@ -71,11 +71,11 @@
 }
 
 .weekdayCell.sunday {
-  color: #ef4444;
+  color: var(--clr-cal-sunday);
 }
 
 .weekdayCell.saturday {
-  color: #3b82f6;
+  color: var(--clr-cal-saturday);
 }
 
 /* 빈 셀 */
@@ -113,11 +113,11 @@
 }
 
 .dayCell.sunday .dayNumber {
-  color: #ef4444;
+  color: var(--clr-cal-sunday);
 }
 
 .dayCell.saturday .dayNumber {
-  color: #3b82f6;
+  color: var(--clr-cal-saturday);
 }
 
 .dayNumber {
@@ -129,7 +129,7 @@
 
 .holidayName {
   font-size: 0.625rem;
-  color: #ef4444;
+  color: var(--clr-cal-sunday);
   line-height: 1.1;
   max-width: 100%;
   white-space: nowrap;
@@ -139,16 +139,16 @@
 }
 
 .dayCell.holiday .dayNumber {
-  color: #ef4444;
+  color: var(--clr-cal-sunday);
   font-weight: 700;
 }
 
 .holidayNameSubstitute {
-  color: #f59e0b;
+  color: var(--clr-cal-substitute);
 }
 
 .dayCell.substituteHoliday .dayNumber {
-  color: #f59e0b;
+  color: var(--clr-cal-substitute);
   font-weight: 700;
 }
 

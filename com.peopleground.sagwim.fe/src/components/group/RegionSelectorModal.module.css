@@ -96,15 +96,13 @@
 }
 
 .regionBtnActive {
-  border-color: #38a169;
-  background: #f0fff4;
-  color: #276749;
+  border-color: var(--clr-success);
+  background: var(--clr-success-soft-bg);
+  color: var(--clr-success-strong);
   font-weight: 700;
 }
 
 [data-theme='dark'] .regionBtnActive {
-  background: rgba(255, 255, 255, 0.08);
-  color: #d4d4d4;
   border-color: rgba(255, 255, 255, 0.18);
 }
 

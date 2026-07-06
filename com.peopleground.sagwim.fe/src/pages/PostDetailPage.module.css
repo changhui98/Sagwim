@@ -1050,7 +1050,7 @@
   left: -3px;
   font-size: 0.875rem;
   line-height: 1;
-  color: #5E78B0;
+  color: var(--clr-pastel-0-fg);
   pointer-events: none;
 }
 

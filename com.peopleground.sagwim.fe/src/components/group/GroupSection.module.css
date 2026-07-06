@@ -232,12 +232,12 @@
 }
 
 .imageBadgeOnline {
-  background: rgba(49, 130, 206, 0.8);
+  background: var(--clr-overlay-online);
   color: #fff;
 }
 
 .imageBadgeOffline {
-  background: rgba(56, 161, 105, 0.8);
+  background: var(--clr-overlay-offline);
   color: #fff;
 }
 
@@ -318,12 +318,13 @@
   transition: color var(--t-fast);
 }
 
+/* 좋아요는 PostCard .liked 와 동일하게 error 레드로 통일 */
 .likeButton:hover {
-  color: var(--clr-accent);
+  color: var(--clr-error);
 }
 
 .likeButtonActive {
-  color: var(--clr-accent);
+  color: var(--clr-error);
 }
 
 /* 승인 대기중 배지 (이미지 위 오른쪽 상단) */
@@ -331,7 +332,7 @@
   position: absolute;
   top: var(--sp-2);
   right: var(--sp-2);
-  background: rgba(245, 158, 11, 0.9);
+  background: var(--clr-overlay-pending);
   color: #fff;
   font-size: 0.6875rem;
   font-weight: 700;
@@ -346,7 +347,7 @@
   position: absolute;
   top: var(--sp-2);
   right: var(--sp-2);
-  background: rgba(239, 68, 68, 0.88);
+  background: var(--clr-overlay-urgent);
   color: #fff;
   font-size: 0.6875rem;
   font-weight: 700;

@@ -16,12 +16,63 @@
   --clr-on-accent: #ffffff;
   --clr-primary: var(--clr-accent);
 
+  /* Secondary — Lavender (세레니티와 짝을 이루는 보조색) */
+  --clr-lavender: #AFA5D6;
+  --clr-lavender-hover: #9A8EC7;
+  --clr-lavender-strong: #7A6EAE; /* 흰 배경 위 텍스트용 (대비 4.5:1) */
+  --clr-lavender-muted: rgba(175, 165, 214, 0.14);
+  --clr-lavender-soft: #F2EFF9;
+  --clr-lavender-glow: rgba(175, 165, 214, 0.25);
+
+  /* Duo gradient — 세레니티→라벤더. 장식 표면(배너·타이틀 바·언더라인) 전용,
+     버튼류는 기존 --clr-accent-gradient 유지 */
+  --clr-duo-gradient: linear-gradient(135deg, #91A8D0 0%, #AFA5D6 100%);
+  --clr-duo-bar-gradient: linear-gradient(180deg, #91A8D0 0%, #AFA5D6 100%);
+
+  /* Pastel set — 칩·아바타 이니셜용 bg/fg 쌍 (전부 WCAG AA 4.5:1 이상) */
+  --clr-pastel-0-bg: #E8EEF7;
+  --clr-pastel-0-fg: #54689B; /* 세레니티 */
+  --clr-pastel-1-bg: #F2EFF9;
+  --clr-pastel-1-fg: #6C5FA3; /* 라벤더 */
+  --clr-pastel-2-bg: #F7EAEF;
+  --clr-pastel-2-fg: #96536E; /* 로즈 */
+  --clr-pastel-3-bg: #E7F3EC;
+  --clr-pastel-3-fg: #3B7354; /* 세이지 */
+  --clr-pastel-4-bg: #FBF0E1;
+  --clr-pastel-4-fg: #8F612C; /* 아프리콧 */
+  --clr-pastel-5-bg: #E3F1F3;
+  --clr-pastel-5-fg: #3B717B; /* 아쿠아 */
+
   /* Semantic */
   --clr-error: #ef4444;
   --clr-error-soft: rgba(239, 68, 68, 0.1);
   --clr-success: #10b981;
   --clr-success-soft: rgba(16, 185, 129, 0.1);
   --clr-warning: #f59e0b;
+
+  /* Semantic 보강 — 흩어진 하드코딩 배지 색 흡수
+     (기존 --clr-success-soft 는 rgba 라 solid 배경은 -soft-bg 로 분리) */
+  --clr-warning-soft: #FEF3C7;
+  --clr-warning-strong: #92400E;
+  --clr-warning-border: #FDE68A;
+  --clr-info: #3182CE;
+  --clr-info-strong: #2B6CB0;
+  --clr-info-soft: #EBF8FF;
+  --clr-info-border: #BEE3F8;
+  --clr-success-strong: #276749;
+  --clr-success-soft-bg: #F0FFF4;
+  --clr-success-border: #C6F6D5;
+
+  /* 이미지 위 오버레이 배지 (모임 카드) */
+  --clr-overlay-online: rgba(49, 130, 206, 0.8);
+  --clr-overlay-offline: rgba(56, 161, 105, 0.8);
+  --clr-overlay-pending: rgba(245, 158, 11, 0.9);
+  --clr-overlay-urgent: rgba(239, 68, 68, 0.88);
+
+  /* 캘린더 요일 */
+  --clr-cal-sunday: #EF4444;
+  --clr-cal-saturday: #3B82F6;
+  --clr-cal-substitute: #F59E0B;
 
   /* Surface — Light Mode */
   --clr-bg: #ffffff;
@@ -101,6 +152,42 @@
   --clr-accent-glow: rgba(255, 255, 255, 0.16);
   --clr-accent-gradient: linear-gradient(135deg, #fafafa 0%, #d4d4d4 100%);
   --clr-on-accent: #0a0a0a;
+
+  /* Secondary/Duo — 다크는 무채색 컨셉 유지를 위해 모노톤으로 반전 */
+  --clr-lavender: #d4d4d4;
+  --clr-lavender-hover: #e5e5e5;
+  --clr-lavender-strong: #d4d4d4;
+  --clr-lavender-muted: rgba(255, 255, 255, 0.10);
+  --clr-lavender-soft: rgba(255, 255, 255, 0.06);
+  --clr-lavender-glow: rgba(255, 255, 255, 0.14);
+  --clr-duo-gradient: linear-gradient(135deg, #fafafa 0%, #b8b8b8 100%);
+  --clr-duo-bar-gradient: linear-gradient(180deg, #fafafa 0%, #b8b8b8 100%);
+
+  /* Pastel — 다크는 통일 무채색 (기존 다크 배지 관례와 동일) */
+  --clr-pastel-0-bg: rgba(255, 255, 255, 0.08);
+  --clr-pastel-0-fg: #d4d4d4;
+  --clr-pastel-1-bg: rgba(255, 255, 255, 0.08);
+  --clr-pastel-1-fg: #d4d4d4;
+  --clr-pastel-2-bg: rgba(255, 255, 255, 0.08);
+  --clr-pastel-2-fg: #d4d4d4;
+  --clr-pastel-3-bg: rgba(255, 255, 255, 0.08);
+  --clr-pastel-3-fg: #d4d4d4;
+  --clr-pastel-4-bg: rgba(255, 255, 255, 0.08);
+  --clr-pastel-4-fg: #d4d4d4;
+  --clr-pastel-5-bg: rgba(255, 255, 255, 0.08);
+  --clr-pastel-5-fg: #d4d4d4;
+
+  /* Semantic soft/strong/border — 다크 배지 무채색화
+     (--clr-info, --clr-cal-*, --clr-overlay-* 는 기능색이라 라이트 값 상속) */
+  --clr-warning-soft: rgba(255, 255, 255, 0.08);
+  --clr-warning-strong: #d4d4d4;
+  --clr-warning-border: rgba(255, 255, 255, 0.18);
+  --clr-info-soft: rgba(255, 255, 255, 0.08);
+  --clr-info-strong: #d4d4d4;
+  --clr-info-border: rgba(255, 255, 255, 0.18);
+  --clr-success-soft-bg: rgba(255, 255, 255, 0.08);
+  --clr-success-strong: #d4d4d4;
+  --clr-success-border: rgba(255, 255, 255, 0.18);
 
   /* Shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
