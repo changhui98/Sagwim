@@ -13,7 +13,8 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { GroupDetailTabs } from '../components/group/GroupDetailTabs'
 import { TabMemberList } from '../components/group/TabMemberList'
 import { TabPostList } from '../components/group/TabPostList'
-import { TabSchedule } from '../components/group/TabSchedule'
+import { GroupScheduleSection } from '../components/group/GroupScheduleSection'
+import { useGroupSchedules } from '../hooks/useGroupSchedules'
 import photoCameraIcon from '../assets/photo-camera-photograph-svgrepo-com.svg'
 import userAlt1Icon from '../assets/user-alt-1-svgrepo-com.svg'
 import type { GroupTab } from '../components/group/GroupDetailTabs'
@@ -40,6 +41,7 @@ export function GroupDetailPage() {
   const [error, setError] = useState('')
 
   const [activeTab, setActiveTab] = useState<GroupTab>('schedule')
+  const scheduleState = useGroupSchedules(Number(groupId))
   const [imageUploading, setImageUploading] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
 
@@ -432,7 +434,7 @@ export function GroupDetailPage() {
             />
           )}
           {activeTab === 'schedule' && (
-            <TabSchedule groupId={Number(groupId)} isMember={isMember} />
+            <GroupScheduleSection groupId={Number(groupId)} isMember={isMember} schedule={scheduleState} />
           )}
         </div>
       </main>
