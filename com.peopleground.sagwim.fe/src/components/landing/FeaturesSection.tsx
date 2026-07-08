@@ -7,6 +7,8 @@ interface Feature {
   title: string
   desc: string
   visual: ReactNode
+  /* 전역 .tone-N 파스텔 브리지 인덱스 */
+  tone: number
 }
 
 /* ── 각 기능의 미니 목업 (순수 CSS/마크업) ── */
@@ -97,18 +99,21 @@ const FEATURES: Feature[] = [
     title: '관심사로 모이는 우리 동네 모임',
     desc: '카테고리·지역·인원으로 딱 맞는 모임을 찾고, 원하는 모임이 없다면 직접 만들어 이웃을 초대하세요.',
     visual: <GroupMock />,
+    tone: 0,
   },
   {
     tag: '게시판',
     title: '동네 소식과 일상을 나누는 게시판',
     desc: '모임 안에서, 또 동네 안에서 사진과 이야기를 공유하고 댓글과 좋아요로 가볍게 소통해요.',
     visual: <BoardMock />,
+    tone: 1,
   },
   {
     tag: '실시간 채팅',
     title: '바로 통하는 실시간 채팅',
     desc: '약속을 잡을 때도, 안부를 물을 때도. 모임원과 실시간으로 메시지를 주고받아요.',
     visual: <ChatMock />,
+    tone: 5,
   },
 ]
 
@@ -127,7 +132,7 @@ function FeatureRow({ feature, flip }: { feature: Feature; flip: boolean }) {
         .join(' ')}
     >
       <div className={styles.text}>
-        <span className={styles.tag}>{feature.tag}</span>
+        <span className={`${styles.tag} tone-${feature.tone}`}>{feature.tag}</span>
         <h3 className={styles.rowTitle}>{feature.title}</h3>
         <p className={styles.rowDesc}>{feature.desc}</p>
       </div>
@@ -142,6 +147,7 @@ export function FeaturesSection() {
       <div className={styles.inner}>
         <header className={styles.head}>
           <h2 className={styles.title}>사귐으로 할 수 있는 것</h2>
+          <span className={styles.titleBar} aria-hidden />
           <p className={styles.lead}>모임을 찾고, 이야기를 나누고, 실시간으로 소통하세요.</p>
         </header>
 

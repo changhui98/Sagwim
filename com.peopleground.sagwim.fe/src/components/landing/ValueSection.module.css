@@ -20,6 +20,15 @@
   color: var(--clr-text);
 }
 
+.titleBar {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: var(--r-full);
+  background: var(--clr-duo-gradient);
+  margin: 0 auto var(--sp-3);
+}
+
 .lead {
   margin: 0 auto;
   max-width: 34rem;
@@ -55,6 +64,7 @@
 
 .card:hover {
   box-shadow: var(--shadow-lg);
+  border-color: var(--clr-accent-glow);
   transform: translateY(-2px);
 }
 
@@ -63,15 +73,16 @@
   transform: none;
 }
 
+/* 카드별 파스텔 원형 배지 — 전역 .tone-N 브리지, 톤 없으면 accent 폴백 */
 .iconWrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 48px;
   height: 48px;
-  border-radius: var(--r-lg);
-  background: var(--clr-accent-muted);
-  color: var(--clr-accent);
+  border-radius: var(--r-full);
+  background: var(--tone-bg, var(--clr-accent-muted));
+  color: var(--tone-fg, var(--clr-accent));
 }
 
 .iconWrap svg {

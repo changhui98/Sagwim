@@ -17,7 +17,7 @@ import styles from './ServiceHomePage.module.css'
  * → 사용 흐름 → 가입 CTA 순으로 구성한다.
  */
 export function ServiceHomePage() {
-  const { meRole } = useAuth()
+  const { meRole, isAuthenticated, meNickname } = useAuth()
   const handleLogout = useLogout()
 
   return (
@@ -27,11 +27,11 @@ export function ServiceHomePage() {
       <MobileHeader onLogout={handleLogout} />
 
       <main className={styles.main}>
-        <HeroSection />
+        <HeroSection isAuthenticated={isAuthenticated} nickname={meNickname} />
         <ValueSection />
         <FeaturesSection />
         <HowItWorksSection />
-        <CtaSection />
+        <CtaSection isAuthenticated={isAuthenticated} />
       </main>
       <Footer />
     </>

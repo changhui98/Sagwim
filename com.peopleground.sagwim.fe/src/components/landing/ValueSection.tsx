@@ -6,6 +6,8 @@ interface ValueItem {
   icon: ReactNode
   title: string
   desc: string
+  /* 전역 .tone-N 파스텔 브리지 인덱스 */
+  tone: number
 }
 
 const VALUES: ValueItem[] = [
@@ -23,6 +25,7 @@ const VALUES: ValueItem[] = [
     ),
     title: '걸어서 닿는 거리',
     desc: '우리 동네, 가까운 이웃부터. 멀리 가지 않아도 만날 사람이 많아요.',
+    tone: 0,
   },
   {
     icon: (
@@ -37,6 +40,7 @@ const VALUES: ValueItem[] = [
     ),
     title: '취향이 닿는 사람',
     desc: '운동, 독서, 맛집, 게임까지. 좋아하는 게 같은 사람과 자연스럽게 이어져요.',
+    tone: 3,
   },
   {
     icon: (
@@ -51,6 +55,7 @@ const VALUES: ValueItem[] = [
     ),
     title: '부담 없는 시작',
     desc: '클릭 몇 번이면 충분해요. 모임 가입도, 새 모임 만들기도 가볍게.',
+    tone: 4,
   },
 ]
 
@@ -65,6 +70,7 @@ export function ValueSection() {
       >
         <header className={styles.head}>
           <h2 className={styles.title}>동네가 더 가까워지는 이유</h2>
+          <span className={styles.titleBar} aria-hidden />
           <p className={styles.lead}>
             사귐은 멀리 있는 친구가 아니라, 가까운 이웃과의 만남을 돕습니다.
           </p>
@@ -77,7 +83,7 @@ export function ValueSection() {
               className={styles.card}
               style={{ transitionDelay: `${i * 0.1}s` }}
             >
-              <span className={styles.iconWrap}>{v.icon}</span>
+              <span className={`${styles.iconWrap} tone-${v.tone}`}>{v.icon}</span>
               <h3 className={styles.cardTitle}>{v.title}</h3>
               <p className={styles.cardDesc}>{v.desc}</p>
             </article>

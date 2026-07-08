@@ -21,6 +21,15 @@
   color: var(--clr-text);
 }
 
+.titleBar {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: var(--r-full);
+  background: var(--clr-duo-gradient);
+  margin: 0 auto var(--sp-3);
+}
+
 .lead {
   margin: 0 auto;
   max-width: 34rem;
@@ -61,12 +70,13 @@
   order: 1;
 }
 
+/* 행별 파스텔 pill — 전역 .tone-N 브리지, 톤 없으면 accent 폴백 */
 .tag {
   display: inline-block;
   padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-full);
-  background: var(--clr-accent-muted);
-  color: var(--clr-accent);
+  background: var(--tone-bg, var(--clr-accent-muted));
+  color: var(--tone-fg, var(--clr-accent));
   font-size: 0.8125rem;
   font-weight: 700;
   margin-bottom: var(--sp-3);

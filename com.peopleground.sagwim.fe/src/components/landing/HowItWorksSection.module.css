@@ -20,6 +20,15 @@
   color: var(--clr-text);
 }
 
+.titleBar {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: var(--r-full);
+  background: var(--clr-duo-gradient);
+  margin: 0 auto var(--sp-3);
+}
+
 .lead {
   margin: 0;
   font-size: clamp(0.95rem, 1.6vw, 1.0625rem);
@@ -53,7 +62,12 @@
   transform: translateY(22px);
   transition:
     opacity 0.6s var(--ease, ease),
-    transform 0.6s var(--ease, ease);
+    transform 0.6s var(--ease, ease),
+    box-shadow var(--t-base);
+}
+
+.step:hover {
+  box-shadow: var(--shadow-md);
 }
 
 .revealed .step {
@@ -61,6 +75,11 @@
   transform: none;
 }
 
+.revealed .step:hover {
+  transform: translateY(-2px);
+}
+
+/* 듀오 그라데이션 배지 — 버튼이 아닌 장식 표면 */
 .no {
   display: inline-flex;
   align-items: center;
@@ -68,7 +87,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--r-full);
-  background: var(--clr-accent-gradient);
+  background: var(--clr-duo-gradient);
   color: var(--clr-on-accent);
   font-size: 1rem;
   font-weight: 800;
