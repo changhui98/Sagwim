@@ -3,14 +3,14 @@
   overflow: hidden;
 }
 
-/* 부드러운 배경 글로우 (따뜻한 코랄) */
+/* 부드러운 배경 글로우 — 우상단 세레니티 + 좌하단 라벤더 듀오 */
 .hero::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
     radial-gradient(ellipse 60% 55% at 78% 30%, var(--clr-accent-muted), transparent 60%),
-    radial-gradient(ellipse 50% 50% at 12% 80%, var(--clr-accent-muted), transparent 65%);
+    radial-gradient(ellipse 50% 50% at 12% 80%, var(--clr-lavender-muted), transparent 65%);
   pointer-events: none;
   z-index: 0;
 }
@@ -31,7 +31,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--sp-4);
+  gap: var(--sp-5);
   animation: heroCopyIn 0.6s var(--ease, ease) both;
 }
 
@@ -40,6 +40,7 @@
   padding: var(--sp-1) var(--sp-3);
   border-radius: var(--r-full);
   background: var(--clr-accent-muted);
+  border: 1px solid var(--clr-lavender-muted);
   color: var(--clr-accent);
   font-size: 0.8125rem;
   font-weight: 700;
@@ -48,15 +49,19 @@
 
 .title {
   margin: 0;
-  font-size: clamp(1.9rem, 4.6vw, 3rem);
+  font-size: clamp(1.9rem, 4.6vw, 3.25rem);
   font-weight: 800;
-  line-height: 1.22;
+  line-height: 1.18;
   letter-spacing: -0.03em;
   color: var(--clr-text);
 }
 
+/* 듀오 그라데이션 텍스트 — 다크에서는 흰→회 모노톤으로 자동 반전 */
 .accent {
-  color: var(--clr-accent);
+  background: var(--clr-duo-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .brand {
@@ -77,11 +82,50 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--sp-3);
-  margin-top: var(--sp-2);
+  margin-top: var(--sp-3);
 }
 
-.btn {
-  text-decoration: none;
+/* 주 CTA — accent 그라데이션 pill (전역 .btn 위에 radius·배경·hover만 덮어쓰기) */
+.btnPrimary {
+  border-radius: var(--r-full);
+  background: var(--clr-accent-gradient);
+  color: var(--clr-on-accent);
+  box-shadow: 0 4px 14px var(--clr-accent-glow);
+  transition:
+    filter var(--t-fast),
+    transform var(--t-fast),
+    box-shadow var(--t-fast);
+}
+
+.btnPrimary:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px var(--clr-accent-glow);
+  color: var(--clr-on-accent);
+}
+
+.arrow {
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform var(--t-fast);
+}
+
+.btnPrimary:hover .arrow {
+  transform: translateX(2px);
+}
+
+/* 보조 CTA — 보더 pill */
+.btnSecondary {
+  border-radius: var(--r-full);
+  background: var(--btn-bg);
+  border: 1px solid var(--clr-border-strong);
+  color: var(--clr-text);
+}
+
+.btnSecondary:hover {
+  background: var(--btn-bg-hover);
+  transform: translateY(-1px);
+  color: var(--clr-text);
 }
 
 .visual {

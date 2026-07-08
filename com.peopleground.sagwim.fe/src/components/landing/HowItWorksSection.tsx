@@ -30,6 +30,7 @@ export function HowItWorksSection() {
       >
         <header className={styles.head}>
           <h2 className={styles.title}>이렇게 시작해요</h2>
+          <span className={styles.titleBar} aria-hidden />
           <p className={styles.lead}>세 단계면 동네 이웃과 이어집니다.</p>
         </header>
 
