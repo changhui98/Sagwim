@@ -5,6 +5,7 @@ import { uploadUserProfileImage } from '../api/imageApi'
 import { useAuth } from '../context/AuthContext'
 import { useHandleUnauthorized } from '../hooks/useHandleUnauthorized'
 import type { Gender, UserDetailResponse } from '../types/user'
+import { getPastelTone } from '../utils/stringUtils'
 import styles from './SettingsPage.module.css'
 import pageStyles from './ProfileEditPage.module.css'
 
@@ -177,7 +178,9 @@ export function SettingsProfilePage() {
                   onError={() => setAvatarImgError(true)}
                 />
               ) : (
-                <div className={styles.profileAvatarPlaceholder}>
+                <div
+                  className={`${styles.profileAvatarPlaceholder} tone-${getPastelTone(profile.nickname)}`}
+                >
                   {profile.nickname.charAt(0).toUpperCase()}
                 </div>
               )}
