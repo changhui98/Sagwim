@@ -1,23 +1,15 @@
-import { useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { PlusSquareIcon, HeartIcon, GridEvenMoreIcon, MoonIcon, SunIcon } from './NavIcons'
-import { MoreMenuPopover } from './MoreMenuPopover'
+import { SearchIcon, HeartIcon, SettingsIcon, MoonIcon, SunIcon } from './NavIcons'
 import { useNotificationCount } from '../context/NotificationCountContext'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import styles from './MobileHeader.module.css'
 
-interface MobileHeaderProps {
-  onLogout: () => void
-}
-
-export function MobileHeader({ onLogout }: MobileHeaderProps) {
+export function MobileHeader() {
   const navigate = useNavigate()
   const { unreadCount } = useNotificationCount()
   const { isAuthenticated } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const [moreOpen, setMoreOpen] = useState(false)
-  const moreAnchorRef = useRef<HTMLDivElement>(null)
 
   const handleNotificationsClick = () => {
     navigate('/app/notifications')
@@ -26,24 +18,21 @@ export function MobileHeader({ onLogout }: MobileHeaderProps) {
   return (
     <>
       <header className={styles.header}>
-        {/* 좌측: + 버튼 (비로그인 시 빈 셀 — 로고 중앙 정렬 유지) */}
-        {isAuthenticated ? (
-          <button
-            type="button"
-            className={styles.plusButton}
-            onClick={() => navigate('/app/create')}
-            aria-label="만들기"
-          >
-            <PlusSquareIcon width={22} height={22} />
-          </button>
-        ) : (
-          <span aria-hidden />
-        )}
+        {/* 좌측: 검색 버튼 — 만들기는 하단 바 가운데 + 버튼으로 이동.
+            비로그인도 노출: /app/search가 ProtectedRoute라 탭 시 AuthGate 모달 흐름으로 수렴 */}
+        <button
+          type="button"
+          className={styles.searchButton}
+          onClick={() => navigate('/app/search')}
+          aria-label="검색"
+        >
+          <SearchIcon width={22} height={22} />
+        </button>
 
         {/* 가운데: 브랜드 로고 */}
         <div className={styles.brandName}>Sagwim</div>
 
-        {/* 우측: 로그인 시 알림+더보기 / 비로그인 시 테마 토글+로그인 */}
+        {/* 우측: 로그인 시 알림+설정 / 비로그인 시 테마 토글+로그인 */}
         <div className={styles.rightButtons}>
           {isAuthenticated ? (
             <>
@@ -66,25 +55,14 @@ export function MobileHeader({ onLogout }: MobileHeaderProps) {
                 </span>
               </button>
 
-              <div className={styles.moreAnchor} ref={moreAnchorRef}>
-                <button
-                  type="button"
-                  className={styles.iconButton}
-                  onClick={() => setMoreOpen((v) => !v)}
-                  aria-label="더 보기"
-                  aria-haspopup="menu"
-                  aria-expanded={moreOpen}
-                >
-                  <GridEvenMoreIcon width={22} height={22} />
-                </button>
-                <MoreMenuPopover
-                  isOpen={moreOpen}
-                  onClose={() => setMoreOpen(false)}
-                  onLogout={onLogout}
-                  anchorRef={moreAnchorRef}
-                  placement="header"
-                />
-              </div>
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={() => navigate('/app/settings')}
+                aria-label="설정"
+              >
+                <SettingsIcon width={22} height={22} />
+              </button>
             </>
           ) : (
             <>

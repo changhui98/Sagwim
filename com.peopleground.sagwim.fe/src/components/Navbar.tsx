@@ -7,10 +7,12 @@ import {
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import styles from './Navbar.module.css'
 import { useAuth } from '../context/AuthContext'
+import { useAuthGate } from '../context/AuthGateContext'
 import { useNotificationCount } from '../context/NotificationCountContext'
 import { useMessageCount } from '../context/MessageCountContext'
 import { SidePanel, type SidePanelType } from './SidePanel'
 import { MoreMenuPopover } from './MoreMenuPopover'
+import { CreateBottomSheet } from './common/CreateBottomSheet'
 import {
   ChatIcon,
   GridEvenMoreIcon,
@@ -40,6 +42,8 @@ interface NavItem {
   authOnly?: boolean
   mobileHidden?: boolean
   desktopHidden?: boolean
+  /** 모바일 하단 바 가운데 만들기(+) 버튼 — 원형 강조 스타일 */
+  createItem?: boolean
 }
 
 export function Navbar({ role, onLogout }: NavbarProps) {
@@ -51,9 +55,11 @@ export function Navbar({ role, onLogout }: NavbarProps) {
   const location = useLocation()
   const navigate = useNavigate()
 
+  const { open: openAuthGate } = useAuthGate()
   const [moreOpen, setMoreOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const [activePanel, setActivePanel] = useState<SidePanelType | null>(null)
+  const [createSheetOpen, setCreateSheetOpen] = useState(false)
 
   const togglePanel = useCallback((panel: SidePanelType) => {
     setActivePanel((prev) => (prev === panel ? null : panel))
@@ -74,6 +80,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
     {
       label: '검색',
       icon: <SearchIcon />,
+      // 모바일에서는 하단 바 대신 MobileHeader 좌측 돋보기가 검색 진입을 담당
       onClick: () => {
         if (window.innerWidth > 640) {
           togglePanel('search')
@@ -82,6 +89,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
         }
       },
       match: (p) => activePanel === 'search' || p.startsWith('/app/search'),
+      mobileHidden: true,
     },
     {
       to: '/app/posts',
@@ -90,12 +98,25 @@ export function Navbar({ role, onLogout }: NavbarProps) {
       match: (p) => p.startsWith('/app/posts'),
     },
     {
-      to: '/app/create',
       label: '만들기',
-      icon: <PlusSquareIcon />,
-      match: (p) => p.startsWith('/app/create'),
-      mobileHidden: true,
-      authOnly: true,
+      icon: (
+        <span className={styles.createIconCircle}>
+          <PlusSquareIcon />
+        </span>
+      ),
+      onClick: () => {
+        if (!isAuthenticated) {
+          openAuthGate()
+          return
+        }
+        if (window.innerWidth > 640) {
+          navigate('/app/create')
+        } else {
+          setCreateSheetOpen(true)
+        }
+      },
+      match: (p) => createSheetOpen || p.startsWith('/app/create'),
+      createItem: true,
     },
     {
       to: '/app/messages',
@@ -207,6 +228,7 @@ export function Navbar({ role, onLogout }: NavbarProps) {
                 item.adminOnly ? styles.adminNavItem : '',
                 item.mobileHidden ? styles.mobileHiddenNavItem : '',
                 item.desktopHidden ? styles.desktopHiddenNavItem : '',
+                item.createItem ? styles.createNavItem : '',
               ].filter(Boolean).join(' ') || undefined
 
               return (
@@ -272,6 +294,10 @@ export function Navbar({ role, onLogout }: NavbarProps) {
     <SidePanel
       type={activePanel}
       onClose={closePanel}
+    />
+    <CreateBottomSheet
+      isOpen={createSheetOpen}
+      onClose={() => setCreateSheetOpen(false)}
     />
     </>
   )

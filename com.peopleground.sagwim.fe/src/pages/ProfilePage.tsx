@@ -170,7 +170,7 @@ export function ProfilePage() {
     <>
       <Navbar role={viewerProfile?.role ?? null} onLogout={handleLogout} />
       <Header role={viewerProfile?.role ?? null} onLogout={handleLogout} />
-      <MobileHeader onLogout={handleLogout} />
+      <MobileHeader />
 
       <main className={styles.main}>
         {profileError && (

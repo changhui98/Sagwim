@@ -22,7 +22,7 @@
     background: var(--clr-surface);
   }
 
-  .plusButton {
+  .searchButton {
     /* 좌측 셀: justify-self: start 로 왼쪽 끝 정렬 */
     justify-self: start;
     display: inline-flex;
@@ -38,8 +38,8 @@
     transition: background var(--t-fast);
   }
 
-  .plusButton:hover,
-  .plusButton:active {
+  .searchButton:hover,
+  .searchButton:active {
     background: var(--clr-surface-3);
   }
 
@@ -53,7 +53,7 @@
     letter-spacing: 0.01em;
   }
 
-  /* 우측 버튼 그룹: 알림 + 더보기 버튼을 나란히 배치 */
+  /* 우측 버튼 그룹: 알림 + 설정 버튼을 나란히 배치 */
   .rightButtons {
     justify-self: end;
     display: flex;
@@ -61,12 +61,7 @@
     gap: var(--sp-1);
   }
 
-  /* 더보기 팝오버 앵커 */
-  .moreAnchor {
-    position: relative;
-  }
-
-  /* 검색/알림 공용 아이콘 버튼 */
+  /* 검색/알림/설정 공용 아이콘 버튼 */
   .iconButton {
     display: inline-flex;
     align-items: center;

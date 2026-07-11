@@ -24,7 +24,7 @@ export function ServiceHomePage() {
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
       <Header role={meRole} onLogout={handleLogout} />
-      <MobileHeader onLogout={handleLogout} />
+      <MobileHeader />
 
       <main className={styles.main}>
         <HeroSection isAuthenticated={isAuthenticated} nickname={meNickname} />
