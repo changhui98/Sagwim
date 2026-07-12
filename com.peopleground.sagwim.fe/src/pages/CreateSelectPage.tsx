@@ -21,7 +21,7 @@ export function CreateSelectPage() {
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
       <Header role={meRole} onLogout={handleLogout} />
-      <MobileHeader onLogout={handleLogout} />
+      <MobileHeader />
 
       <main className={styles.main}>
         <div className={styles.hero}>

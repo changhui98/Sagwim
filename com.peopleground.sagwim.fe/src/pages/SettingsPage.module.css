@@ -22,7 +22,8 @@
   gap: var(--sp-5);
   padding: var(--sp-6) var(--sp-8);
   background:
-    linear-gradient(135deg, var(--clr-accent-muted) 0%, transparent 60%),
+    linear-gradient(135deg, var(--clr-accent-muted) 0%, transparent 45%),
+    radial-gradient(ellipse 60% 90% at 92% 10%, var(--clr-lavender-muted), transparent 65%),
     var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--r-xl);
@@ -36,7 +37,7 @@
   width: 56px;
   height: 56px;
   border-radius: var(--r-xl);
-  background: var(--clr-accent-gradient);
+  background: var(--clr-duo-gradient);
   color: var(--clr-on-accent);
   flex-shrink: 0;
   box-shadow: 0 4px 12px var(--clr-accent-glow);
@@ -142,17 +143,17 @@
   box-shadow: var(--shadow-focus);
 }
 
-/* 활성 탭 — 코랄 muted 배경 */
+/* 활성 탭 — 전역 .tone-N 브리지 소비, 톤 없으면 accent 폴백 */
 .tabItemActive {
   composes: tabItem;
-  background: var(--clr-accent-muted);
-  color: var(--clr-accent);
+  background: var(--tone-bg, var(--clr-accent-muted));
+  color: var(--tone-fg, var(--clr-accent));
   font-weight: 700;
 }
 
 .tabItemActive:hover {
-  background: var(--clr-accent-muted);
-  color: var(--clr-accent);
+  background: var(--tone-bg, var(--clr-accent-muted));
+  color: var(--tone-fg, var(--clr-accent));
 }
 
 .tabIcon {
@@ -263,8 +264,8 @@
 }
 
 .featureCard:hover {
-  border-color: var(--clr-accent);
-  box-shadow: 0 0 0 3px var(--clr-accent-muted), var(--shadow-md);
+  border-color: color-mix(in srgb, var(--tone-fg, var(--clr-accent)) 55%, transparent);
+  box-shadow: 0 0 0 3px var(--tone-bg, var(--clr-accent-muted)), var(--shadow-md);
   transform: translateY(-1px);
 }
 
@@ -278,6 +279,7 @@
   box-shadow: var(--shadow-focus), var(--shadow-sm);
 }
 
+/* 항목별 파스텔 배지 — 카드 루트의 .tone-N에서 변수 상속, 톤 없으면 accent 폴백 */
 .featureCardIconWrap {
   display: flex;
   align-items: center;
@@ -285,14 +287,14 @@
   width: 48px;
   height: 48px;
   border-radius: var(--r-lg);
-  background: var(--clr-accent-muted);
-  color: var(--clr-accent);
+  background: var(--tone-bg, var(--clr-accent-muted));
+  color: var(--tone-fg, var(--clr-accent));
   flex-shrink: 0;
   transition: background var(--t-fast), color var(--t-fast);
 }
 
 .featureCard:hover .featureCardIconWrap {
-  background: var(--clr-accent);
+  background: var(--tone-fg, var(--clr-accent));
   color: var(--clr-on-accent);
 }
 
@@ -326,7 +328,7 @@
 }
 
 .featureCard:hover .featureCardArrow {
-  color: var(--clr-accent);
+  color: var(--tone-fg, var(--clr-accent));
   transform: translateX(2px);
 }
 
@@ -340,7 +342,8 @@
   gap: var(--sp-1);
   padding: var(--sp-8);
   background:
-    linear-gradient(135deg, var(--clr-accent-muted) 0%, transparent 55%),
+    linear-gradient(135deg, var(--clr-accent-muted) 0%, transparent 45%),
+    radial-gradient(ellipse 60% 90% at 92% 10%, var(--clr-lavender-muted), transparent 65%),
     var(--clr-surface);
   border: 1px solid var(--clr-border);
   border-radius: var(--r-xl);
@@ -367,8 +370,8 @@
 .profileAvatarPlaceholder {
   width: 100%;
   height: 100%;
-  background: var(--clr-accent-muted);
-  color: var(--clr-accent);
+  background: var(--tone-bg, var(--clr-accent-muted));
+  color: var(--tone-fg, var(--clr-accent));
   font-size: 2.75rem;
   font-weight: 700;
   display: flex;
@@ -524,6 +527,58 @@
 }
 
 /* ── 위험 구역 ── */
+/* ── 계정 섹션 (일반 패널) ── */
+.accountSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.accountSectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--clr-text-secondary);
+}
+
+.accountSectionLabel {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* 모드 전환 카드 우측 토글 스위치 (MoreMenuPopover 토글과 동일 패턴) */
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: var(--r-full);
+  background: var(--clr-border-strong);
+  flex-shrink: 0;
+  transition: background var(--t-base);
+}
+
+.toggleOn {
+  background: var(--clr-accent);
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--t-base);
+}
+
+.toggleOn .toggleKnob {
+  transform: translateX(20px);
+}
+
 .dangerZone {
   display: flex;
   flex-direction: column;

@@ -299,7 +299,7 @@ export function GroupDetailPage() {
           )}
 
           <div
-            className={`${styles.heroMedia} ${isLeader ? styles.heroMediaLeader : ''}`}
+            className={`${styles.heroMedia} ${groupImageUrl && !imageUploading ? styles.heroMediaBanner : ''} ${isLeader ? styles.heroMediaLeader : ''}`}
             onClick={handleImageAreaClick}
             role={isLeader ? 'button' : undefined}
             tabIndex={isLeader ? 0 : undefined}
@@ -312,6 +312,11 @@ export function GroupDetailPage() {
               </div>
             ) : groupImageUrl ? (
               <>
+                <div
+                  className={styles.heroBackdrop}
+                  style={{ backgroundImage: `url(${groupImageUrl})` }}
+                  aria-hidden="true"
+                />
                 <img
                   src={groupImageUrl}
                   alt={`${group.name} 대표 이미지`}

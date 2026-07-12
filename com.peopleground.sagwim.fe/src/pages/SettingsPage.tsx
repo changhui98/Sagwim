@@ -16,7 +16,7 @@ export function SettingsPage() {
   useHandleUnauthorized()
   const handleLogout = useLogout()
 
-  // "프로필 수정" 영역과 "계정 보안" 영역을 구분해 활성 탭을 판정
+  // "프로필 수정" 영역과 "일반" 영역을 구분해 활성 탭을 판정
   const isProfile = pathname.startsWith('/app/settings/profile')
   const isSecurity = pathname.startsWith('/app/settings') && !isProfile
 
@@ -24,7 +24,7 @@ export function SettingsPage() {
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
       <Header role={meRole} onLogout={handleLogout} />
-      <MobileHeader onLogout={handleLogout} />
+      <MobileHeader />
 
       <main className={styles.main}>
         {/* ── 히어로 배너 ── */}
@@ -51,7 +51,7 @@ export function SettingsPage() {
                   type="button"
                   role="tab"
                   aria-selected={isProfile}
-                  className={isProfile ? styles.tabItemActive : styles.tabItem}
+                  className={`${isProfile ? styles.tabItemActive : styles.tabItem} tone-1`}
                   onClick={() => navigate('/app/settings/profile')}
                 >
                   <span className={styles.tabIcon} aria-hidden="true">
@@ -66,13 +66,13 @@ export function SettingsPage() {
                   type="button"
                   role="tab"
                   aria-selected={isSecurity}
-                  className={isSecurity ? styles.tabItemActive : styles.tabItem}
+                  className={`${isSecurity ? styles.tabItemActive : styles.tabItem} tone-0`}
                   onClick={() => navigate('/app/settings')}
                 >
                   <span className={styles.tabIcon} aria-hidden="true">
                     <ShieldIcon width={18} height={18} />
                   </span>
-                  <span className={styles.tabLabel}>계정 보안</span>
+                  <span className={styles.tabLabel}>일반</span>
                   {isSecurity && <span className={styles.tabActiveIndicator} aria-hidden="true" />}
                 </button>
               </li>

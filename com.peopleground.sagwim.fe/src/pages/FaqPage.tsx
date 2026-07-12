@@ -50,7 +50,7 @@ export function FaqPage() {
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
       <Header role={meRole} onLogout={handleLogout} />
-      <MobileHeader onLogout={handleLogout} />
+      <MobileHeader />
 
       <main className={styles.main}>
         <header className={styles.hero}>

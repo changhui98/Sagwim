@@ -5,6 +5,7 @@ import {
   useImperativeHandle,
   useRef,
   useState,
+  type ReactNode,
 } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMyPosts, getUserPosts } from '../../api/postApi'
@@ -17,8 +18,6 @@ import { PostRowItem } from '../post/PostRowItem'
 import { InfiniteScrollLoader } from '../post/InfiniteScrollLoader'
 import { EndOfList } from '../post/EndOfList'
 import { Skeleton } from '../common/Skeleton'
-import { EmptyState } from '../common/EmptyState'
-import { MenuMeatballsIcon } from '../NavIcons'
 import type { ContentResponse } from '../../types/post'
 import styles from './MyPostsSection.module.css'
 
@@ -27,8 +26,20 @@ type ViewMode = 'card' | 'list'
 const PAGE_SIZE = 12
 const VIEW_MODE_STORAGE_KEY = 'sagwim.profile.myPosts.viewMode'
 
-const myPostsEmptyIcon = <MenuMeatballsIcon />
-const MY_POSTS_EMPTY_ICON_COLOR = 'var(--clr-lavender-strong)'
+/* 빈 상태 히어로 아이콘 — 상단 탭 토글 아이콘과 같은 계열(1.6 stroke) */
+const photoEmptyIcon = (
+  <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="3" y="3" width="14" height="14" rx="2.2" fill="none" strokeWidth="1.6" />
+    <circle cx="8" cy="8" r="1.4" />
+    <path d="M5.5 14.5l3.2-3.6 2.5 2 2.4-2.9 1.4 1.6" fill="none" strokeWidth="1.6" />
+  </svg>
+)
+
+const textEmptyIcon = (
+  <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M4.5 4.5h11a1.5 1.5 0 0 1 1.5 1.5v6.6a1.5 1.5 0 0 1-1.5 1.5H9.4l-3.6 3v-3H4.5A1.5 1.5 0 0 1 3 12.6V6a1.5 1.5 0 0 1 1.5-1.5z" fill="none" strokeWidth="1.6" />
+  </svg>
+)
 
 interface MyPostsSectionProps {
   username?: string
@@ -276,6 +287,31 @@ export const MyPostsSection = forwardRef<MyPostsSectionHandle, MyPostsSectionPro
       )
     }
 
+    const renderEmpty = (opts: {
+      icon: ReactNode
+      title: string
+      description: string
+      ctaLabel?: string
+    }) => (
+      <div className={styles.emptyState}>
+        <span className={styles.emptyHero} aria-hidden="true">
+          {opts.icon}
+        </span>
+        <p className={styles.emptyTitle}>{opts.title}</p>
+        <p className={styles.emptyDesc}>{opts.description}</p>
+        {opts.ctaLabel && (
+          <button
+            type="button"
+            className={styles.emptyCta}
+            onClick={() => navigate('/app/posts/new')}
+          >
+            {opts.ctaLabel}
+            <span className={styles.emptyCtaArrow} aria-hidden="true">→</span>
+          </button>
+        )}
+      </div>
+    )
+
     const renderBody = () => {
       if (initialLoad) return renderSkeleton()
 
@@ -295,40 +331,33 @@ export const MyPostsSection = forwardRef<MyPostsSectionHandle, MyPostsSectionPro
       }
 
       if (viewMode === 'card' && photoPosts.length === 0) {
-        return (
-          <div className={styles.emptyWrap}>
-            <EmptyState
-              icon={myPostsEmptyIcon}
-              iconColor={MY_POSTS_EMPTY_ICON_COLOR}
-              description="첫 사진을 공유해 목록을 채워보세요."
-            />
-          </div>
-        )
+        return renderEmpty({
+          icon: photoEmptyIcon,
+          title: '아직 공유한 사진이 없어요',
+          description: isOwner
+            ? '첫 사진을 올려 나만의 갤러리를 채워보세요.'
+            : '아직 공유된 사진이 없습니다.',
+          ctaLabel: isOwner ? '첫 사진 올리기' : undefined,
+        })
       }
 
       if (posts.length === 0) {
-        return (
-          <div className={styles.emptyWrap}>
-            <EmptyState
-              icon={myPostsEmptyIcon}
-              iconColor={MY_POSTS_EMPTY_ICON_COLOR}
-              description={isOwner ? '첫 게시글을 작성해 목록을 채워보세요.' : '아직 작성된 게시글이 없습니다.'}
-            />
-          </div>
-        )
+        return renderEmpty({
+          icon: textEmptyIcon,
+          title: '아직 작성한 글이 없어요',
+          description: isOwner
+            ? '첫 게시글로 이웃과 이야기를 시작해보세요.'
+            : '아직 작성된 게시글이 없습니다.',
+          ctaLabel: isOwner ? '첫 글 쓰기' : undefined,
+        })
       }
 
       if (viewMode === 'list' && textPosts.length === 0) {
-        return (
-          <div className={styles.emptyWrap}>
-            <EmptyState
-              icon={myPostsEmptyIcon}
-              iconColor={MY_POSTS_EMPTY_ICON_COLOR}
-              title="사진 없는 글이 없습니다"
-              description="글 탭에서는 사진이 없는 글만 보여드려요."
-            />
-          </div>
-        )
+        return renderEmpty({
+          icon: textEmptyIcon,
+          title: '사진 없는 글이 없어요',
+          description: '글 탭에서는 사진이 없는 글만 보여드려요.',
+        })
       }
 
       return (

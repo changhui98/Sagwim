@@ -136,7 +136,7 @@ export function PostListPage() {
         onLogout={handleLogout} />
       <Header role={meRole}
         onLogout={handleLogout} />
-      <MobileHeader onLogout={handleLogout} />
+      <MobileHeader />
 
       <main className={styles.main}>
         {renderContent()}

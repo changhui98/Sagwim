@@ -1,0 +1,122 @@
+/* ── CreateBottomSheet ──
+   모바일 하단 바 만들기(+) 버튼용 바텀시트.
+   오버레이 톤은 GroupLikersModal 관례(딤 + blur), 시트는 하단에서 슬라이드업.
+*/
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 200;
+  animation: sheetFade 0.2s var(--ease) both;
+}
+
+.sheet {
+  width: 100%;
+  max-width: 480px;
+  background: var(--clr-surface);
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  padding: var(--sp-3) var(--sp-4) calc(env(safe-area-inset-bottom) + var(--sp-6));
+  box-shadow: var(--shadow-lg);
+  animation: sheetUp 0.28s var(--ease) both;
+}
+
+.grabber {
+  display: block;
+  width: 36px;
+  height: 4px;
+  margin: 0 auto var(--sp-4);
+  border-radius: var(--r-full);
+  background: var(--clr-border);
+}
+
+.title {
+  margin: 0 0 var(--sp-4);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--clr-text);
+  text-align: center;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  border: none;
+  border-radius: var(--r-lg);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-fast);
+}
+
+.item:hover,
+.item:active {
+  background: var(--clr-accent-muted);
+}
+
+.itemIconWrap {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent-muted);
+}
+
+.itemIcon {
+  width: 26px;
+  height: 26px;
+  /* 모노톤 SVG 아이콘 다크모드 반전 (Navbar 관례) */
+  filter: var(--_icon-filter);
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.itemLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+.itemDesc {
+  font-size: 0.8438rem;
+  color: var(--clr-text-secondary);
+}
+
+/* 백드롭은 페이드만 — 전역 fadeIn은 translateY가 섞여 있어 부적합 */
+@keyframes sheetFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .sheet {
+    animation: none;
+  }
+}

@@ -61,7 +61,7 @@ export function MessagesPage() {
       <div className={styles.mobileNavOnly}>
         <Navbar role={meRole} onLogout={handleLogout} />
       </div>
-      {!showRoom && <MobileHeader onLogout={handleLogout} />}
+      {!showRoom && <MobileHeader />}
       <div className={`${styles.chatLayout} ${layoutClass}`}>
         <div className={styles.sidebarWrapper}>
           <ChatSidebar
