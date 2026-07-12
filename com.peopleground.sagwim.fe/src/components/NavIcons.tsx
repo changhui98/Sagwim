@@ -58,8 +58,9 @@ export function HomeIcon(props: IconProps) {
 export function SearchIcon(props: IconProps) {
   return (
     <svg {...BASE} {...props}>
-      <circle cx="11" cy="11" r="7.5" />
-      <path d="m20.5 20.5-4.2-4.2" />
+      {/* 잉크 21.2u(≈22px 렌더 시 19.4px)로 하트(95%)·기어(99%)와 광학 크기 균형, 중심 정확히 12,12 */}
+      <circle cx="10.9" cy="10.9" r="8.6" />
+      <path d="m21.7 21.7-4.7-4.7" />
     </svg>
   )
 }
