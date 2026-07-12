@@ -125,21 +125,40 @@
   position: relative;
 }
 
-/* 원본 비율 보존 레터박스 — 게시글 이미지(PostCard .image)와 동일 패턴 */
-.heroImage {
-  display: block;
-  max-width: 100%;
-  width: auto;
-  height: auto;
-  max-height: 480px;
-  margin: 0 auto;
-  object-fit: contain;
+/* 이미지가 있을 때만 고정 높이 배너 — 플레이스홀더/업로드 중은 기존 레이아웃 유지 */
+.heroMediaBanner {
+  height: 480px;
 }
 
 @media (min-width: 1024px) {
-  .heroImage {
-    max-height: 560px;
+  .heroMediaBanner {
+    height: 560px;
   }
+}
+
+@media (max-width: 640px) {
+  .heroMediaBanner {
+    height: 340px;
+  }
+}
+
+/* 같은 사진의 블러 확대판으로 레터박스 여백을 채운다 (scale로 블러 가장자리 번짐 숨김) */
+.heroBackdrop {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(24px);
+  transform: scale(1.12);
+}
+
+/* 원본 비율 보존 — 고정 배너 박스 안에서 contain으로 확대/축소 (잘림 없음) */
+.heroImage {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* 모임장 전용: 사진 영역 클릭 가능 표시 */
