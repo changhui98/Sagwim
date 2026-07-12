@@ -72,7 +72,8 @@ export function Navbar({ role, onLogout }: NavbarProps) {
 
   const navItems: NavItem[] = [
     {
-      to: '/app',
+      // 로그인 유저의 홈 = 모임 허브 (모바일 하단 바에서 모임 리스트 직행 진입점)
+      to: isAuthenticated ? '/app/groups' : '/app',
       label: '홈',
       icon: <HomeIcon />,
       match: (p) => p === '/app' || p.startsWith('/app/groups'),
