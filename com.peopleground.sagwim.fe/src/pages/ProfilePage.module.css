@@ -230,8 +230,10 @@
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .main {
+    /* 데스크톱용 max-width 산식(100vw - 2*sp-10)을 해제해 좌우 auto 마진 없이 꽉 채운다 */
+    max-width: 100%;
     padding: var(--sp-4);
     padding-left: calc(var(--layout-sidebar-w) + var(--sp-4));
     padding-bottom: calc(var(--sp-4) + var(--layout-bottom-bar-h));
