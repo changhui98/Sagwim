@@ -57,11 +57,10 @@ export function HomeIcon(props: IconProps) {
 
 export function SearchIcon(props: IconProps) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="10" strokeLinecap="round">
-        <circle cx="114" cy="114" r="38" />
-        <line x1="142" y1="142" x2="186" y2="186" />
-      </g>
+    <svg {...BASE} {...props}>
+      {/* 잉크 21.2u(≈22px 렌더 시 19.4px)로 하트(95%)·기어(99%)와 광학 크기 균형, 중심 정확히 12,12 */}
+      <circle cx="10.9" cy="10.9" r="8.6" />
+      <path d="m21.7 21.7-4.7-4.7" />
     </svg>
   )
 }
@@ -105,10 +104,8 @@ export function IdeaIcon(props: IconProps) {
 
 export function HeartIcon(props: IconProps) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="44 44 168 168" fill="none" aria-hidden focusable={false} {...props}>
-      <g stroke="currentColor" strokeWidth="10" strokeLinejoin="round" strokeLinecap="round">
-        <path d="M128 176 C128 176 68 140 68 98 C68 76 86 60 108 64 C118 66 126 72 128 78 C130 72 138 66 148 64 C170 60 188 76 188 98 C188 140 128 176 128 176 Z" />
-      </g>
+    <svg {...BASE} {...props}>
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
     </svg>
   )
 }
