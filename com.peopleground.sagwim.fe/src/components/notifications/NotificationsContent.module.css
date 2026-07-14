@@ -178,3 +178,20 @@
   border-radius: var(--r-full);
   background: var(--clr-accent);
 }
+
+/* ── 모바일 — 리스트가 화면 가장자리까지 차도록 좌우 패딩 제거 ── */
+@media (max-width: 640px) {
+  .body {
+    padding: var(--sp-3) 0 var(--sp-8);
+    gap: var(--sp-3);
+  }
+
+  .notificationToolbar {
+    padding: 0 var(--sp-4);
+  }
+
+  .notificationItem {
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: 0;
+  }
+}
