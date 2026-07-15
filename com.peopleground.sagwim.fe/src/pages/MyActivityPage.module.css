@@ -47,6 +47,12 @@
   line-height: 1.45;
   color: var(--clr-text);
   margin: 0;
+  /* 항상 한 줄 고정 — 좁은 화면에서 30자 컷을 넘어도 말줄임 처리 */
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chevron {
