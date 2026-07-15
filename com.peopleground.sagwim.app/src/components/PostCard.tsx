@@ -101,9 +101,10 @@ export function PostCard({ post, onLikeToggle, onDelete }: PostCardProps) {
       setLiked(res.liked)
       setLikeCount(res.likeCount)
       onLikeToggle?.(post.id, res.liked, res.likeCount)
-    } catch {
+    } catch (err) {
       setLiked(prevLiked)
       setLikeCount(prevCount)
+      console.error('좋아요 처리 실패', err)
     } finally {
       isLikeInFlight.current = false
     }
