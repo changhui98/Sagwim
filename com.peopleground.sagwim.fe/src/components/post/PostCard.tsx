@@ -4,6 +4,7 @@ import type { ContentResponse } from '../../types/post'
 import { ApiError } from '../../api/ApiError'
 import { deletePost, toggleContentLike } from '../../api/postApi'
 import { useAuth } from '../../context/AuthContext'
+import { usePostList } from '../../context/PostListContext'
 import { MeatballMenu } from '../common/MeatballMenu'
 import { ConfirmDialog } from '../common/ConfirmDialog'
 import { ReportModal } from '../common/ReportModal'
@@ -75,8 +76,9 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
 
   // 좋아요 상태의 단일 소스는 로컬 state. 초기값만 prop 에서 가져오고, 이후
   // 부모가 같은 post 객체로 재렌더 해도 낙관적 업데이트가 덮어써지지 않는다.
-  // 페이지를 벗어났다가 돌아오면 PostListPage 가 unmount → remount 되며
-  // PostCard 역시 새로 마운트 되어 서버의 likedByMe 값으로 자연스럽게 초기화된다.
+  // 단, PostListProvider 는 라우터 상위에서 계속 살아있어 목록 복귀 시
+  // 캐시된 stale post 로 재마운트되므로, 좋아요 변경은 updatePost 로
+  // 컨텍스트 캐시에도 함께 반영해야 remount 후에도 최신값이 유지된다.
   const [liked, setLiked] = useState(() => post.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(() => post.likeCount ?? 0)
   // imageUrls는 사용자 상호작용으로 변하지 않으므로 state로 고정하지 않고
@@ -99,6 +101,8 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
   const likedRef = useRef(liked)
   const likeCountRef = useRef(likeCount)
 
+  const { updatePost } = usePostList()
+
   const updateLiked = useCallback((next: boolean) => {
     likedRef.current = next
     setLiked(next)
@@ -109,6 +113,13 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
     setLikeCount(next)
   }, [])
 
+  // 로컬 state 와 목록 컨텍스트 캐시를 함께 갱신한다.
+  const applyLike = useCallback((nextLiked: boolean, nextCount: number) => {
+    updateLiked(nextLiked)
+    updateLikeCount(nextCount)
+    updatePost(post.id, { likedByMe: nextLiked, likeCount: nextCount })
+  }, [post.id, updateLiked, updateLikeCount, updatePost])
+
   const handleLikeClick = useCallback(async () => {
     if (inFlightRef.current) return
     inFlightRef.current = true
@@ -118,25 +129,20 @@ export function PostCard({ post, fullWidth = false, onDeleted }: PostCardProps) 
     const nextLiked = !prevLiked
     const nextCount = Math.max(0, prevCount + (nextLiked ? 1 : -1))
 
-    updateLiked(nextLiked)
-    updateLikeCount(nextCount)
+    applyLike(nextLiked, nextCount)
     setPending(true)
 
     try {
       const res = await toggleContentLike(token, post.id)
-      updateLiked(res.liked)
-      updateLikeCount(res.likeCount)
+      applyLike(res.liked, res.likeCount)
     } catch (err) {
-      updateLiked(prevLiked)
-      updateLikeCount(prevCount)
-      if (!(err instanceof ApiError)) {
-        console.error('좋아요 처리 실패', err)
-      }
+      applyLike(prevLiked, prevCount)
+      console.error('좋아요 처리 실패', err)
     } finally {
       inFlightRef.current = false
       setPending(false)
     }
-  }, [post.id, token, updateLiked, updateLikeCount])
+  }, [post.id, token, applyLike])
 
   const commentCount = post.commentCount ?? 0
   const tags = post.tags?.filter((tag) => tag.trim().length > 0) ?? []

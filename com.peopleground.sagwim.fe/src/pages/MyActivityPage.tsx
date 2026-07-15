@@ -97,9 +97,14 @@ export function MyActivityPage() {
               const path = activity.type === 'GROUP'
                 ? `/app/groups/${activity.targetId}`
                 : `/app/posts/${activity.targetId}`
+              // 게시글 label 은 본문 전문이 내려올 수 있어 30자로 잘라
+              // 항상 "…에 좋아요를 남겼습니다." 접미사가 보이게 유지한다.
+              const label = activity.label.length > 30
+                ? `${activity.label.slice(0, 30)}…`
+                : activity.label
               const text = activity.type === 'GROUP'
-                ? `${activity.label} 모임에 좋아요를 남겼습니다.`
-                : `${activity.label}에 좋아요를 남겼습니다.`
+                ? `${label} 모임에 좋아요를 남겼습니다.`
+                : `${label}에 좋아요를 남겼습니다.`
               return (
                 <div
                   key={`${activity.type}-${activity.targetId}`}

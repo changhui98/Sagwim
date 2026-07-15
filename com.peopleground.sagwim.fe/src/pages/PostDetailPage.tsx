@@ -6,6 +6,7 @@ import {
 } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { usePostList } from '../context/PostListContext'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { Header } from '../components/Header'
@@ -79,6 +80,9 @@ export function PostDetailPage() {
   const likedRef = useRef(liked)
   const likeCountRef = useRef(likeCount)
 
+  // api/postApi 의 updatePost(게시글 수정)와 이름이 겹쳐 별칭으로 사용
+  const { updatePost: updateCachedPost } = usePostList()
+
   const updateLiked = useCallback((next: boolean) => {
     likedRef.current = next
     setLiked(next)
@@ -88,6 +92,14 @@ export function PostDetailPage() {
     likeCountRef.current = next
     setLikeCount(next)
   }, [])
+
+  // 상세에서 누른 좋아요도 목록 컨텍스트 캐시에 반영해, 목록 복귀 시
+  // stale 값으로 원복되지 않게 한다.
+  const applyLike = useCallback((nextLiked: boolean, nextCount: number) => {
+    updateLiked(nextLiked)
+    updateLikeCount(nextCount)
+    updateCachedPost(contentId, { likedByMe: nextLiked, likeCount: nextCount })
+  }, [contentId, updateLiked, updateLikeCount, updateCachedPost])
 
   // 게시글 로드 (passedPost가 없을 때)
   useEffect(() => {
@@ -131,25 +143,20 @@ export function PostDetailPage() {
     const nextLiked = !prevLiked
     const nextCount = Math.max(0, prevCount + (nextLiked ? 1 : -1))
 
-    updateLiked(nextLiked)
-    updateLikeCount(nextCount)
+    applyLike(nextLiked, nextCount)
     setLikePending(true)
 
     try {
       const res = await toggleContentLike(token, contentId)
-      updateLiked(res.liked)
-      updateLikeCount(res.likeCount)
+      applyLike(res.liked, res.likeCount)
     } catch (err) {
-      updateLiked(prevLiked)
-      updateLikeCount(prevCount)
-      if (!(err instanceof ApiError)) {
-        console.error('좋아요 처리 실패', err)
-      }
+      applyLike(prevLiked, prevCount)
+      console.error('좋아요 처리 실패', err)
     } finally {
       likeInFlightRef.current = false
       setLikePending(false)
     }
-  }, [contentId, token, updateLiked, updateLikeCount])
+  }, [contentId, token, applyLike])
 
   const [editMode, setEditMode] = useState(passedEditMode)
   // passedEditMode가 true일 때 passedPost.body를 초기값으로 사용

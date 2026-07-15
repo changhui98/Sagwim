@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
-import { ApiError } from '../../api/ApiError'
 import { toggleContentLike } from '../../api/postApi'
 import { useAuth } from '../../context/AuthContext'
+import { usePostList } from '../../context/PostListContext'
 import type { ContentResponse } from '../../types/post'
 import styles from './PostRowItem.module.css'
 
@@ -35,10 +35,19 @@ function formatRelativeTime(dateStr: string): string {
  */
 export function PostRowItem({ post, firstImageUrl, imageCount, onClick }: PostRowItemProps) {
   const { token, meUsername, meProfileImageUrl } = useAuth()
+  const { updatePost } = usePostList()
   const [liked, setLiked] = useState(() => post.likedByMe ?? false)
   const [likeCount, setLikeCount] = useState(() => post.likeCount ?? 0)
   const [pending, setPending] = useState(false)
   const inFlightRef = useRef(false)
+
+  // 로컬 state 와 목록 컨텍스트 캐시를 함께 갱신한다.
+  // (PostListProvider 가 라우터 상위에 상주해 목록 복귀 시 캐시 값으로 재마운트되기 때문)
+  const applyLike = useCallback((nextLiked: boolean, nextCount: number) => {
+    setLiked(nextLiked)
+    setLikeCount(nextCount)
+    updatePost(post.id, { likedByMe: nextLiked, likeCount: nextCount })
+  }, [post.id, updatePost])
 
   const handleLikeClick = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -50,25 +59,20 @@ export function PostRowItem({ post, firstImageUrl, imageCount, onClick }: PostRo
     const nextLiked = !prevLiked
     const nextCount = Math.max(0, prevCount + (nextLiked ? 1 : -1))
 
-    setLiked(nextLiked)
-    setLikeCount(nextCount)
+    applyLike(nextLiked, nextCount)
     setPending(true)
 
     try {
       const res = await toggleContentLike(token, post.id)
-      setLiked(res.liked)
-      setLikeCount(res.likeCount)
+      applyLike(res.liked, res.likeCount)
     } catch (err) {
-      setLiked(prevLiked)
-      setLikeCount(prevCount)
-      if (!(err instanceof ApiError)) {
-        console.error('좋아요 처리 실패', err)
-      }
+      applyLike(prevLiked, prevCount)
+      console.error('좋아요 처리 실패', err)
     } finally {
       setPending(false)
       inFlightRef.current = false
     }
-  }, [likeCount, liked, post.id, token])
+  }, [likeCount, liked, post.id, token, applyLike])
 
   const displayName = post.nickname?.trim() || post.createdBy
   const commentCount = post.commentCount ?? 0

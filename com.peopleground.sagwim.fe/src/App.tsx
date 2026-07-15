@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { ScrollToTop } from './components/ScrollToTop'
 import { AdminRoute } from './components/AdminRoute'
 import { AdminLayout } from './components/admin/AdminLayout'
 import { useAuth } from './context/AuthContext'
@@ -63,6 +64,7 @@ function App() {
 
   return (
     <div className="page-transition">
+    <ScrollToTop />
     <Routes location={location}>
       <Route path="/" element={<ServiceHomePage />} />
       <Route
