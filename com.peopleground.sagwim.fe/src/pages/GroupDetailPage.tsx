@@ -9,6 +9,7 @@ import { useLogout } from '../hooks/useLogout'
 import { extractErrorMessage } from '../utils/errorUtils'
 import { Navbar } from '../components/Navbar'
 import { Header } from '../components/Header'
+import { MobileHeader } from '../components/MobileHeader'
 import { LoadingSpinner } from '../components/common/LoadingSpinner'
 import { GroupDetailTabs } from '../components/group/GroupDetailTabs'
 import { TabMemberList } from '../components/group/TabMemberList'
@@ -237,6 +238,7 @@ export function GroupDetailPage() {
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
         <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <MobileHeader />
         <main className={styles.main}>
           <div className={styles.loadingWrapper}>
             <LoadingSpinner />
@@ -251,6 +253,7 @@ export function GroupDetailPage() {
       <>
         <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
         <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
+        <MobileHeader />
         <main className={styles.main}>
           <div className={styles.errorWrapper}>
             <p className={styles.errorText}>{error || '모임을 찾을 수 없습니다.'}</p>
@@ -267,6 +270,7 @@ export function GroupDetailPage() {
     <>
       <Navbar role={myProfile?.role ?? null} onLogout={handleLogout} />
       <Header role={myProfile?.role ?? null} onLogout={handleLogout} />
+      <MobileHeader />
 
       <GroupLikersModal
         isOpen={likersModalOpen}
