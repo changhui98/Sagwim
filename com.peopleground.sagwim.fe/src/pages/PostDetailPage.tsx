@@ -10,6 +10,7 @@ import { usePostList } from '../context/PostListContext'
 import { useLogout } from '../hooks/useLogout'
 import { Navbar } from '../components/Navbar'
 import { Header } from '../components/Header'
+import { MobileHeader } from '../components/MobileHeader'
 import { Footer } from '../components/Footer'
 import { ChevronLeftIcon } from '../components/NavIcons'
 import { deletePost, getPost, toggleContentLike, updatePost } from '../api/postApi'
@@ -457,6 +458,7 @@ export function PostDetailPage() {
       <>
         <Navbar role={meRole} onLogout={handleLogout} />
         <Header role={meRole} onLogout={handleLogout} />
+        <MobileHeader />
         <main className={styles.main}>
           <div className={styles.page}>
             <div className={styles.post}>
@@ -483,6 +485,7 @@ export function PostDetailPage() {
       <>
         <Navbar role={meRole} onLogout={handleLogout} />
         <Header role={meRole} onLogout={handleLogout} />
+        <MobileHeader />
         <main className={styles.main}>
           <div className={styles.page}>
             <div className={styles.errorBanner}>
@@ -531,6 +534,7 @@ export function PostDetailPage() {
     <>
       <Navbar role={meRole} onLogout={handleLogout} />
       <Header role={meRole} onLogout={handleLogout} />
+      <MobileHeader />
       <main className={styles.main}>
       <div className={styles.page}>
       <button
