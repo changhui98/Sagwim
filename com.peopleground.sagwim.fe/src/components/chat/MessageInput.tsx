@@ -42,7 +42,7 @@ export function MessageInput({ onSend, disabled }: Props) {
       <textarea
         ref={textareaRef}
         className={styles.textarea}
-        placeholder="메시지를 입력하세요... (Enter 전송, Shift+Enter 줄바꿈)"
+        aria-label="메시지 입력"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
