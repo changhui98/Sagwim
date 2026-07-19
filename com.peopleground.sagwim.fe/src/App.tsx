@@ -42,6 +42,7 @@ import { ServiceHomePage } from './pages/ServiceHomePage'
 import { SettingsPage } from './pages/SettingsPage'
 import { SettingsOverviewPage } from './pages/SettingsOverviewPage'
 import { SettingsProfilePage } from './pages/SettingsProfilePage'
+import { SettingsSupportPage } from './pages/SettingsSupportPage'
 import {
   SettingsProfileEditNickname,
   SettingsProfileEditGender,
@@ -101,6 +102,7 @@ function App() {
           <Route path="profile/gender" element={<SettingsProfileEditGender />} />
           <Route path="profile/birthdate" element={<SettingsProfileEditBirthDate />} />
           <Route path="profile/address" element={<SettingsProfileEditAddress />} />
+          <Route path="support" element={<SettingsSupportPage />} />
           <Route path="change-password" element={<ChangePasswordPage />} />
           <Route path="withdraw" element={<WithdrawPage />} />
         </Route>

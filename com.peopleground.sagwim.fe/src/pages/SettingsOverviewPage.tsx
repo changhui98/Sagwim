@@ -5,19 +5,10 @@ import {
   ActivityIcon,
   AlertIcon,
   BookmarkIcon,
-  ChatIcon,
-  GridEvenMoreIcon,
-  HeartIcon,
-  HomeIcon,
-  IdeaIcon,
   LogoutIcon,
   MoonIcon,
-  PlusSquareIcon,
-  PostsIcon,
-  SavedIcon,
   ShieldIcon,
   SunIcon,
-  UserCircleIcon,
 } from '../components/NavIcons'
 import styles from './SettingsPage.module.css'
 
@@ -30,111 +21,6 @@ const CARD_TONE = {
   password: 3, // 세이지 — 보안·안전
   logout: 0, // 세레니티 — 중립 계정 액션
 } as const
-
-/** 푸터 링크 이관 섹션 — 모바일에서는 푸터가 숨겨지므로 설정에서 동일 링크를 제공한다 */
-const LINK_SECTIONS = [
-  {
-    key: 'groups',
-    label: '모임 바로가기',
-    HeaderIcon: UserCircleIcon,
-    items: [
-      {
-        key: 'groupsAll',
-        title: '전체 모임',
-        desc: '모든 모임을 한눈에 둘러봅니다',
-        to: '/app/groups/all',
-        Icon: GridEvenMoreIcon,
-        tone: 0, // 세레니티 — 중립 목록
-      },
-      {
-        key: 'groupsPopular',
-        title: '인기 모임',
-        desc: '지금 가장 인기 있는 모임을 확인합니다',
-        to: '/app/groups/popular',
-        Icon: HeartIcon,
-        tone: 2, // 로즈 — 하트·인기 (좋아요 배지와 동일 계열)
-      },
-      {
-        key: 'groupsNew',
-        title: '새로운 모임',
-        desc: '새로 열린 모임을 만나봅니다',
-        to: '/app/groups/recent',
-        Icon: PlusSquareIcon,
-        tone: 3, // 세이지 — 새싹·신규
-      },
-    ],
-  },
-  {
-    key: 'support',
-    label: '고객지원',
-    HeaderIcon: ChatIcon,
-    items: [
-      {
-        key: 'helpCenter',
-        title: '고객센터',
-        desc: '이용 중 필요한 도움을 받아보세요',
-        to: '/support',
-        Icon: UserCircleIcon,
-        tone: 5, // 아쿠아 — 안내·응대
-      },
-      {
-        key: 'faq',
-        title: '자주 묻는 질문',
-        desc: '자주 묻는 질문과 답변을 모아봅니다',
-        to: '/faq',
-        Icon: IdeaIcon,
-        tone: 4, // 아프리콧 — 아이디어 웜톤
-      },
-      {
-        key: 'inquiry',
-        title: '1:1 문의',
-        desc: '궁금한 점을 직접 문의합니다',
-        to: '/inquiry',
-        Icon: ChatIcon,
-        tone: 1, // 라벤더 — 대화
-      },
-    ],
-  },
-  {
-    key: 'serviceInfo',
-    label: '서비스 정보',
-    HeaderIcon: HomeIcon,
-    items: [
-      {
-        key: 'about',
-        title: '회사 소개',
-        desc: 'Sagwim이 만들어가는 이야기를 소개합니다',
-        to: '/about',
-        Icon: HomeIcon,
-        tone: 1, // 라벤더 — 브랜드 세컨더리
-      },
-      {
-        key: 'notice',
-        title: '공지사항',
-        desc: '서비스의 새로운 소식을 확인합니다',
-        to: '/notice',
-        Icon: SavedIcon,
-        tone: 0, // 세레니티 — 중립 안내
-      },
-      {
-        key: 'terms',
-        title: '이용약관',
-        desc: '서비스 이용약관을 확인합니다',
-        to: '/terms',
-        Icon: PostsIcon,
-        tone: 5, // 아쿠아 — 문서
-      },
-      {
-        key: 'privacy',
-        title: '개인정보처리방침',
-        desc: '개인정보 보호 정책을 확인합니다',
-        to: '/privacy',
-        Icon: ShieldIcon,
-        tone: 3, // 세이지 — 보안·안전 (비밀번호 변경과 동일 계열)
-      },
-    ],
-  },
-] as const
 
 function ChevronRight() {
   return (
@@ -305,39 +191,6 @@ export function SettingsOverviewPage() {
         </div>
       </div>
 
-      {/* 푸터 링크 이관 섹션 — 모임 바로가기·고객지원·서비스 정보 */}
-      {LINK_SECTIONS.map(({ key, label, HeaderIcon, items }) => (
-        <div key={key} className={styles.accountSection}>
-          <div className={styles.accountSectionHeader}>
-            <HeaderIcon width={16} height={16} />
-            <span className={styles.accountSectionLabel}>{label}</span>
-          </div>
-
-          <div className={styles.cardGrid}>
-            {items.map(({ key: itemKey, title, desc, to, Icon, tone }) => (
-              <button
-                key={itemKey}
-                type="button"
-                className={`${styles.featureCard} tone-${tone}`}
-                onClick={() => navigate(to)}
-                aria-label={`${title} 페이지로 이동`}
-              >
-                <div className={styles.featureCardIconWrap} aria-hidden="true">
-                  <Icon width={22} height={22} />
-                </div>
-                <div className={styles.featureCardBody}>
-                  <p className={styles.featureCardTitle}>{title}</p>
-                  <p className={styles.featureCardDesc}>{desc}</p>
-                </div>
-                <div className={styles.featureCardArrow} aria-hidden="true">
-                  <ChevronRight />
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
-
       {/* 위험 구역 */}
       <div className={styles.dangerZone}>
         <div className={styles.dangerZoneHeader}>
@@ -365,10 +218,6 @@ export function SettingsOverviewPage() {
           </div>
         </button>
       </div>
-
-      <p className={styles.serviceCopyright}>
-        © 2026 Sagwim. All rights reserved.
-      </p>
     </>
   )
 }
