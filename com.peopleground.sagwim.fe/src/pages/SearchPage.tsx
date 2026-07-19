@@ -25,7 +25,10 @@ export function SearchPage() {
           </header>
 
           <div className={styles.contentWrap}>
-            <SearchContent onClose={() => navigate(-1)} />
+            {/* 전용 페이지에서는 결과 클릭 시 라우팅 이동이 곧 "닫기"다.
+                navigate(-1)을 넘기면 SearchContent가 navigate(목적지) 직후
+                onClose()를 호출하는 구조라 방금 이동을 되돌려버린다. */}
+            <SearchContent onClose={() => {}} />
           </div>
         </div>
       </main>

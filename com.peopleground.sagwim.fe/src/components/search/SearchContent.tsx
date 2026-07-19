@@ -206,7 +206,10 @@ export function SearchContent({ onClose }: SearchContentProps) {
             <button
               type="button"
               className={styles.sectionViewAll}
-              onClick={() => { navigate('/app/users'); onClose() }}
+              onClick={() => {
+                navigate(`/app/users?keyword=${encodeURIComponent(query.trim())}`)
+                onClose()
+              }}
             >
               전체 보기
             </button>

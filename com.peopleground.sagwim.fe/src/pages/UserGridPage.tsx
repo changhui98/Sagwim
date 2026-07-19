@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { getMyProfile, getUsers } from '../api/userApi'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { getMyProfile, getUsers, searchUsers } from '../api/userApi'
 import { ApiError } from '../api/ApiError'
 import { useAuth } from '../context/AuthContext'
 import { useLogout } from '../hooks/useLogout'
@@ -19,8 +19,13 @@ const MAX_VISIBLE_PAGES = 5
 
 export function UserGridPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { token, logout } = useAuth()
   const handleLogout = useLogout()
+
+  // 검색 "전체 보기"로 진입한 경우: 해당 검색어의 전체 결과를 보여준다.
+  // keyword 없으면 관리자 전용 전체 목록(GET /users) 모드.
+  const keyword = searchParams.get('keyword')?.trim() ?? ''
 
   const [users, setUsers] = useState<UserResponse[]>([])
   const [myProfile, setMyProfile] = useState<UserDetailResponse | null>(null)
@@ -31,9 +36,12 @@ export function UserGridPage() {
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
 
+  // 401(인증 실패)만 로그아웃 대상. 403(권한 부족)은 세션이 유효하므로
+  // 로그아웃하면 안 된다 — logout()이 서버 sign-out으로 토큰을 블랙리스트에 올려
+  // 다른 탭/기기까지 강제 로그아웃시키기 때문. 403은 에러 안내만 표시한다.
   const handleUnauthorized = useCallback(
     (err: unknown) => {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (err instanceof ApiError && err.status === 401) {
         logout()
         navigate('/login', { replace: true })
       }
@@ -46,12 +54,19 @@ export function UserGridPage() {
       try {
         setLoading(true)
         setError('')
-        const response = await getUsers(token, targetPage, PAGE_SIZE)
+        const response = keyword
+          ? await searchUsers(token, keyword, targetPage, PAGE_SIZE)
+          : await getUsers(token, targetPage, PAGE_SIZE)
         setUsers(response.content)
         setTotalPages(response.totalPages)
         setTotalElements(response.totalElements)
       } catch (err) {
-        const message = err instanceof Error ? err.message : '사용자 목록 조회 실패'
+        const message =
+          err instanceof ApiError && err.status === 403
+            ? '이 페이지에 접근할 권한이 없습니다.'
+            : err instanceof Error
+              ? err.message
+              : '사용자 목록 조회 실패'
         setError(message)
         handleUnauthorized(err)
       } finally {
@@ -59,7 +74,7 @@ export function UserGridPage() {
         setInitialLoad(false)
       }
     },
-    [token, handleUnauthorized],
+    [token, keyword, handleUnauthorized],
   )
 
   const loadProfile = useCallback(async () => {
@@ -73,6 +88,7 @@ export function UserGridPage() {
 
   useEffect(() => {
     loadProfile()
+    setPage(0)
     loadUsers(0)
   }, [loadProfile, loadUsers])
 
@@ -127,7 +143,9 @@ export function UserGridPage() {
     if (users.length === 0) {
       return (
         <div className="card">
-          <EmptyState title="등록된 사용자가 없습니다." />
+          <EmptyState
+            title={keyword ? '검색 결과가 없습니다.' : '등록된 사용자가 없습니다.'}
+          />
         </div>
       )
     }
@@ -203,7 +221,9 @@ export function UserGridPage() {
       <main className={styles.main}>
         <div className={styles.pageHeader}>
           <div className={styles.pageHeaderLeft}>
-            <h1 className={styles.pageTitle}>사용자 목록</h1>
+            <h1 className={styles.pageTitle}>
+              {keyword ? `'${keyword}' 검색 결과` : '사용자 목록'}
+            </h1>
             {totalElements > 0 && (
               <span className={styles.totalChip}>총 {totalElements}명</span>
             )}

@@ -6,7 +6,7 @@ import { Navbar } from '../components/Navbar'
 import { Header } from '../components/Header'
 import { MobileHeader } from '../components/MobileHeader'
 import { Footer } from '../components/Footer'
-import { ShieldIcon, UserCircleIcon, SettingsIcon } from '../components/NavIcons'
+import { ChatIcon, ShieldIcon, UserCircleIcon, SettingsIcon } from '../components/NavIcons'
 import styles from './SettingsPage.module.css'
 
 export function SettingsPage() {
@@ -16,9 +16,10 @@ export function SettingsPage() {
   useHandleUnauthorized()
   const handleLogout = useLogout()
 
-  // "프로필 수정" 영역과 "일반" 영역을 구분해 활성 탭을 판정
+  // "프로필 수정"·"고객지원" 영역과 나머지 "일반" 영역을 구분해 활성 탭을 판정
   const isProfile = pathname.startsWith('/app/settings/profile')
-  const isSecurity = pathname.startsWith('/app/settings') && !isProfile
+  const isSupport = pathname.startsWith('/app/settings/support')
+  const isSecurity = pathname.startsWith('/app/settings') && !isProfile && !isSupport
 
   return (
     <>
@@ -74,6 +75,21 @@ export function SettingsPage() {
                   </span>
                   <span className={styles.tabLabel}>일반</span>
                   {isSecurity && <span className={styles.tabActiveIndicator} aria-hidden="true" />}
+                </button>
+              </li>
+              <li role="none">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={isSupport}
+                  className={`${isSupport ? styles.tabItemActive : styles.tabItem} tone-5`}
+                  onClick={() => navigate('/app/settings/support')}
+                >
+                  <span className={styles.tabIcon} aria-hidden="true">
+                    <ChatIcon width={18} height={18} />
+                  </span>
+                  <span className={styles.tabLabel}>고객지원</span>
+                  {isSupport && <span className={styles.tabActiveIndicator} aria-hidden="true" />}
                 </button>
               </li>
             </ul>
