@@ -85,13 +85,9 @@
 }
 
 /* ── 반응형 ─────────────────────────────────────────────────── */
+/* 모바일에서는 푸터를 숨기고 링크들은 설정 개요 페이지에서 제공한다 */
 @media (max-width: 640px) {
-  .inner {
-    padding: var(--sp-8) var(--sp-4) calc(var(--sp-6) + var(--layout-bottom-bar-h));
-  }
-
-  .columns {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--sp-6);
+  .footer {
+    display: none;
   }
 }

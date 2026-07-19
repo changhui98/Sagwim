@@ -686,6 +686,14 @@
   transform: translateX(2px);
 }
 
+/* 푸터 이관 카피라이트 — 개요 최하단 */
+.serviceCopyright {
+  margin: 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--clr-text-muted);
+}
+
 /* ── 반응형 ── */
 
 /* 태블릿: 사이드바 폭만 축소(좌우 패딩은 헤더와 동일 유지) */
