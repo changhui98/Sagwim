@@ -207,6 +207,15 @@
   border-bottom: none;
 }
 
+/* 모바일: .main의 좌우 패딩을 상쇄해 리스트를 화면 끝까지 풀블리드 */
+@media (max-width: 640px) {
+  .listWrap {
+    max-width: none;
+    margin: 0 calc(-1 * var(--sp-4));
+    width: auto;
+  }
+}
+
 .rowSkeleton {
   display: flex;
   flex-direction: column;
