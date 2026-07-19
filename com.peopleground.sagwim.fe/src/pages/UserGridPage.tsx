@@ -31,9 +31,12 @@ export function UserGridPage() {
   const [initialLoad, setInitialLoad] = useState(true)
   const [error, setError] = useState('')
 
+  // 401(인증 실패)만 로그아웃 대상. 403(권한 부족)은 세션이 유효하므로
+  // 로그아웃하면 안 된다 — logout()이 서버 sign-out으로 토큰을 블랙리스트에 올려
+  // 다른 탭/기기까지 강제 로그아웃시키기 때문. 403은 에러 안내만 표시한다.
   const handleUnauthorized = useCallback(
     (err: unknown) => {
-      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+      if (err instanceof ApiError && err.status === 401) {
         logout()
         navigate('/login', { replace: true })
       }
@@ -51,7 +54,12 @@ export function UserGridPage() {
         setTotalPages(response.totalPages)
         setTotalElements(response.totalElements)
       } catch (err) {
-        const message = err instanceof Error ? err.message : '사용자 목록 조회 실패'
+        const message =
+          err instanceof ApiError && err.status === 403
+            ? '이 페이지에 접근할 권한이 없습니다.'
+            : err instanceof Error
+              ? err.message
+              : '사용자 목록 조회 실패'
         setError(message)
         handleUnauthorized(err)
       } finally {
