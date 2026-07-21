@@ -15,6 +15,7 @@ import { GroupDetailTabs } from '../components/group/GroupDetailTabs'
 import { TabMemberList } from '../components/group/TabMemberList'
 import { TabPostList } from '../components/group/TabPostList'
 import { GroupScheduleSection } from '../components/group/GroupScheduleSection'
+import { isGroupAlmostFull } from '../utils/groupUtils'
 import { TabHome } from '../components/group/TabHome'
 import { GroupDetailSidebar } from '../components/group/GroupDetailSidebar'
 import { useGroupSchedules } from '../hooks/useGroupSchedules'
@@ -472,7 +473,12 @@ export function GroupDetailPage() {
               />
             )}
             {activeTab === 'schedule' && !isDesktop && (
-              <GroupScheduleSection groupId={Number(groupId)} isMember={isMember} schedule={scheduleState} />
+              <GroupScheduleSection
+                groupId={Number(groupId)}
+                isMember={isMember}
+                schedule={scheduleState}
+                groupAlmostFull={isGroupAlmostFull(group.currentMemberCount, group.maxMemberCount)}
+              />
             )}
           </div>
 

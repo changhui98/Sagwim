@@ -3,6 +3,7 @@ import type { UseGroupSchedulesResult } from '../../hooks/useGroupSchedules'
 import { GROUP_CATEGORY_LABELS, GROUP_MEETING_TYPE_LABELS } from '../../types/group'
 import { removeKoreaPrefix } from '../../utils/stringUtils'
 import { GroupScheduleSection } from './GroupScheduleSection'
+import { isGroupAlmostFull } from '../../utils/groupUtils'
 import styles from './GroupDetailSidebar.module.css'
 
 interface GroupDetailSidebarProps {
@@ -38,7 +39,13 @@ export function GroupDetailSidebar({ group, likeCount, isMember, schedule }: Gro
       </div>
 
       <div className={styles.calendarCard}>
-        <GroupScheduleSection groupId={group.id} isMember={isMember} schedule={schedule} compact />
+        <GroupScheduleSection
+          groupId={group.id}
+          isMember={isMember}
+          schedule={schedule}
+          compact
+          groupAlmostFull={isGroupAlmostFull(group.currentMemberCount, group.maxMemberCount)}
+        />
       </div>
     </aside>
   )

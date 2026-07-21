@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import Holidays from 'date-holidays'
 import type { ScheduleResponse } from '../../types/group'
 import styles from './ScheduleCalendar.module.css'
-import bellIcon from '../../assets/bell-ringing-svgrepo-com.svg'
 
 interface ScheduleCalendarProps {
   year: number
@@ -11,6 +10,31 @@ interface ScheduleCalendarProps {
   selectedDate: string | null
   onDateSelect: (date: string) => void
   onMonthChange: (year: number, month: number) => void
+  /** 모임 정원이 거의 찼는지(마감 임박) — 예정 일정 점을 빨간 점등으로 표시 */
+  groupAlmostFull?: boolean
+}
+
+/** 일정 점 상태. 하루에 여러 일정이면 우선순위가 높은 상태 하나로 표시한다. */
+type DotStatus = 'soon' | 'urgent' | 'upcoming' | 'past'
+
+const DOT_PRIORITY: Record<DotStatus, number> = { soon: 3, urgent: 2, upcoming: 1, past: 0 }
+
+const DOT_STATUS_CLASS: Record<DotStatus, string> = {
+  soon: 'dotSoon',
+  urgent: 'dotUrgent',
+  upcoming: 'dotUpcoming',
+  past: 'dotPast',
+}
+
+const SOON_WINDOW_MS = 3 * 60 * 60 * 1000 // 시작 3시간 전부터 '곧 시작'
+
+function getDotStatus(schedule: ScheduleResponse, now: Date, groupAlmostFull: boolean): DotStatus {
+  const start = new Date(schedule.startAt).getTime()
+  const end = new Date(schedule.endAt).getTime()
+  const t = now.getTime()
+  if (t > end) return 'past'
+  if (t >= start - SOON_WINDOW_MS) return 'soon' // 시작 임박 + 진행 중
+  return groupAlmostFull ? 'urgent' : 'upcoming'
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
@@ -98,6 +122,7 @@ export function ScheduleCalendar({
   selectedDate,
   onDateSelect,
   onMonthChange,
+  groupAlmostFull = false,
 }: ScheduleCalendarProps) {
   const holidayMap = useMemo(() => {
     const monthPrefix = `${year}-${String(month + 1).padStart(2, '0')}-`
@@ -113,10 +138,20 @@ export function ScheduleCalendar({
   const daysInMonth = getDaysInMonth(year, month)
   const firstDayOfWeek = getFirstDayOfWeek(year, month)
 
-  // 일정이 있는 날짜 Set (YYYY-MM-DD)
-  const scheduledDates = new Set<string>(
-    schedules.map((s) => s.startAt.slice(0, 10)),
-  )
+  // 날짜(YYYY-MM-DD)별 일정 점 상태 — 하루 여러 일정이면 우선순위 높은 상태로 집계
+  const scheduleStatusByDate = useMemo(() => {
+    const now = new Date()
+    const byDate = new Map<string, DotStatus>()
+    schedules.forEach((s) => {
+      const dateStr = s.startAt.slice(0, 10)
+      const status = getDotStatus(s, now, groupAlmostFull)
+      const prev = byDate.get(dateStr)
+      if (!prev || DOT_PRIORITY[status] > DOT_PRIORITY[prev]) {
+        byDate.set(dateStr, status)
+      }
+    })
+    return byDate
+  }, [schedules, groupAlmostFull])
 
   const handlePrevMonth = () => {
     if (month === 0) {
@@ -186,7 +221,8 @@ export function ScheduleCalendar({
           const dateStr = toDateString(year, month, day)
           const isToday = dateStr === today
           const isSelected = dateStr === selectedDate
-          const hasSchedule = scheduledDates.has(dateStr)
+          const dotStatus = scheduleStatusByDate.get(dateStr)
+          const hasSchedule = dotStatus !== undefined
           const holidayInfo = holidayMap.get(dateStr)
           const holidayName = holidayInfo?.name
           const isSubstituteHoliday = holidayInfo?.isSubstitute ?? false
@@ -220,12 +256,10 @@ export function ScheduleCalendar({
                   {holidayName}
                 </span>
               )}
-              {hasSchedule && (
-                <img
-                  src={bellIcon}
-                  alt=""
+              {dotStatus && (
+                <span
                   aria-hidden="true"
-                  className={styles.scheduleIcon}
+                  className={`${styles.scheduleDot} ${styles[DOT_STATUS_CLASS[dotStatus]]}`}
                 />
               )}
             </button>

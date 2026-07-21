@@ -11,10 +11,18 @@ interface GroupScheduleSectionProps {
   schedule: UseGroupSchedulesResult
   /** 사이드바 배치용 축소 스타일 */
   compact?: boolean
+  /** 모임 정원 마감 임박 여부 — 달력 예정 일정 점을 빨간 점등으로 표시 */
+  groupAlmostFull?: boolean
 }
 
 /** 달력 + 선택 날짜 일정 목록 + 일정 등록 모달. 상태는 useGroupSchedules가 소유한다. */
-export function GroupScheduleSection({ groupId, isMember, schedule, compact = false }: GroupScheduleSectionProps) {
+export function GroupScheduleSection({
+  groupId,
+  isMember,
+  schedule,
+  compact = false,
+  groupAlmostFull = false,
+}: GroupScheduleSectionProps) {
   const { meUsername } = useAuth()
   const {
     displayedYear,
@@ -41,6 +49,7 @@ export function GroupScheduleSection({ groupId, isMember, schedule, compact = fa
         selectedDate={selectedDate}
         onDateSelect={handleDateSelect}
         onMonthChange={handleMonthChange}
+        groupAlmostFull={groupAlmostFull}
       />
       {loading && (
         <div className={styles.loadingInline} aria-live="polite">

@@ -122,7 +122,7 @@
 
 .dayNumber {
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--clr-text);
   line-height: 1;
 }
@@ -173,15 +173,52 @@
   font-weight: 700;
 }
 
-/* 일정 있는 날 벨 아이콘 */
-.scheduleIcon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 26px;
-  height: 26px;
-  opacity: 0.6;
+/* 일정 있는 날 표시 — 캘린더 관례의 컬러 점. 숫자 아래 셀 흐름 안에 배치.
+   상태별 색: 예정=세레니티 / 곧 시작(3시간 전~진행 중)=초록 / 모임 마감 임박=빨강 점등 / 지남=회색 */
+.scheduleDot {
+  width: 8px;
+  height: 8px;
+  margin-top: 3px;
+  border-radius: var(--r-full);
+  background: var(--clr-accent);
+  flex: none;
+}
+
+.dotUpcoming {
+  background: var(--clr-accent);
+}
+
+.dotPast {
+  background: var(--clr-text-muted);
+}
+
+/* error/success 는 다크에서도 라이트 값을 상속하는 기능색이라 별도 다크 대응 불필요 */
+.dotSoon {
+  background: var(--clr-success);
+}
+
+.dotUrgent {
+  background: var(--clr-error);
+  /* 모임 생성 스텝 원의 activePulse 와 같은 기법 — box-shadow 확산 왕복 글로우 */
+  animation: dotPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.32);
+  }
+}
+
+/* 모션 최소화 선호 시: 점등 펄스는 정적 halo 로 고정 */
+@media (prefers-reduced-motion: reduce) {
+  .dotUrgent {
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+  }
 }
 
 /* 오늘이면서 선택된 경우 */
@@ -193,30 +230,23 @@
   font-weight: 700;
 }
 
+/* 모바일: 축소가 아니라 확대 — 좁은 화면일수록 달력이 주인공이므로
+   패딩을 걷어 폭을 확보하고 숫자·타이틀을 키운다 */
 @media (max-width: 640px) {
   .calendar {
-    padding: var(--sp-2);
-  }
-
-  .grid {
-    gap: 1px;
+    padding: 0;
   }
 
   .dayNumber {
-    font-size: 0.75rem;
-  }
-
-  .holidayName {
-    font-size: 0.5rem;
-  }
-
-  .navBtn {
-    width: 28px;
-    height: 28px;
     font-size: 1rem;
   }
 
+  .weekdayCell {
+    font-size: 0.8125rem;
+    color: var(--clr-text-secondary);
+  }
+
   .monthLabel {
-    font-size: 0.875rem;
+    font-size: 1.125rem;
   }
 }
