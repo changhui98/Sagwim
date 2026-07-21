@@ -39,13 +39,15 @@
   animation: personIn 0.5s var(--ease, ease) forwards;
 }
 
-/* 위치 핀 */
+/* 위치 핀 — 노드별 팔레트 색(--node-tone), 미지정 시 accent 폴백 */
 .pin {
-  fill: var(--clr-accent);
+  fill: var(--node-tone, var(--clr-accent));
   opacity: 0;
   transform: translateY(-7px);
   animation: pinDrop 0.5s var(--ease, ease) forwards;
-  filter: drop-shadow(0 2px 3px var(--clr-accent-glow));
+  filter: drop-shadow(
+    0 2px 3px color-mix(in srgb, var(--node-tone, var(--clr-accent)) 30%, transparent)
+  );
 }
 
 .pinDot {
@@ -74,9 +76,9 @@
   }
 }
 
-/* 발밑 펄스 */
+/* 발밑 펄스 — 핀과 같은 노드 색 */
 .pulse {
-  fill: var(--clr-accent);
+  fill: var(--node-tone, var(--clr-accent));
   transform-box: fill-box;
   transform-origin: center;
   opacity: 0;
@@ -96,6 +98,17 @@
     opacity: 0;
     transform: scale(1.8);
   }
+}
+
+/* 다크: 전역 accent 가 흰색계(무채색)로 반전되므로, 컬러 유지가 결정된
+   랜딩 지도에서는 실루엣·연결선을 은은한 세레니티로 복원한다(핀 다색과 결 맞춤) */
+[data-theme='dark'] .land {
+  fill: rgba(145, 168, 208, 0.1);
+  stroke: #91a8d0;
+}
+
+[data-theme='dark'] .line {
+  stroke: var(--lp-tone-0, #91a8d0);
 }
 
 /* 모션 최소화 선호 시: 애니메이션 없이 완성 상태로 고정 */

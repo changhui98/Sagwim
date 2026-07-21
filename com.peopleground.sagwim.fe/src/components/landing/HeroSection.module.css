@@ -3,14 +3,19 @@
   overflow: hidden;
 }
 
-/* 부드러운 배경 글로우 — 우상단 세레니티 + 좌하단 라벤더 듀오 */
+/* 부드러운 배경 글로우 — 우상단 세레니티 + 좌하단 라벤더 + 좌상단 아프리콧 한 방울 */
 .hero::before {
   content: '';
   position: absolute;
   inset: 0;
   background:
     radial-gradient(ellipse 60% 55% at 78% 30%, var(--clr-accent-muted), transparent 60%),
-    radial-gradient(ellipse 50% 50% at 12% 80%, var(--clr-lavender-muted), transparent 65%);
+    radial-gradient(ellipse 50% 50% at 12% 80%, var(--clr-lavender-muted), transparent 65%),
+    radial-gradient(
+      ellipse 40% 35% at 18% 12%,
+      color-mix(in srgb, var(--lp-tone-4, transparent) 12%, transparent),
+      transparent 65%
+    );
   pointer-events: none;
   z-index: 0;
 }
