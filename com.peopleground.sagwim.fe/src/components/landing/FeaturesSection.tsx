@@ -64,18 +64,52 @@ function GroupMock() {
   )
 }
 
+/* 게시판 목업의 예시 글 — 채팅 목업처럼 실제 콘텐츠로 보여준다.
+   아바타는 전역 .tone-N 파스텔 브리지로 글쓴이마다 다른 색 */
+const BOARD_POSTS = [
+  {
+    initial: '은',
+    name: '은지',
+    time: '10분 전',
+    text: '오늘 한강 러닝 모임 최고였어요 🏃',
+    likes: 12,
+    tone: 2,
+  },
+  {
+    initial: '준',
+    name: '준호',
+    time: '1시간 전',
+    text: '역 앞에 새로 생긴 카페 같이 가실 분?',
+    likes: 8,
+    tone: 0,
+  },
+  {
+    initial: '소',
+    name: '소연',
+    time: '어제',
+    text: '독서 모임 이번 주 책 후기 남겨요 📚',
+    likes: 21,
+    tone: 4,
+  },
+]
+
 function BoardMock() {
   return (
     <div className={styles.mockCard}>
-      {[0, 1, 2].map((i) => (
-        <div key={i} className={styles.mockPost}>
-          <span className={styles.mockAvatar} />
+      {BOARD_POSTS.map((p) => (
+        <div key={p.name} className={styles.mockPost}>
+          <span className={`${styles.mockAvatar} tone-${p.tone}`} aria-hidden>
+            {p.initial}
+          </span>
           <div className={styles.mockPostBody}>
-            <div className={`${styles.mockLine} ${styles.w60}`} />
-            <div className={`${styles.mockLine} ${styles.w90} ${styles.muted}`} />
+            <div className={styles.mockPostMeta}>
+              <span className={styles.mockPostName}>{p.name}</span>
+              <span className={styles.mockPostTime}>{p.time}</span>
+            </div>
+            <p className={styles.mockPostText}>{p.text}</p>
           </div>
-          <span className={styles.mockHeart} aria-hidden>
-            ♥
+          <span className={styles.mockLikes} aria-hidden>
+            ♥ {p.likes}
           </span>
         </div>
       ))}
@@ -125,6 +159,8 @@ function FeatureRow({ feature, flip }: { feature: Feature; flip: boolean }) {
       ref={ref}
       className={[
         styles.row,
+        // 행 루트에 tone 을 걸어 --tone-bg/fg 가 태그·목업까지 상속되게 한다
+        `tone-${feature.tone}`,
         flip ? styles.flip : '',
         hasRevealed ? styles.revealed : '',
       ]
@@ -132,7 +168,7 @@ function FeatureRow({ feature, flip }: { feature: Feature; flip: boolean }) {
         .join(' ')}
     >
       <div className={styles.text}>
-        <span className={`${styles.tag} tone-${feature.tone}`}>{feature.tag}</span>
+        <span className={styles.tag}>{feature.tag}</span>
         <h3 className={styles.rowTitle}>{feature.title}</h3>
         <p className={styles.rowDesc}>{feature.desc}</p>
       </div>

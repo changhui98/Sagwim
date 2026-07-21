@@ -1,22 +1,51 @@
+/* 풀폭 그라데이션 밴드 — 카드 대신 화면 전체 폭을 쓰는 은은한 마무리 배경.
+   위는 투명하게 시작해 페이지 흐름과 이어지고, 코너 파스텔 글로우로 색을 더한다 */
 .section {
-  padding: clamp(var(--sp-10), 7vw, var(--sp-16)) var(--sp-6)
-    calc(clamp(var(--sp-10), 7vw, var(--sp-16)) + var(--layout-bottom-bar-h));
-}
-
-/* surface 카드 + 듀오 그라데이션 헤어라인 보더 — 페이지 톤에 맞춘 톤다운 */
-.banner {
   position: relative;
   overflow: hidden;
+  padding: clamp(var(--sp-10), 7vw, var(--sp-16)) var(--sp-6)
+    calc(clamp(var(--sp-10), 7vw, var(--sp-16)) + var(--layout-bottom-bar-h));
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--lp-tone-0, var(--clr-accent)) 8%, transparent) 45%,
+    color-mix(in srgb, var(--lp-tone-1, var(--clr-lavender)) 14%, transparent) 100%
+  );
+}
+
+.section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 50% 60% at 10% 100%,
+      color-mix(in srgb, var(--lp-tone-5, transparent) 12%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 60% at 90% 100%,
+      color-mix(in srgb, var(--lp-tone-2, transparent) 10%, transparent),
+      transparent 60%
+    );
+  pointer-events: none;
+}
+
+/* 다크: 저알파 그라데이션을 더 절제해 다크 배경 위에서 은은하게 */
+[data-theme='dark'] .section {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    color-mix(in srgb, var(--lp-tone-0, #91a8d0) 6%, transparent) 45%,
+    color-mix(in srgb, var(--lp-tone-1, #afa5d6) 10%, transparent) 100%
+  );
+}
+
+.banner {
+  position: relative;
   max-width: 1080px;
   margin: 0 auto;
-  padding: clamp(var(--sp-10), 6vw, var(--sp-16)) var(--sp-6);
   text-align: center;
-  border-radius: var(--r-2xl);
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--clr-surface), var(--clr-surface)) padding-box,
-    var(--clr-duo-gradient) border-box;
-  box-shadow: var(--shadow-md);
   /* 등장 전 */
   opacity: 0;
   transform: translateY(24px) scale(0.98);
@@ -28,17 +57,6 @@
 .banner.revealed {
   opacity: 1;
   transform: none;
-}
-
-/* 코너 파스텔 글로우 — 좌상 세레니티, 우하 라벤더 */
-.banner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 55% 70% at 12% 0%, var(--clr-accent-muted), transparent 60%),
-    radial-gradient(ellipse 55% 70% at 88% 100%, var(--clr-lavender-muted), transparent 60%);
-  pointer-events: none;
 }
 
 .titleBar {
