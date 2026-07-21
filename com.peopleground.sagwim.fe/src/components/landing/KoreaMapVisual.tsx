@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import styles from './KoreaMapVisual.module.css'
 
 /**
@@ -17,18 +18,21 @@ import styles from './KoreaMapVisual.module.css'
 interface Node {
   x: number
   y: number
+  /* 랜딩 팔레트(--lp-tone-N) 인덱스 — 핀·펄스 색.
+     EDGES 로 이어지는 인접 노드끼리 같은 색이 없도록 배치했다. */
+  tone: number
 }
 
 // 핀 tip 좌표 (도시 위경도를 외곽선과 동일한 변환식으로 매핑)
 const NODES: Node[] = [
-  { x: 112, y: 110 }, // 0 서울·경기
-  { x: 85, y: 127 }, // 1 인천·서해
-  { x: 208, y: 100 }, // 2 강원
-  { x: 130, y: 196 }, // 3 대전·충청
-  { x: 193, y: 226 }, // 4 대구·경북
-  { x: 106, y: 272 }, // 5 광주·호남
-  { x: 214, y: 272 }, // 6 부산·경남
-  { x: 88, y: 349 }, // 7 제주
+  { x: 112, y: 110, tone: 0 }, // 0 서울·경기 — 세레니티(브랜드색)
+  { x: 85, y: 127, tone: 5 }, // 1 인천·서해 — 아쿠아
+  { x: 208, y: 100, tone: 3 }, // 2 강원 — 세이지
+  { x: 130, y: 196, tone: 4 }, // 3 대전·충청 — 아프리콧
+  { x: 193, y: 226, tone: 2 }, // 4 대구·경북 — 로즈
+  { x: 106, y: 272, tone: 1 }, // 5 광주·호남 — 라벤더
+  { x: 214, y: 272, tone: 0 }, // 6 부산·경남 — 세레니티
+  { x: 88, y: 349, tone: 3 }, // 7 제주 — 세이지
 ]
 
 // 핀끼리 연결 (노드 인덱스 쌍)
@@ -94,7 +98,10 @@ export function KoreaMapVisual({ className }: KoreaMapVisualProps) {
       {NODES.map((n, i) => {
         const c = pinCenter(n)
         return (
-          <g key={`node-${i}`}>
+          <g
+            key={`node-${i}`}
+            style={{ '--node-tone': `var(--lp-tone-${n.tone})` } as CSSProperties}
+          >
             {/* 발밑 펄스 */}
             <ellipse
               className={styles.pulse}

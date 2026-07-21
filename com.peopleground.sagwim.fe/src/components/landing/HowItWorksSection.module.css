@@ -79,7 +79,8 @@
   transform: translateY(-2px);
 }
 
-/* 듀오 그라데이션 배지 — 버튼이 아닌 장식 표면 */
+/* 스텝별 듀오 그라데이션 배지 — 버튼이 아닌 장식 표면.
+   랜딩 팔레트(--lp-tone-N)로 단계마다 색을 달리해 진행감을 준다 */
 .no {
   display: inline-flex;
   align-items: center;
@@ -87,12 +88,24 @@
   width: 44px;
   height: 44px;
   border-radius: var(--r-full);
-  background: var(--clr-duo-gradient);
+  background: linear-gradient(135deg, var(--lp-tone-0), var(--lp-tone-1));
   color: var(--clr-on-accent);
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  box-shadow: 0 4px 12px var(--clr-accent-glow);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--lp-tone-0) 25%, transparent);
+}
+
+/* 02: 세이지→아쿠아 */
+.step:nth-child(2) .no {
+  background: linear-gradient(135deg, var(--lp-tone-3), var(--lp-tone-5));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--lp-tone-3) 25%, transparent);
+}
+
+/* 03: 로즈→아프리콧 */
+.step:nth-child(3) .no {
+  background: linear-gradient(135deg, var(--lp-tone-2), var(--lp-tone-4));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--lp-tone-2) 25%, transparent);
 }
 
 .stepTitle {

@@ -6,4 +6,42 @@
      데스크톱 사이드바가 있을 경우만 좌측 여백을 확보한다. */
   margin-left: var(--layout-sidebar-w);
   width: calc(100% - var(--layout-sidebar-w));
+
+  /* 랜딩 전용 미드톤 팔레트 — Pantone Serenity(#91A8D0, 앱 accent) 공식 페어링
+     (Spring 2016: Rose Quartz·Limpet Shell·Green Flash·Buttercup) 계열을
+     기존 pastel 토큰의 휴에 맞춰 핀·배지에 쓸 수 있는 중간 채도로 표현.
+     하위 landing 모듈들이 var(--lp-tone-N)으로 상속받아 사용한다. */
+  --lp-tone-0: #91A8D0; /* 세레니티(=accent) */
+  --lp-tone-1: #AFA5D6; /* 라벤더(=--clr-lavender) */
+  --lp-tone-2: #D9A0B0; /* 로즈 (Rose Quartz 심화) */
+  --lp-tone-3: #8FC2A9; /* 세이지 (Green Flash 파스텔화) */
+  --lp-tone-4: #E5BC85; /* 아프리콧 (Buttercup/Peach 연화) */
+  --lp-tone-5: #85C6CD; /* 아쿠아 (Limpet Shell 심화) */
+}
+
+/* 다크: 랜딩 페이지만 컬러 유지(사용자 결정) — 다크 배경에서 튀지 않게
+   같은 휴에서 채도·명도를 한 단계 감쇠한 값으로 재정의 */
+[data-theme='dark'] .main {
+  --lp-tone-0: #8399BC;
+  --lp-tone-1: #9C93BE;
+  --lp-tone-2: #C0919F;
+  --lp-tone-3: #82AE98;
+  --lp-tone-4: #CBA97D;
+  --lp-tone-5: #7AB1B7;
+
+  /* 전역 다크의 무채색 pastel 브리지를 랜딩 하위에서만 저채도 컬러로 복원 —
+     ValueSection 아이콘·FeaturesSection 태그(.tone-N 소비처)가 마크업 무수정으로 복색.
+     다른 페이지는 .main 밖이므로 다크 무채색 컨셉 그대로 유지된다. */
+  --clr-pastel-0-bg: rgba(145, 168, 208, 0.16);
+  --clr-pastel-0-fg: #aec1e4;
+  --clr-pastel-1-bg: rgba(175, 165, 214, 0.16);
+  --clr-pastel-1-fg: #c3b9e6;
+  --clr-pastel-2-bg: rgba(217, 160, 176, 0.16);
+  --clr-pastel-2-fg: #e2b3c1;
+  --clr-pastel-3-bg: rgba(143, 194, 169, 0.16);
+  --clr-pastel-3-fg: #a5cdb8;
+  --clr-pastel-4-bg: rgba(229, 188, 133, 0.16);
+  --clr-pastel-4-fg: #e3c79d;
+  --clr-pastel-5-bg: rgba(133, 198, 205, 0.16);
+  --clr-pastel-5-fg: #9fcfd5;
 }

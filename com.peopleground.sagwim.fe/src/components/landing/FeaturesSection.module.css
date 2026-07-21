@@ -126,14 +126,8 @@
 .w40 {
   width: 40%;
 }
-.w60 {
-  width: 60%;
-}
 .w70 {
   width: 70%;
-}
-.w90 {
-  width: 90%;
 }
 
 /* 모임 목업 */
@@ -154,8 +148,8 @@
   align-self: flex-start;
   padding: 2px var(--sp-2);
   border-radius: var(--r-full);
-  background: var(--clr-accent-muted);
-  color: var(--clr-accent);
+  background: var(--tone-bg, var(--clr-accent-muted));
+  color: var(--tone-fg, var(--clr-accent));
   font-size: 0.6875rem;
   font-weight: 700;
 }
@@ -196,22 +190,55 @@
 .mockPost:last-child {
   border-bottom: none;
 }
+/* 글쓴이 이니셜 아바타 — 자체 .tone-N 으로 행 톤과 별개의 파스텔 */
 .mockAvatar {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
   border-radius: var(--r-full);
-  background: var(--clr-accent-muted);
+  background: var(--tone-bg, var(--clr-accent-muted));
+  color: var(--tone-fg, var(--clr-accent));
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 .mockPostBody {
   flex: 1;
+  min-width: 0; /* 본문 ellipsis 를 위해 flex 아이템 수축 허용 */
   display: flex;
   flex-direction: column;
+  gap: 2px;
+}
+.mockPostMeta {
+  display: flex;
+  align-items: baseline;
   gap: var(--sp-2);
 }
-.mockHeart {
-  color: var(--clr-accent);
-  font-size: 0.9375rem;
+.mockPostName {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--clr-text);
+}
+.mockPostTime {
+  font-size: 0.6875rem;
+  color: var(--clr-text-muted);
+}
+.mockPostText {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--clr-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mockLikes {
+  flex: none;
+  color: var(--tone-fg, var(--clr-accent));
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 /* 채팅 목업 */
@@ -234,8 +261,9 @@
   border-bottom-left-radius: var(--r-sm);
 }
 .bubbleOut {
+  /* 채팅 행 톤(아쿠아)과 일치 — 텍스트 대비를 위해 fg 가 아닌 미드톤 사용 */
   align-self: flex-end;
-  background: var(--clr-accent);
+  background: var(--lp-tone-5, var(--clr-accent));
   color: var(--clr-on-accent);
   border-bottom-right-radius: var(--r-sm);
 }
