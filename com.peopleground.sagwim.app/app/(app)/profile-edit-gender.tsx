@@ -109,7 +109,7 @@ export default function ProfileEditGenderScreen() {
     },
     saveBtnDisabled: { backgroundColor: colors.border },
     saveBtnPressed: { opacity: 0.85 },
-    saveBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
+    saveBtnText: { fontSize: fontSize.base, fontWeight: '700', color: colors.onAccent },
   }), [colors])
 
   return (
@@ -162,7 +162,7 @@ export default function ProfileEditGenderScreen() {
             disabled={!canSave || saving}
           >
             {saving
-              ? <ActivityIndicator size="small" color="#fff" />
+              ? <ActivityIndicator size="small" color={colors.onAccent} />
               : <Text style={styles.saveBtnText}>저장</Text>
             }
           </Pressable>

@@ -8,13 +8,13 @@ import { useTheme } from '../../context/ThemeContext'
 const sagwimIconSvg = `<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="strokeA" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FF9580"/>
-      <stop offset="55%" stop-color="#FF6B6B"/>
-      <stop offset="100%" stop-color="#E63E5C"/>
+      <stop offset="0%" stop-color="#A8C0E0"/>
+      <stop offset="55%" stop-color="#91A8D0"/>
+      <stop offset="100%" stop-color="#6E88BE"/>
     </linearGradient>
   </defs>
   <rect x="4" y="4" width="248" height="248" rx="56"
-        fill="none" stroke="#f08080" stroke-width="4"/>
+        fill="none" stroke="#91A8D0" stroke-width="4"/>
   <g stroke="url(#strokeA)" stroke-width="26" stroke-linecap="round" fill="none">
     <path d="M128 78 L72 184"/>
     <path d="M128 78 L184 184"/>
@@ -84,7 +84,7 @@ export function AddressOnboarding({ onPressSetAddress }: AddressOnboardingProps)
       marginBottom: spacing.sp2,
       textAlign: 'center',
     },
-    titleHighlight: { color: '#E06060' },
+    titleHighlight: { color: colors.accent },
     subtitle: {
       fontSize: fontSize.base,
       color: colors.textSecondary,

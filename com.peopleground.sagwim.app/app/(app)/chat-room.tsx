@@ -153,7 +153,7 @@ export default function ChatRoomScreen() {
       paddingHorizontal: spacing.sp3,
       paddingVertical: spacing.sp2,
     },
-    bubbleTextMine: { fontSize: fontSize.base, color: '#fff' },
+    bubbleTextMine: { fontSize: fontSize.base, color: colors.onAccent },
     bubbleTextTheirs: { fontSize: fontSize.base, color: colors.text },
     time: { fontSize: fontSize.xs, color: colors.textMuted, marginTop: 2, marginHorizontal: spacing.sp1 },
     loadMore: { alignItems: 'center', paddingVertical: spacing.sp3 },

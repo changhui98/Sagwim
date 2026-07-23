@@ -52,7 +52,7 @@ export function ConfirmDialog({
     primaryBtn: { backgroundColor: colors.accent },
     dangerBtn: { backgroundColor: colors.errorSoft },
     confirmBtnPressed: { opacity: 0.8 },
-    primaryBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
+    primaryBtnText: { fontSize: fontSize.base, fontWeight: '700', color: colors.onAccent },
     dangerBtnText: { fontSize: fontSize.base, fontWeight: '700', color: colors.error },
   }), [colors])
 

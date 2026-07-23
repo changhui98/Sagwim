@@ -35,9 +35,9 @@ export function BrandLogo({ size = 72 }: BrandLogoProps) {
     >
       <Defs>
         <LinearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <Stop offset="0%" stopColor="#FF9580" />
-          <Stop offset="55%" stopColor="#FF6B6B" />
-          <Stop offset="100%" stopColor="#E63E5C" />
+          <Stop offset="0%" stopColor="#A8C0E0" />
+          <Stop offset="55%" stopColor="#91A8D0" />
+          <Stop offset="100%" stopColor="#6E88BE" />
         </LinearGradient>
       </Defs>
 
@@ -49,7 +49,7 @@ export function BrandLogo({ size = 72 }: BrandLogoProps) {
         height="248"
         rx="56"
         fill="none"
-        stroke="#f08080"
+        stroke="#91A8D0"
         strokeWidth="4"
       />
 

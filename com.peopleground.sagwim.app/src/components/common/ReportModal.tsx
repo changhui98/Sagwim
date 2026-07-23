@@ -211,7 +211,7 @@ export function ReportModal({
       justifyContent: 'center',
       backgroundColor: colors.accent,
     },
-    primaryBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
+    primaryBtnText: { fontSize: fontSize.base, fontWeight: '700', color: colors.onAccent },
   }), [colors])
 
   return (
