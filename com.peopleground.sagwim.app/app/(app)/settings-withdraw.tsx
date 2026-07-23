@@ -58,7 +58,7 @@ export default function SettingsWithdrawScreen() {
     try {
       await deleteMyAccount(reason)
       await logout()
-      router.replace('/(auth)/login')
+      router.replace('/(auth)/landing')
     } catch {
       Alert.alert('오류', '탈퇴에 실패했습니다. 잠시 후 다시 시도해주세요.')
       setIsSubmitting(false)

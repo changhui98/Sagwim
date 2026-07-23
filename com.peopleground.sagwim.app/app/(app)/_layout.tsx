@@ -7,7 +7,7 @@ import { chatSocket } from '../../src/lib/chatSocket'
 
 /**
  * 보호된 라우트 그룹 레이아웃
- * - 비인증 상태면 /(auth)/login 으로 리다이렉트
+ * - 비인증 상태면 /(auth)/landing 으로 리다이렉트
  * - 부트스트래핑 중이면 로딩 화면 표시
  * - 인증된 동안 채팅 STOMP 소켓을 단일 연결로 유지 (탭 전환과 무관)
  */
@@ -32,7 +32,7 @@ export default function AppLayout() {
   }
 
   if (!isAuthenticated) {
-    return <Redirect href="/(auth)/login" />
+    return <Redirect href="/(auth)/landing" />
   }
 
   // gestureEnabled: false — 인증 후 화면에서 스와이프 백으로 로그인 화면으로 돌아가는 것 차단
