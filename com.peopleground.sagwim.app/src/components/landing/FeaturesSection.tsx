@@ -54,6 +54,13 @@ interface MockProps {
   tone: number
 }
 
+/* 모임 목업의 예시 멤버 — 게시판 목업 글쓴이(은지/준호/소연)와 같은 인물·톤 */
+const GROUP_MEMBERS = [
+  { initial: '은', tone: 2 },
+  { initial: '준', tone: 0 },
+  { initial: '소', tone: 4 },
+]
+
 function GroupMock({ colors, palette, tone }: MockProps) {
   const s = mockStyles(colors)
   return (
@@ -63,12 +70,17 @@ function GroupMock({ colors, palette, tone }: MockProps) {
         <View style={[s.badge, { backgroundColor: palette.pastel[tone].bg }]}>
           <Text style={[s.badgeText, { color: palette.pastel[tone].fg }]}>오프라인 · 모집중</Text>
         </View>
-        <View style={[s.line, s.w70]} />
-        <View style={[s.line, s.w40, s.lineMuted]} />
+        <Text style={s.groupTitle}>한강 러닝 크루</Text>
+        <Text style={s.groupMeta} numberOfLines={1}>🏃 운동 · 스포츠 · 11/20명</Text>
         <View style={s.avatars}>
-          <View style={s.avatar} />
-          <View style={[s.avatar, s.avatarOverlap]} />
-          <View style={[s.avatar, s.avatarOverlap]} />
+          {GROUP_MEMBERS.map((m, i) => (
+            <View
+              key={m.initial}
+              style={[s.avatar, i > 0 && s.avatarOverlap, { backgroundColor: palette.pastel[m.tone].bg }]}
+            >
+              <Text style={[s.avatarInitText, { color: palette.pastel[m.tone].fg }]}>{m.initial}</Text>
+            </View>
+          ))}
           <View style={[s.avatar, s.avatarOverlap, s.avatarMore]}>
             <Text style={s.avatarMoreText}>+8</Text>
           </View>
@@ -157,10 +169,8 @@ function buildMockStyles(colors: AppColors) {
       borderRadius: radius.full,
     },
     badgeText: { fontSize: 11, fontWeight: '700' },
-    line: { height: 9, borderRadius: radius.full, backgroundColor: colors.surface3 },
-    lineMuted: { opacity: 0.6 },
-    w40: { width: '40%' },
-    w70: { width: '70%' },
+    groupTitle: { fontSize: fontSize.base, fontWeight: '700', color: colors.text },
+    groupMeta: { fontSize: fontSize.xs, color: colors.textMuted },
     avatars: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.sp1 },
     avatar: {
       width: 24,
@@ -169,10 +179,13 @@ function buildMockStyles(colors: AppColors) {
       backgroundColor: colors.surface3,
       borderWidth: 2,
       borderColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     avatarOverlap: { marginLeft: -6 },
     avatarMore: { alignItems: 'center', justifyContent: 'center' },
     avatarMoreText: { fontSize: 10, fontWeight: '700', color: colors.textSecondary },
+    avatarInitText: { fontSize: 10, fontWeight: '700' },
     post: {
       flexDirection: 'row',
       alignItems: 'center',

@@ -114,22 +114,6 @@
   box-shadow: var(--shadow-lg);
 }
 
-.mockLine {
-  height: 9px;
-  border-radius: var(--r-full);
-  background: var(--clr-surface-3);
-}
-.mockLine.muted {
-  background: var(--clr-surface-3);
-  opacity: 0.6;
-}
-.w40 {
-  width: 40%;
-}
-.w70 {
-  width: 70%;
-}
-
 /* 모임 목업 */
 .mockThumb {
   display: block;
@@ -153,6 +137,20 @@
   font-size: 0.6875rem;
   font-weight: 700;
 }
+.mockGroupTitle {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--clr-text);
+}
+.mockGroupMeta {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--clr-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .mockAvatars {
   display: flex;
   align-items: center;
@@ -168,6 +166,17 @@
 }
 .mockAvatars span:first-child {
   margin-left: 0;
+}
+/* 멤버 이니셜 아바타 — 자체 .tone-N 으로 게시판 목업 글쓴이와 같은 파스텔.
+   .mockAvatars span(0,1,1)보다 명시도가 높아야 배경이 이긴다 → (0,2,0) */
+.mockAvatars .mockAvatarInit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+  font-weight: 700;
+  background: var(--tone-bg, var(--clr-accent-muted));
+  color: var(--tone-fg, var(--clr-accent));
 }
 .mockMore {
   display: inline-flex;
