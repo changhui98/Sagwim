@@ -269,7 +269,7 @@ export default function GroupDetailScreen() {
     errorBackText: {
       fontSize: fontSize.md,
       fontWeight: '600',
-      color: '#fff',
+      color: colors.onAccent,
     },
     scroll: {
       flex: 1,
@@ -382,7 +382,7 @@ export default function GroupDetailScreen() {
     actionButtonPrimaryText: {
       fontSize: fontSize.md,
       fontWeight: '700',
-      color: '#fff',
+      color: colors.onAccent,
     },
     actionButtonDanger: {
       backgroundColor: colors.errorSoft,
@@ -1029,7 +1029,7 @@ function ScheduleTab({ groupId, isMember }: ScheduleTabProps) {
     pickerConfirmText: {
       fontSize: fontSize.md,
       fontWeight: '700',
-      color: '#fff',
+      color: colors.onAccent,
     },
     calendarGrid: {
       paddingHorizontal: spacing.sp4,
@@ -1255,7 +1255,7 @@ function ScheduleTab({ groupId, isMember }: ScheduleTabProps) {
     submitBtnText: {
       fontSize: fontSize.md,
       fontWeight: '700',
-      color: '#fff',
+      color: colors.onAccent,
     },
   }), [colors])
 
@@ -1863,7 +1863,7 @@ function PostsTab({ groupId, isMember }: PostsTabProps) {
     submitBtnText: {
       fontSize: fontSize.md,
       fontWeight: '700',
-      color: '#fff',
+      color: colors.onAccent,
     },
   }), [colors])
 

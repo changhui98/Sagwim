@@ -7,7 +7,7 @@ import { useTheme } from '../src/context/ThemeContext'
  * 진입 분기 라우터
  * - isBootstrapping: SecureStore 읽기 중 → 로딩 스피너
  * - isAuthenticated: (app) 홈으로
- * - 비인증: (auth)/login 으로
+ * - 비인증: (auth)/landing (공개 랜딩) 으로
  */
 export default function Index() {
   const { isAuthenticated, isBootstrapping } = useAuth()
@@ -25,5 +25,5 @@ export default function Index() {
     return <Redirect href="/(app)/(tabs)" />
   }
 
-  return <Redirect href="/(auth)/login" />
+  return <Redirect href="/(auth)/landing" />
 }

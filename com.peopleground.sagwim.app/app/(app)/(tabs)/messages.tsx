@@ -121,7 +121,7 @@ export default function MessagesScreen() {
       justifyContent: 'center',
       paddingHorizontal: 6,
     },
-    unreadText: { fontSize: fontSize.xs, fontWeight: '700', color: '#fff' },
+    unreadText: { fontSize: fontSize.xs, fontWeight: '700', color: colors.onAccent },
     separator: { height: 1, backgroundColor: colors.border, marginLeft: 68 },
   }), [colors])
 

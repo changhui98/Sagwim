@@ -131,7 +131,7 @@ export default function PostsScreen() {
     retryText: {
       fontSize: fontSize.base,
       fontWeight: '600',
-      color: '#fff',
+      color: colors.onAccent,
     },
     footerLoader: {
       paddingVertical: spacing.sp4,

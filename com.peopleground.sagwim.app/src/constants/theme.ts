@@ -4,11 +4,32 @@
  */
 
 export const lightColors = {
-  // Brand Accent
-  accent: '#F08080',
-  accentHover: '#e06060',
-  accentMuted: 'rgba(240, 128, 128, 0.12)',
-  accentGlow: 'rgba(240, 128, 128, 0.25)',
+  // Brand Accent — 세레니티 블루
+  accent: '#91A8D0',
+  accentHover: '#7B92BC',
+  accentMuted: 'rgba(145, 168, 208, 0.12)',
+  accentGlow: 'rgba(145, 168, 208, 0.25)',
+  onAccent: '#ffffff',
+
+  // Secondary — Lavender (세레니티와 짝을 이루는 보조색)
+  lavender: '#AFA5D6',
+  lavenderStrong: '#7A6EAE',
+  lavenderMuted: 'rgba(175, 165, 214, 0.14)',
+  lavenderSoft: '#F2EFF9',
+
+  // Gradient stops (react-native-svg LinearGradient용)
+  accentGradient: ['#91A8D0', '#B3C4E0'],
+  duoGradient: ['#91A8D0', '#AFA5D6'],
+
+  // Pastel set — 칩·아바타 이니셜용 bg/fg 쌍
+  pastel: [
+    { bg: '#E8EEF7', fg: '#54689B' }, // 세레니티
+    { bg: '#F2EFF9', fg: '#6C5FA3' }, // 라벤더
+    { bg: '#F7EAEF', fg: '#96536E' }, // 로즈
+    { bg: '#E7F3EC', fg: '#3B7354' }, // 세이지
+    { bg: '#FBF0E1', fg: '#8F612C' }, // 아프리콧
+    { bg: '#E3F1F3', fg: '#3B717B' }, // 아쿠아
+  ],
 
   // Semantic
   error: '#ef4444',
@@ -19,7 +40,7 @@ export const lightColors = {
 
   // Surface — Light Mode (기본)
   bg: '#ffffff',
-  bgAlt: '#ebebeb',
+  bgAlt: '#f5f5f5',
   surface: '#ffffff',
   surface2: '#f9f9f9',
   surface3: '#f0f0f0',
@@ -37,28 +58,50 @@ export const lightColors = {
 } as const
 
 export const darkColors = {
-  // Brand Accent (동일)
-  accent: '#F08080',
-  accentHover: '#e06060',
-  accentMuted: 'rgba(240, 128, 128, 0.18)',
-  accentGlow: 'rgba(240, 128, 128, 0.28)',
+  // Brand Accent — 다크는 모노톤(흰색 강조) 컨셉
+  accent: '#fafafa',
+  accentHover: '#ffffff',
+  accentMuted: 'rgba(255, 255, 255, 0.12)',
+  accentGlow: 'rgba(255, 255, 255, 0.16)',
+  onAccent: '#0a0a0a',
+
+  // Secondary — 무채색 반전
+  lavender: '#d4d4d4',
+  lavenderStrong: '#d4d4d4',
+  lavenderMuted: 'rgba(255, 255, 255, 0.10)',
+  lavenderSoft: 'rgba(255, 255, 255, 0.06)',
+
+  // Gradient stops
+  accentGradient: ['#fafafa', '#d4d4d4'],
+  duoGradient: ['#fafafa', '#b8b8b8'],
+
+  // Pastel — 다크는 통일 무채색
+  pastel: [
+    { bg: 'rgba(255, 255, 255, 0.08)', fg: '#d4d4d4' },
+    { bg: 'rgba(255, 255, 255, 0.08)', fg: '#d4d4d4' },
+    { bg: 'rgba(255, 255, 255, 0.08)', fg: '#d4d4d4' },
+    { bg: 'rgba(255, 255, 255, 0.08)', fg: '#d4d4d4' },
+    { bg: 'rgba(255, 255, 255, 0.08)', fg: '#d4d4d4' },
+    { bg: 'rgba(255, 255, 255, 0.08)', fg: '#d4d4d4' },
+  ],
+
   // Semantic (동일)
   error: '#ef4444',
   errorSoft: 'rgba(239, 68, 68, 0.10)',
   success: '#10b981',
   successSoft: 'rgba(16, 185, 129, 0.10)',
   warning: '#f59e0b',
-  // Surface — Dark Mode
-  bg: '#07071a',
-  bgAlt: '#0c0c24',
-  surface: '#0f0f28',
-  surface2: '#151535',
-  surface3: '#1c1c44',
-  border: 'rgba(255, 255, 255, 0.07)',
-  borderStrong: 'rgba(255, 255, 255, 0.12)',
-  text: '#ededf8',
-  textSecondary: '#a8a8cc',
-  textMuted: '#6a6a90',
+  // Surface — Dark Mode (뉴트럴 블랙, 평평)
+  bg: '#0a0a0a',
+  bgAlt: '#0d0d0d',
+  surface: '#0d0d0d',
+  surface2: '#161616',
+  surface3: '#202020',
+  border: 'rgba(255, 255, 255, 0.09)',
+  borderStrong: 'rgba(255, 255, 255, 0.16)',
+  text: '#f5f5f5',
+  textSecondary: '#a3a3a3',
+  textMuted: '#6e6e6e',
   // OAuth (동일)
   kakaoYellow: '#FEE500',
   googleWhite: '#ffffff',

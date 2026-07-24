@@ -28,7 +28,7 @@ export function PrimaryButton({ label, loading, disabled, style, ...rest }: Prop
       width: '100%',
     },
     btnDisabled: { opacity: 0.5 },
-    label: { color: '#fff', fontSize: fontSize.md, fontWeight: '600', letterSpacing: 0.2 },
+    label: { color: colors.onAccent, fontSize: fontSize.md, fontWeight: '600', letterSpacing: 0.2 },
   }), [colors])
 
   return (
@@ -39,7 +39,7 @@ export function PrimaryButton({ label, loading, disabled, style, ...rest }: Prop
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator color="#fff" size="small" />
+        <ActivityIndicator color={colors.onAccent} size="small" />
       ) : (
         <Text style={styles.label}>{label}</Text>
       )}

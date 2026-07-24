@@ -164,7 +164,7 @@ export default function SettingsChangePasswordScreen() {
       alignItems: 'center',
     },
     submitBtnDisabled: { backgroundColor: colors.accentMuted },
-    submitBtnText: { fontSize: fontSize.base, fontWeight: '700', color: '#fff' },
+    submitBtnText: { fontSize: fontSize.base, fontWeight: '700', color: colors.onAccent },
   }), [colors])
 
   return (

@@ -48,16 +48,28 @@ function ScenePhoto() {
   )
 }
 
+/* 모임 목업의 예시 멤버 — 게시판 목업 글쓴이(은지/준호/소연)와 같은 인물·톤 */
+const GROUP_MEMBERS = [
+  { initial: '은', tone: 2 },
+  { initial: '준', tone: 0 },
+  { initial: '소', tone: 4 },
+]
+
 function GroupMock() {
   return (
     <div className={styles.mockCard}>
       <ScenePhoto />
       <div className={styles.mockBody}>
         <span className={styles.mockBadge}>오프라인 · 모집중</span>
-        <div className={`${styles.mockLine} ${styles.w70}`} />
-        <div className={`${styles.mockLine} ${styles.w40} ${styles.muted}`} />
+        <p className={styles.mockGroupTitle}>한강 러닝 크루</p>
+        <p className={styles.mockGroupMeta}>🏃 운동 · 스포츠 · 11/20명</p>
         <div className={styles.mockAvatars}>
-          <span /> <span /> <span /> <span className={styles.mockMore}>+8</span>
+          {GROUP_MEMBERS.map((m) => (
+            <span key={m.initial} className={`${styles.mockAvatarInit} tone-${m.tone}`} aria-hidden>
+              {m.initial}
+            </span>
+          ))}
+          <span className={styles.mockMore}>+8</span>
         </div>
       </div>
     </div>

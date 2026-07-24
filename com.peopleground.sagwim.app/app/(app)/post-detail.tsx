@@ -231,7 +231,7 @@ function CommentItem({
       backgroundColor: colors.accent,
     },
     editSubmitBtnDisabled: { backgroundColor: colors.border },
-    editSubmitText: { fontSize: fontSize.sm, color: '#fff', fontWeight: '700' },
+    editSubmitText: { fontSize: fontSize.sm, color: colors.onAccent, fontWeight: '700' },
   }), [colors])
 
   const isMine = myUsername != null && comment.authorUsername === myUsername
@@ -339,7 +339,7 @@ function CommentItem({
                   hitSlop={8}
                 >
                   {editSubmitting
-                    ? <ActivityIndicator size="small" color="#fff" />
+                    ? <ActivityIndicator size="small" color={colors.onAccent} />
                     : <Text style={commentStyles.editSubmitText}>저장</Text>
                   }
                 </Pressable>
@@ -656,7 +656,7 @@ export default function PostDetailScreen() {
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.sp6 },
     errorText: { fontSize: fontSize.base, color: colors.error, textAlign: 'center', marginBottom: spacing.sp4 },
     backButton: { backgroundColor: colors.accent, paddingHorizontal: spacing.sp6, paddingVertical: spacing.sp3, borderRadius: radius.md },
-    backButtonText: { fontSize: fontSize.base, fontWeight: '600', color: '#fff' },
+    backButtonText: { fontSize: fontSize.base, fontWeight: '600', color: colors.onAccent },
     header: {
       flexDirection: 'row', alignItems: 'center',
       paddingHorizontal: spacing.sp2, paddingVertical: spacing.sp3,
@@ -1012,8 +1012,8 @@ export default function PostDetailScreen() {
               accessibilityLabel="댓글 전송"
             >
               {submitting
-                ? <ActivityIndicator size="small" color="#fff" />
-                : <Ionicons name="send" size={18} color="#fff" />
+                ? <ActivityIndicator size="small" color={colors.onAccent} />
+                : <Ionicons name="send" size={18} color={colors.onAccent} />
               }
             </Pressable>
           </View>

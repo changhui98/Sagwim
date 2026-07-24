@@ -350,7 +350,7 @@ export default function GroupCreateScreen() {
     submitBtnText: {
       fontSize: fontSize.md,
       fontWeight: '700',
-      color: '#fff',
+      color: colors.onAccent,
     },
     joinQuestionRow: {
       flexDirection: 'row',
